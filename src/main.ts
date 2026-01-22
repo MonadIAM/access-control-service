@@ -4,6 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { Logger } from "nestjs-pino";
 
+import { BootstrapSwagger } from "~bootstrap/swagger.bootstrap";
 import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
 
 import { AppModule } from "./app.module";
@@ -22,6 +23,7 @@ async function bootstrap(): Promise<void> {
     const configService = application.get(ConfigService);
 
     BootstrapPipes.applyGlobalPipes(application);
+    BootstrapSwagger.registerSwagger(application);
 
     application.connectMicroservice<MicroserviceOptions>({
         transport: Transport.KAFKA,
