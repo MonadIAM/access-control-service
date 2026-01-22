@@ -4,6 +4,8 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { Logger } from "nestjs-pino";
 
+import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
+
 import { AppModule } from "./app.module";
 
 async function bootstrap(): Promise<void> {
@@ -18,6 +20,8 @@ async function bootstrap(): Promise<void> {
     application.setGlobalPrefix("api");
 
     const configService = application.get(ConfigService);
+
+    BootstrapPipes.applyGlobalPipes(application);
 
     application.connectMicroservice<MicroserviceOptions>({
         transport: Transport.KAFKA,

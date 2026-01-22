@@ -3,7 +3,7 @@ import { Controller, Get, UseInterceptors } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { MicroserviceHealthIndicator, HealthCheckService, HealthCheckResult, HealthCheck } from "@nestjs/terminus";
 
-import { MonitoringInterceptor } from "~bootstrap/interceptors/monitoring.interceptor";
+import { MonitoringInterceptor } from "~common/interceptors/monitoring.interceptor";
 import { DatabaseHealthIndicator } from "~infrastructure/database/database.health";
 import { RedisHealthIndicator } from "~infrastructure/redis/redis.health";
 

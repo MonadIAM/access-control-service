@@ -1,0 +1,10 @@
+{
+  "not_found": "{resource} не найден(а)",
+  "unique_violation": "{resource} с такими данными уже существует",
+  "fk_violation": "Нарушена связь с ресурсом {resource}",
+  "not_null_violation": "Поле в {resource} обязательно для заполнения",
+  "deadlock": "Конфликт параллельного доступа. Попробуйте позже",
+  "lock_timeout": "Время ожидания ответа от БД истекло",
+  "connection_lost": "Соединение с базой данных разорвано",
+  "internal_driver_error": "Ошибка драйвера БД (Код: {code})"
+}

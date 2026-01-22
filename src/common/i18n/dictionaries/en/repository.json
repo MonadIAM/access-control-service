@@ -1,0 +1,5 @@
+{
+    "not_found": "Requested resource not found",
+    "unique_violation": "Data uniqueness conflict",
+    "fk_violation": "Data integrity violation"
+  }

@@ -1,13 +1,15 @@
+import { AcceptLanguageResolver, HeaderResolver, I18nJsonLoader, I18nModule, QueryResolver } from "nestjs-i18n";
 import { ClientsModule, Transport } from "@nestjs/microservices";
-import { PrometheusModule } from "@willsoto/nestjs-prometheus";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { LoggerModule } from "nestjs-pino";
+import { APP_FILTER } from "@nestjs/core";
 import { Module } from "@nestjs/common";
+import { join } from "path";
 
 import { DatabaseModule, RedisModule } from "~infrastructure";
-
-import { HealthModule } from "./health/health.module";
-import { MetricsModule } from "./bootstrap/metrics.module";
+import { GlobalExceptionFilter } from "~common/exceptions";
+import { MetricsModule } from "~common/metrics";
+import { HealthModule } from "~common/health";
 
 @Module({
     imports: [
@@ -17,7 +19,6 @@ import { MetricsModule } from "./bootstrap/metrics.module";
         DatabaseModule,
         RedisModule,
         HealthModule,
-        PrometheusModule.register({ path: "/metrics" }),
         ClientsModule.registerAsync([
             {
                 name: "KAFKA_SERVICE",
@@ -36,6 +37,22 @@ import { MetricsModule } from "./bootstrap/metrics.module";
                 }),
             },
         ]),
+        I18nModule.forRoot({
+            fallbackLanguage: "en",
+            loader: I18nJsonLoader,
+            loaderOptions: { path: join(__dirname, "/i18n/"), watch: true },
+            resolvers: [
+                { use: QueryResolver, options: ["lang", "locale"] },
+                new HeaderResolver(["x-locale"]),
+                AcceptLanguageResolver,
+            ],
+        }),
+    ],
+    providers: [
+        {
+            provide: APP_FILTER,
+            useClass: GlobalExceptionFilter,
+        },
     ],
 })
 export class AppModule {}

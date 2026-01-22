@@ -1,0 +1,109 @@
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from "@nestjs/common";
+import { FastifyRequest, FastifyReply } from "fastify";
+import { I18nContext, I18nService } from "nestjs-i18n";
+
+import { BaseException } from "./types/base.exception";
+
+/**
+ * Глобальный фильтр исключений.
+ * Совместим с RequestValidationException (400) из ValidationPipe и любыми HttpException.
+ * Приводит все ошибки к единому JSON-формату {@link Exception.ResponseBody}.
+ */
+@Catch()
+export class GlobalExceptionFilter implements ExceptionFilter {
+    private readonly logger = new Logger(GlobalExceptionFilter.name);
+
+    public constructor(private readonly i18n: I18nService) {}
+
+    /**
+     * Перехватывает исключение и отправляет унифицированный ответ.
+     *
+     * Алгоритм:
+     * 1) Инициализация дефолтов (500, "Internal Server Error").
+     * 2) Если HttpException — извлекает статус и тело через getResponse().
+     * 3) Поддержка строкового и объектного тела. Забирает message, error, details.
+     * 4) Если обычный Error — забирает name и message.
+     * 5) Формирует {@link Exception.ResponseBody} и отвечает через FastifyReply.
+     *
+     * @param exception Любое брошенное значение.
+     * @param host Контекст NestJS. ({@link ArgumentsHost})
+     */
+    public async catch(exception: unknown, host: ArgumentsHost): Promise<void> {
+        const context = host.switchToHttp();
+        const response = context.getResponse<FastifyReply>();
+        const request = context.getRequest<FastifyRequest>();
+
+        const i18n = I18nContext.current(host);
+        const lang = i18n?.lang ?? "en";
+
+        const result: Partial<Exception.ResponseBody> = {
+            statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            message: "Internal Server Error",
+            error: "InternalServerError",
+        };
+
+        if (exception instanceof BaseException) {
+            result.statusCode = exception.statusCode;
+            result.timestamp = exception.timestamp;
+            result.message = await this.i18n.translate(exception.message, {
+                defaultValue: exception.message,
+                args: exception.params,
+                lang: lang,
+            });
+
+            let details: Optional<Exception.ValidationDetail[]>;
+            if (exception.details) {
+                details = await Promise.all(
+                    exception.details.map(async (element) => ({
+                        ...element,
+                        message: await this.i18n.translate(element.message, {
+                            args: { ...element.args, property: element.path.split(".").pop() },
+                            defaultValue: element.message,
+                            lang,
+                        }),
+                    })),
+                );
+            }
+            result.error = exception.kind;
+            result.details = details;
+        } else if (exception instanceof HttpException) {
+            result.statusCode = exception.getStatus();
+            const response = exception.getResponse();
+
+            if (typeof response === "string") {
+                result.message = response;
+                result.error = exception.name;
+            } else if (response && typeof response === "object") {
+                const { message, error, details } = response as Partial<Exception.ResponseBody>;
+                result.message = message;
+                result.details = details;
+                result.error = typeof error === "string" ? error : exception.name;
+            } else {
+                result.error = exception.name;
+            }
+        } else if (exception instanceof Error) {
+            result.message ??= exception.message;
+            result.error ??= exception.name;
+        }
+
+        const logPayload = {
+            path: request.url,
+            method: request.method,
+            statusCode: result.statusCode,
+        };
+
+        if (result.statusCode! >= 500) {
+            this.logger.error({ ...logPayload, err: exception }, "Internal Server Error");
+        } else {
+            this.logger.warn({ ...logPayload, kind: result.error }, "Client Error");
+        }
+
+        const body: Partial<Exception.ResponseBody> = {
+            timestamp: new Date().toISOString(),
+            path: request.url,
+            ...result,
+        };
+
+        response.status(body.statusCode!).send(body);
+    }
+}

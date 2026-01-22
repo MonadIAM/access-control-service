@@ -1,0 +1,9 @@
+{
+  "bad_request": "Bad request. Please check your input data",
+  "unauthorized": "Authorization is required to perform this action",
+  "forbidden": "You do not have permission to access this resource",
+  "not_found": "The requested information could not be found",
+  "conflict": "A data conflict occurred. The record may have been updated elsewhere",
+  "unprocessable": "Could not process the request due to business rule violations",
+  "internal_error": "Internal server error. We are working on a fix"
+}
