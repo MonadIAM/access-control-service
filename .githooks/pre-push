@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+ESC=$(printf "\033")
+RED="${ESC}[31m"
+BG_RED="${ESC}[41m"
+RESET="${ESC}[0m"
+
+PREFIXES="feat|fix|docs|refactor|perf|test|build|ci|chore|revert"
+BRANCH_PATTERN="^($PREFIXES)(/[a-zA-Z0-9-]+)?/[a-zA-Z0-9_-]{1,50}$"
+
+WHITELISTED_BRANCHES="dev main master"
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+for BRANCH in $WHITELISTED_BRANCHES; do
+    if [ "$CURRENT_BRANCH" = "$BRANCH" ]; then
+        exit 0
+    fi
+done
+
+if ! echo "$CURRENT_BRANCH" | grep -qE "$BRANCH_PATTERN"; then
+    printf "\n${BG_RED}PUSH FAILED:${RESET}${RED} Неверный формат названия ветки!${RESET}\n"
+    exit 1
+fi
+
+exit 0

@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+ESC=$(printf "\033")
+GREEN="${ESC}[32m"
+RED="${ESC}[31m"
+YELLOW="${ESC}[33m"
+CYAN="${ESC}[36m"
+BG_GREEN="${ESC}[42m"
+BG_RED="${ESC}[41m"
+RESET="${ESC}[0m"
+
+FILES_FOR_CHECK=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.ts$" | grep -v "node_modules")
+
+if [ -n "$FILES_FOR_CHECK" ]; then
+    printf "\n${YELLOW}Файлы для линтинга:${RESET}\n"
+    printf "${CYAN}%s${RESET}\n" "$FILES_FOR_CHECK"
+fi
+
+run_gitleaks() {
+    local start_time end_time elapsed exit_code
+
+    if ! command -v gitleaks >/dev/null 2>&1; then
+        printf "\n${YELLOW}Gitleaks не найден в PATH, проверка секретов пропущена.${RESET}\n"
+        return 0
+    fi
+
+    start_time=$(date +%s)
+    gitleaks detect --config .gitleaks.toml --no-git --source .
+    exit_code=$?
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+
+    printf "\n${YELLOW}Время проверки Gitleaks: ${elapsed} sec${RESET}\n"
+    return $exit_code
+}
+
+run_eslint() {
+    local start_time end_time elapsed exit_code
+
+    start_time=$(date +%s)
+    echo "$FILES_FOR_CHECK" | xargs npx eslint --quiet >/dev/null 2>&1
+    exit_code=$?
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+
+    printf "\n${YELLOW}Время проверки ESLint: ${elapsed} sec${RESET}\n"
+    return $exit_code
+}
+
+run_tsc() {
+    local start_time end_time elapsed exit_code
+
+    start_time=$(date +%s)
+    npx tsc --noEmit >/dev/null 2>&1
+    exit_code=$?
+    end_time=$(date +%s)
+    elapsed=$((end_time - start_time))
+
+    printf "\n${YELLOW}Время глобальной проверки TSC: ${elapsed} sec${RESET}\n"
+    return $exit_code
+}
+
+run_gitleaks
+if [ $? -ne 0 ]; then
+    printf "\n${BG_RED}COMMIT FAILED:${RESET}${RED} Обнаружены потенциальные секреты (gitleaks).${RESET}\n"
+    exit 1
+fi
+
+run_tsc
+if [ $? -ne 0 ]; then
+    printf "\n${BG_RED}COMMIT FAILED:${RESET}${RED} Ошибки TypeScript.${RESET}\n"
+    exit 1
+fi
+
+run_eslint
+if [ $? -ne 0 ]; then
+    printf "\n${BG_RED}COMMIT FAILED:${RESET}${RED} Ошибки ESLint.${RESET}\n"
+    exit 1
+fi
+
+printf "\n${BG_GREEN}COMMIT SUCCEEDED:${RESET}${GREEN} Gitleaks, TSC и ESLint пройдены.${RESET}\n"
+exit 0

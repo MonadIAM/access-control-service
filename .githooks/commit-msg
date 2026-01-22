@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+ESC=$(printf "\033")
+RED="${ESC}[31m"
+BG_RED="${ESC}[41m"
+RESET="${ESC}[0m"
+
+PREFIXES="feat|fix|docs|refactor|perf|test|build|ci|chore|revert"
+HEADER_PATTERN="^($PREFIXES)(\([a-zA-Z0-9-]+\))?(!)?: .{1,50}$"
+
+COMMIT_MESSAGE=$(cat "$1")
+HEADER=$(echo "$COMMIT_MESSAGE" | head -n1)
+
+if ! echo "$HEADER" | grep -qE "$HEADER_PATTERN"; then
+    printf "\n${BG_RED}COMMIT FAILED:${RESET}${RED} Неверный формат commit message!${RESET}\n"
+    exit 1
+fi
+
+exit 0

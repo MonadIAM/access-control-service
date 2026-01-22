@@ -1,0 +1,27 @@
+{
+  "extends": "./configs/tsconfig.base.json",  // Корневой конфиг, лучше воздержаться от редактирования!
+  "compilerOptions": {
+    "rootDir": ".",                       // Корневая директория исходного кода
+    "baseUrl": ".",                       // Базовая директория для разрешения относительных путей
+    "outDir": "./dist",                       // Директория для скомпилированных файлов
+    "paths": {
+      "~infrastructure": ["src/infrastructure"],
+      "~infrastructure/*": ["src/infrastructure/*"],
+      "~contexts": ["src/contexts"],
+      "~contexts/*": ["src/contexts/*"],
+      "~common": ["src/common"],
+      "~common/*": ["src/common/*"],
+      "~bootstrap": ["src/bootstrap"],
+      "~bootstrap/*": ["src/bootstrap/*"],
+    },
+  },
+  "include": [
+    "./env.d.ts",
+    "src/**/*",
+  ],
+  "exclude": [
+    "node_modules",
+    "configs",
+    "dist",
+  ],
+}

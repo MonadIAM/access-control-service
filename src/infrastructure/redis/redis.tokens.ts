@@ -1,0 +1,3 @@
+export const REDIS_CACHE_CLIENT = Symbol("REDIS_CACHE_CLIENT");
+export const REDIS_LIMITER_CLIENT = Symbol("REDIS_LIMITER_CLIENT");
+export const REDIS_QUEUE_CLIENT = Symbol("REDIS_QUEUE_CLIENT");

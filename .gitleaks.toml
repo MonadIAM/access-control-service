@@ -1,0 +1,103 @@
+title = "project gitleaks config"
+
+[extend]
+useDefault = true # Используется стандартный встроенный конфиг gitleaks в качестве основы.
+
+
+
+[[rules]]
+id = "internal-service-token"
+
+description = "Internal service token in code or configs"
+
+regex = '''(?i)(internal[_-]?service[_-]?token)\s*[:=]\s*["']?([A-Za-z0-9_\-]{24,64})["']?'''
+
+secretGroup = 2
+
+entropy = 3.5
+
+path = '''src/.*\.(ts|js|jsx|tsx|ya?ml|json)$'''
+
+keywords = [
+    "internal",
+    "service",
+    "token",
+]
+
+tags = [
+    "internal",
+    "token",
+]
+
+    # Локальный allowlist для КОНКРЕТНОГО правила internal-service-token.
+    # Игнорирует фейковые/примерные токены в тестах/доках.
+    [[rules.allowlists]]
+    description = "Allow fake internal tokens in tests and docs"
+
+    condition = "OR"
+
+    regexTarget = "line"
+
+    paths = [
+        '''tests/.*''',
+        '''docs/.*''',
+    ]
+
+    regexes = [
+        '''FAKE_TOKEN''',
+    ]
+
+    [[rules.allowlists]]
+    description = "Allow internal token example in README"
+
+    condition = "AND"
+    regexTarget = "line"
+
+    paths = [
+        '''README\.md''',
+    ]
+
+    regexes = [
+        '''INTERNAL_SERVICE_TOKEN_EXAMPLE''',
+    ]
+
+
+
+# Глобальный allowlist - применяется ко ВСЕМ правилам, кроме тех,
+# где явно ограничили через targetRules в [[allowlists]].
+[[allowlists]]
+description = "global allowlist"
+
+regexTarget = "match"
+
+regexes = [
+    '''219-09-9999''',
+    '''078-05-1120''',
+    '''(9[0-9]{2}|666)-\d{2}-\d{4}''',
+]
+
+paths = [
+    '''gitleaks\.toml''',
+    '''(.*?)(jpg|jpeg|png|gif|pdf|docx?|xlsx?|pptx?|bin|svg|socket)$''',
+]
+
+stopwords = [
+    '''client''',
+    '''endpoint''',
+]
+
+
+
+# [[allowlists]] — новый механизм (v8.25+), позволяет один allowlist
+# повесить на несколько правил через targetRules.
+[[allowlists]]
+description = "Shared allowlist for noisy test fixtures"
+
+targetRules = [
+    "internal-service-token",
+    "generic-api-key",
+]
+
+paths = [
+    '''tests/fixtures/.*''',
+]
