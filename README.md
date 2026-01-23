@@ -5,7 +5,17 @@
 <details>
 <summary><strong>Локальное развертывание</strong></summary>
 
-1. Для работы логера без лишних пакетов необходимо установить плагин Loki для Docker:
+1. Убедитесь что репозиторий [IAM-Infra](https://github.com/Lambdius/IAM-Infra) уже запущен локально.
+
+2. Убедитесь что значение `DOCKER_NETWORK_NAME` в `.env` соответствуте `monitoring-network` или вашей кастомнйо сети.
+
+3. Создание общих Docker-сетей для взаимодействия между микросервисами и работы системы мониторинга необходимо создать внешние сети вручную:
+```sh
+docker network create kafka-net
+docker network create monitoring-network
+```
+
+4. Для работы Loki без лишних npm пакетов необходимо установить плагин для Docker:
 ```sh
 docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
 ```
@@ -19,26 +29,39 @@ docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all
 
 Если файл `.env` отсутствует, при запуске приложения он автоматически создаётся на основе `.env.example`.
 
-| #  | Переменная                          | Описание                                                                   |
-|:--:|:------------------------------------|:---------------------------------------------------------------------------|
-| 1  | `SERVICE_NAME`                      | Название сервиса (используется для логирования и префикса Kafka GroupID).  |
-| 2  | `NODE_ENV`                          | Режим окружения (`development`, `production`, `test`).                     |
-| 3  | `APP_HOST`                          | Сетевой интерфейс, который прослушивает приложение (стандартно `0.0.0.0`). |
-| 4  | `APP_PORT`                          | Порт HTTP-сервера приложения (например, `5001`).                           |
-| 5  | `POSTGRESQL_HOST`                   | Хост базы данных PostgreSQL внутри Docker-сети.                            |
-| 6  | `POSTGRESQL_PORT`                   | Порт PostgreSQL (стандартно `5432`).                                       |
-| 7  | `POSTGRESQL_USER`                   | Имя пользователя базы данных.                                              |
-| 8  | `POSTGRESQL_PASS`                   | Пароль пользователя базы данных.                                           |
-| 9  | `POSTGRESQL_NAME`                   | Имя целевой базы данных.                                                   |
-| 10 | `POSTGRESQL_SSL`                    | Включение SSL-соединения с БД (`"true"`/`"false"`).                        |
-| 11 | `POSTGRESQL_SSL_REJECT_UNAUTHORIZED`| Проверка сертификата при SSL-соединении.                                   |
-| 12 | `REDIS_HOST`                        | Хост сервера Redis.                                                        |
-| 13 | `REDIS_PORT`                        | Порт сервера Redis (стандартно `6379`).                                    |
-| 14 | `REDIS_PASSWORD`                    | Пароль для доступа к Redis.                                                |
-| 15 | `KAFKA_BROKER`                      | Адрес брокера Kafka (например, `kafka:29092`).                             |
-| 16 | `KAFKA_RETRY_ATTEMPTS`              | Количество попыток переподключения к брокеру.                              |
-| 17 | `KAFKA_RETRY_INITIAL_TIME`          | Начальная задержка между попытками подключения (в мс).                     |
-| 18 | `DOCKER_NETWORK_NAME`               | Имя внешней Docker-сети для взаимодействия микросервисов.                  |
+| #  | Переменная                           | Описание                                                                        |
+|:--:|:-------------------------------------|:--------------------------------------------------------------------------------|
+|    | <center>**Общие настройки**</center> |                                                                                 |
+| 1  | `SERVICE_NAME`                       | Название сервиса (используется для логирования и префикса Kafka GroupID).       |
+| 2  | `NODE_ENV`                           | Режим окружения (`development`, `production`, `test`).                          |
+| 3  | `APP_BASE_IMAGE`                     | Базовый Docker-образ для сборки и запуска Node.js приложения.                   |
+| 4  | `APP_HOST`                           | Сетевой интерфейс, который прослушивает приложение (стандартно `0.0.0.0`).      |
+| 5  | `APP_PORT`                           | Порт HTTP-сервера приложения (например, `5001`).                                |
+|    | <center>**PostgreSQL**</center>      |                                                                                 |
+| 6  | `POSTGRESQL_IMAGE`                   | Docker-образ PostgreSQL.                                                        |
+| 7  | `POSTGRESQL_HOST`                    | Хост базы данных PostgreSQL внутри Docker-сети.                                 |
+| 8  | `POSTGRESQL_PORT`                    | Порт PostgreSQL (стандартно `5432`).                                            |
+| 9  | `POSTGRESQL_USER`                    | Имя пользователя базы данных.                                                   |
+| 10 | `POSTGRESQL_PASS`                    | Пароль пользователя базы данных.                                                |
+| 11 | `POSTGRESQL_NAME`                    | Имя целевой базы данных.                                                        |
+| 12 | `POSTGRESQL_SSL`                     | Включение SSL-соединения с БД (`true`/`false`).                                 |
+| 13 | `POSTGRESQL_SSL_REJECT_UNAUTHORIZED` | Проверка сертификата при SSL-соединении.                                        |
+| 14 | `POSTGRESQL_POOL_IDLE_MS`            | Таймаут простоя соединения в пуле (мс). Рекомендовано 30000.                    |
+| 15 | `POSTGRESQL_POOL_MAX`                | Максимальное количество соединений в пуле на один процесс приложения.           |
+| 16 | `POSTGRESQL_LOGGING`                 | Включение логирования SQL-запросов (в prod рекомендуется `false`).              |
+|    | <center>**Redis**</center>           |                                                                                 |
+| 17 | `REDIS_IMAGE`                        | Docker-образ Redis.                                                             |
+| 18 | `REDIS_HOST`                         | Хост сервера Redis внутри Docker-сети.                                          |
+| 19 | `REDIS_PORT`                         | Порт сервера Redis (стандартно `6379`).                                         |
+| 20 | `REDIS_PASSWORD`                     | Пароль для доступа к Redis.                                                     |
+| 21 | `REDIS_DB_CACHE`                     | Индекс базы данных Redis для кэширования.                                       |
+| 22 | `REDIS_DB_LIMITER`                   | Индекс базы данных Redis для Rate Limiter'ов.                                   |
+| 23 | `REDIS_DB_QUEUE`                     | Индекс базы данных Redis для очередей задач (BullMQ).                           |
+|    | <center>**Kafka & Network**</center> |                                                                                 |
+| 24 | `KAFKA_BROKER`                       | Адрес брокера Kafka (например, `kafka:29092`).                                  |
+| 25 | `KAFKA_RETRY_ATTEMPTS`               | Количество попыток переподключения к брокеру.                                   |
+| 26 | `KAFKA_RETRY_INITIAL_TIME`           | Начальная задержка между попытками подключения (в мс).                          |
+| 27 | `DOCKER_NETWORK_NAME`                | Имя внешней Docker-сети для взаимодействия микросервисов.                       |
 
 </details>
 
