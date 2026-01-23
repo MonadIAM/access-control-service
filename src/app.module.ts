@@ -5,6 +5,7 @@ import { Module } from "@nestjs/common";
 
 import { DatabaseModule, RedisModule } from "~infrastructure";
 import { GlobalExceptionFilter } from "~common/exceptions";
+import { RateLimiterModule } from "~common/rate-limiter";
 import { MetricsModule } from "~infrastructure/metrics";
 import { HealthModule } from "~infrastructure/health";
 import { KafkaModule } from "~infrastructure/kafka";
@@ -18,6 +19,7 @@ import { I18nModule } from "~infrastructure/i18n";
         MetricsModule,
         DatabaseModule,
         RedisModule,
+        RateLimiterModule,
         HealthModule,
         KafkaModule,
     ],

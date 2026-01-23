@@ -1,14 +1,10 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { I18nContext, I18nService } from "nestjs-i18n";
+import { ThrottlerException } from "@nestjs/throttler";
 
 import { BaseException } from "./types/base.exception";
 
-/**
- * Глобальный фильтр исключений.
- * Совместим с RequestValidationException (400) из ValidationPipe и любыми HttpException.
- * Приводит все ошибки к единому JSON-формату {@link Exception.ResponseBody}.
- */
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
     private readonly logger = new Logger(GlobalExceptionFilter.name);
@@ -17,13 +13,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     /**
      * Перехватывает исключение и отправляет унифицированный ответ.
-     *
-     * Алгоритм:
-     * 1) Инициализация дефолтов (500, "Internal Server Error").
-     * 2) Если HttpException — извлекает статус и тело через getResponse().
-     * 3) Поддержка строкового и объектного тела. Забирает message, error, details.
-     * 4) Если обычный Error — забирает name и message.
-     * 5) Формирует {@link Exception.ResponseBody} и отвечает через FastifyReply.
      *
      * @param exception Любое брошенное значение.
      * @param host Контекст NestJS. ({@link ArgumentsHost})
@@ -66,6 +55,13 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             }
             result.error = exception.kind;
             result.details = details;
+        } else if (exception instanceof ThrottlerException) {
+            result.statusCode = exception.getStatus();
+            result.message = await this.i18n.translate(exception.message, {
+                defaultValue: exception.message,
+                lang,
+            });
+            result.error = exception.name;
         } else if (exception instanceof HttpException) {
             result.statusCode = exception.getStatus();
             const response = exception.getResponse();
@@ -82,8 +78,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
                 result.error = exception.name;
             }
         } else if (exception instanceof Error) {
-            result.message ??= exception.message;
-            result.error ??= exception.name;
+            result.message = exception.message;
+            result.error = exception.name;
         }
 
         const logPayload = {
