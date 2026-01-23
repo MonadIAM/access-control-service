@@ -14,12 +14,12 @@ import { I18nModule } from "~infrastructure/i18n";
     imports: [
         ConfigModule.forRoot({ envFilePath: ".env", isGlobal: true, cache: true }),
         LoggerModule.forRoot({ pinoHttp: { autoLogging: false } }),
+        I18nModule,
         MetricsModule,
         DatabaseModule,
         RedisModule,
         HealthModule,
         KafkaModule,
-        I18nModule,
     ],
     providers: [
         {

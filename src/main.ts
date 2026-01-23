@@ -5,6 +5,7 @@ import { NestFactory } from "@nestjs/core";
 import { Logger } from "nestjs-pino";
 
 import { KAFKA_MICROSERVICE_CONFIG } from "~infrastructure/kafka";
+import { BootstrapSecurity } from "~bootstrap/security.bootstrap";
 import { BootstrapSwagger } from "~bootstrap/swagger.bootstrap";
 import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
 
@@ -26,6 +27,7 @@ async function bootstrap(): Promise<void> {
 
     BootstrapPipes.applyGlobalPipes(application);
     BootstrapSwagger.registerSwagger(application);
+    await BootstrapSecurity.registerSecurityPlugins(application);
 
     const kafkaConfig = application.get<MicroserviceOptions>(KAFKA_MICROSERVICE_CONFIG);
 
