@@ -1,13 +1,15 @@
 import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify";
-import { MicroserviceOptions, Transport } from "@nestjs/microservices";
+import { MicroserviceOptions } from "@nestjs/microservices";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { Logger } from "nestjs-pino";
 
+import { KAFKA_MICROSERVICE_CONFIG } from "~infrastructure/kafka";
 import { BootstrapSwagger } from "~bootstrap/swagger.bootstrap";
 import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
 
 import { AppModule } from "./app.module";
+import "./extensions";
 
 async function bootstrap(): Promise<void> {
     const fastifyAdapter = new FastifyAdapter({
@@ -25,22 +27,9 @@ async function bootstrap(): Promise<void> {
     BootstrapPipes.applyGlobalPipes(application);
     BootstrapSwagger.registerSwagger(application);
 
-    application.connectMicroservice<MicroserviceOptions>({
-        transport: Transport.KAFKA,
-        options: {
-            client: {
-                brokers: [configService.getOrThrow<string>("KAFKA_BROKER")],
-                retry: {
-                    initialRetryTime: configService.getOrThrow<number>("KAFKA_RETRY_INITIAL_TIME"),
-                    retries: configService.getOrThrow<number>("KAFKA_RETRY_ATTEMPTS"),
-                },
-            },
-            consumer: {
-                groupId: `${configService.getOrThrow<string>("SERVICE_NAME")}-consumer-server`,
-                allowAutoTopicCreation: true,
-            },
-        },
-    });
+    const kafkaConfig = application.get<MicroserviceOptions>(KAFKA_MICROSERVICE_CONFIG);
+
+    application.connectMicroservice(kafkaConfig);
 
     application.enableShutdownHooks();
 

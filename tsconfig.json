@@ -1,8 +1,8 @@
 {
   "extends": "./configs/tsconfig.base.json",  // Корневой конфиг, лучше воздержаться от редактирования!
   "compilerOptions": {
-    "rootDir": ".",                       // Корневая директория исходного кода
-    "baseUrl": ".",                       // Базовая директория для разрешения относительных путей
+    "rootDir": ".",                           // Корневая директория исходного кода
+    "baseUrl": ".",                           // Базовая директория для разрешения относительных путей
     "outDir": "./dist",                       // Директория для скомпилированных файлов
     "paths": {
       "~infrastructure": ["src/infrastructure"],
@@ -16,6 +16,9 @@
     },
   },
   "include": [
+    "./mikro-orm.config.ts",
+    "./jest.unit.config.ts",
+    "./jest.e2e.config.ts",
     "./env.d.ts",
     "src/**/*",
   ],
