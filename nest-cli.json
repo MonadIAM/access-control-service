@@ -2,7 +2,7 @@
   "compilerOptions": {
     "assets": [
       {
-        "include": "common/i18n/dictionaries/**/*.json",
+        "include": "infrastructure/i18n/dictionaries/**/*.json",
         "outDir": "dist/src",
         "watch": true 
       },

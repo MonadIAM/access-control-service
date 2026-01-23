@@ -6,10 +6,11 @@ import { DatabaseHealthIndicator } from "~infrastructure/database/database.healt
 import { RedisHealthIndicator } from "~infrastructure/redis/redis.health";
 
 import { HealthController } from "./health.controller";
+import { HealthService } from "./health.service";
 
 @Module({
     imports: [TerminusModule, ConfigModule],
     controllers: [HealthController],
-    providers: [DatabaseHealthIndicator, RedisHealthIndicator],
+    providers: [DatabaseHealthIndicator, RedisHealthIndicator, HealthService],
 })
 export class HealthModule {}
