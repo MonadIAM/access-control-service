@@ -7,12 +7,14 @@
     "paths": {
       "~infrastructure": ["src/infrastructure"],
       "~infrastructure/*": ["src/infrastructure/*"],
+      "~observability": ["src/observability"],
+      "~observability/*": ["src/observability/*"],
+      "~bootstrap": ["src/bootstrap"],
+      "~bootstrap/*": ["src/bootstrap/*"],
       "~contexts": ["src/contexts"],
       "~contexts/*": ["src/contexts/*"],
       "~common": ["src/common"],
       "~common/*": ["src/common/*"],
-      "~bootstrap": ["src/bootstrap"],
-      "~bootstrap/*": ["src/bootstrap/*"],
     },
   },
   "include": [

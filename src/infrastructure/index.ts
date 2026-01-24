@@ -1,2 +1,1 @@
-export { DatabaseModule } from "./database/database.module";
-export { RedisModule } from "./redis/redis.module";
+export { InfrastructureModule } from "./infrastructure.module";
