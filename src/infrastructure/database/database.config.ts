@@ -4,36 +4,45 @@ import { ConfigService } from "@nestjs/config";
 import path from "path";
 
 export abstract class MikroOrmConfig {
-    /**
-     * Строит Options для MikroORM на основе переменных окружения.
-     * Параметры пула и SSL повторяют существующую конфигурацию.
-     */
-    public static buildOptions(config: ConfigService): Options<PostgreSqlDriver> {
+    public static buildOptions(config: ConfigService, kind: MikroORM.ConnectionKind = "write"): Options<PostgreSqlDriver> {
+        const cqrsEnabled = config.getOrThrow<string>("POSTGRESQL_CQRS_ENABLED") === "true";
+
         const sslEnabled = config.getOrThrow<string>("POSTGRESQL_SSL") === "true";
-        const rejectUnauthorized = config.get<string>("POSTGRESQL_SSL_REJECT_UNAUTHORIZED") === "true";
+        const rejectUnauthorized = config.getOrThrow<string>("POSTGRESQL_SSL_REJECT_UNAUTHORIZED") === "true";
+
+        const host = this.resolveHost({ config, kind, cqrsEnabled });
+        const port = this.resolvePort({ config, kind, cqrsEnabled });
+        const pool = this.resolvePool({ config, kind, cqrsEnabled });
 
         const options: Options<PostgreSqlDriver> = {
             driver: PostgreSqlDriver,
-            host: config.getOrThrow<string>("POSTGRESQL_HOST"),
-            port: Number(config.getOrThrow<number>("POSTGRESQL_PORT")),
+
+            host: host,
+            port: port,
             user: config.getOrThrow<string>("POSTGRESQL_USER"),
             password: config.getOrThrow<string>("POSTGRESQL_PASS"),
             dbName: config.getOrThrow<string>("POSTGRESQL_NAME"),
             debug: config.getOrThrow<string>("POSTGRESQL_LOGGING") === "true",
+
             entities: [path.join(process.cwd(), "dist/**/*.entity.js")],
             entitiesTs: [path.join(process.cwd(), "src/**/*.entity.ts")],
+
+            /**
+             * Миграции выполняются только через write-конфигурацию.
+             * Для read-конфига секция migrations оставлена, чтобы Options были валидными,
+             * но выполнять миграции этим подключением запрещено на уровне приложения.
+             */
             migrations: {
                 path: path.join(process.cwd(), "dist/src/infrastructure/database/migrations"),
                 pathTs: path.join(process.cwd(), "src/infrastructure/database/migrations"),
                 tableName: "mikro_orm_migrations",
                 glob: "!(*.d).{js,ts}",
-                transactional: true, // Запуск каждой миграции внутри транзакции. (позволяет автоматически откатит ьв случае провала части миграции)
-                allOrNothing: true, // Гарантирует атомарность всей пачки миграций. (падение одно = откат всех)
+                transactional: true, // Запуск каждой миграции внутри транзакции. (позволяет автоматически откатить в случае провала части миграции)
+                allOrNothing: true,  // Гарантирует атомарность всей пачки миграций. (падение одной = откат всех)
             },
-            pool: {
-                max: Number(config.getOrThrow<number>("POSTGRESQL_POOL_MAX")),
-                idleTimeoutMillis: Number(config.getOrThrow<number>("POSTGRESQL_POOL_IDLE_MS")),
-            },
+
+            pool: pool,
+
             driverOptions: sslEnabled
                 ? {
                       connection: {
@@ -43,9 +52,55 @@ export abstract class MikroOrmConfig {
                       },
                   }
                 : undefined,
+
             logger: (message: string) => console.log(JSON.stringify({ level: 30, msg: message, context: "MikroORM" })),
         };
 
         return options;
+    }
+
+    private static resolveHost({ cqrsEnabled, config, kind }: MikroORM.Config.ResolveHost.Props): string {
+        if (cqrsEnabled) {
+            if (kind === "read") {
+                return config.getOrThrow<string>("POSTGRESQL_READ_HOST");
+            } else {
+                return config.getOrThrow<string>("POSTGRESQL_WRITE_HOST");
+            }
+        } else {
+            return config.getOrThrow<string>("POSTGRESQL_HOST");
+        }
+    }
+
+    private static resolvePort({ cqrsEnabled, config, kind }: MikroORM.Config.ResolvePort.Props): number {
+        if (cqrsEnabled) {
+            if (kind === "read") {
+                return Number(config.getOrThrow<number>("POSTGRESQL_READ_PORT"));
+            } else {
+                return Number(config.getOrThrow<number>("POSTGRESQL_WRITE_PORT"));
+            }
+        } else {
+            return Number(config.getOrThrow<number>("POSTGRESQL_PORT"));
+        }
+    }
+
+    private static resolvePool({ cqrsEnabled, config, kind }: MikroORM.Config.ResolvePool.Props): MikroORM.Config.ResolvePool.Result {
+        if (cqrsEnabled) {
+            if (kind === "read") {
+                return {
+                    max: Number(config.getOrThrow<number>("POSTGRESQL_READ_POOL_MAX")),
+                    idleTimeoutMillis: Number(config.getOrThrow<number>("POSTGRESQL_READ_POOL_IDLE_MS")),
+                };
+            } else {
+                return {
+                    max: Number(config.getOrThrow<number>("POSTGRESQL_WRITE_POOL_MAX")),
+                    idleTimeoutMillis: Number(config.getOrThrow<number>("POSTGRESQL_WRITE_POOL_IDLE_MS")),
+                };
+            }
+        } else {
+            return {
+                max: Number(config.getOrThrow<number>("POSTGRESQL_POOL_MAX")),
+                idleTimeoutMillis: Number(config.getOrThrow<number>("POSTGRESQL_POOL_IDLE_MS")),
+            };
+        }
     }
 }

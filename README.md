@@ -29,39 +29,77 @@ docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all
 
 Если файл `.env` отсутствует, при запуске приложения он автоматически создаётся на основе `.env.example`.
 
-| #  | Переменная                           | Описание                                                                        |
-|:--:|:-------------------------------------|:--------------------------------------------------------------------------------|
-|    | <center>**Общие настройки**</center> |                                                                                 |
-| 1  | `SERVICE_NAME`                       | Название сервиса (используется для логирования и префикса Kafka GroupID).       |
-| 2  | `NODE_ENV`                           | Режим окружения (`development`, `production`, `test`).                          |
-| 3  | `APP_BASE_IMAGE`                     | Базовый Docker-образ для сборки и запуска Node.js приложения.                   |
-| 4  | `APP_HOST`                           | Сетевой интерфейс, который прослушивает приложение (стандартно `0.0.0.0`).      |
-| 5  | `APP_PORT`                           | Порт HTTP-сервера приложения (например, `5001`).                                |
-|    | <center>**PostgreSQL**</center>      |                                                                                 |
-| 6  | `POSTGRESQL_IMAGE`                   | Docker-образ PostgreSQL.                                                        |
-| 7  | `POSTGRESQL_HOST`                    | Хост базы данных PostgreSQL внутри Docker-сети.                                 |
-| 8  | `POSTGRESQL_PORT`                    | Порт PostgreSQL (стандартно `5432`).                                            |
-| 9  | `POSTGRESQL_USER`                    | Имя пользователя базы данных.                                                   |
-| 10 | `POSTGRESQL_PASS`                    | Пароль пользователя базы данных.                                                |
-| 11 | `POSTGRESQL_NAME`                    | Имя целевой базы данных.                                                        |
-| 12 | `POSTGRESQL_SSL`                     | Включение SSL-соединения с БД (`true`/`false`).                                 |
-| 13 | `POSTGRESQL_SSL_REJECT_UNAUTHORIZED` | Проверка сертификата при SSL-соединении.                                        |
-| 14 | `POSTGRESQL_POOL_IDLE_MS`            | Таймаут простоя соединения в пуле (мс). Рекомендовано 30000.                    |
-| 15 | `POSTGRESQL_POOL_MAX`                | Максимальное количество соединений в пуле на один процесс приложения.           |
-| 16 | `POSTGRESQL_LOGGING`                 | Включение логирования SQL-запросов (в prod рекомендуется `false`).              |
-|    | <center>**Redis**</center>           |                                                                                 |
-| 17 | `REDIS_IMAGE`                        | Docker-образ Redis.                                                             |
-| 18 | `REDIS_HOST`                         | Хост сервера Redis внутри Docker-сети.                                          |
-| 19 | `REDIS_PORT`                         | Порт сервера Redis (стандартно `6379`).                                         |
-| 20 | `REDIS_PASSWORD`                     | Пароль для доступа к Redis.                                                     |
-| 21 | `REDIS_DB_CACHE`                     | Индекс базы данных Redis для кэширования.                                       |
-| 22 | `REDIS_DB_LIMITER`                   | Индекс базы данных Redis для Rate Limiter'ов.                                   |
-| 23 | `REDIS_DB_QUEUE`                     | Индекс базы данных Redis для очередей задач (BullMQ).                           |
-|    | <center>**Kafka & Network**</center> |                                                                                 |
-| 24 | `KAFKA_BROKER`                       | Адрес брокера Kafka (например, `kafka:29092`).                                  |
-| 25 | `KAFKA_RETRY_ATTEMPTS`               | Количество попыток переподключения к брокеру.                                   |
-| 26 | `KAFKA_RETRY_INITIAL_TIME`           | Начальная задержка между попытками подключения (в мс).                          |
-| 27 | `DOCKER_NETWORK_NAME`                | Имя внешней Docker-сети для взаимодействия микросервисов.                       |
+| #  | Переменная                                 | Описание                                                                          |
+|:--:|:-------------------------------------------|:----------------------------------------------------------------------------------|
+|    | <center>**Общие настройки**</center>       |                                                                                   |
+| 1  | `SERVICE_NAME`                             | Название сервиса (используется для Docker Compose project name / container name). |
+| 2  | `NODE_ENV`                                 | Режим окружения (`development`, `production`, `test`).                            |
+| 3  | `APP_BASE_IMAGE`                           | Базовый Docker-образ для сборки и запуска Node.js приложения.                     |
+| 4  | `APP_HOST`                                 | Сетевой интерфейс, который прослушивает приложение (стандартно `0.0.0.0`).        |
+| 5  | `APP_PORT`                                 | Порт HTTP-сервера приложения (например, `5001`).                                  |
+| 6  | `THROTTLE_LIMIT`                           | Максимальное кол-во запросов с одного IP в течение окна времени TTL.              |
+| 7  | `THROTTLE_TTL`                             | Временной интервал в миллисекундах для лимита запросов.                           |
+|    | <center>**PostgreSQL**</center>            |                                                                                   |
+| 8  | `POSTGRESQL_IMAGE`                         | Docker-образ PostgreSQL.                                                          |
+| 9  | `POSTGRESQL_PORT`                          | Порт PostgreSQL primary для внешнего доступа (host -> container `5432`).          |
+| 10 | `POSTGRESQL_REPLICA_PORT`                  | Порт PostgreSQL replica для внешнего доступа (host -> container `5432`).          |
+| 11 | `POSTGRESQL_USER`                          | Имя пользователя базы данных.                                                     |
+| 12 | `POSTGRESQL_PASS`                          | Пароль пользователя базы данных.                                                  |
+| 13 | `POSTGRESQL_NAME`                          | Имя целевой базы данных.                                                          |
+| 14 | `POSTGRESQL_SSL`                           | Включение SSL-соединения с БД (`true`/`false`) на стороне приложения.             |
+| 15 | `POSTGRESQL_SSL_REJECT_UNAUTHORIZED`       | Проверка сертификата при SSL-соединении (на стороне приложения).                  |
+| 16 | `POSTGRESQL_POOL_IDLE_MS`                  | Таймаут простоя соединения в пуле (мс). Рекомендовано 30000.                      |
+| 17 | `POSTGRESQL_POOL_MAX`                      | Максимальное количество соединений в пуле (single-connection режим).              |
+| 18 | `POSTGRESQL_LOGGING`                       | Включение логирования SQL (в prod рекомендуется `false`).                         |
+| 19 | `POSTGRESQL_CQRS_ENABLED`                  | `true` — раздельные write/read подключения; `false` — single-connection режим.    |
+| 20 | `POSTGRESQL_HOST`                          | Хост PostgreSQL для single-connection режима (используется при CQRS=`false`).     |
+| 21 | `POSTGRESQL_WRITE_HOST`                    | Хост primary-инстанса PostgreSQL (write-side, используется при CQRS=`true`).      |
+| 22 | `POSTGRESQL_WRITE_PORT`                    | Порт primary-инстанса PostgreSQL (write-side, внутри Docker-сети).                |
+| 23 | `POSTGRESQL_WRITE_POOL_MAX`                | Максимум соединений в пуле для write-side.                                        |
+| 24 | `POSTGRESQL_WRITE_POOL_IDLE_MS`            | Таймаут простоя соединений write-side (мс).                                       |
+| 25 | `POSTGRESQL_READ_HOST`                     | Хост read-replica PostgreSQL (read-side, используется при CQRS=`true`).           |
+| 26 | `POSTGRESQL_READ_PORT`                     | Порт read-replica PostgreSQL (read-side, внутри Docker-сети).                     |
+| 27 | `POSTGRESQL_READ_POOL_MAX`                 | Максимум соединений в пуле для read-side.                                         |
+| 28 | `POSTGRESQL_READ_POOL_IDLE_MS`             | Таймаут простоя соединений read-side (мс).                                        |
+| 29 | `POSTGRESQL_REPLICATION_USER`              | Пользователь репликации (REPLICATION role) для postgres-контейнеров/скриптов.     |
+| 30 | `POSTGRESQL_REPLICATION_PASSWORD`          | Пароль пользователя репликации.                                                   |
+| 31 | `POSTGRESQL_REPLICATION_SLOT`              | Имя physical replication slot для read-replica.                                   |
+|    | <center>**Redis**</center>                 |                                                                                   |
+| 32 | `REDIS_IMAGE`                              | Docker-образ Redis.                                                               |
+| 33 | `REDIS_HOST`                               | Хост сервера Redis внутри Docker-сети.                                            |
+| 34 | `REDIS_PORT`                               | Порт сервера Redis (host -> container `6379`).                                    |
+| 35 | `REDIS_PASSWORD`                           | Пароль для доступа к Redis.                                                       |
+| 36 | `REDIS_DB_CACHE`                           | Индекс базы данных Redis для кэширования.                                         |
+| 37 | `REDIS_DB_LIMITER`                         | Индекс базы данных Redis для Rate Limiter'ов.                                     |
+| 38 | `REDIS_DB_QUEUE`                           | Индекс базы данных Redis для очередей задач (BullMQ).                             |
+|    | <center>**Kafka & Network**</center>       |                                                                                   |
+| 39 | `KAFKA_BROKER`                             | Адрес брокера Kafka внутри Docker-сети (например, `kafka:29092`).                 |
+| 40 | `KAFKA_RETRY_ATTEMPTS`                     | Количество попыток переподключения к брокеру.                                     |
+| 41 | `KAFKA_RETRY_INITIAL_TIME`                 | Начальная задержка между попытками подключения (в мс).                            |
+| 42 | `DOCKER_NETWORK_NAME`                      | Имя внешней Docker-сети для взаимодействия микросервисов.                         |
+
+</details>
+
+----
+
+<details>
+<summary><strong>PostgreSQL Streaming Replication</strong></summary>
+
+Сервис использует `PostgreSQL` в режиме streaming replication для повышения производительности чтения.
+
+#### Архитектура
+- *Primary* (`postgresql-primary`) — основной инстанс для записи (порт `5432`)
+- *Replica* (`postgresql-replica`) — read-only реплика для чтения (порт `5433`)
+
+#### Проверка статуса репликации
+
+```sh
+# Проверка на primary:
+docker exec -it access-control-service-postgres-primary psql -U lambdius -d access-control-service -c "SELECT * FROM pg_stat_replication;"
+# Проверка на replica:
+docker exec -it access-control-service-postgres-replica psql -U lambdius -d access-control-service -c "SELECT pg_is_in_recovery();"
+# Должно вернуть `t` (true), что означает replica в режиме восстановления (read-only).
+```
 
 </details>
 

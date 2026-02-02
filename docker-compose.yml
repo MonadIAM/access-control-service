@@ -6,20 +6,71 @@ x-base: &base
 name: ${SERVICE_NAME}
 
 services:
-    postgresql:
+    postgresql-primary:
         <<: *base
         image: ${POSTGRESQL_IMAGE:?}
-        container_name: ${SERVICE_NAME}-postgres
+        container_name: ${SERVICE_NAME}-postgres-primary
         environment:
             POSTGRES_DB: ${POSTGRESQL_NAME}
             POSTGRES_USER: ${POSTGRESQL_USER}
             POSTGRES_PASSWORD: ${POSTGRESQL_PASS}
+            POSTGRESQL_REPLICATION_USER: ${POSTGRESQL_REPLICATION_USER}
+            POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRESQL_REPLICATION_PASSWORD}
+            POSTGRESQL_REPLICATION_SLOT: ${POSTGRESQL_REPLICATION_SLOT}
         ports:
             - "${POSTGRESQL_PORT}:5432"
         volumes:
-            - postgres_data:/var/lib/postgresql/data
+            - postgres_WRITE_data:/var/lib/postgresql/data
+            - ./docker/postgres/setup-replication.sh:/docker-entrypoint-initdb.d/99-setup-replication.sh:ro
+        command: >
+            postgres
+            -c wal_level=replica
+            -c max_wal_senders=10
+            -c max_replication_slots=10
+            -c hot_standby=on
         networks:
             - internal
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p 5432"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 10s
+
+    postgresql-replica:
+        <<: *base
+        image: ${POSTGRESQL_IMAGE:?}
+        container_name: ${SERVICE_NAME}-postgres-replica
+        environment:
+            POSTGRES_DB: ${POSTGRESQL_NAME}
+            POSTGRES_USER: ${POSTGRESQL_USER}
+            POSTGRES_PASSWORD: ${POSTGRESQL_PASS}
+            POSTGRESQL_REPLICATION_USER: ${POSTGRESQL_REPLICATION_USER}
+            POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRESQL_REPLICATION_PASSWORD}
+            POSTGRESQL_REPLICATION_SLOT: ${POSTGRESQL_REPLICATION_SLOT}
+            POSTGRESQL_WRITE_HOST: postgresql-primary
+            POSTGRESQL_WRITE_PORT: "5432"
+        ports:
+            - "${POSTGRESQL_REPLICA_PORT:-5433}:5432"
+        depends_on:
+            postgresql-primary:
+                condition: service_healthy
+        volumes:
+            - postgres_replica_data:/var/lib/postgresql/data
+            - ./docker/postgres/replica-entrypoint.sh:/usr/local/bin/replica-entrypoint.sh:ro
+        command: ["bash", "/usr/local/bin/replica-entrypoint.sh"]
+        networks:
+            - internal
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p 5432 && PGPASSWORD=${POSTGRESQL_PASS} psql -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p 5432 -tAc \"SELECT pg_is_in_recovery()\" | grep -q t",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+            start_period: 20s
 
     redis:
         <<: *base
@@ -46,8 +97,12 @@ services:
         ports:
             - "${APP_PORT}:${APP_PORT}"
         depends_on:
-            - postgresql
-            - redis
+            postgresql-primary:
+                condition: service_healthy
+            postgresql-replica:
+                condition: service_healthy
+            redis:
+                condition: service_started
         volumes:
             - uploads_data:/app/uploads
         networks:
@@ -73,7 +128,8 @@ services:
             start_period: 20s
 
 volumes:
-    postgres_data: {}
+    postgres_WRITE_data: {}
+    postgres_replica_data: {}
     redis_data: {}
     uploads_data: {}
 

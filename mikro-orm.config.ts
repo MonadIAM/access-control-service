@@ -9,16 +9,31 @@ dotenv.config();
 const sslEnabled: boolean = process.env.POSTGRESQL_SSL === "true";
 const rejectUnauthorized: boolean = process.env.POSTGRESQL_SSL_REJECT_UNAUTHORIZED === "true";
 
+const cqrsEnabled: boolean = process.env.POSTGRESQL_CQRS_ENABLED === "true";
+
+const host: Optional<string> = cqrsEnabled ? process.env.POSTGRESQL_WRITE_HOST : process.env.POSTGRESQL_HOST;
+const port: number = Number(cqrsEnabled ? process.env.POSTGRESQL_WRITE_PORT : process.env.POSTGRESQL_PORT);
+
+const poolMax: number = Number(
+    cqrsEnabled ? process.env.POSTGRESQL_WRITE_POOL_MAX ?? process.env.POSTGRESQL_POOL_MAX : process.env.POSTGRESQL_POOL_MAX,
+);
+
+const poolIdleTimeoutMillis: Optional<number> = cqrsEnabled
+    ? Number(process.env.POSTGRESQL_WRITE_POOL_IDLE_MS ?? process.env.POSTGRESQL_POOL_IDLE_MS)
+    : process.env.POSTGRESQL_POOL_IDLE_MS
+      ? Number(process.env.POSTGRESQL_POOL_IDLE_MS)
+      : undefined;
+
 const config: Options<PostgreSqlDriver> = {
     driver: PostgreSqlDriver,
 
-    host: process.env.POSTGRESQL_HOST,
-    port: Number(process.env.POSTGRESQL_PORT),
+    host: host,
+    port: port,
     user: process.env.POSTGRESQL_USER,
     password: process.env.POSTGRESQL_PASS,
     dbName: process.env.POSTGRESQL_NAME,
 
-    debug: process.env.NODE_ENV === "development",
+    debug: process.env.POSTGRESQL_LOGGING === "true" || process.env.NODE_ENV === "development",
 
     entities: [path.join(process.cwd(), "dist/**/*.entity.js")],
     entitiesTs: [path.join(process.cwd(), "src/**/*.entity.ts")],
@@ -35,8 +50,11 @@ const config: Options<PostgreSqlDriver> = {
     },
 
     pool: {
-        min: 2,
-        max: 10,
+        min: 1,
+        max: Number.isFinite(poolMax) && poolMax > 0 ? poolMax : 2,
+        ...(poolIdleTimeoutMillis && Number.isFinite(poolIdleTimeoutMillis) && poolIdleTimeoutMillis > 0
+            ? { idleTimeoutMillis: poolIdleTimeoutMillis }
+            : {}),
     },
 
     driverOptions: sslEnabled

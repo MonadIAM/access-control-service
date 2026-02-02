@@ -9,14 +9,36 @@ import { MikroOrmConfig } from "./database.config";
     imports: [
         ConfigModule,
         MikroOrmModule.forRootAsync({
-            contextName: "global",
+            contextName: "write",
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
-                ...MikroOrmConfig.buildOptions(config),
+                ...MikroOrmConfig.buildOptions(config, "write"),
                 registerRequestContext: false,
                 autoLoadEntities: true,
             }),
+        }),
+
+        MikroOrmModule.forRootAsync({
+            contextName: "read",
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => {
+                const cqrsEnabled = config.getOrThrow<string>("POSTGRESQL_CQRS_ENABLED") === "true";
+                if (cqrsEnabled) {
+                    return {
+                        ...MikroOrmConfig.buildOptions(config, "read"),
+                        registerRequestContext: false,
+                        autoLoadEntities: true,
+                    };
+                } else {
+                    return {
+                        ...MikroOrmConfig.buildOptions(config, "write"),
+                        registerRequestContext: false,
+                        autoLoadEntities: true,
+                    };
+                }
+            },
         }),
     ],
 })
