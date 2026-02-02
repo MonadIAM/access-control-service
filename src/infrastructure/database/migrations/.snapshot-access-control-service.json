@@ -1,0 +1,1702 @@
+{
+  "namespaces": [
+    "access_control"
+  ],
+  "name": "public",
+  "tables": [
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "mappedType": "uuid"
+        },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 128,
+          "mappedType": "string"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "default": "null",
+          "mappedType": "datetime"
+        },
+        "last_actions": {
+          "name": "last_actions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'{}'",
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        }
+      },
+      "name": "realm",
+      "schema": "access_control",
+      "indexes": [
+        {
+          "keyName": "realm_code_unique",
+          "columnNames": [
+            "code"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "realm_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "mappedType": "uuid"
+        },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 128,
+          "mappedType": "string"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "realm_id": {
+          "name": "realm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "default": "null",
+          "mappedType": "datetime"
+        },
+        "last_actions": {
+          "name": "last_actions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'{}'",
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        }
+      },
+      "name": "permission",
+      "schema": "access_control",
+      "indexes": [
+        {
+          "keyName": "permission_realm_code_unique",
+          "columnNames": [
+            "realm_id",
+            "code"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "permission_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "permission_realm_id_foreign": {
+          "constraintName": "permission_realm_id_foreign",
+          "columnNames": [
+            "realm_id"
+          ],
+          "localTableName": "access_control.permission",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.realm",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "mappedType": "uuid"
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "effect": {
+          "name": "effect",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "allow",
+            "deny"
+          ],
+          "mappedType": "enum"
+        },
+        "permission_id": {
+          "name": "permission_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "realm_id": {
+          "name": "realm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "default": "null",
+          "mappedType": "datetime"
+        },
+        "last_actions": {
+          "name": "last_actions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'{}'",
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        }
+      },
+      "name": "permission_override",
+      "schema": "access_control",
+      "indexes": [
+        {
+          "keyName": "permission_override_realm_account_idx",
+          "columnNames": [
+            "realm_id",
+            "account_id"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "permission_override_realm_permission_idx",
+          "columnNames": [
+            "realm_id",
+            "permission_id"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "permission_override_realm_account_permission_unique",
+          "columnNames": [
+            "realm_id",
+            "account_id",
+            "permission_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "permission_override_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "permission_override_permission_id_foreign": {
+          "constraintName": "permission_override_permission_id_foreign",
+          "columnNames": [
+            "permission_id"
+          ],
+          "localTableName": "access_control.permission_override",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.permission",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "permission_override_realm_id_foreign": {
+          "constraintName": "permission_override_realm_id_foreign",
+          "columnNames": [
+            "realm_id"
+          ],
+          "localTableName": "access_control.permission_override",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.realm",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "mappedType": "uuid"
+        },
+        "actor_type": {
+          "name": "actor_type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "SERVICE",
+            "SYSTEM",
+            "HUMAN"
+          ],
+          "mappedType": "enum"
+        },
+        "proto_type": {
+          "name": "proto_type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "COMPOSITE",
+            "ATOMIC"
+          ],
+          "mappedType": "enum"
+        },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "non_delegable": {
+          "name": "non_delegable",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 128,
+          "mappedType": "string"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "realm_id": {
+          "name": "realm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "default": "null",
+          "mappedType": "datetime"
+        },
+        "last_actions": {
+          "name": "last_actions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'{}'",
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        }
+      },
+      "name": "role",
+      "schema": "access_control",
+      "indexes": [
+        {
+          "keyName": "role_realm_code_unique",
+          "columnNames": [
+            "realm_id",
+            "code"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "role_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "role_realm_id_foreign": {
+          "constraintName": "role_realm_id_foreign",
+          "columnNames": [
+            "realm_id"
+          ],
+          "localTableName": "access_control.role",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.realm",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "mappedType": "uuid"
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "role_id": {
+          "name": "role_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "realm_id": {
+          "name": "realm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "default": "null",
+          "mappedType": "datetime"
+        },
+        "last_actions": {
+          "name": "last_actions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'{}'",
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        }
+      },
+      "name": "account_role_matrix",
+      "schema": "access_control",
+      "indexes": [
+        {
+          "keyName": "account_role_matrix_realm_account_idx",
+          "columnNames": [
+            "realm_id",
+            "account_id"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "account_role_matrix_realm_role_idx",
+          "columnNames": [
+            "realm_id",
+            "role_id"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "account_role_matrix_realm_account_role_unique",
+          "columnNames": [
+            "realm_id",
+            "account_id",
+            "role_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "account_role_matrix_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "account_role_matrix_role_id_foreign": {
+          "constraintName": "account_role_matrix_role_id_foreign",
+          "columnNames": [
+            "role_id"
+          ],
+          "localTableName": "access_control.account_role_matrix",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.role",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "account_role_matrix_realm_id_foreign": {
+          "constraintName": "account_role_matrix_realm_id_foreign",
+          "columnNames": [
+            "realm_id"
+          ],
+          "localTableName": "access_control.account_role_matrix",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.realm",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "realm_id": {
+          "name": "realm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "ancestor_id": {
+          "name": "ancestor_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "descendant_id": {
+          "name": "descendant_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "depth": {
+          "name": "depth",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        }
+      },
+      "name": "role_closure",
+      "schema": "access_control",
+      "indexes": [
+        {
+          "keyName": "role_closure_realm_ancestor_idx",
+          "columnNames": [
+            "realm_id",
+            "ancestor_id"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "role_closure_realm_descendant_idx",
+          "columnNames": [
+            "realm_id",
+            "descendant_id"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "role_closure_pkey",
+          "columnNames": [
+            "realm_id",
+            "ancestor_id",
+            "descendant_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "role_closure_realm_id_foreign": {
+          "constraintName": "role_closure_realm_id_foreign",
+          "columnNames": [
+            "realm_id"
+          ],
+          "localTableName": "access_control.role_closure",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.realm",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "role_closure_ancestor_id_foreign": {
+          "constraintName": "role_closure_ancestor_id_foreign",
+          "columnNames": [
+            "ancestor_id"
+          ],
+          "localTableName": "access_control.role_closure",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.role",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "role_closure_descendant_id_foreign": {
+          "constraintName": "role_closure_descendant_id_foreign",
+          "columnNames": [
+            "descendant_id"
+          ],
+          "localTableName": "access_control.role_closure",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.role",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "mappedType": "uuid"
+        },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "max_allowed": {
+          "name": "max_allowed",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        },
+        "code": {
+          "name": "code",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 128,
+          "mappedType": "string"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "realm_id": {
+          "name": "realm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "default": "null",
+          "mappedType": "datetime"
+        },
+        "last_actions": {
+          "name": "last_actions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'{}'",
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        }
+      },
+      "name": "role_conflict_group",
+      "schema": "access_control",
+      "indexes": [
+        {
+          "keyName": "role_conflict_group_realm_code_unique",
+          "columnNames": [
+            "realm_id",
+            "code"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "role_conflict_group_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "role_conflict_group_realm_id_foreign": {
+          "constraintName": "role_conflict_group_realm_id_foreign",
+          "columnNames": [
+            "realm_id"
+          ],
+          "localTableName": "access_control.role_conflict_group",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.realm",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "mappedType": "uuid"
+        },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "is_inheritable": {
+          "name": "is_inheritable",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "true",
+          "mappedType": "boolean"
+        },
+        "group_id": {
+          "name": "group_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "role_id": {
+          "name": "role_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "default": "null",
+          "mappedType": "datetime"
+        },
+        "last_actions": {
+          "name": "last_actions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'{}'",
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        }
+      },
+      "name": "role_conflict_member",
+      "schema": "access_control",
+      "indexes": [
+        {
+          "keyName": "role_conflict_member_role_idx",
+          "columnNames": [
+            "role_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "role_conflict_member_group_role_unique",
+          "columnNames": [
+            "group_id",
+            "role_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "role_conflict_member_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "role_conflict_member_group_id_foreign": {
+          "constraintName": "role_conflict_member_group_id_foreign",
+          "columnNames": [
+            "group_id"
+          ],
+          "localTableName": "access_control.role_conflict_member",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.role_conflict_group",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "role_conflict_member_role_id_foreign": {
+          "constraintName": "role_conflict_member_role_id_foreign",
+          "columnNames": [
+            "role_id"
+          ],
+          "localTableName": "access_control.role_conflict_member",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.role",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "mappedType": "uuid"
+        },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "is_absolute": {
+          "name": "is_absolute",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "depth_limit": {
+          "name": "depth_limit",
+          "type": "smallint",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "smallint"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "realm_id": {
+          "name": "realm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "delegator_id": {
+          "name": "delegator_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "target_id": {
+          "name": "target_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "default": "null",
+          "mappedType": "datetime"
+        },
+        "last_actions": {
+          "name": "last_actions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'{}'",
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        }
+      },
+      "name": "role_delegation_policy",
+      "schema": "access_control",
+      "indexes": [
+        {
+          "keyName": "role_delegation_policy_realm_delegator_idx",
+          "columnNames": [
+            "realm_id",
+            "delegator_id"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "role_delegation_policy_realm_target_idx",
+          "columnNames": [
+            "realm_id",
+            "target_id"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "role_delegation_policy_realm_delegator_target_unique",
+          "columnNames": [
+            "realm_id",
+            "delegator_id",
+            "target_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "role_delegation_policy_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "role_delegation_policy_realm_id_foreign": {
+          "constraintName": "role_delegation_policy_realm_id_foreign",
+          "columnNames": [
+            "realm_id"
+          ],
+          "localTableName": "access_control.role_delegation_policy",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.realm",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "role_delegation_policy_delegator_id_foreign": {
+          "constraintName": "role_delegation_policy_delegator_id_foreign",
+          "columnNames": [
+            "delegator_id"
+          ],
+          "localTableName": "access_control.role_delegation_policy",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.role",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "role_delegation_policy_target_id_foreign": {
+          "constraintName": "role_delegation_policy_target_id_foreign",
+          "columnNames": [
+            "target_id"
+          ],
+          "localTableName": "access_control.role_delegation_policy",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.role",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "gen_random_uuid()",
+          "mappedType": "uuid"
+        },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "role_id": {
+          "name": "role_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "permission_id": {
+          "name": "permission_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "default": "null",
+          "mappedType": "datetime"
+        },
+        "last_actions": {
+          "name": "last_actions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'{}'",
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        }
+      },
+      "name": "role_permission_matrix",
+      "schema": "access_control",
+      "indexes": [
+        {
+          "keyName": "role_permission_matrix_permission_idx",
+          "columnNames": [
+            "permission_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "role_permission_matrix_role_idx",
+          "columnNames": [
+            "role_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "role_permission_matrix_role_permission_unique",
+          "columnNames": [
+            "role_id",
+            "permission_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "role_permission_matrix_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "role_permission_matrix_role_id_foreign": {
+          "constraintName": "role_permission_matrix_role_id_foreign",
+          "columnNames": [
+            "role_id"
+          ],
+          "localTableName": "access_control.role_permission_matrix",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.role",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "role_permission_matrix_permission_id_foreign": {
+          "constraintName": "role_permission_matrix_permission_id_foreign",
+          "columnNames": [
+            "permission_id"
+          ],
+          "localTableName": "access_control.role_permission_matrix",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.permission",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    }
+  ],
+  "nativeEnums": {}
+}

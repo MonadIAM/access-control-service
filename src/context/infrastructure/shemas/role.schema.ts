@@ -1,0 +1,76 @@
+import { EntitySchema } from "@mikro-orm/core";
+
+import { RoleActorType, RoleProtoType } from "~context/enums";
+import {
+    RoleDelegationPolicy,
+    RolePermissionMatrix,
+    RoleConflictMember,
+    AccountRoleMatrix,
+    Realm,
+    Role,
+} from "~context/domain/entities";
+
+export const RoleSchema = new EntitySchema<Role>({
+    class: Role,
+    tableName: "role",
+    schema: "access_control",
+
+    uniques: [
+        {
+            name: "role_realm_code_unique",
+            properties: ["realm", "code"],
+        },
+    ],
+
+    properties: {
+        id: { primary: true, type: "uuid", defaultRaw: "gen_random_uuid()" },
+
+        actorType: { enum: true, items: () => RoleActorType, nullable: false },
+        protoType: { enum: true, items: () => RoleProtoType, nullable: false },
+        isSystemManaged: { type: "boolean", default: false, nullable: false },
+        nonDelegable: { type: "boolean", default: false, nullable: false },
+        code: { type: "string", length: 128, nullable: false },
+        name: { type: "string", length: 255, nullable: false },
+        description: { type: "text", nullable: true },
+
+        realm: {
+            ref: true,
+            kind: "m:1",
+            nullable: false,
+            entity: () => Realm,
+            fieldName: "realm_id",
+            deleteRule: "cascade",
+        },
+        delegationPoliciesAsDelegator: {
+            kind: "1:m",
+            entity: () => RoleDelegationPolicy,
+            mappedBy: "delegator",
+        },
+        delegationPoliciesAsTarget: {
+            kind: "1:m",
+            entity: () => RoleDelegationPolicy,
+            mappedBy: "target",
+        },
+        conflictMemberships: {
+            kind: "1:m",
+            entity: () => RoleConflictMember,
+            mappedBy: "role",
+        },
+        permissionMatrix: {
+            kind: "1:m",
+            entity: () => RolePermissionMatrix,
+            mappedBy: "role",
+        },
+        accountMatrix: {
+            kind: "1:m",
+            entity: () => AccountRoleMatrix,
+            mappedBy: "role",
+        },
+
+        updatedAt: { type: "timestamptz", nullable: true, default: null, onUpdate: () => new Date() },
+        lastActions: { type: "jsonb", defaultRaw: "'{}'::jsonb", nullable: false },
+        createdAt: { type: "timestamptz", defaultRaw: "now()", nullable: false },
+        isRevoked: { type: "boolean", default: false, nullable: false },
+        version: { type: "int", version: true },
+    },
+});

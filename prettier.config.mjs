@@ -8,7 +8,9 @@ const prettierConfig = [
             "dist/**/*",
             "configs/**/*",
             "node_modules/**/*",
-            "**/*.config.{mjs,ts}",
+            "./*.config.{mjs,ts}",
+            "./configs/*.config.{mjs,ts}",
+            "**/migrations/*.ts",
         ]
     },
     {

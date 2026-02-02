@@ -1,4 +1,5 @@
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
+import { Migrator } from "@mikro-orm/migrations";
 import { type Options } from "@mikro-orm/core";
 import { ConfigService } from "@nestjs/config";
 import path from "path";
@@ -24,8 +25,9 @@ export abstract class MikroOrmConfig {
             dbName: config.getOrThrow<string>("POSTGRESQL_NAME"),
             debug: config.getOrThrow<string>("POSTGRESQL_LOGGING") === "true",
 
-            entities: [path.join(process.cwd(), "dist/**/*.entity.js")],
-            entitiesTs: [path.join(process.cwd(), "src/**/*.entity.ts")],
+            entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
+            entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],
+            extensions: [Migrator],
 
             /**
              * Миграции выполняются только через write-конфигурацию.
@@ -38,7 +40,15 @@ export abstract class MikroOrmConfig {
                 tableName: "mikro_orm_migrations",
                 glob: "!(*.d).{js,ts}",
                 transactional: true, // Запуск каждой миграции внутри транзакции. (позволяет автоматически откатить в случае провала части миграции)
-                allOrNothing: true,  // Гарантирует атомарность всей пачки миграций. (падение одной = откат всех)
+                allOrNothing: true, // Гарантирует атомарность всей пачки миграций. (падение одной = откат всех)
+                fileName: (timestamp: string, name?: string) => {
+                    const prefix = timestamp.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, "$1.$2.$3T$4-$5-$6");
+                    if (name) {
+                        return `${prefix}__${name}`;
+                    } else {
+                        return `${prefix}`;
+                    }
+                },
             },
 
             pool: pool,
@@ -52,8 +62,6 @@ export abstract class MikroOrmConfig {
                       },
                   }
                 : undefined,
-
-            logger: (message: string) => console.log(JSON.stringify({ level: 30, msg: message, context: "MikroORM" })),
         };
 
         return options;
@@ -83,7 +91,11 @@ export abstract class MikroOrmConfig {
         }
     }
 
-    private static resolvePool({ cqrsEnabled, config, kind }: MikroORM.Config.ResolvePool.Props): MikroORM.Config.ResolvePool.Result {
+    private static resolvePool({
+        cqrsEnabled,
+        config,
+        kind,
+    }: MikroORM.Config.ResolvePool.Props): MikroORM.Config.ResolvePool.Result {
         if (cqrsEnabled) {
             if (kind === "read") {
                 return {

@@ -11,7 +11,6 @@ const rejectUnauthorized: boolean = process.env.POSTGRESQL_SSL_REJECT_UNAUTHORIZ
 
 const cqrsEnabled: boolean = process.env.POSTGRESQL_CQRS_ENABLED === "true";
 
-const host: Optional<string> = cqrsEnabled ? process.env.POSTGRESQL_WRITE_HOST : process.env.POSTGRESQL_HOST;
 const port: number = Number(cqrsEnabled ? process.env.POSTGRESQL_WRITE_PORT : process.env.POSTGRESQL_PORT);
 
 const poolMax: number = Number(
@@ -27,7 +26,7 @@ const poolIdleTimeoutMillis: Optional<number> = cqrsEnabled
 const config: Options<PostgreSqlDriver> = {
     driver: PostgreSqlDriver,
 
-    host: host,
+    host: "127.0.0.1",
     port: port,
     user: process.env.POSTGRESQL_USER,
     password: process.env.POSTGRESQL_PASS,
@@ -35,8 +34,8 @@ const config: Options<PostgreSqlDriver> = {
 
     debug: process.env.POSTGRESQL_LOGGING === "true" || process.env.NODE_ENV === "development",
 
-    entities: [path.join(process.cwd(), "dist/**/*.entity.js")],
-    entitiesTs: [path.join(process.cwd(), "src/**/*.entity.ts")],
+    entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
+    entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],
 
     extensions: [Migrator],
 
@@ -45,8 +44,16 @@ const config: Options<PostgreSqlDriver> = {
         pathTs: path.join(process.cwd(), "src/infrastructure/database/migrations"),
         tableName: "mikro_orm_migrations",
         glob: "!(*.d).{js,ts}",
-        transactional: true,
-        allOrNothing: true,
+        transactional: true, // Запуск каждой миграции внутри транзакции. (позволяет автоматически откатить в случае провала части миграции)
+        allOrNothing: true, // Гарантирует атомарность всей пачки миграций. (падение одной = откат всех)
+        fileName: (timestamp: string, name?: string) => {
+            const prefix = timestamp.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, "$1.$2.$3T$4-$5-$6");
+            if (name) {
+                return `${prefix}__${name}`;
+            } else {
+                return `${prefix}`;
+            }
+        },
     },
 
     pool: {
