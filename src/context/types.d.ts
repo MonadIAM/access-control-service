@@ -1,3 +1,8 @@
+type Pagination = {
+    currentPage: number;
+    elementsPerPage: number;
+};
+
 declare namespace DeltaAudit {
     type Actor = {
         id: string;
@@ -35,4 +40,29 @@ declare namespace DeltaAudit {
         : BaseSnapshot & {
               update?: UpdateAction<T>;
           };
+}
+
+declare namespace RoleGraph {
+    type Node = {
+        id: string;
+        label: string;
+        attributes: {
+            code: string;
+            protoType: string;
+            isRevoked: boolean;
+            level: number;
+        };
+    };
+
+    type Edge = {
+        id: string;
+        source: string;
+        target: string;
+        type: "arrow";
+    };
+
+    type Data = {
+        nodes: RoleGraph.Node[];
+        edges: RoleGraph.Edge[];
+    };
 }

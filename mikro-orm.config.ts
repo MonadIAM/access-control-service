@@ -39,6 +39,11 @@ const config: Options<PostgreSqlDriver> = {
 
     extensions: [Migrator],
 
+    /**
+     * Миграции выполняются только через write-конфигурацию.
+     * Для read-конфига секция migrations оставлена, чтобы Options были валидными,
+     * но выполнять миграции этим подключением запрещено на уровне приложения.
+     */
     migrations: {
         path: path.join(process.cwd(), "dist/src/infrastructure/database/migrations"),
         pathTs: path.join(process.cwd(), "src/infrastructure/database/migrations"),

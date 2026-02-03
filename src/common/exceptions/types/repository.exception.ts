@@ -18,10 +18,15 @@ export class RepositoryException extends BaseException {
         super(kind, statusCode, key, params);
     }
 
-    public static fromOrmError(error: Error, resource?: string): RepositoryException | Error {
+    public static fromOrmError(error: unknown, resource?: string): RepositoryException | Error {
         const params = { resource, timestamp: new Date().toISOString() };
 
-        // 1. Ошибки бизнес-логики БД
+        // 1. Ошибки системных инвариантов
+        if (error instanceof RepositoryException) {
+            return error;
+        }
+
+        // 2. Ошибки бизнес-логики БД
         if (error instanceof NotFoundError) {
             return new RepositoryException(RepositoryErrorKind.NotFound, 404, "db.not_found", params);
         }
@@ -35,7 +40,7 @@ export class RepositoryException extends BaseException {
             return new RepositoryException(RepositoryErrorKind.NotNullViolation, 400, "db.not_null_violation", params);
         }
 
-        // 2. Инфраструктурные ошибки (DriverException)
+        // 3. Инфраструктурные ошибки (DriverException)
         if (error instanceof DeadlockException) {
             return new RepositoryException(RepositoryErrorKind.Deadlock, 409, "db.deadlock", params);
         }
@@ -55,7 +60,14 @@ export class RepositoryException extends BaseException {
             });
         }
 
-        return error;
+        return error as Error;
+    }
+
+    public static badRequest(
+        key: string = "repository.bad_request",
+        params?: Record<string, unknown>,
+    ): RepositoryException {
+        return new RepositoryException(RepositoryErrorKind.InvariantViolation, HttpStatus.BAD_REQUEST, key, params);
     }
 
     public static notFound(params?: Record<string, unknown>): RepositoryException {

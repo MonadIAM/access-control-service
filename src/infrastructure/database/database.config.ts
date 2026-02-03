@@ -1,5 +1,4 @@
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
-import { Migrator } from "@mikro-orm/migrations";
 import { type Options } from "@mikro-orm/core";
 import { ConfigService } from "@nestjs/config";
 import path from "path";
@@ -27,29 +26,6 @@ export abstract class MikroOrmConfig {
 
             entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
             entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],
-            extensions: [Migrator],
-
-            /**
-             * Миграции выполняются только через write-конфигурацию.
-             * Для read-конфига секция migrations оставлена, чтобы Options были валидными,
-             * но выполнять миграции этим подключением запрещено на уровне приложения.
-             */
-            migrations: {
-                path: path.join(process.cwd(), "dist/src/infrastructure/database/migrations"),
-                pathTs: path.join(process.cwd(), "src/infrastructure/database/migrations"),
-                tableName: "mikro_orm_migrations",
-                glob: "!(*.d).{js,ts}",
-                transactional: true, // Запуск каждой миграции внутри транзакции. (позволяет автоматически откатить в случае провала части миграции)
-                allOrNothing: true, // Гарантирует атомарность всей пачки миграций. (падение одной = откат всех)
-                fileName: (timestamp: string, name?: string) => {
-                    const prefix = timestamp.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, "$1.$2.$3T$4-$5-$6");
-                    if (name) {
-                        return `${prefix}__${name}`;
-                    } else {
-                        return `${prefix}`;
-                    }
-                },
-            },
 
             pool: pool,
 
