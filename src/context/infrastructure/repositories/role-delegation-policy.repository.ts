@@ -140,20 +140,6 @@ export class RoleDelegationPolicyRepository {
         }
     }
 
-    /**
-     * Проверяет существование транзитивного пути делегирования от начальной роли к целевой.
-     *
-     * В таблице role_delegation_policy: (delegator_role_id, is_revoked, target_role_id)
-     * В таблице role_closure: (ancestor_id, descendant_id, depth)
-     *
-     * @param props.transaction Контекст транзакции.
-     * @param props.from        ID роли, от которой начинается поиск пути.
-     * @param props.to          ID целевой роли/ролей, до которых ищется путь.
-     *
-     * @returns Если хотя бы один активный путь существует - true, иначе - false.
-     *
-     * @throws При внутренней ошибке БД. ({@link RepositoryException.internal})
-     */
     public async existsTransitivePath({
         transaction,
         from,
@@ -217,17 +203,6 @@ export class RoleDelegationPolicyRepository {
         }
     }
 
-    /**
-     * Проверяет наличие активной политики делегирования между target и delegator ролями.
-     *
-     * @param props.transaction   Контекст транзакции.
-     * @param props.delegatorRole ID роли/ролей, инициирующей делегирование.
-     * @param props.targetRole    ID роли, подлежащей делегированию.
-     *
-     * @returns Если прямая делегация разрешена активной политикой - true, иначе - false.
-     *
-     * @throws При внутренней ошибке БД. ({@link RepositoryException.internal})
-     */
     public async isDelegationAllowed({
         delegatorRole,
         transaction,
@@ -267,17 +242,6 @@ export class RoleDelegationPolicyRepository {
         }
     }
 
-    /**
-     * Проверка попытки создать политику делегирования вышестоящих в иерархии ролей.
-     *
-     * @param props.transaction   Контекст транзакции.
-     * @param props.delegatorRole ID роли/ролей, инициирующей делегирование.
-     * @param props.targetRole    ID роли, подлежащей делегированию.
-     *
-     * @returns Если политика нисходящая - true, иначе - false.
-     *
-     * @throws При внутренней ошибке БД. ({@link RepositoryException.internal})
-     */
     public async isUpwardGrant({
         delegatorRole,
         transaction,

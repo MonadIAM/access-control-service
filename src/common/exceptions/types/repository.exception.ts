@@ -21,12 +21,10 @@ export class RepositoryException extends BaseException {
     public static fromOrmError(error: unknown, resource?: string): RepositoryException | Error {
         const params = { resource, timestamp: new Date().toISOString() };
 
-        // 1. Ошибки системных инвариантов
         if (error instanceof RepositoryException) {
             return error;
         }
 
-        // 2. Ошибки бизнес-логики БД
         if (error instanceof NotFoundError) {
             return new RepositoryException(RepositoryErrorKind.NotFound, 404, "db.not_found", params);
         }
@@ -40,7 +38,6 @@ export class RepositoryException extends BaseException {
             return new RepositoryException(RepositoryErrorKind.NotNullViolation, 400, "db.not_null_violation", params);
         }
 
-        // 3. Инфраструктурные ошибки (DriverException)
         if (error instanceof DeadlockException) {
             return new RepositoryException(RepositoryErrorKind.Deadlock, 409, "db.deadlock", params);
         }
@@ -51,9 +48,7 @@ export class RepositoryException extends BaseException {
             return new RepositoryException(RepositoryErrorKind.ConnectionError, 503, "db.connection_lost", params);
         }
 
-        // 3. Общий перехватчик сетевых таймаутов (если не попало выше)
         if (error instanceof DriverException) {
-            // Можно проверять error.code для специфичных кодов БД (например, '57P01' в Postgres)
             return new RepositoryException(RepositoryErrorKind.Internal, 500, "db.internal_driver_error", {
                 ...params,
                 code: error.code,

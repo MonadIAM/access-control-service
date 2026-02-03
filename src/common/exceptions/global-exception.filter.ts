@@ -11,12 +11,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     public constructor(private readonly i18n: I18nService) {}
 
-    /**
-     * Перехватывает исключение и отправляет унифицированный ответ.
-     *
-     * @param exception Любое брошенное значение.
-     * @param host Контекст NestJS. ({@link ArgumentsHost})
-     */
     public async catch(exception: unknown, host: ArgumentsHost): Promise<void> {
         const context = host.switchToHttp();
         const response = context.getResponse<FastifyReply>();

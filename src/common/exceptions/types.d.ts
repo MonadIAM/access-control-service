@@ -1,7 +1,4 @@
 declare namespace Exception {
-    /**
-     * Унифицированное тело ответа об ошибке.
-     */
     type ResponseBody = {
         /* eslint-disable prettier/prettier */
         error: string;                // Тип/код ошибки (например, "Bad Request", "Forbidden").
@@ -13,16 +10,13 @@ declare namespace Exception {
         /* eslint-enable prettier/prettier */
     };
 
-    /**
-     * Детализация отдельного нарушения валидации.
-     */
     type ValidationDetail = {
         /* eslint-disable prettier/prettier */
         args?: Record<string, unknown> //
         invalidValue?: unknown;        // Значение поля, для которого сработала ошибка
         constraint: string;            // Имя сработавшего правила class-validator
-        message: string;        // Человекочитаемое сообщение, предоставленное class-validator
-        path: string;           // Полный путь до поля
+        message: string;               // Человекочитаемое сообщение, предоставленное class-validator
+        path: string;                  // Полный путь до поля
         /* eslint-enable prettier/prettier */
     };
 }

@@ -219,10 +219,6 @@ export class PermissionRepository {
         }
     }
 
-    /**
-     * Проверяет наличие привилегии у аккаунта с учетом персональных оверрайдов и назначенных ролей.
-     * Логика учитывает приоритет оверрайда над ролевой матрицей.
-     */
     public async accountHasPermission({
         accountRoles,
         transaction,

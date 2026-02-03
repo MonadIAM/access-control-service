@@ -156,10 +156,6 @@ export class AccountRoleMatrixRepository {
         }
     }
 
-    /**
-     * Проверяет существование учетных записей, нарушающих заданные пары конфликтующих ролей.
-     * Используется для проверки политик разделения обязанностей (SoD) по матрице конфликтов.
-     */
     public async existsActiveAccountWithConflictRoles({
         transaction,
         identifiers,
@@ -190,9 +186,6 @@ export class AccountRoleMatrixRepository {
         }
     }
 
-    /**
-     * Проверяет наличие прав делегирования у актора на указанный список ролей.
-     */
     public async validateDelegationForRoles({
         transaction,
         actor,
@@ -228,9 +221,6 @@ export class AccountRoleMatrixRepository {
         }
     }
 
-    /**
-     * Проверяет отсутствие конфликтов SoD для новых ролей с учетом текущих ролей аккаунта.
-     */
     public async validateSoDForNewRoles({
         transaction,
         accountId,

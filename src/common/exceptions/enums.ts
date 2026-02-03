@@ -1,13 +1,10 @@
 export enum RepositoryErrorKind {
-    // 1. Ошибки системных инвариантов
     InvariantViolation = "InvariantViolation",
-    // 2. Ошибки бизнес-логики БД
     BadRequest = "RepositoryBadRequest",
     NotFound = "RepositoryNotFound",
     UniqueViolation = "UniqueViolation",
     ForeignKeyViolation = "ForeignKeyViolation",
     NotNullViolation = "NotNullViolation",
-    // 3. Инфраструктурные ошибки (DriverException)
     Timeout = "DatabaseTimeout",
     ConnectionError = "DatabaseConnectionError",
     Deadlock = "DatabaseDeadlock",
