@@ -10,26 +10,26 @@ export enum RoleProtoType {
 }
 
 export enum PermissionOverrideEffect {
-    ALLOW = "allow",
-    DENY = "deny",
+    ALLOW = "ALLOW",
+    DENY = "DENY",
 }
 
 export enum AccessControlEntityType {
-    PERMISSION_ASSIGNMENT = "permission_assignment",
-    PERMISSION_OVERRIDE = "permission_override",
-    DELEGATION_POLICY = "delegation_policy",
-    ROLE_ASSIGNMENT = "role_assignment",
-    CONFLICT_MEMBER = "conflict_member",
-    CONFLICT_GROUP = "conflict_group",
-    PERMISSION = "permission",
-    REALM = "realm",
-    ROLE = "role",
+    PERMISSION_ASSIGNMENT = "PERMISSION_ASSIGNMENT",
+    PERMISSION_OVERRIDE = "PERMISSION_OVERRIDE",
+    DELEGATION_POLICY = "DELEGATION_POLICY",
+    ROLE_ASSIGNMENT = "ROLE_ASSIGNMENT",
+    CONFLICT_MEMBER = "CONFLICT_MEMBER",
+    CONFLICT_GROUP = "CONFLICT_GROUP",
+    PERMISSION = "PERMISSION",
+    REALM = "REALM",
+    ROLE = "ROLE",
 }
 
 export enum AccessControlActionType {
-    RESTORE = "restore",
-    REVOKE = "revoke",
-    CREATE = "create",
-    UPDATE = "update",
-    DELETE = "delete",
+    RESTORE = "RESTORE",
+    REVOKE = "REVOKE",
+    CREATE = "CREATE",
+    UPDATE = "UPDATE",
+    DELETE = "DELETE",
 }

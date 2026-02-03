@@ -4,6 +4,7 @@ export { RoleConflictMember } from "./role-conflict-member.entity";
 export { PermissionOverride } from "./permission-override.entity";
 export { RoleConflictGroup } from "./role-conflict-group.entity";
 export { AccountRoleMatrix } from "./account-role-matrix.entity";
+export { AuditJournal } from "./audit-journal.entity";
 export { RoleClosure } from "./role-closure.entity";
 export { Permission } from "./permission.entity";
 export { Realm } from "./realm.entity";
