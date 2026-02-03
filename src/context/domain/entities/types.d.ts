@@ -1,5 +1,4 @@
 import { RoleDelegationPolicy as RoleDelegationPolicyEntity } from "./role-delegation-policy.entity";
-import { RoleConflictMember as RoleConflictMemberEntity } from "./role-conflict-member.entity";
 import { RoleConflictGroup as RoleConflictGroupEntity } from "./role-conflict-group.entity";
 import { Permission as PermissionEntity } from "./permission.entity";
 import { Role as RoleEntity } from "./role.entity";
@@ -36,16 +35,8 @@ declare global {
             };
         }
 
-        namespace RoleConflictMember {
-            type MutableFields = Pick<RoleConflictMemberEntity, "isInheritable">;
-
-            type ChangeDataProps = BaseMethodProps & {
-                patch: Partial<RoleConflictMember.MutableFields>;
-            };
-        }
-
         namespace RoleDelegationPolicy {
-            type MutableFields = Pick<RoleDelegationPolicyEntity, "isAbsolute" | "depthLimit" | "description">;
+            type MutableFields = Pick<RoleDelegationPolicyEntity, "depthLimit" | "description">;
 
             type ChangeDataProps = BaseMethodProps & {
                 patch: Partial<RoleDelegationPolicy.MutableFields>;

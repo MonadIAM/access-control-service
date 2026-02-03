@@ -13,14 +13,13 @@ export class RoleDelegationPolicy {
         public realm: Ref<Realm>,
         public target: Ref<Role>,
         public delegator: Ref<Role>,
+        public depthLimit: number,
 
         public lastActions: DeltaAudit.LastActionsSnapshot<Entities.RoleDelegationPolicy.MutableFields>,
 
         public description?: string,
-        public depthLimit?: number,
 
         public isSystemManaged: boolean = false,
-        public isAbsolute: boolean = false,
         public isRevoked: boolean = false,
     ) {}
 

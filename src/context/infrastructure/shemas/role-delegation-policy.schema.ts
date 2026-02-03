@@ -29,8 +29,7 @@ export const RoleDelegationPolicySchema = new EntitySchema<RoleDelegationPolicy>
         id: { primary: true, type: "uuid", defaultRaw: "gen_random_uuid()" },
 
         isSystemManaged: { type: "boolean", default: false, nullable: false },
-        isAbsolute: { type: "boolean", default: false, nullable: false },
-        depthLimit: { type: "smallint", nullable: true },
+        depthLimit: { type: "smallint", default: 0, nullable: false },
         description: { type: "text", nullable: true },
 
         realm: {

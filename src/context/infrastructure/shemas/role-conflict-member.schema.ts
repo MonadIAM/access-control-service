@@ -27,7 +27,6 @@ export const RoleConflictMemberSchema = new EntitySchema<RoleConflictMember>({
         id: { primary: true, type: "uuid", defaultRaw: "gen_random_uuid()" },
 
         isSystemManaged: { type: "boolean", default: false, nullable: false },
-        isInheritable: { type: "boolean", default: true, nullable: false },
 
         group: {
             ref: true,

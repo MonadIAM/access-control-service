@@ -1344,16 +1344,6 @@
           "default": "false",
           "mappedType": "boolean"
         },
-        "is_inheritable": {
-          "name": "is_inheritable",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "true",
-          "mappedType": "boolean"
-        },
         "group_id": {
           "name": "group_id",
           "type": "uuid",
@@ -1513,23 +1503,14 @@
           "default": "false",
           "mappedType": "boolean"
         },
-        "is_absolute": {
-          "name": "is_absolute",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "false",
-          "mappedType": "boolean"
-        },
         "depth_limit": {
           "name": "depth_limit",
           "type": "smallint",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
+          "nullable": false,
+          "default": "0",
           "mappedType": "smallint"
         },
         "description": {
