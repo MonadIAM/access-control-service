@@ -10,22 +10,29 @@ export class Permission {
     public createdAt?: Date;
     public version: number = 1;
 
-    public roleMatrix = new Collection<RolePermissionMatrix>(this);
+    public code: string;
+    public name: string;
+    public lastActions: DeltaAudit.LastActionsSnapshot<Entities.Permission.MutableFields>;
+    public description?: string;
+    public isSystemManaged: boolean;
+    public isRevoked: boolean;
+
+    public realm: Ref<Realm>;
+
     public accountOverrides = new Collection<PermissionOverride>(this);
+    public roleMatrix = new Collection<RolePermissionMatrix>(this);
 
-    public constructor(
-        public code: string,
-        public name: string,
+    public constructor(props: Entities.Permission.ConstructorProps) {
+        this.isSystemManaged = props.isSystemManaged ?? false;
+        this.isRevoked = props.isRevoked ?? false;
 
-        public realm: Ref<Realm>,
+        this.code = props.code;
+        this.name = props.name;
+        this.lastActions = props.lastActions;
+        this.description = props.description;
 
-        public lastActions: DeltaAudit.LastActionsSnapshot<Entities.Permission.MutableFields>,
-
-        public description?: string,
-
-        public isSystemManaged: boolean = false,
-        public isRevoked: boolean = false,
-    ) {}
+        this.realm = props.realm;
+    }
 
     public changeData({ reason, patch, actor, now }: Entities.Permission.ChangeDataProps): void {
         const historyPatch: DeltaAudit.Patch<Entities.Permission.MutableFields> = {};

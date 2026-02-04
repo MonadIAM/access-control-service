@@ -9,22 +9,30 @@ export class RoleConflictGroup {
     public createdAt?: Date;
     public version: number = 1;
 
+    public code: string;
+    public name: string;
+    public maxAllowed: number;
+    public lastActions: DeltaAudit.LastActionsSnapshot<Entities.RoleConflictGroup.MutableFields>;
+    public description?: string;
+    public isSystemManaged: boolean;
+    public isRevoked: boolean;
+
+    public realm: Ref<Realm>;
+
     public members = new Collection<RoleConflictMember>(this);
 
-    public constructor(
-        public code: string,
-        public name: string,
-        public maxAllowed: number,
+    public constructor(props: Entities.RoleConflictGroup.ConstructorProps) {
+        this.isSystemManaged = props.isSystemManaged ?? false;
+        this.isRevoked = props.isRevoked ?? false;
 
-        public realm: Ref<Realm>,
+        this.code = props.code;
+        this.name = props.name;
+        this.maxAllowed = props.maxAllowed;
+        this.lastActions = props.lastActions;
+        this.description = props.description;
 
-        public lastActions: DeltaAudit.LastActionsSnapshot<Entities.RoleConflictGroup.MutableFields>,
-
-        public description?: string,
-
-        public isSystemManaged: boolean = false,
-        public isRevoked: boolean = false,
-    ) {}
+        this.realm = props.realm;
+    }
 
     public changeData({ reason, patch, actor, now }: Entities.RoleConflictGroup.ChangeDataProps): void {
         const historyPatch: DeltaAudit.Patch<Entities.RoleConflictGroup.MutableFields> = {};

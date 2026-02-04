@@ -9,17 +9,24 @@ export class AccountRoleMatrix {
     public createdAt?: Date;
     public version: number = 1;
 
-    public constructor(
-        public accountId: string,
+    public accountId: string;
+    public lastActions: DeltaAudit.LastActionsSnapshot;
+    public isSystemManaged: boolean;
+    public isRevoked: boolean;
 
-        public realm: Ref<Realm>,
-        public role: Ref<Role>,
+    public realm: Ref<Realm>;
+    public role: Ref<Role>;
 
-        public lastActions: DeltaAudit.LastActionsSnapshot<AccountRoleMatrix>,
+    public constructor(props: Entities.AccountRoleMatrix.ConstructorProps) {
+        this.isSystemManaged = props.isSystemManaged ?? false;
+        this.isRevoked = props.isRevoked ?? false;
 
-        public isSystemManaged: boolean = false,
-        public isRevoked: boolean = false,
-    ) {}
+        this.accountId = props.accountId;
+        this.lastActions = props.lastActions;
+
+        this.realm = props.realm;
+        this.role = props.role;
+    }
 
     public revoke({ actor, now, reason }: Entities.BaseMethodProps): void {
         if (!this.isRevoked) {

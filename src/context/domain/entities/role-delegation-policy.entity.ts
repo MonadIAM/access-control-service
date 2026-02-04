@@ -9,19 +9,28 @@ export class RoleDelegationPolicy {
     public createdAt?: Date;
     public version = 1;
 
-    public constructor(
-        public realm: Ref<Realm>,
-        public target: Ref<Role>,
-        public delegator: Ref<Role>,
-        public depthLimit: number,
+    public lastActions: DeltaAudit.LastActionsSnapshot<Entities.RoleDelegationPolicy.MutableFields>;
+    public description?: string;
+    public depthLimit?: number;
+    public isSystemManaged: boolean;
+    public isRevoked: boolean;
 
-        public lastActions: DeltaAudit.LastActionsSnapshot<Entities.RoleDelegationPolicy.MutableFields>,
+    public delegator: Ref<Role>;
+    public target: Ref<Role>;
+    public realm: Ref<Realm>;
 
-        public description?: string,
+    public constructor(props: Entities.RoleDelegationPolicy.ConstructorProps) {
+        this.isSystemManaged = props.isSystemManaged ?? false;
+        this.isRevoked = props.isRevoked ?? false;
 
-        public isSystemManaged: boolean = false,
-        public isRevoked: boolean = false,
-    ) {}
+        this.lastActions = props.lastActions;
+        this.description = props.description;
+        this.depthLimit = props.depthLimit;
+
+        this.delegator = props.delegator;
+        this.target = props.target;
+        this.realm = props.realm;
+    }
 
     public changeData({ reason, patch, actor, now }: Entities.RoleDelegationPolicy.ChangeDataProps): void {
         const historyPatch: DeltaAudit.Patch<Entities.RoleDelegationPolicy.MutableFields> = {};

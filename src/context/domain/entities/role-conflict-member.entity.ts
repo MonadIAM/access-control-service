@@ -9,15 +9,22 @@ export class RoleConflictMember {
     public createdAt?: Date;
     public version: number = 1;
 
-    public constructor(
-        public role: Ref<Role>,
-        public group: Ref<RoleConflictGroup>,
+    public lastActions: DeltaAudit.LastActionsSnapshot;
+    public isSystemManaged: boolean;
+    public isRevoked: boolean;
 
-        public lastActions: DeltaAudit.LastActionsSnapshot,
+    public group: Ref<RoleConflictGroup>;
+    public role: Ref<Role>;
 
-        public isSystemManaged: boolean = false,
-        public isRevoked: boolean = false,
-    ) {}
+    public constructor(props: Entities.RoleConflictMember.ConstructorProps) {
+        this.isSystemManaged = props.isSystemManaged ?? false;
+        this.isRevoked = props.isRevoked ?? false;
+
+        this.lastActions = props.lastActions;
+
+        this.group = props.group;
+        this.role = props.role;
+    }
 
     public revoke({ actor, now, reason }: Entities.BaseMethodProps): void {
         if (!this.isRevoked) {

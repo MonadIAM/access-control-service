@@ -11,18 +11,24 @@ export class PermissionOverride {
     public createdAt?: Date;
     public version: number = 1;
 
-    public constructor(
-        public accountId: string,
+    public accountId: string;
+    public effect: PermissionOverrideEffect;
+    public lastActions: DeltaAudit.LastActionsSnapshot;
+    public isRevoked: boolean;
 
-        public realm: Ref<Realm>,
-        public permission: Ref<Permission>,
+    public permission: Ref<Permission>;
+    public realm: Ref<Realm>;
 
-        public effect: PermissionOverrideEffect,
+    public constructor(props: Entities.PermissionOverride.ConstructorProps) {
+        this.isRevoked = props.isRevoked ?? false;
 
-        public lastActions: DeltaAudit.LastActionsSnapshot<PermissionOverride>,
+        this.accountId = props.accountId;
+        this.effect = props.effect;
+        this.lastActions = props.lastActions;
 
-        public isRevoked: boolean = false,
-    ) {}
+        this.permission = props.permission;
+        this.realm = props.realm;
+    }
 
     public revoke({ actor, now, reason }: Entities.BaseMethodProps): void {
         if (!this.isRevoked) {

@@ -4,10 +4,17 @@ import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
 
 export class RoleClosure {
-    public constructor(
-        public realm: Ref<Realm>,
-        public ancestor: Ref<Role>,
-        public descendant: Ref<Role>,
-        public depth: number,
-    ) {}
+    public depth: number;
+
+    public descendant: Ref<Role>;
+    public ancestor: Ref<Role>;
+    public realm: Ref<Realm>;
+
+    public constructor(props: Entities.RoleClosure.ConstructorProps) {
+        this.depth = props.depth;
+
+        this.descendant = props.descendant;
+        this.ancestor = props.ancestor;
+        this.realm = props.realm;
+    }
 }

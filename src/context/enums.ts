@@ -1,7 +1,7 @@
 export enum RoleActorType {
-    service = "SERVICE",
-    system = "SYSTEM",
-    human = "HUMAN",
+    SERVICE = "SERVICE",
+    SYSTEM = "SYSTEM",
+    HUMAN = "HUMAN",
 }
 
 export enum RoleProtoType {

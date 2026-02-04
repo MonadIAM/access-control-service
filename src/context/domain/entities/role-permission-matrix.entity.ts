@@ -9,14 +9,22 @@ export class RolePermissionMatrix {
     public updatedAt?: Date;
     public version: number = 1;
 
-    public constructor(
-        public role: Ref<Role>,
-        public permission: Ref<Permission>,
-        public lastActions: DeltaAudit.LastActionsSnapshot,
+    public lastActions: DeltaAudit.LastActionsSnapshot;
+    public isSystemManaged: boolean;
+    public isRevoked: boolean;
 
-        public isSystemManaged: boolean = false,
-        public isRevoked: boolean = false,
-    ) {}
+    public permission: Ref<Permission>;
+    public role: Ref<Role>;
+
+    public constructor(props: Entities.RolePermissionMatrix.ConstructorProps) {
+        this.isSystemManaged = props.isSystemManaged ?? false;
+        this.isRevoked = props.isRevoked ?? false;
+
+        this.lastActions = props.lastActions;
+
+        this.permission = props.permission;
+        this.role = props.role;
+    }
 
     public revoke({ actor, now, reason }: Entities.BaseMethodProps): void {
         if (!this.isRevoked) {

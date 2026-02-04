@@ -14,29 +14,38 @@ export class Role {
     public createdAt?: Date;
     public version: number = 1;
 
+    public code: string;
+    public name: string;
+    public actorType: RoleActorType;
+    public protoType: RoleProtoType;
+    public lastActions: DeltaAudit.LastActionsSnapshot<Entities.Role.MutableFields>;
+    public description?: string;
+    public isSystemManaged: boolean;
+    public nonDelegable: boolean;
+    public isRevoked: boolean;
+
+    public realm: Ref<Realm>;
+
     public delegationPoliciesAsDelegator = new Collection<RoleDelegationPolicy>(this);
     public delegationPoliciesAsTarget = new Collection<RoleDelegationPolicy>(this);
     public conflictMemberships = new Collection<RoleConflictMember>(this);
     public permissionMatrix = new Collection<RolePermissionMatrix>(this);
     public accountMatrix = new Collection<AccountRoleMatrix>(this);
 
-    public constructor(
-        public realm: Ref<Realm>,
+    public constructor(props: Entities.Role.ConstructorProps) {
+        this.isSystemManaged = props.isSystemManaged ?? false;
+        this.nonDelegable = props.nonDelegable ?? false;
+        this.isRevoked = props.isRevoked ?? false;
 
-        public code: string,
-        public name: string,
+        this.code = props.code;
+        this.name = props.name;
+        this.actorType = props.actorType;
+        this.protoType = props.protoType;
+        this.lastActions = props.lastActions;
+        this.description = props.description;
 
-        public actorType: RoleActorType,
-        public protoType: RoleProtoType,
-
-        public lastActions: DeltaAudit.LastActionsSnapshot<Entities.Role.MutableFields>,
-
-        public description?: string,
-
-        public isSystemManaged: boolean = false,
-        public nonDelegable: boolean = false,
-        public isRevoked: boolean = false,
-    ) {}
+        this.realm = props.realm;
+    }
 
     public changeMetadata({ reason, patch, actor, now }: Entities.Role.ChangeDataProps): void {
         const historyPatch: DeltaAudit.Patch<Entities.Role.MutableFields> = {};
