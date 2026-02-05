@@ -6,7 +6,7 @@ import { RepositoryException } from "~common/exceptions";
 import { AuditJournal } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class AuditJournalRepository {
+export class AuditJournalRepository implements Repositories.AuditJournal.Contract {
     private readonly resource = "AuditJournal";
 
     public constructor(
@@ -75,19 +75,6 @@ export class AuditJournalRepository {
         }
     }
 
-    public find<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.AuditJournal.FindMany<P, F>): Promise<Loaded<AuditJournal, P, F>[]> {
-        try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.find(AuditJournal, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
     public findMany<P extends string = never, F extends string = "*">({
         transaction,
         options,
@@ -96,6 +83,19 @@ export class AuditJournalRepository {
         try {
             const entityManager = transaction ?? this.readManager;
             return entityManager.findAndCount(AuditJournal, where, options);
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public find<P extends string = never, F extends string = "*">({
+        transaction,
+        options,
+        where,
+    }: Repositories.AuditJournal.Find<P, F>): Promise<Loaded<AuditJournal, P, F>[]> {
+        try {
+            const entityManager = transaction ?? this.readManager;
+            return entityManager.find(AuditJournal, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

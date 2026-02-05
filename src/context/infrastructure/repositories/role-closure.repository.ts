@@ -133,7 +133,7 @@ export class RoleClosureRepository {
         transaction,
         realm,
         role,
-    }: Repositories.RoleClosure.DeleteTransitivePaths): Promise<void> {
+    }: Repositories.RoleClosure.DeleteTransitivePathsOnCollapse): Promise<void> {
         try {
             const knex = (transaction ?? this.writeManager).getKnex();
 
@@ -155,14 +155,14 @@ export class RoleClosureRepository {
         }
     }
 
-    public findAncestors<P extends string = never>({
+    public findAncestors({
         transaction,
         roleOrderBy,
         descendant,
         roleWhere,
         options,
         depth,
-    }: Repositories.RoleClosure.FindAncestors<P>): Promise<[Role[], number]> {
+    }: Repositories.RoleClosure.FindAncestors): Promise<[Role[], number]> {
         try {
             const entityManager = transaction ?? this.readManager;
             return entityManager
@@ -181,14 +181,14 @@ export class RoleClosureRepository {
         }
     }
 
-    public findDescendants<P extends string = never>({
+    public findDescendants({
         transaction,
         roleOrderBy,
         roleWhere,
         ancestor,
         options,
         depth,
-    }: Repositories.RoleClosure.FindDescendants<P>): Promise<[Role[], number]> {
+    }: Repositories.RoleClosure.FindDescendants): Promise<[Role[], number]> {
         try {
             const entityManager = transaction ?? this.readManager;
             return entityManager

@@ -6,7 +6,7 @@ import { RepositoryException } from "~common/exceptions";
 import { Role } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleRepository {
+export class RoleRepository implements Repositories.Role.Contract {
     private readonly resource = "Role";
 
     public constructor(
@@ -128,6 +128,7 @@ export class RoleRepository {
         }
     }
 
+    // TODO: избавиться от лишнего ORM запроса (потребует внедрения поддержки динамических where и options на уровне knex)
     public findDelegateableRoles<P extends string = never, F extends string = "*">({
         transaction,
         options,
@@ -166,11 +167,11 @@ export class RoleRepository {
         }
     }
 
+    // TODO: требует внедрения поддержки динамических where и options на уровне knex
     public async findEffectiveRoles({
         transaction,
+        pagination,
         account,
-        offset,
-        limit,
         realm,
     }: Repositories.Role.FindEffectiveRoles): Promise<[Role[], number]> {
         try {
@@ -188,11 +189,9 @@ export class RoleRepository {
                 .andWhere("ARM.is_revoked", false)
                 .orderBy("R.id", "asc");
 
-            if (limit !== undefined) {
-                query.limit(limit);
-            }
-            if (offset !== undefined) {
-                query.offset(offset);
+            if (pagination) {
+                query.limit(pagination?.elementsPerPage);
+                query.offset((pagination?.currentPage - 1) * pagination?.elementsPerPage);
             }
 
             const rawRows = await query;
@@ -211,8 +210,10 @@ export class RoleRepository {
         }
     }
 
-    // TODO: возможно стоит вынести маппинги на уровень сервиса.
-    public async getRoleGraph({ transaction, realm }: Repositories.Role.GetRoleGraph): Promise<RoleGraph.Data> {
+    public async getRoleGraph({
+        transaction,
+        realm,
+    }: Repositories.Role.GetRoleGraph): Promise<Repositories.Role.Graph.Data> {
         try {
             const knex = (transaction ?? this.readManager).getKnex();
 
@@ -243,7 +244,7 @@ export class RoleRepository {
                     nodes: knex.raw("COALESCE((SELECT json_agg(formatted_nodes) FROM formatted_nodes), '[]'::json)"),
                     edges: knex.raw("COALESCE((SELECT json_agg(formatted_edges) FROM formatted_edges), '[]'::json)"),
                 })
-                .first<RoleGraph.Data>();
+                .first<Repositories.Role.Graph.Data>();
 
             return {
                 nodes: result?.nodes ?? [],

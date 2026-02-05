@@ -6,7 +6,7 @@ import { RoleConflictMember } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleConflictMemberRepository {
+export class RoleConflictMemberRepository implements Repositories.RoleConflictMember.Contract {
     private readonly resource = "RoleConflictMember";
 
     public constructor(

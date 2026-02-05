@@ -6,7 +6,7 @@ import { RoleDelegationPolicy } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleDelegationPolicyRepository {
+export class RoleDelegationPolicyRepository implements Repositories.RoleDelegationPolicy.Contract {
     private readonly resource = "RoleDelegationPolicy";
 
     public constructor(

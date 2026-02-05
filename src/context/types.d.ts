@@ -41,28 +41,3 @@ declare namespace DeltaAudit {
               update?: UpdateAction<T>;
           };
 }
-
-declare namespace RoleGraph {
-    type Node = {
-        id: string;
-        label: string;
-        attributes: {
-            code: string;
-            protoType: string;
-            isRevoked: boolean;
-            level: number;
-        };
-    };
-
-    type Edge = {
-        id: string;
-        source: string;
-        target: string;
-        type: "arrow";
-    };
-
-    type Data = {
-        nodes: RoleGraph.Node[];
-        edges: RoleGraph.Edge[];
-    };
-}

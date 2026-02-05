@@ -7,7 +7,7 @@ import { PermissionOverrideEffect } from "~context/enums";
 import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class PermissionRepository {
+export class PermissionRepository implements Repositories.Permission.Contract {
     private readonly resource = "Permission";
 
     public constructor(

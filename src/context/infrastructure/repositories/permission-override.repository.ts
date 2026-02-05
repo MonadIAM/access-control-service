@@ -6,7 +6,7 @@ import { PermissionOverride } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class PermissionOverrideRepository {
+export class PermissionOverrideRepository implements Repositories.PermissionOverride.Contract {
     private readonly resource = "PermissionOverride";
 
     public constructor(
@@ -44,7 +44,7 @@ export class PermissionOverrideRepository {
         }
     }
 
-    public async delete({ transaction, id }: Repositories.PermissionOverride.Delete): Promise<boolean> {
+    public async delete({ transaction, id }: Repositories.PermissionOverride.Delete): Promise<void> {
         try {
             const entityManager = transaction ?? this.writeManager;
             const where: FilterQuery<PermissionOverride> = {
@@ -52,9 +52,7 @@ export class PermissionOverrideRepository {
                 id,
             };
             const affected = await entityManager.nativeDelete(PermissionOverride, where);
-            if (affected > 0) {
-                return true;
-            } else {
+            if (!affected) {
                 throw RepositoryException.notFound({ resource: this.resource });
             }
         } catch (error) {

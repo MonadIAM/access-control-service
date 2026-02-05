@@ -6,7 +6,7 @@ import { RepositoryException } from "~common/exceptions";
 import { Realm } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RealmRepository {
+export class RealmRepository implements Repositories.Realm.Contract {
     private readonly resource = "Realm";
 
     public constructor(

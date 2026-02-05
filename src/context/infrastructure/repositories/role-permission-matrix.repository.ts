@@ -6,7 +6,7 @@ import { RolePermissionMatrix } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RolePermissionMatrixRepository {
+export class RolePermissionMatrixRepository implements Repositories.RolePermissionMatrix.Contract {
     private readonly resource = "RolePermissionMatrix";
 
     public constructor(
