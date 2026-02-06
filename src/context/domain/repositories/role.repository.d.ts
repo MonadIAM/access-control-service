@@ -1,4 +1,7 @@
-import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded } from "@mikro-orm/postgresql";
+import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded, QueryOrder } from "@mikro-orm/postgresql";
+
+import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
+import { DelegatorType } from "~context/enums";
 
 import { Role as RoleEntity } from "../entities";
 
@@ -26,9 +29,9 @@ declare global {
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
 
-                findDelegateableRoles: <P extends string = never, F extends string = "*">(
-                    props: FindDelegateableRoles<P, F>,
-                ) => Promise<[Loaded<Entity, P, F>[], number]>;
+                lookupList: (props: LookupList) => Promise<[Entity[], number]>;
+
+                findDelegateableRoles: (props: FindDelegateableRoles) => Promise<[Entity[], number]>;
 
                 findEffectiveRoles: (props: FindEffectiveRoles) => Promise<[Entity[], number]>;
 
@@ -78,28 +81,67 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
-            type FindMany<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
+            type FindMany<P extends string, F extends string> =
+                | {
+                      transaction?: EntityManager;
+                      options?: FindOptions<Entity, P, F>;
+                      where: FilterQuery<Entity>;
+                  }
+                | {
+                      pagination: Pagination;
+                      filters: Filters;
+                      sort: Sort;
+                      realm: string;
+                      options?: FindOptions<Entity, P, F>;
+                  };
+
+            type LookupList = {
+                pagination: Pagination;
+                realm: string;
+                term: string;
             };
 
-            type FindDelegateableRoles<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            } & ({ roles: string[]; account?: never } | { account: string; roles?: never });
+            type FindDelegateableRoles = {
+                where: {
+                    type: DelegatorType;
+                    realm: string;
+                    id: string;
+                };
+                pagination: Pagination;
+                filters: Filters;
+                sort: Sort;
+            };
 
             type FindEffectiveRoles = {
-                transaction?: EntityManager;
-                pagination?: Pagination;
-                account: string;
-                realm: string;
+                where: {
+                    account: string;
+                    realm: string;
+                };
+                pagination: Pagination;
+                filters: Filters;
+                sort: Sort;
             };
 
             type GetRoleGraph = {
                 transaction?: EntityManager;
                 realm: string;
+            };
+
+            type Filters = {
+                id?: StringFilterDTO;
+                code?: StringFilterDTO;
+                name?: StringFilterDTO;
+                actorType?: StringFilterDTO;
+                protoType?: StringFilterDTO;
+                createdAt?: OrdinalFilterDTO<Date>;
+                nonDelegable?: boolean;
+                isSystemManaged?: boolean;
+                isRevoked?: boolean;
+                permission?: LinkFilterDTO;
+            };
+
+            type Sort = {
+                createdAt?: QueryOrder;
             };
 
             namespace Graph {

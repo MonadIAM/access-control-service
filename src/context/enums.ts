@@ -33,3 +33,8 @@ export enum AccessControlActionType {
     UPDATE = "UPDATE",
     DELETE = "DELETE",
 }
+
+export enum DelegatorType {
+    ACCOUNT = "ACCOUNT",
+    ROLE = "ROLE",
+}

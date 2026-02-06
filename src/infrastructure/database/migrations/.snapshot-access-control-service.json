@@ -815,6 +815,15 @@
       "schema": "access_control",
       "indexes": [
         {
+          "keyName": "role_name_trgm_idx",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE INDEX \"role_name_trgm_idx\" ON \"access_control\".\"role\" USING gin (\"name\" gin_trgm_ops)"
+        },
+        {
           "keyName": "role_realm_code_unique",
           "columnNames": [
             "realm_id",

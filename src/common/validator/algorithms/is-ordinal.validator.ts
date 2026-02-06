@@ -11,8 +11,6 @@ class IsOrdinalConstraint implements ValidatorConstraintInterface {
     public validate(value: unknown): boolean {
         if (typeof value === "number") {
             return Number.isFinite(value);
-        } else if (typeof value === "bigint") {
-            return true;
         } else if (value instanceof Date) {
             return Number.isFinite(value.getTime());
         } else {

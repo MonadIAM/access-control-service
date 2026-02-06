@@ -1,4 +1,5 @@
-import { Transform, Type } from "class-transformer";
+import { Transform } from "class-transformer";
+import { ValidateIf } from "class-validator";
 
 import { StandardValidationDecorators } from "./default-validator.utility";
 
@@ -17,15 +18,10 @@ export abstract class Validator extends StandardValidationDecorators {
 
     public static IsListOrSingleString(label?: string): PropertyDecorator {
         return this.compose(
-            Transform(({ value }) => {
-                if (Array.isArray(value)) {
-                    return value;
-                } else if (typeof value === "string") {
-                    return [value];
-                } else {
-                    return value;
-                }
-            }),
+            ValidateIf((_, value) => !Array.isArray(value)),
+            this.IsString({}, label),
+
+            ValidateIf((_, value) => Array.isArray(value)),
             this.IsArray({}, label),
             this.IsString({ each: true }, label),
         );
@@ -33,51 +29,44 @@ export abstract class Validator extends StandardValidationDecorators {
 
     public static IsListOrSingleEnum(enumeration: object, label?: string): PropertyDecorator {
         return this.compose(
-            Transform(({ value }) => {
-                if (Array.isArray(value)) {
-                    return value;
-                } else if (typeof value === "string") {
-                    return [value];
-                } else {
-                    return value;
-                }
-            }),
+            ValidateIf((_, value) => Array.isArray(value)),
             this.IsArray({}, label),
             this.IsEnum(enumeration, { each: true }, label),
+
+            ValidateIf((_, value) => !Array.isArray(value)),
+            this.IsEnum(enumeration, {}, label),
         );
     }
 
     public static IsListOrSingleUUID(label?: string, version?: validator.UUIDVersion): PropertyDecorator {
         return this.compose(
-            Transform(({ value }) => {
-                if (Array.isArray(value)) {
-                    return value;
-                } else if (typeof value === "string") {
-                    return [value];
-                } else {
-                    return value;
-                }
-            }),
+            ValidateIf((_, value) => Array.isArray(value)),
             this.IsArray({}, label),
-            this.IsUUID(version ?? "all", { each: true }, label),
+            this.IsUUID(version, { each: true }, label),
+
+            ValidateIf((_, value) => !Array.isArray(value)),
+            this.IsUUID(version, {}, label),
         );
     }
 
     public static IsListOrSinglePositiveInt(label?: string): PropertyDecorator {
         return this.compose(
-            Type(() => Number),
             Transform(({ value }) => {
                 if (Array.isArray(value)) {
-                    return value;
-                } else if (typeof value === "number") {
-                    return [value];
+                    return value.map((v) => Number(v));
                 } else {
-                    return value;
+                    return typeof value === "string" ? Number(value) : value;
                 }
             }),
+
+            ValidateIf((_, value) => Array.isArray(value)),
             this.IsArray({}, label),
             this.IsInt({ each: true }, label),
             this.IsPositive({ each: true }, label),
+
+            ValidateIf((_, value) => !Array.isArray(value)),
+            this.IsInt({}, label),
+            this.IsPositive({}, label),
         );
     }
 }

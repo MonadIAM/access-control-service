@@ -22,6 +22,13 @@ export const RoleSchema = new EntitySchema<Role>({
         },
     ],
 
+    indexes: [
+        {
+            name: "role_name_trgm_idx",
+            expression: 'CREATE INDEX "role_name_trgm_idx" ON "access_control"."role" USING gin ("name" gin_trgm_ops)',
+        },
+    ],
+
     properties: {
         id: { primary: true, type: "uuid", defaultRaw: "gen_random_uuid()" },
 

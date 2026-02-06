@@ -1,18 +1,21 @@
-import { EntityManager, FilterQuery, Loaded, wrap } from "@mikro-orm/postgresql";
+import { EntityDictionary, EntityManager, FilterQuery, Knex, Loaded, raw, wrap } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
+import { RoleAdapter } from "~context/infrastructure/adapters";
 import { RepositoryException } from "~common/exceptions";
 import { Role } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleRepository implements Repositories.Role.Contract {
+export class RoleRepository extends RoleAdapter implements Repositories.Role.Contract {
     private readonly resource = "Role";
 
     public constructor(
         @InjectEntityManager("write") private readonly writeManager: EntityManager,
         @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {}
+    ) {
+        super();
+    }
 
     public async create({ transaction, entity }: Repositories.Role.Create): Promise<Role> {
         try {
@@ -95,7 +98,7 @@ export class RoleRepository implements Repositories.Role.Contract {
         where,
     }: Repositories.Role.FindUnique<P, F>): Promise<Nullable<Loaded<Role, P, F>>> {
         try {
-            const entityManager = transaction ?? this.readManager;
+            const entityManager = transaction ?? this.readManager.fork();
             return entityManager.findOne(Role, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
@@ -108,103 +111,137 @@ export class RoleRepository implements Repositories.Role.Contract {
         where,
     }: Repositories.Role.FindUniqueOrThrow<P, F>): Promise<Loaded<Role, P, F>> {
         try {
-            const entityManager = transaction ?? this.readManager;
+            const entityManager = transaction ?? this.readManager.fork();
             return entityManager.findOneOrFail(Role, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findMany<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.Role.FindMany<P, F>): Promise<[Loaded<Role, P, F>[], number]> {
+    public findMany<P extends string = never, F extends string = "*">(
+        props: Repositories.Role.FindMany<P, F>,
+    ): Promise<[Loaded<Role, P, F>[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findAndCount(Role, where, options);
+            if ("where" in props) {
+                const { transaction, options, where } = props;
+                const entityManager = transaction ?? this.readManager.fork();
+                return entityManager.findAndCount(Role, where, options);
+            } else {
+                const { pagination, filters, sort, options, realm } = props;
+                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
+                const where = super.buildWhereORM(filters, { realm });
+                const entityManager = this.readManager.fork();
+                return entityManager.findAndCount(Role, where, opts);
+            }
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    // TODO: избавиться от лишнего ORM запроса (потребует внедрения поддержки динамических where и options на уровне knex)
-    public findDelegateableRoles<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        account,
-        roles,
-        where,
-    }: Repositories.Role.FindDelegateableRoles<P, F>): Promise<[Loaded<Role, P, F>[], number]> {
+    public async lookupList({ pagination, realm, term }: Repositories.Role.LookupList): Promise<[Role[], number]> {
+        const entityManager = this.readManager.fork();
+        const builder = entityManager.createQueryBuilder(Role, "r");
+
+        builder
+            .select(["r.id", "r.code", "r.name"])
+            .where({ "r.realm": realm })
+            .limit(pagination.elementsPerPage)
+            .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
+
+        if (term) {
+            builder.andWhere("r.name % ?", [term]).orderBy({
+                [raw("similarity(r.name, ?)", [term])]: "DESC",
+            });
+        } else {
+            builder.orderBy({ "r.name": "ASC" });
+        }
+
+        return await builder.getResultAndCount();
+    }
+
+    public async findDelegateableRoles({
+        where: { realm, type, id },
+        pagination,
+        filters,
+        sort,
+    }: Repositories.Role.FindDelegateableRoles): Promise<[Role[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
+            const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
 
             const allowedIdsSubquery = knex("access_control.role_delegation_policy as policy")
                 .join("access_control.role_closure as closure", (join) => {
-                    join.on("policy.target_role_id", "=", "closure.ancestor_id");
-                    join.andOn((sub) => {
-                        sub.onVal("policy.is_absolute", "=", true).orOnVal("closure.depth", "=", 0);
-                    });
+                    join.on("policy.target_id", "=", "closure.ancestor_id");
+                    join.andOn("closure.depth", "<=", "policy.depth_limit");
                 })
                 .where("policy.is_revoked", false)
+                .modify((builder) => {
+                    builder.andWhere((sub) => {
+                        if (type === "ACCOUNT") {
+                            const rolesByAccountSubquery = knex("access_control.account_role_matrix")
+                                .select("role_id")
+                                .where("account_id", id);
+                            sub.whereIn("policy.delegator_id", rolesByAccountSubquery);
+                        } else {
+                            sub.where("policy.delegator_id", id);
+                        }
+                    });
+                })
                 .select("closure.descendant_id");
 
-            if (account) {
-                const rolesByAccountSubquery = knex("access_control.account_roles")
-                    .select("role_id")
-                    .where("account_id", account);
-                allowedIdsSubquery.whereIn("policy.delegator_role_id", rolesByAccountSubquery);
-            }
+            const baseQuery = (): Knex.QueryBuilder =>
+                knex.from({ R: "access_control.role" }).where("R.realm_id", realm).whereIn("R.id", allowedIdsSubquery);
 
-            if (roles?.length) {
-                allowedIdsSubquery.whereIn("policy.delegator_role_id", roles);
-            }
+            const dataQuery = baseQuery().distinct("R.id").select("R.*");
+            super.buildWhereKnex(dataQuery, filters, "R");
+            super.buildOptionsKnex(dataQuery, sort, pagination, "R");
 
-            return entityManager.findAndCount(Role, Object.assign({}, where, { id: { $in: allowedIdsSubquery } }), options);
+            const countQuery = baseQuery().countDistinct("R.id as total");
+            super.buildWhereKnex(countQuery, filters, "R");
+
+            const [rawRows, countResult] = await Promise.all([dataQuery, countQuery.first<{ total: string }>()]);
+
+            const total = Number(countResult?.total ?? 0);
+            const mappedRoles = rawRows.map((roleData: EntityDictionary<Role>) => entityManager.map(Role, roleData));
+
+            return [mappedRoles, total];
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    // TODO: требует внедрения поддержки динамических where и options на уровне knex
     public async findEffectiveRoles({
-        transaction,
+        where: { account, realm },
         pagination,
-        account,
-        realm,
+        filters,
+        sort,
     }: Repositories.Role.FindEffectiveRoles): Promise<[Role[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
+            const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
 
-            const query = knex
-                .select(["R.*", knex.raw("count(*) OVER() as total")])
-                .distinct("R.id")
-                .from({ R: "access_control.role" })
-                .join({ RC: "access_control.role_closure" }, "R.id", "RC.ancestor_id")
-                .join({ ARM: "access_control.account_role_matrix" }, "RC.descendant_id", "ARM.role_id")
-                .where("ARM.account_id", account)
-                .andWhere("ARM.realm", realm)
-                .andWhere("ARM.is_revoked", false)
-                .orderBy("R.id", "asc");
+            const baseQuery = (): Knex.QueryBuilder =>
+                knex
+                    .from({ R: "access_control.role" })
+                    .join({ RC: "access_control.role_closure" }, "R.id", "RC.ancestor_id")
+                    .join({ ARM: "access_control.account_role_matrix" }, "RC.descendant_id", "ARM.role_id")
+                    .where("ARM.account_id", account)
+                    .andWhere("ARM.realm_id", realm)
+                    .andWhere("ARM.is_revoked", false);
 
-            if (pagination) {
-                query.limit(pagination?.elementsPerPage);
-                query.offset((pagination?.currentPage - 1) * pagination?.elementsPerPage);
-            }
+            const dataQuery = baseQuery().distinct("R.id").select("R.*");
+            super.buildWhereKnex(dataQuery, filters, "R");
+            super.buildOptionsKnex(dataQuery, sort, pagination, "R");
 
-            const rawRows = await query;
+            const countQuery = baseQuery().countDistinct("R.id as total");
+            super.buildWhereKnex(countQuery, filters, "R");
 
-            if (rawRows.length) {
-                const total = Number(rawRows[0].total);
-                const roles = rawRows.map(({ total: _, ...roleData }) => {
-                    return entityManager.map(Role, roleData);
-                });
-                return [roles, total];
-            } else {
-                return [[], 0];
-            }
+            const [rawRows, countResult] = await Promise.all([dataQuery, countQuery.first<{ total: string }>()]);
+
+            const total = Number(countResult?.total ?? 0);
+            const roles = rawRows.map((roleData: EntityDictionary<Role>) => entityManager.map(Role, roleData));
+
+            return [roles, total];
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
