@@ -9,7 +9,7 @@ import { PaginationDTO } from "~common/dto";
 import { RolesFiltersDTO } from "../utils/filters.dto";
 import { RolesSortDTO } from "../utils/sort.dto";
 
-export class GetDelegableListRolesBodyDTO {
+export class GetDelegableRolesListBodyDTO {
     @Expose()
     @ValidateIf(({ pagination }) => pagination)
     @IsNotEmptyObject()
@@ -35,7 +35,7 @@ export class GetDelegableListRolesBodyDTO {
     public sort!: RolesSortDTO;
 }
 
-export class GetDelegableListRolesParamDTO {
+export class GetDelegableRolesListQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

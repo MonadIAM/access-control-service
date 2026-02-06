@@ -3,7 +3,7 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class GetRoleByIdParamDTO {
+export class GetRoleByIdQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

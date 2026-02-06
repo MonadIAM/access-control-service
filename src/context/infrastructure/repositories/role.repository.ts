@@ -138,7 +138,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         }
     }
 
-    public async lookupList({ pagination, realm, term }: Repositories.Role.LookupList): Promise<[Role[], number]> {
+    public async getLookupList({ pagination, realm, term }: Repositories.Role.GetLookupList): Promise<[Role[], number]> {
         const entityManager = this.readManager.fork();
         const builder = entityManager.createQueryBuilder(Role, "r");
 
@@ -247,10 +247,10 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         }
     }
 
-    public async getRoleGraph({
+    public async getHierarchyGraph({
         transaction,
         realm,
-    }: Repositories.Role.GetRoleGraph): Promise<Repositories.Role.Graph.Data> {
+    }: Repositories.Role.GetHierarchyGraph): Promise<Repositories.Role.Graph.Data> {
         try {
             const knex = (transaction ?? this.readManager).getKnex();
 

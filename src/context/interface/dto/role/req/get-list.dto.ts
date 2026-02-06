@@ -8,7 +8,7 @@ import { PaginationDTO } from "~common/dto";
 import { RolesFiltersDTO } from "../utils/filters.dto";
 import { RolesSortDTO } from "../utils/sort.dto";
 
-export class GetListRolesBodyDTO {
+export class GetRolesListBodyDTO {
     @Expose()
     @ValidateIf(({ pagination }) => pagination)
     @IsNotEmptyObject()
@@ -34,7 +34,7 @@ export class GetListRolesBodyDTO {
     public sort!: RolesSortDTO;
 }
 
-export class GetListRolesParamDTO {
+export class GetRolesListQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

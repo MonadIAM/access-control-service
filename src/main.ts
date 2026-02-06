@@ -9,7 +9,7 @@ import { BootstrapSecurity } from "~bootstrap/security.bootstrap";
 import { BootstrapSwagger } from "~bootstrap/swagger.bootstrap";
 import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
 
-import { AppModule } from "./app.module";
+import { MainModule } from "./main.module";
 import "./extensions";
 
 async function bootstrap(): Promise<void> {
@@ -19,7 +19,7 @@ async function bootstrap(): Promise<void> {
         logger: false,
     });
 
-    const application = await NestFactory.create<NestFastifyApplication>(AppModule, fastifyAdapter, { bufferLogs: true });
+    const application = await NestFactory.create<NestFastifyApplication>(MainModule, fastifyAdapter, { bufferLogs: true });
     application.useLogger(application.get(Logger));
     application.setGlobalPrefix("api");
 

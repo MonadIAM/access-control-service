@@ -16,4 +16,4 @@ import { SystemModule } from "~common/system.module";
         },
     ],
 })
-export class AppModule {}
+export class MainModule {}

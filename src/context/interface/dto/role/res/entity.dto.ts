@@ -2,25 +2,8 @@ import { Expose, Type } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 
 import { RoleActorType, RoleProtoType } from "~context/enums";
-import { Validator } from "~common/validator";
 import { DeltaAuditLastActionsDTO } from "~common/dto";
-
-export class LookupRoleDTO {
-    @Expose()
-    @Validator.IsUUID()
-    @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
-
-    @Expose()
-    @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
-    public code!: string;
-
-    @Expose()
-    @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
-    public name!: string;
-}
+import { Validator } from "~common/validator";
 
 export class RoleDTO {
     @Expose()
@@ -89,5 +72,5 @@ export class RoleDTO {
     @Validator.ValidateNested()
     @Type(() => DeltaAuditLastActionsDTO)
     @ApiProperty({ required: true, type: DeltaAuditLastActionsDTO })
-    public lastActions!: DeltaAudit.LastActionsSnapshot<unknown>;
+    public lastActions!: DeltaAudit.LastActionsSnapshot<Entities.Role.MutableFields>;
 }

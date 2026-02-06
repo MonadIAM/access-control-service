@@ -29,13 +29,13 @@ declare global {
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
 
-                lookupList: (props: LookupList) => Promise<[Entity[], number]>;
+                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
 
                 findDelegateableRoles: (props: FindDelegateableRoles) => Promise<[Entity[], number]>;
 
                 findEffectiveRoles: (props: FindEffectiveRoles) => Promise<[Entity[], number]>;
 
-                getRoleGraph: (props: GetRoleGraph) => Promise<Graph.Data>;
+                getHierarchyGraph: (props: GetHierarchyGraph) => Promise<Graph.Data>;
             }
 
             type Create = {
@@ -95,7 +95,7 @@ declare global {
                       options?: FindOptions<Entity, P, F>;
                   };
 
-            type LookupList = {
+            type GetLookupList = {
                 pagination: Pagination;
                 realm: string;
                 term: string;
@@ -122,7 +122,7 @@ declare global {
                 sort: Sort;
             };
 
-            type GetRoleGraph = {
+            type GetHierarchyGraph = {
                 transaction?: EntityManager;
                 realm: string;
             };
@@ -152,7 +152,6 @@ declare global {
                         code: string;
                         protoType: string;
                         isRevoked: boolean;
-                        level: number;
                     };
                 };
 
@@ -160,7 +159,6 @@ declare global {
                     id: string;
                     source: string;
                     target: string;
-                    type: "arrow";
                 };
 
                 type Data = {

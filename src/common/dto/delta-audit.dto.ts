@@ -10,13 +10,15 @@ class DeltaAuditActorDTO {
     public id!: string;
 }
 
-class DeltaAuditBaseActionDTO {
+class DeltaAuditCreateActionDTO {
     @Expose()
-    @Type(() => Date)
-    @Validator.IsDate()
-    @ApiProperty({ required: true, type: Date })
-    public at!: Date;
+    @Validator.ValidateNested()
+    @Type(() => DeltaAuditActorDTO)
+    @ApiProperty({ required: true, type: DeltaAuditActorDTO })
+    public by!: DeltaAuditActorDTO;
+}
 
+class DeltaAuditBaseActionDTO {
     @Expose()
     @Validator.ValidateNested()
     @Type(() => DeltaAuditActorDTO)
@@ -24,10 +26,15 @@ class DeltaAuditBaseActionDTO {
     public by!: DeltaAuditActorDTO;
 
     @Expose()
+    @Type(() => Date)
+    @Validator.IsDate()
+    @ApiProperty({ required: true, type: Date })
+    public at!: Date;
+
+    @Expose()
     @Validator.IsString()
-    @Validator.IsOptional()
-    @ApiProperty({ required: false, type: String })
-    public reason?: string;
+    @ApiProperty({ required: true, type: String })
+    public reason!: string;
 }
 
 class DeltaAuditFieldPatchDTO {
@@ -64,9 +71,9 @@ class DeltaAuditUpdateActionDTO extends DeltaAuditBaseActionDTO {
 export class DeltaAuditLastActionsDTO {
     @Expose()
     @Validator.ValidateNested()
-    @Type(() => DeltaAuditBaseActionDTO)
-    @ApiProperty({ required: true, type: DeltaAuditBaseActionDTO })
-    public create!: DeltaAuditBaseActionDTO;
+    @Type(() => DeltaAuditCreateActionDTO)
+    @ApiProperty({ required: true, type: DeltaAuditCreateActionDTO })
+    public create!: DeltaAuditCreateActionDTO;
 
     @Expose()
     @Validator.IsOptional()

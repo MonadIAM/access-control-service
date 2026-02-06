@@ -1,26 +1,27 @@
-import { Body, Controller, HttpStatus, Post, Param, HttpCode, Get } from "@nestjs/common";
-import { ApiBody, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
+import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { RoleRepository } from "~context/infrastructure";
 import { ErrorResponseBodyDTO } from "~common/dto";
 import { BaseController } from "~common/abstract";
-import { DelegatorType } from "~context/enums";
 
 import {
-    GetDelegableListRolesParamDTO,
-    GetEffectiveListRolesParamDTO,
-    GetDelegableListRolesBodyDTO,
-    GetEffectiveListRolesBodyDTO,
+    GetRoleHierarchyGraphQueryDTO,
+    GetDelegableRolesListQueryDTO,
+    GetEffectiveRolesListQueryDTO,
+    GetDelegableRolesListBodyDTO,
+    GetEffectiveRolesListBodyDTO,
     LookupRolePaginatedListDTO,
-    GetLookupListRolesParamDTO,
-    GetLookupListRolesBodyDTO,
-    GetListRolesParamDTO,
+    GetRolesLookupListQueryDTO,
+    GetRolesLookupListBodyDTO,
+    RoleHierarchyGraphDTO,
+    GetRolesListQueryDTO,
     RolePaginatedListDTO,
-    GetRoleByIdParamDTO,
-    GetListRolesBodyDTO,
+    GetRoleByIdQueryDTO,
+    GetRolesListBodyDTO,
     RoleDTO,
-} from "../dto";
+} from "../dto/role";
 
 @ApiTags("Role")
 @Controller("/role")
@@ -32,84 +33,90 @@ export class RoleController extends BaseController {
         super(i18nService);
     }
 
-    @Get(":realm/:role")
+    @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiParam({ name: "role", required: true, type: String, format: "uuid" })
-    @ApiParam({ name: "realm", required: true, type: String, format: "uuid" })
+    @ApiOperation({ summary: "Returns a role by identifier" })
+    @ApiQuery({ type: GetRoleByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDTO })
-    public getById(@Param() { realm, role }: GetRoleByIdParamDTO): Promise<RoleDTO> {
+    public getById(@Query() { realm, role }: GetRoleByIdQueryDTO): Promise<RoleDTO> {
         return this.roleRepository
             .findUniqueOrThrow({ where: { id: role, realm } })
             .then((data) => super.formatResponse({ DTO: RoleDTO, data }));
     }
 
-    @Post("list/:realm")
+    @Post("list")
     @HttpCode(HttpStatus.OK)
-    @ApiBody({ type: GetListRolesBodyDTO, required: true })
-    @ApiParam({ name: "realm", required: true, type: String, format: "uuid" })
+    @ApiOperation({ summary: "Returns a paginated list of roles" })
+    @ApiBody({ type: GetRolesListBodyDTO, required: true })
+    @ApiQuery({ type: GetRolesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RolePaginatedListDTO })
     public getList(
-        @Param() { realm }: GetListRolesParamDTO,
-        @Body() { pagination, filters, sort }: GetListRolesBodyDTO,
+        @Query() { realm }: GetRolesListQueryDTO,
+        @Body() { pagination, filters, sort }: GetRolesListBodyDTO,
     ): Promise<RolePaginatedListDTO> {
         return this.roleRepository
             .findMany({ pagination, filters, realm, sort })
             .then((data) => super.formatResponse({ DTO: RolePaginatedListDTO, pagination, data }));
     }
 
+    @Post("list/lookup")
     @HttpCode(HttpStatus.OK)
-    @Post("list/lookup/:realm")
-    @ApiParam({ name: "realm", required: true, type: String, format: "uuid" })
+    @ApiOperation({ summary: "Returns a lookup list of roles" })
+    @ApiBody({ type: GetRolesLookupListBodyDTO, required: true })
+    @ApiQuery({ type: GetRolesLookupListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: LookupRolePaginatedListDTO })
     public getLookupList(
-        @Param() { realm }: GetLookupListRolesParamDTO,
-        @Body() { pagination, term }: GetLookupListRolesBodyDTO,
+        @Query() { realm, term }: GetRolesLookupListQueryDTO,
+        @Body() { pagination }: GetRolesLookupListBodyDTO,
     ): Promise<LookupRolePaginatedListDTO> {
         return this.roleRepository
-            .lookupList({ pagination, realm, term })
+            .getLookupList({ pagination, realm, term })
             .then((data) => super.formatResponse({ DTO: LookupRolePaginatedListDTO, pagination, data }));
     }
 
+    @Post("list/delegable")
     @HttpCode(HttpStatus.OK)
-    @Post("list/delegable/:realm/:type/:id")
-    @ApiBody({ type: GetListRolesBodyDTO, required: true })
-    @ApiParam({ name: "id", required: true, type: String, format: "uuid" })
-    @ApiParam({ name: "realm", required: true, type: String, format: "uuid" })
-    @ApiParam({ name: "type", required: true, enum: DelegatorType, enumName: "DelegatorType" })
+    @ApiOperation({ summary: "Returns a paginated list of delegable roles for the specified role/account" })
+    @ApiBody({ type: GetDelegableRolesListBodyDTO, required: true })
+    @ApiQuery({ type: GetDelegableRolesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RolePaginatedListDTO })
-    public getDelegateableList(
-        @Param() { realm, type, id }: GetDelegableListRolesParamDTO,
-        @Body() { pagination, filters, sort }: GetDelegableListRolesBodyDTO,
+    public getDelegableList(
+        @Query() { realm, type, id }: GetDelegableRolesListQueryDTO,
+        @Body() { pagination, filters, sort }: GetDelegableRolesListBodyDTO,
     ): Promise<RolePaginatedListDTO> {
         return this.roleRepository
             .findDelegateableRoles({ where: { realm, type, id }, pagination, filters, sort })
             .then((data) => super.formatResponse({ DTO: RolePaginatedListDTO, pagination, data }));
     }
 
+    @Post("list/effective")
     @HttpCode(HttpStatus.OK)
-    @Post("list/effective/:realm/:account")
-    @ApiBody({ type: GetListRolesBodyDTO, required: true })
-    @ApiParam({ name: "realm", required: true, type: String, format: "uuid" })
+    @ApiOperation({ summary: "Returns a paginated list of effective roles for the account" })
+    @ApiBody({ type: GetEffectiveRolesListBodyDTO, required: true })
+    @ApiQuery({ type: GetEffectiveRolesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RolePaginatedListDTO })
     public getEffectiveList(
-        @Param() { realm, account }: GetEffectiveListRolesParamDTO,
-        @Body() { pagination, filters, sort }: GetEffectiveListRolesBodyDTO,
+        @Query() { realm, account }: GetEffectiveRolesListQueryDTO,
+        @Body() { pagination, filters, sort }: GetEffectiveRolesListBodyDTO,
     ): Promise<RolePaginatedListDTO> {
         return this.roleRepository
             .findEffectiveRoles({ where: { account, realm }, pagination, filters, sort })
             .then((data) => super.formatResponse({ DTO: RolePaginatedListDTO, pagination, data }));
     }
 
+    @Get("hierarchy-graph")
     @HttpCode(HttpStatus.OK)
-    @Get("hierarchy-graph/:realm")
-    @ApiParam({ name: "realm", required: true, type: String, format: "uuid" })
+    @ApiOperation({ summary: "Returns the role hierarchy graph (nodes and edges)" })
+    @ApiQuery({ type: GetRoleHierarchyGraphQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    public getTree(@Param() { realm }: { realm: string }): Promise<unknown> {
-        return this.roleRepository.getRoleGraph({ realm });
+    public getHierarchyGraph(@Query() { realm }: { realm: string }): Promise<RoleHierarchyGraphDTO> {
+        return this.roleRepository
+            .getHierarchyGraph({ realm })
+            .then((data) => super.formatResponse({ DTO: RoleHierarchyGraphDTO, data }));
     }
 }
