@@ -9,6 +9,7 @@ const SWAGGER_TAGS: Record<string, string> = {
     Realm: "Defines multi-tenant boundaries and isolation scopes for resource access.",
     Role: "Lifecycle management for roles, including complex inheritance and hierarchical structures.",
     Permission: "System-wide registry of granular capabilities used for both RBAC and DAC logic.",
+    RolePermissionMatrix: "Defines the foundational RBAC mapping between abstract roles and concrete permissions.",
 };
 
 export abstract class BootstrapSwagger {

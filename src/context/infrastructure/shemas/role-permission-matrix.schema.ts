@@ -1,6 +1,6 @@
 import { EntitySchema } from "@mikro-orm/core";
 
-import { RolePermissionMatrix, Permission, Role } from "~context/domain/entities";
+import { RolePermissionMatrix, Permission, Role, Realm } from "~context/domain/entities";
 
 export const RolePermissionMatrixSchema = new EntitySchema<RolePermissionMatrix>({
     class: RolePermissionMatrix,
@@ -16,12 +16,12 @@ export const RolePermissionMatrixSchema = new EntitySchema<RolePermissionMatrix>
 
     indexes: [
         {
-            name: "role_permission_matrix_permission_idx",
-            properties: ["permission"],
+            name: "role_permission_matrix_realm_permission_idx",
+            properties: ["realm", "permission"],
         },
         {
-            name: "role_permission_matrix_role_idx",
-            properties: ["role"],
+            name: "role_permission_matrix_realm_role_idx",
+            properties: ["realm", "role"],
         },
     ],
 
@@ -36,6 +36,14 @@ export const RolePermissionMatrixSchema = new EntitySchema<RolePermissionMatrix>
             nullable: false,
             entity: () => Role,
             fieldName: "role_id",
+            deleteRule: "cascade",
+        },
+        realm: {
+            ref: true,
+            kind: "m:1",
+            nullable: false,
+            entity: () => Realm,
+            fieldName: "realm_id",
             deleteRule: "cascade",
         },
         permission: {

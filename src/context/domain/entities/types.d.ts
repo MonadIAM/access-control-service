@@ -55,6 +55,7 @@ declare global {
 
             type ConstructorProps = Seed & {
                 permission: Ref<PermissionEntity>;
+                realm: Ref<RealmEntity>;
                 role: Ref<RoleEntity>;
             };
         }

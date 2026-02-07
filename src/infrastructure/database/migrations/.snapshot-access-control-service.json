@@ -1752,6 +1752,15 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "realm_id": {
+          "name": "realm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
         "permission_id": {
           "name": "permission_id",
           "type": "uuid",
@@ -1818,21 +1827,23 @@
       "schema": "access_control",
       "indexes": [
         {
-          "keyName": "role_permission_matrix_permission_idx",
+          "keyName": "role_permission_matrix_realm_permission_idx",
           "columnNames": [
+            "realm_id",
             "permission_id"
           ],
-          "composite": false,
+          "composite": true,
           "constraint": false,
           "primary": false,
           "unique": false
         },
         {
-          "keyName": "role_permission_matrix_role_idx",
+          "keyName": "role_permission_matrix_realm_role_idx",
           "columnNames": [
+            "realm_id",
             "role_id"
           ],
-          "composite": false,
+          "composite": true,
           "constraint": false,
           "primary": false,
           "unique": false
@@ -1871,6 +1882,19 @@
             "id"
           ],
           "referencedTableName": "access_control.role",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "role_permission_matrix_realm_id_foreign": {
+          "constraintName": "role_permission_matrix_realm_id_foreign",
+          "columnNames": [
+            "realm_id"
+          ],
+          "localTableName": "access_control.role_permission_matrix",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.realm",
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },

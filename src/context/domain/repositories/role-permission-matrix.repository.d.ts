@@ -1,4 +1,6 @@
-import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded } from "@mikro-orm/postgresql";
+import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded, QueryOrder } from "@mikro-orm/postgresql";
+
+import { LinkFilterDTO, OrdinalFilterDTO } from "~common/dto";
 
 import { RolePermissionMatrix as RolePermissionMatrixEntity } from "../entities";
 
@@ -76,10 +78,30 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
-            type FindMany<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
+            type FindMany<P extends string, F extends string> =
+                | {
+                      transaction?: EntityManager;
+                      options?: FindOptions<Entity, P, F>;
+                      where: FilterQuery<Entity>;
+                  }
+                | {
+                      pagination: Pagination;
+                      filters: Filters;
+                      sort: Sort;
+                      realm: string;
+                      options?: FindOptions<Entity, P, F>;
+                  };
+
+            type Filters = {
+                role?: LinkFilterDTO;
+                permission?: LinkFilterDTO;
+                createdAt?: OrdinalFilterDTO<Date>;
+                isSystemManaged?: boolean;
+                isRevoked?: boolean;
+            };
+
+            type Sort = {
+                createdAt?: QueryOrder;
             };
         }
     }

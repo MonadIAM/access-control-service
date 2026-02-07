@@ -2,21 +2,27 @@ import { EntityManager, FilterQuery, Loaded, wrap } from "@mikro-orm/postgresql"
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
+import { RolePermissionMatrixAdapter } from "~context/infrastructure/adapters";
 import { RolePermissionMatrix } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RolePermissionMatrixRepository implements Repositories.RolePermissionMatrix.Contract {
+export class RolePermissionMatrixRepository
+    extends RolePermissionMatrixAdapter
+    implements Repositories.RolePermissionMatrix.Contract
+{
     private readonly resource = "RolePermissionMatrix";
 
     public constructor(
         @InjectEntityManager("write") private readonly writeManager: EntityManager,
         @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {}
+    ) {
+        super();
+    }
 
     public async create({ transaction, entity }: Repositories.RolePermissionMatrix.Create): Promise<RolePermissionMatrix> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             entityManager.persist(entity);
             await entityManager.flush();
@@ -33,7 +39,7 @@ export class RolePermissionMatrixRepository implements Repositories.RolePermissi
         patch,
     }: Repositories.RolePermissionMatrix.Update): Promise<RolePermissionMatrix> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             wrap(entity).assign(patch, { merge: true });
             await entityManager.flush();
@@ -46,7 +52,7 @@ export class RolePermissionMatrixRepository implements Repositories.RolePermissi
 
     public async delete({ transaction, id }: Repositories.RolePermissionMatrix.Delete): Promise<void> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             const where: FilterQuery<RolePermissionMatrix> = {
                 isSystemManaged: false,
                 isRevoked: true,
@@ -66,7 +72,7 @@ export class RolePermissionMatrixRepository implements Repositories.RolePermissi
         entities,
     }: Repositories.RolePermissionMatrix.BulkCreate): Promise<RolePermissionMatrix[]> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             entityManager.persist(entities);
             await entityManager.flush();
@@ -82,7 +88,7 @@ export class RolePermissionMatrixRepository implements Repositories.RolePermissi
         updates,
     }: Repositories.RolePermissionMatrix.BulkUpdate): Promise<RolePermissionMatrix[]> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             for (const { entity, patch } of updates) {
                 wrap(entity).assign(patch, { merge: true });
@@ -102,7 +108,7 @@ export class RolePermissionMatrixRepository implements Repositories.RolePermissi
         role,
     }: Repositories.RolePermissionMatrix.BulkDelete): Promise<number> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             const where: FilterQuery<RolePermissionMatrix> = {
                 ...(identifiers ? { id: { $in: identifiers } } : { role }),
                 isSystemManaged: false,
@@ -120,7 +126,7 @@ export class RolePermissionMatrixRepository implements Repositories.RolePermissi
         where,
     }: Repositories.RolePermissionMatrix.FindUnique<P, F>): Promise<Nullable<Loaded<RolePermissionMatrix, P, F>>> {
         try {
-            const entityManager = transaction ?? this.readManager;
+            const entityManager = transaction ?? this.readManager.fork();
             return entityManager.findOne(RolePermissionMatrix, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
@@ -133,21 +139,28 @@ export class RolePermissionMatrixRepository implements Repositories.RolePermissi
         where,
     }: Repositories.RolePermissionMatrix.FindUniqueOrThrow<P, F>): Promise<Loaded<RolePermissionMatrix, P, F>> {
         try {
-            const entityManager = transaction ?? this.readManager;
+            const entityManager = transaction ?? this.readManager.fork();
             return entityManager.findOneOrFail(RolePermissionMatrix, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findMany<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.RolePermissionMatrix.FindMany<P, F>): Promise<[Loaded<RolePermissionMatrix, P, F>[], number]> {
+    public findMany<P extends string = never, F extends string = "*">(
+        props: Repositories.RolePermissionMatrix.FindMany<P, F>,
+    ): Promise<[Loaded<RolePermissionMatrix, P, F>[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findAndCount(RolePermissionMatrix, where, options);
+            if ("where" in props) {
+                const { transaction, options, where } = props;
+                const entityManager = transaction ?? this.readManager.fork();
+                return entityManager.findAndCount(RolePermissionMatrix, where, options);
+            } else {
+                const { pagination, filters, sort, options, realm } = props;
+                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
+                const where = super.buildWhereORM(filters, { realm });
+                const entityManager = this.readManager.fork();
+                return entityManager.findAndCount(RolePermissionMatrix, where, opts);
+            }
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

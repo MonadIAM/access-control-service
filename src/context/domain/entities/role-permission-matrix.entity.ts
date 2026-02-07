@@ -1,6 +1,7 @@
 import { Ref } from "@mikro-orm/core";
 
 import { Permission } from "./permission.entity";
+import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
 
 export class RolePermissionMatrix {
@@ -14,6 +15,7 @@ export class RolePermissionMatrix {
     public isRevoked: boolean;
 
     public permission: Ref<Permission>;
+    public realm: Ref<Realm>;
     public role: Ref<Role>;
 
     public constructor(props: Entities.RolePermissionMatrix.ConstructorProps) {
@@ -23,6 +25,7 @@ export class RolePermissionMatrix {
         this.lastActions = props.lastActions;
 
         this.permission = props.permission;
+        this.realm = props.realm;
         this.role = props.role;
     }
 
