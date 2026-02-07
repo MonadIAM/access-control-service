@@ -8,9 +8,9 @@ import { BaseController } from "~common/abstract";
 
 import {
     GetRolePermissionMatricesListQueryDTO,
-    RolePermissionMatrixPaginatedListDTO,
     GetRolePermissionMatricesListBodyDTO,
     GetRolePermissionMatrixByIdQueryDTO,
+    RolePermissionMatrixListDTO,
     RolePermissionMatrixDTO,
 } from "../dto/role-permission-matrix";
 
@@ -42,13 +42,13 @@ export class RolePermissionMatrixController extends BaseController {
     @ApiBody({ type: GetRolePermissionMatricesListBodyDTO, required: true })
     @ApiQuery({ type: GetRolePermissionMatricesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: RolePermissionMatrixPaginatedListDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: RolePermissionMatrixListDTO })
     public getList(
         @Query() { realm }: GetRolePermissionMatricesListQueryDTO,
         @Body() { pagination, filters, sort }: GetRolePermissionMatricesListBodyDTO,
-    ): Promise<RolePermissionMatrixPaginatedListDTO> {
+    ): Promise<RolePermissionMatrixListDTO> {
         return this.rolePermissionMatrixRepository
             .findMany({ pagination, filters, sort, realm })
-            .then((data) => super.formatResponse({ DTO: RolePermissionMatrixPaginatedListDTO, pagination, data }));
+            .then((data) => super.formatResponse({ DTO: RolePermissionMatrixListDTO, pagination, data }));
     }
 }

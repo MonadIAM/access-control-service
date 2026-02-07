@@ -9,8 +9,8 @@ import { BaseController } from "~common/abstract";
 import {
     GetAccountRoleMatricesListQueryDTO,
     GetAccountRoleMatricesListBodyDTO,
-    AccountRoleMatrixPaginatedListDTO,
     GetAccountRoleMatrixByIdQueryDTO,
+    AccountRoleMatrixListDTO,
     AccountRoleMatrixDTO,
 } from "../dto/account-role-matrix";
 
@@ -42,13 +42,13 @@ export class AccountRoleMatrixController extends BaseController {
     @ApiBody({ type: GetAccountRoleMatricesListBodyDTO, required: true })
     @ApiQuery({ type: GetAccountRoleMatricesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: AccountRoleMatrixPaginatedListDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: AccountRoleMatrixListDTO })
     public getList(
         @Query() { realm }: GetAccountRoleMatricesListQueryDTO,
         @Body() { pagination, filters, sort }: GetAccountRoleMatricesListBodyDTO,
-    ): Promise<AccountRoleMatrixPaginatedListDTO> {
+    ): Promise<AccountRoleMatrixListDTO> {
         return this.accountRoleMatrixRepository
             .findMany({ options: { populate: ["realm", "role"] }, pagination, filters, sort, realm })
-            .then((data) => super.formatResponse({ DTO: AccountRoleMatrixPaginatedListDTO, pagination, data }));
+            .then((data) => super.formatResponse({ DTO: AccountRoleMatrixListDTO, pagination, data }));
     }
 }

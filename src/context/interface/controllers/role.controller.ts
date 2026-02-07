@@ -12,14 +12,14 @@ import {
     GetEffectiveRolesListQueryDTO,
     GetDelegableRolesListBodyDTO,
     GetEffectiveRolesListBodyDTO,
-    LookupRolePaginatedListDTO,
     GetRolesLookupListQueryDTO,
     GetRolesLookupListBodyDTO,
     RoleHierarchyGraphDTO,
     GetRolesListQueryDTO,
-    RolePaginatedListDTO,
     GetRoleByIdQueryDTO,
     GetRolesListBodyDTO,
+    LookupRoleListDTO,
+    RoleListDTO,
     RoleDTO,
 } from "../dto/role";
 
@@ -51,14 +51,14 @@ export class RoleController extends BaseController {
     @ApiBody({ type: GetRolesListBodyDTO, required: true })
     @ApiQuery({ type: GetRolesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: RolePaginatedListDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: RoleListDTO })
     public getList(
         @Query() { realm }: GetRolesListQueryDTO,
         @Body() { pagination, filters, sort }: GetRolesListBodyDTO,
-    ): Promise<RolePaginatedListDTO> {
+    ): Promise<RoleListDTO> {
         return this.roleRepository
             .findMany({ pagination, filters, realm, sort })
-            .then((data) => super.formatResponse({ DTO: RolePaginatedListDTO, pagination, data }));
+            .then((data) => super.formatResponse({ DTO: RoleListDTO, pagination, data }));
     }
 
     @Post("list/lookup")
@@ -67,14 +67,14 @@ export class RoleController extends BaseController {
     @ApiBody({ type: GetRolesLookupListBodyDTO, required: true })
     @ApiQuery({ type: GetRolesLookupListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: LookupRolePaginatedListDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: LookupRoleListDTO })
     public getLookupList(
         @Query() { realm, term }: GetRolesLookupListQueryDTO,
         @Body() { pagination }: GetRolesLookupListBodyDTO,
-    ): Promise<LookupRolePaginatedListDTO> {
+    ): Promise<LookupRoleListDTO> {
         return this.roleRepository
             .getLookupList({ pagination, realm, term })
-            .then((data) => super.formatResponse({ DTO: LookupRolePaginatedListDTO, pagination, data }));
+            .then((data) => super.formatResponse({ DTO: LookupRoleListDTO, pagination, data }));
     }
 
     @Post("list/delegable")
@@ -83,14 +83,14 @@ export class RoleController extends BaseController {
     @ApiBody({ type: GetDelegableRolesListBodyDTO, required: true })
     @ApiQuery({ type: GetDelegableRolesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: RolePaginatedListDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: RoleListDTO })
     public getDelegableList(
         @Query() { realm, type, id }: GetDelegableRolesListQueryDTO,
         @Body() { pagination, filters, sort }: GetDelegableRolesListBodyDTO,
-    ): Promise<RolePaginatedListDTO> {
+    ): Promise<RoleListDTO> {
         return this.roleRepository
             .findDelegateableRoles({ where: { realm, type, id }, pagination, filters, sort })
-            .then((data) => super.formatResponse({ DTO: RolePaginatedListDTO, pagination, data }));
+            .then((data) => super.formatResponse({ DTO: RoleListDTO, pagination, data }));
     }
 
     @Post("list/effective")
@@ -99,14 +99,14 @@ export class RoleController extends BaseController {
     @ApiBody({ type: GetEffectiveRolesListBodyDTO, required: true })
     @ApiQuery({ type: GetEffectiveRolesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: RolePaginatedListDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: RoleListDTO })
     public getEffectiveList(
         @Query() { realm, account }: GetEffectiveRolesListQueryDTO,
         @Body() { pagination, filters, sort }: GetEffectiveRolesListBodyDTO,
-    ): Promise<RolePaginatedListDTO> {
+    ): Promise<RoleListDTO> {
         return this.roleRepository
             .findEffectiveRoles({ where: { account, realm }, pagination, filters, sort })
-            .then((data) => super.formatResponse({ DTO: RolePaginatedListDTO, pagination, data }));
+            .then((data) => super.formatResponse({ DTO: RoleListDTO, pagination, data }));
     }
 
     @Get("hierarchy-graph")

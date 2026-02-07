@@ -1,5 +1,6 @@
+import { ApiExtraModels, ApiProperty, getSchemaPath } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { UnknownType } from "@mikro-orm/core";
 
 import { Validator } from "~common/validator";
 
@@ -39,14 +40,15 @@ class DeltaAuditBaseActionDTO {
 
 class DeltaAuditFieldPatchDTO {
     @Expose()
-    @ApiProperty({ nullable: true })
+    @ApiProperty({ nullable: true, type: UnknownType })
     public old!: unknown;
 
     @Expose()
-    @ApiProperty({ nullable: true })
+    @ApiProperty({ nullable: true, type: UnknownType })
     public new!: unknown;
 }
 
+@ApiExtraModels(DeltaAuditFieldPatchDTO)
 class DeltaAuditPatchDTO {
     @Expose()
     @Validator.IsObject()
@@ -55,7 +57,7 @@ class DeltaAuditPatchDTO {
     @ApiProperty({
         type: Object,
         required: true,
-        additionalProperties: { $ref: "#/components/schemas/DeltaAuditFieldPatchDTO" },
+        additionalProperties: { $ref: getSchemaPath(DeltaAuditFieldPatchDTO) },
     })
     public fields!: Record<string, DeltaAuditFieldPatchDTO>;
 }

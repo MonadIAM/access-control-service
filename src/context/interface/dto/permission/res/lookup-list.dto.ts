@@ -5,7 +5,7 @@ import { BaseListDTO } from "~common/dto";
 
 import { PermissionLookupDTO } from "./lookup-entity.dto";
 
-export class PermissionLookupPaginatedListDTO extends BaseListDTO<PermissionLookupDTO> {
+export class PermissionLookupListDTO extends BaseListDTO<PermissionLookupDTO> {
     @Type(() => PermissionLookupDTO)
     @ApiProperty({ required: true, type: [PermissionLookupDTO] })
     declare public data: PermissionLookupDTO[];

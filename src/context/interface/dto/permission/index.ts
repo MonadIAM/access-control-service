@@ -3,9 +3,9 @@ export { GetPermissionsLookupListQueryDTO, GetPermissionsLookupListBodyDTO } fro
 export { GetPermissionsListQueryDTO, GetPermissionsListBodyDTO } from "./req/get-list.dto";
 export { GetPermissionByIdQueryDTO } from "./req/get-by-id.dto";
 
-export { PermissionLookupPaginatedListDTO } from "./res/lookup-list.dto";
+export { PermissionLookupListDTO } from "./res/lookup-list.dto";
 export { PermissionLookupDTO } from "./res/lookup-entity.dto";
-export { PermissionPaginatedListDTO } from "./res/list.dto";
+export { PermissionListDTO } from "./res/list.dto";
 export { PermissionDTO } from "./res/entity.dto";
 
 export { PermissionsFiltersDTO } from "./utils/filters.dto";

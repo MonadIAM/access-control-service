@@ -17,6 +17,13 @@ export class RolePermissionMatricesFiltersDTO {
     @Validator.ValidateNested()
     @Type(() => LinkFilterDTO)
     @ApiProperty({ required: false, type: LinkFilterDTO })
+    public realm?: LinkFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => LinkFilterDTO)
+    @ApiProperty({ required: false, type: LinkFilterDTO })
     public permission?: LinkFilterDTO;
 
     @Expose()

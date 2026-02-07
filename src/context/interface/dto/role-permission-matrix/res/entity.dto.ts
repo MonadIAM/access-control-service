@@ -4,27 +4,15 @@ import { ApiProperty } from "@nestjs/swagger";
 import { DeltaAuditLastActionsDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
+import { PermissionDTO } from "../../permission";
+import { RealmDTO } from "../../realm";
+import { RoleDTO } from "../../role";
+
 export class RolePermissionMatrixDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
     public id!: string;
-
-    @Expose()
-    @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
-    public code!: string;
-
-    @Expose()
-    @Validator.IsString()
-    @ApiProperty({ required: true, type: String })
-    public name!: string;
-
-    @Expose()
-    @Validator.IsString()
-    @Validator.IsOptional()
-    @ApiProperty({ required: false, type: String })
-    public description?: string;
 
     @Expose()
     @Validator.IsBoolean()
@@ -35,6 +23,24 @@ export class RolePermissionMatrixDTO {
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
     public isRevoked!: boolean;
+
+    @Expose()
+    @Validator.ValidateNested()
+    @Type(() => RoleDTO)
+    @ApiProperty({ required: true, type: RoleDTO })
+    public role!: RoleDTO;
+
+    @Expose()
+    @Validator.ValidateNested()
+    @Type(() => RealmDTO)
+    @ApiProperty({ required: true, type: RealmDTO })
+    public realm!: RealmDTO;
+
+    @Expose()
+    @Validator.ValidateNested()
+    @Type(() => PermissionDTO)
+    @ApiProperty({ required: true, type: PermissionDTO })
+    public permission!: PermissionDTO;
 
     @Expose()
     @Validator.IsDate()

@@ -9,13 +9,13 @@ import { BaseController } from "~common/abstract";
 import {
     GetEffectivePermissionsListQueryDTO,
     GetEffectivePermissionsListBodyDTO,
-    PermissionLookupPaginatedListDTO,
     GetPermissionsLookupListQueryDTO,
     GetPermissionsLookupListBodyDTO,
     GetPermissionsListQueryDTO,
-    PermissionPaginatedListDTO,
     GetPermissionByIdQueryDTO,
     GetPermissionsListBodyDTO,
+    PermissionLookupListDTO,
+    PermissionListDTO,
     PermissionDTO,
 } from "../dto/permission";
 
@@ -47,14 +47,14 @@ export class PermissionController extends BaseController {
     @ApiBody({ type: GetPermissionsListBodyDTO, required: true })
     @ApiQuery({ type: GetPermissionsListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: PermissionPaginatedListDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: PermissionListDTO })
     public getList(
         @Query() { realm }: GetPermissionsListQueryDTO,
         @Body() { pagination, filters, sort }: GetPermissionsListBodyDTO,
-    ): Promise<PermissionPaginatedListDTO> {
+    ): Promise<PermissionListDTO> {
         return this.permissionRepository
             .findMany({ pagination, filters, realm, sort })
-            .then((data) => super.formatResponse({ DTO: PermissionPaginatedListDTO, pagination, data }));
+            .then((data) => super.formatResponse({ DTO: PermissionListDTO, pagination, data }));
     }
 
     @Post("list/lookup")
@@ -63,14 +63,14 @@ export class PermissionController extends BaseController {
     @ApiBody({ type: GetPermissionsLookupListBodyDTO, required: true })
     @ApiQuery({ type: GetPermissionsLookupListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: PermissionLookupPaginatedListDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: PermissionLookupListDTO })
     public getLookupList(
         @Query() { realm, term }: GetPermissionsLookupListQueryDTO,
         @Body() { pagination }: GetPermissionsLookupListBodyDTO,
-    ): Promise<PermissionLookupPaginatedListDTO> {
+    ): Promise<PermissionLookupListDTO> {
         return this.permissionRepository
             .getLookupList({ pagination, realm, term })
-            .then((data) => super.formatResponse({ DTO: PermissionLookupPaginatedListDTO, pagination, data }));
+            .then((data) => super.formatResponse({ DTO: PermissionLookupListDTO, pagination, data }));
     }
 
     @Post("list/effective")
@@ -79,24 +79,13 @@ export class PermissionController extends BaseController {
     @ApiBody({ type: GetEffectivePermissionsListBodyDTO, required: true })
     @ApiQuery({ type: GetEffectivePermissionsListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: PermissionPaginatedListDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: PermissionListDTO })
     public getEffectiveList(
         @Query() { account, realm }: GetEffectivePermissionsListQueryDTO,
         @Body() { pagination, filters, sort }: GetEffectivePermissionsListBodyDTO,
-    ): Promise<PermissionPaginatedListDTO> {
+    ): Promise<PermissionListDTO> {
         return this.permissionRepository
             .findEffectivePermissions({ where: { account, realm }, pagination, filters, sort })
-            .then((data) => super.formatResponse({ DTO: PermissionPaginatedListDTO, pagination, data }));
-    }
-
-    // TODO: Убрать, временная ручка только для тестов
-    @Post("has-permission")
-    @HttpCode(HttpStatus.OK)
-    @ApiBody({ type: GetEffectivePermissionsListBodyDTO, required: true })
-    @ApiQuery({ type: GetEffectivePermissionsListQueryDTO, required: true })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: PermissionPaginatedListDTO })
-    public accountHasPermission(@Body() { permission, account, realm, roles }: any): Promise<boolean> {
-        return this.permissionRepository.accountHasPermission({ permission, account, realm, roles });
+            .then((data) => super.formatResponse({ DTO: PermissionListDTO, pagination, data }));
     }
 }

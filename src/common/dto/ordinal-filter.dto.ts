@@ -15,12 +15,7 @@ export class OrdinalFilterDTO<T extends Ordinal> {
     @Validator.IsOrdinal()
     @ApiProperty({
         required: true,
-        oneOf: [
-            { type: "Date" },
-            { type: "number" },
-            { type: "bigint" },
-            { type: "array", oneOf: [{ type: "Date" }, { type: "number" }, { type: "bigint" }] },
-        ],
+        oneOf: [{ type: "Date" }, { type: "number" }, { type: "array", oneOf: [{ type: "Date" }, { type: "number" }] }],
     })
     public value!: T | T[];
 }

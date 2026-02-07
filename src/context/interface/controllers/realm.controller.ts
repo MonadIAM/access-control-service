@@ -7,12 +7,12 @@ import { ErrorResponseBodyDTO } from "~common/dto";
 import { BaseController } from "~common/abstract";
 
 import {
-    RealmLookupPaginatedListDTO,
     GetRealmsLookupListQueryDTO,
     GetRealmsLookupListBodyDTO,
-    RealmPaginatedListDTO,
     GetRealmByIdQueryDTO,
     GetRealmsListBodyDTO,
+    RealmLookupListDTO,
+    RealmListDTO,
     RealmDTO,
 } from "../dto/realm";
 
@@ -43,11 +43,11 @@ export class RealmController extends BaseController {
     @ApiOperation({ summary: "Returns a paginated list of realms" })
     @ApiBody({ type: GetRealmsListBodyDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: RealmPaginatedListDTO })
-    public getList(@Body() { pagination, filters, sort }: GetRealmsListBodyDTO): Promise<RealmPaginatedListDTO> {
+    @ApiResponse({ status: HttpStatus.OK, type: RealmListDTO })
+    public getList(@Body() { pagination, filters, sort }: GetRealmsListBodyDTO): Promise<RealmListDTO> {
         return this.realmRepository
             .findMany({ pagination, filters, sort })
-            .then((data) => super.formatResponse({ DTO: RealmPaginatedListDTO, pagination, data }));
+            .then((data) => super.formatResponse({ DTO: RealmListDTO, pagination, data }));
     }
 
     @Post("list/lookup")
@@ -56,13 +56,13 @@ export class RealmController extends BaseController {
     @ApiBody({ type: GetRealmsLookupListBodyDTO, required: true })
     @ApiQuery({ type: GetRealmsLookupListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: RealmLookupPaginatedListDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: RealmLookupListDTO })
     public getLookupList(
         @Query() { term }: GetRealmsLookupListQueryDTO,
         @Body() { pagination }: GetRealmsLookupListBodyDTO,
-    ): Promise<RealmLookupPaginatedListDTO> {
+    ): Promise<RealmLookupListDTO> {
         return this.realmRepository
             .getLookupList({ pagination, term })
-            .then((data) => super.formatResponse({ DTO: RealmLookupPaginatedListDTO, pagination, data }));
+            .then((data) => super.formatResponse({ DTO: RealmLookupListDTO, pagination, data }));
     }
 }
