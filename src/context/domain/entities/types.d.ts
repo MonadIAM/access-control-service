@@ -203,8 +203,8 @@ declare global {
             };
 
             type ConstructorProps = Seed & {
-                realm: Ref<RealmEntity>;
-                role: Ref<RoleEntity>;
+                realm: RealmEntity;
+                role: RoleEntity;
             };
         }
     }

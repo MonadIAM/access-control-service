@@ -1,4 +1,6 @@
-import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded } from "@mikro-orm/postgresql";
+import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded, QueryOrder } from "@mikro-orm/postgresql";
+
+import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 
 import { AccountRoleMatrix as AccountRoleMatrixEntity } from "../entities";
 
@@ -27,10 +29,7 @@ declare global {
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
 
-                existsActiveAccountWithConflictRoles: (props: ExistsActiveAccountWithConflictRoles) => Promise<boolean>;
-                validateSystemConstraintsForNewRoles: (props: ValidateSystemConstraintsForNewRoles) => Promise<void>;
-                validateDelegationForRoles: (props: ValidateDelegationForRoles) => Promise<void>;
-                validateSoDForNewRoles: (props: ValidateSoDForNewRoles) => Promise<void>;
+                wouldExceedRoleLimit: (props: WouldExceedRoleLimit) => Promise<boolean>;
             }
 
             type Create = {
@@ -80,34 +79,37 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
-            type FindMany<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            };
+            type FindMany<P extends string, F extends string> =
+                | {
+                      transaction?: EntityManager;
+                      options?: FindOptions<Entity, P, F>;
+                      where: FilterQuery<Entity>;
+                  }
+                | {
+                      pagination: Pagination;
+                      filters: Filters;
+                      sort: Sort;
+                      realm: string;
+                      options?: FindOptions<Entity, P, F>;
+                  };
 
-            type ExistsActiveAccountWithConflictRoles = {
+            type WouldExceedRoleLimit = {
                 transaction?: EntityManager;
-                identifiers: string[];
-                maxAllowed: number;
-            };
-
-            type ValidateSystemConstraintsForNewRoles = {
-                transaction?: EntityManager;
-                accountId: string;
+                account: string;
                 roles: string[];
             };
 
-            type ValidateDelegationForRoles = {
-                transaction?: EntityManager;
-                roles: string[];
-                actor: string;
+            type Filters = {
+                account?: StringFilterDTO;
+                realm?: LinkFilterDTO;
+                role?: LinkFilterDTO;
+                createdAt?: OrdinalFilterDTO<Date>;
+                isSystemManaged?: boolean;
+                isRevoked?: boolean;
             };
 
-            type ValidateSoDForNewRoles = {
-                transaction?: EntityManager;
-                accountId: string;
-                roles: string[];
+            type Sort = {
+                createdAt?: QueryOrder;
             };
         }
     }

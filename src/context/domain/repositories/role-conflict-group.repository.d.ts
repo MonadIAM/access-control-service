@@ -27,6 +27,9 @@ declare global {
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
 
                 findAssignmentViolation: (props: FindAssignmentViolation) => Promise<Entity[]>;
+
+                hasAccountViolatingConflictGroup: (props: HasAccountViolatingConflictGroup) => Promise<boolean>;
+                wouldRolesViolateSoDPolicy: (props: WouldRolesViolateSoDPolicy) => Promise<boolean>;
             }
 
             type Create = {
@@ -82,6 +85,18 @@ declare global {
                 transaction?: EntityManager;
                 account: string;
                 role: string;
+            };
+
+            type HasAccountViolatingConflictGroup = {
+                transaction?: EntityManager;
+                identifiers: string[];
+                maxAllowed: number;
+            };
+
+            type WouldRolesViolateSoDPolicy = {
+                transaction?: EntityManager;
+                account: string;
+                roles: string[];
             };
         }
     }

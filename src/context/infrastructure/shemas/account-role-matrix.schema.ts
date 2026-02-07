@@ -33,7 +33,6 @@ export const AccountRoleMatrixSchema = new EntitySchema<AccountRoleMatrix>({
         isSystemManaged: { type: "boolean", default: false, nullable: false },
 
         role: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Role,
@@ -41,7 +40,6 @@ export const AccountRoleMatrixSchema = new EntitySchema<AccountRoleMatrix>({
             deleteRule: "cascade",
         },
         realm: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Realm,

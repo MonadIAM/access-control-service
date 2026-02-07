@@ -1,5 +1,3 @@
-import { Ref } from "@mikro-orm/core";
-
 import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
 
@@ -14,8 +12,8 @@ export class AccountRoleMatrix {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public realm: Ref<Realm>;
-    public role: Ref<Role>;
+    public realm: Realm;
+    public role: Role;
 
     public constructor(props: Entities.AccountRoleMatrix.ConstructorProps) {
         this.isSystemManaged = props.isSystemManaged ?? false;

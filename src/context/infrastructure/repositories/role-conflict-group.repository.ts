@@ -175,4 +175,74 @@ export class RoleConflictGroupRepository implements Repositories.RoleConflictGro
 
         return result;
     }
+
+    public async hasAccountViolatingConflictGroup({
+        transaction,
+        identifiers,
+        maxAllowed,
+    }: Repositories.RoleConflictGroup.HasAccountViolatingConflictGroup): Promise<boolean> {
+        try {
+            const entityManager = transaction ?? this.readManager.fork();
+            const knex = entityManager.getKnex();
+
+            const effectiveRoleIdsQuery = knex("access_control.role_closure as rc")
+                .whereIn("rc.ancestor_id", identifiers)
+                .select("rc.descendant_id");
+
+            const query = knex
+                .select("arm.account_id")
+                .from("access_control.account_role_matrix as arm")
+                .whereIn("arm.role_id", effectiveRoleIdsQuery)
+                .groupBy("arm.account_id")
+                .having(knex.raw("count(distinct arm.role_id) > ?", [maxAllowed]))
+                .limit(1);
+
+            const result = await entityManager.execute(query);
+
+            return result.length > 0;
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async wouldRolesViolateSoDPolicy({
+        transaction,
+        account,
+        roles,
+    }: Repositories.RoleConflictGroup.WouldRolesViolateSoDPolicy): Promise<boolean> {
+        try {
+            const entityManager = transaction ?? this.readManager.fork();
+            const knex = entityManager.getKnex();
+
+            const currentDirectRoles = await knex("access_control.account_role_matrix")
+                .select("role_id")
+                .where({ account_id: account, is_revoked: false })
+                .pluck("role_id");
+
+            const allDirectRoleIds = [...new Set([...currentDirectRoles, ...roles])];
+
+            const allEffectiveRoleIds = await knex("access_control.role_closure")
+                .whereIn("ancestor_id", allDirectRoleIds)
+                .pluck("descendant_id")
+                .then((descendants) => [...new Set([...allDirectRoleIds, ...descendants])]);
+
+            const violation = await knex("access_control.role_conflict_group as grp")
+                .join("access_control.role_conflict_member as mem", "mem.group_id", "grp.id")
+                .whereIn("mem.role_id", allEffectiveRoleIds)
+                .andWhere("grp.is_revoked", false)
+                .andWhere("mem.is_revoked", false)
+                .groupBy("grp.id", "grp.name", "grp.max_allowed")
+                .havingRaw("COUNT(DISTINCT mem.role_id) > grp.max_allowed")
+                .select("grp.name", "grp.max_allowed", knex.raw("COUNT(DISTINCT mem.role_id) as matched_count"))
+                .first();
+
+            if (violation) {
+                return false;
+            } else {
+                return true;
+            }
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
 }
