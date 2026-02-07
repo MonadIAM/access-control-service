@@ -1,4 +1,6 @@
-import { EntityData, EntityManager, FilterQuery, FindOptions, Loaded } from "@mikro-orm/postgresql";
+import { EntityData, EntityManager, FilterQuery, FindOptions, Loaded, QueryOrder } from "@mikro-orm/postgresql";
+
+import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 
 import { Realm as RealmEntity } from "../entities";
 
@@ -23,6 +25,8 @@ declare global {
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
+
+                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
             }
 
             type Create = {
@@ -53,10 +57,35 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
-            type FindMany<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
+            type FindMany<P extends string, F extends string> =
+                | {
+                      transaction?: EntityManager;
+                      options?: FindOptions<Entity, P, F>;
+                      where: FilterQuery<Entity>;
+                  }
+                | {
+                      pagination: Pagination;
+                      filters: Filters;
+                      sort: Sort;
+                      options?: FindOptions<Entity, P, F>;
+                  };
+
+            type GetLookupList = {
+                pagination: Pagination;
+                term: string;
+            };
+
+            type Filters = {
+                id?: StringFilterDTO;
+                code?: StringFilterDTO;
+                name?: StringFilterDTO;
+                createdAt?: OrdinalFilterDTO<Date>;
+                isSystemManaged?: boolean;
+                isRevoked?: boolean;
+            };
+
+            type Sort = {
+                createdAt?: QueryOrder;
             };
         }
     }

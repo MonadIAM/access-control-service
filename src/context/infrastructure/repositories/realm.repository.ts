@@ -1,18 +1,21 @@
-import { EntityManager, FilterQuery, Loaded, wrap } from "@mikro-orm/postgresql";
+import { EntityManager, FilterQuery, Loaded, raw, wrap } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
+import { RealmAdapter } from "~context/infrastructure/adapters";
 import { RepositoryException } from "~common/exceptions";
 import { Realm } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RealmRepository implements Repositories.Realm.Contract {
+export class RealmRepository extends RealmAdapter implements Repositories.Realm.Contract {
     private readonly resource = "Realm";
 
     public constructor(
         @InjectEntityManager("write") private readonly writeManager: EntityManager,
         @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {}
+    ) {
+        super();
+    }
 
     public async create({ transaction, entity }: Repositories.Realm.Create): Promise<Realm> {
         try {
@@ -83,16 +86,43 @@ export class RealmRepository implements Repositories.Realm.Contract {
         }
     }
 
-    public findMany<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.Realm.FindMany<P, F>): Promise<[Loaded<Realm, P, F>[], number]> {
+    public findMany<P extends string = never, F extends string = "*">(
+        props: Repositories.Realm.FindMany<P, F>,
+    ): Promise<[Loaded<Realm, P, F>[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findAndCount(Realm, where, options);
+            if ("where" in props) {
+                const { transaction, options, where } = props;
+                const entityManager = transaction ?? this.readManager.fork();
+                return entityManager.findAndCount(Realm, where, options);
+            } else {
+                const { pagination, filters, sort, options } = props;
+                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
+                const where = super.buildWhereORM(filters);
+                const entityManager = this.readManager.fork();
+                return entityManager.findAndCount(Realm, where, opts);
+            }
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
+    }
+
+    public async getLookupList({ pagination, term }: Repositories.Realm.GetLookupList): Promise<[Realm[], number]> {
+        const entityManager = this.readManager.fork();
+        const builder = entityManager.createQueryBuilder(Realm, "r");
+
+        builder
+            .select(["r.id", "r.code", "r.name"])
+            .limit(pagination.elementsPerPage)
+            .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
+
+        if (term) {
+            builder.andWhere("r.name % ?", [term]).orderBy({
+                [raw("similarity(r.name, ?)", [term])]: "DESC",
+            });
+        } else {
+            builder.orderBy({ "r.name": "ASC" });
+        }
+
+        return await builder.getResultAndCount();
     }
 }

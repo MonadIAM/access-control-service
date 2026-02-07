@@ -297,6 +297,15 @@
       "schema": "access_control",
       "indexes": [
         {
+          "keyName": "realm_name_trgm_idx",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE INDEX \"realm_name_trgm_idx\" ON \"access_control\".\"realm\" USING gin (\"name\" gin_trgm_ops)"
+        },
+        {
           "keyName": "realm_code_unique",
           "columnNames": [
             "code"
