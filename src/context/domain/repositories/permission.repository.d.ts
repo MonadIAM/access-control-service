@@ -1,4 +1,6 @@
-import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded } from "@mikro-orm/postgresql";
+import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded, QueryOrder } from "@mikro-orm/postgresql";
+
+import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 
 import { Permission as PermissionEntity } from "../entities";
 
@@ -25,6 +27,8 @@ declare global {
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
+
+                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
 
                 findEffectivePermissions: (props: FindEffectivePermissions) => Promise<[Entity[], number]>;
 
@@ -74,23 +78,54 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
-            type FindMany<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
+            type FindMany<P extends string, F extends string> =
+                | {
+                      transaction?: EntityManager;
+                      options?: FindOptions<Entity, P, F>;
+                      where: FilterQuery<Entity>;
+                  }
+                | {
+                      pagination: Pagination;
+                      filters: Filters;
+                      sort: Sort;
+                      realm: string;
+                      options?: FindOptions<Entity, P, F>;
+                  };
+
+            type GetLookupList = {
+                pagination: Pagination;
+                realm: string;
+                term: string;
             };
 
             type FindEffectivePermissions = {
-                transaction?: EntityManager;
+                where: {
+                    account: string;
+                    realm: string;
+                };
                 pagination: Pagination;
-                account: string;
+                filters: Filters;
+                sort: Sort;
             };
 
             type AccountHasPermission = {
-                transaction?: EntityManager;
-                accountRoles: string[];
                 permission: string;
-                accountId: string;
+                account: string;
+                realm: string;
+                roles: string[];
+            };
+
+            type Filters = {
+                id?: StringFilterDTO;
+                code?: StringFilterDTO;
+                name?: StringFilterDTO;
+                createdAt?: OrdinalFilterDTO<Date>;
+                isSystemManaged?: boolean;
+                isRevoked?: boolean;
+            };
+
+            type Sort = {
+                createdAt?: QueryOrder;
             };
         }
     }

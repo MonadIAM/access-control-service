@@ -1,23 +1,26 @@
-import { AnyEntity, EntityManager, FilterQuery, Loaded, wrap } from "@mikro-orm/postgresql";
+import { EntityDictionary, EntityManager, FilterQuery, Knex, Loaded, raw, wrap } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { RolePermissionMatrix, PermissionOverride, Permission } from "~context/domain/entities";
+import { PermissionAdapter } from "~context/infrastructure/adapters";
 import { PermissionOverrideEffect } from "~context/enums";
 import { RepositoryException } from "~common/exceptions";
+import { Permission } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class PermissionRepository implements Repositories.Permission.Contract {
+export class PermissionRepository extends PermissionAdapter implements Repositories.Permission.Contract {
     private readonly resource = "Permission";
 
     public constructor(
         @InjectEntityManager("write") private readonly writeManager: EntityManager,
         @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {}
+    ) {
+        super();
+    }
 
     public async create({ transaction, entity }: Repositories.Permission.Create): Promise<Permission> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             entityManager.persist(entity);
             await entityManager.flush();
@@ -30,7 +33,7 @@ export class PermissionRepository implements Repositories.Permission.Contract {
 
     public async update({ transaction, entity, patch }: Repositories.Permission.Update): Promise<Permission> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             wrap(entity).assign(patch, { merge: true });
             await entityManager.flush();
@@ -43,7 +46,7 @@ export class PermissionRepository implements Repositories.Permission.Contract {
 
     public async delete({ transaction, realm, id }: Repositories.Permission.Delete): Promise<void> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             const where: FilterQuery<Permission> = {
                 isSystemManaged: false,
                 isRevoked: true,
@@ -61,7 +64,7 @@ export class PermissionRepository implements Repositories.Permission.Contract {
 
     public async bulkUpdate({ transaction, updates }: Repositories.Permission.BulkUpdate): Promise<Permission[]> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             for (const { entity, patch } of updates) {
                 wrap(entity).assign(patch, { merge: true });
@@ -77,7 +80,7 @@ export class PermissionRepository implements Repositories.Permission.Contract {
 
     public async bulkDelete({ transaction, identifiers, realm }: Repositories.Permission.BulkDelete): Promise<number> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             const where: FilterQuery<Permission> = {
                 id: { $in: identifiers },
                 isSystemManaged: false,
@@ -96,7 +99,7 @@ export class PermissionRepository implements Repositories.Permission.Contract {
         where,
     }: Repositories.Permission.FindUnique<P, F>): Promise<Nullable<Loaded<Permission, P, F>>> {
         try {
-            const entityManager = transaction ?? this.readManager;
+            const entityManager = transaction ?? this.readManager.fork();
             return entityManager.findOne(Permission, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
@@ -109,139 +112,207 @@ export class PermissionRepository implements Repositories.Permission.Contract {
         where,
     }: Repositories.Permission.FindUniqueOrThrow<P, F>): Promise<Loaded<Permission, P, F>> {
         try {
-            const entityManager = transaction ?? this.readManager;
+            const entityManager = transaction ?? this.readManager.fork();
             return entityManager.findOneOrFail(Permission, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findMany<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.Permission.FindMany<P, F>): Promise<[Loaded<Permission, P, F>[], number]> {
+    public findMany<P extends string = never, F extends string = "*">(
+        props: Repositories.Permission.FindMany<P, F>,
+    ): Promise<[Loaded<Permission, P, F>[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findAndCount(Permission, where, options);
+            if ("where" in props) {
+                const { transaction, options, where } = props;
+                const entityManager = transaction ?? this.readManager.fork();
+                return entityManager.findAndCount(Permission, where, options);
+            } else {
+                const { pagination, filters, sort, options, realm } = props;
+                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
+                const where = super.buildWhereORM(filters, { realm });
+                const entityManager = this.readManager.fork();
+                return entityManager.findAndCount(Permission, where, opts);
+            }
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    /**
-     * TODO: Важно следить за SLA запроса, чтобы время ег овыполнения не выходило за 100мс.
-     */
-    public findEffectivePermissions({
-        transaction,
+    public async getLookupList({
         pagination,
-        account,
+        realm,
+        term,
+    }: Repositories.Permission.GetLookupList): Promise<[Permission[], number]> {
+        const entityManager = this.readManager.fork();
+        const builder = entityManager.createQueryBuilder(Permission, "p");
+
+        builder
+            .select(["p.id", "p.code", "p.name"])
+            .where({ "p.realm": realm })
+            .limit(pagination.elementsPerPage)
+            .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
+
+        if (term) {
+            builder.andWhere("p.name % ?", [term]).orderBy({
+                [raw("similarity(p.name, ?)", [term])]: "DESC",
+            });
+        } else {
+            builder.orderBy({ "p.name": "ASC" });
+        }
+
+        return await builder.getResultAndCount();
+    }
+
+    public async findEffectivePermissions({
+        where: { account, realm },
+        pagination,
+        filters,
+        sort,
     }: Repositories.Permission.FindEffectivePermissions): Promise<[Permission[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.transactional(async (transaction: EntityManager) => {
-                const knex = transaction.getKnex();
+            const entityManager = this.readManager.fork();
+            const knex = entityManager.getKnex();
 
-                const accountRoles = knex
-                    .select("R.*")
-                    .distinct("R.id")
-                    .from({ R: "access_control.role" })
-                    .join({ RC: "access_control.role_closure" }, "R.id", "RC.ancestor_id")
-                    .join({ ARM: "access_control.account_role_matrix" }, "RC.descendant_id", "ARM.role_id")
-                    .where("ARM.account_id", account)
-                    .andWhere("ARM.is_revoked", false)
-                    .orderBy("R.id", "asc");
+            const buildEffectivePermissionIDs = (): Knex.QueryBuilder => {
+                const accountRolesSubquery = knex
+                    .select("rc.ancestor_id")
+                    .distinct()
+                    .from({ arm: "access_control.account_role_matrix" })
+                    .join({ rc: "access_control.role_closure" }, "arm.role_id", "rc.descendant_id")
+                    .where("arm.account_id", account)
+                    .andWhere("arm.realm_id", realm)
+                    .andWhere("arm.is_revoked", false);
 
-                const rolePermissionsQuery = knex
-                    .select("assignings.permission_id")
-                    .from("access_control.role_permission_matrix as assignings")
-                    .where("assignings.is_revoked", false)
-                    .whereIn("assignings.role_id", accountRoles)
-                    .distinct();
+                const rolePermissions = knex
+                    .select("rpm.permission_id")
+                    .distinct()
+                    .from({ rpm: "access_control.role_permission_matrix" })
+                    .whereIn("rpm.role_id", accountRolesSubquery)
+                    .andWhere("rpm.is_revoked", false);
 
-                const deniedPermissionsQuery = knex
-                    .select("overrides.permission_id")
-                    .from("access_control.permission_override as overrides")
-                    .where("overrides.account_id", account)
-                    .andWhere("overrides.effect", PermissionOverrideEffect.DENY)
-                    .andWhere("overrides.is_revoked", false);
+                const deniedPermissions = knex
+                    .select("po.permission_id")
+                    .from({ po: "access_control.permission_override" })
+                    .where("po.account_id", account)
+                    .andWhere("po.realm_id", realm)
+                    .andWhere("po.effect", PermissionOverrideEffect.DENY)
+                    .andWhere("po.is_revoked", false);
 
-                const allowedOverridesQuery = knex
-                    .select("overrides.permission_id")
-                    .from("access_control.permission_override as overrides")
-                    .where("overrides.account_id", account)
-                    .andWhere("overrides.effect", PermissionOverrideEffect.ALLOW)
-                    .andWhere("overrides.is_revoked", false);
+                const allowedOverrides = knex
+                    .select("po.permission_id")
+                    .from({ po: "access_control.permission_override" })
+                    .where("po.account_id", account)
+                    .andWhere("po.realm_id", realm)
+                    .andWhere("po.effect", PermissionOverrideEffect.ALLOW)
+                    .andWhere("po.is_revoked", false);
 
-                const basePermissionsQuery = knex
-                    .select("BasePerms.permission_id")
-                    .from(knex.raw("? as BasePerms", rolePermissionsQuery))
-                    .except(
-                        knex.select("DeniedPerms.permission_id").from(knex.raw("? as DeniedPerms", deniedPermissionsQuery)),
+                const basePermissions = knex
+                    .select("rp.permission_id")
+                    .from(knex.raw("? as rp", [rolePermissions]))
+                    .whereNotExists(
+                        knex
+                            .select(1)
+                            .from(knex.raw("? as dp", [deniedPermissions]))
+                            .whereRaw("dp.permission_id = rp.permission_id"),
                     );
 
-                const effectivePermissionIDsQuery = knex
-                    .select("CleanedPerms.permission_id")
-                    .from(knex.raw("? as CleanedPerms", basePermissionsQuery))
-                    .union(
-                        [
-                            knex
-                                .select("ExplicitAllows.permission_id")
-                                .from(knex.raw("? as ExplicitAllows", allowedOverridesQuery)),
-                        ],
-                        true,
-                    )
+                return knex
+                    .select("bp.permission_id")
+                    .from(knex.raw("? as bp", [basePermissions]))
+                    .union([knex.select("ao.permission_id").from(knex.raw("? as ao", [allowedOverrides]))], true)
                     .distinct();
+            };
 
-                const totalCountResult = await knex
-                    .count("* as total")
-                    .from(effectivePermissionIDsQuery.as("FinalIDs"))
-                    .first();
+            const dataQuery = knex
+                .select("p.*")
+                .from(knex.raw("? as effective", [buildEffectivePermissionIDs()]))
+                .innerJoin({ p: "access_control.permission" }, "p.id", "effective.permission_id");
 
-                const count = parseInt(totalCountResult?.total ?? 0, 10);
+            super.buildWhereKnex(dataQuery, filters, "p");
+            super.buildOptionsKnex(dataQuery, sort, pagination, "p");
 
-                const rawPermissions = await knex
-                    .select("permission.*")
-                    .from(effectivePermissionIDsQuery.as("FinalIDs"))
-                    .innerJoin("access_control.permission as permission", "permission.id", "FinalIDs.permission_id")
-                    .orderBy("permission.createdAt", "asc")
-                    .limit(pagination?.elementsPerPage)
-                    .offset((pagination?.currentPage - 1) * pagination?.elementsPerPage);
+            const countQuery = knex
+                .count("* as total")
+                .from(knex.raw("? as effective", [buildEffectivePermissionIDs()]))
+                .innerJoin({ p: "access_control.permission" }, "p.id", "effective.permission_id");
 
-                const permissions: Permission[] = rawPermissions.map((raw: AnyEntity) => {
-                    return transaction.map(Permission, raw);
-                });
+            super.buildWhereKnex(countQuery, filters, "p");
 
-                return [permissions, count];
+            const [rawPermissions, countResult] = await Promise.all([
+                dataQuery,
+                countQuery.first<{ total: string | number }>(),
+            ]);
+
+            const total = parseInt(String(countResult?.total ?? 0), 10);
+
+            const permissions: Permission[] = rawPermissions.map((raw: EntityDictionary<Permission>) => {
+                return entityManager.map(Permission, raw);
             });
+
+            return [permissions, total];
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
     public async accountHasPermission({
-        accountRoles,
-        transaction,
         permission,
-        accountId,
+        account,
+        realm,
+        roles,
     }: Repositories.Permission.AccountHasPermission): Promise<boolean> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            const override = await entityManager.findOne(PermissionOverride, {
-                isRevoked: false,
-                permission,
-                accountId,
-            });
+            const entityManager = this.readManager.fork();
+            const knex = entityManager.getKnex();
 
-            if (override) {
-                return override.effect !== PermissionOverrideEffect.DENY;
+            const effectiveRoles = knex
+                .select("RC.ancestor_id as role_id")
+                .distinct()
+                .from({ RC: "access_control.role_closure" })
+                .whereIn("RC.descendant_id", roles.length > 0 ? roles : [null]);
+
+            const denyCheck = knex
+                .select(knex.raw("1"))
+                .from("access_control.permission_override")
+                .where("account_id", account)
+                .andWhere("permission_id", permission)
+                .andWhere("realm_id", realm)
+                .andWhere("effect", PermissionOverrideEffect.DENY)
+                .andWhere("is_revoked", false);
+
+            const allowCheck = knex
+                .select(knex.raw("1"))
+                .from("access_control.permission_override")
+                .where("account_id", account)
+                .andWhere("permission_id", permission)
+                .andWhere("realm_id", realm)
+                .andWhere("effect", PermissionOverrideEffect.ALLOW)
+                .andWhere("is_revoked", false);
+
+            const roleCheck = knex
+                .select(knex.raw("1"))
+                .from("access_control.role_permission_matrix")
+                .whereIn("role_id", effectiveRoles)
+                .andWhere("permission_id", permission)
+                .andWhere("is_revoked", false);
+
+            const result = await knex
+                .select(
+                    knex.raw(`EXISTS (${denyCheck}) as has_deny`),
+                    knex.raw(`EXISTS (${allowCheck}) as has_allow`),
+                    knex.raw(`EXISTS (${roleCheck}) as has_role_access`),
+                )
+                .first<{ [K in "has_deny" | "has_allow" | "has_role_access"]: boolean }>();
+
+            if (!result) {
+                return false;
+            } else if (result.has_deny) {
+                return false;
+            } else if (result.has_allow) {
+                return true;
             } else {
-                const roleAccessCount = await entityManager.count(RolePermissionMatrix, {
-                    role: { id: { $in: accountRoles } },
-                    permission: { id: permission },
-                    isRevoked: false,
-                });
-                return roleAccessCount > 0;
+                return result.has_role_access;
             }
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);

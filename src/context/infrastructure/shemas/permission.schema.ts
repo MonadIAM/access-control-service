@@ -14,6 +14,14 @@ export const PermissionSchema = new EntitySchema<Permission>({
         },
     ],
 
+    indexes: [
+        {
+            name: "permission_name_trgm_idx",
+            expression:
+                'CREATE INDEX "permission_name_trgm_idx" ON "access_control"."permission" USING gin ("name" gin_trgm_ops)',
+        },
+    ],
+
     properties: {
         id: { primary: true, type: "uuid", defaultRaw: "gen_random_uuid()" },
 

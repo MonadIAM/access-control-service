@@ -7,6 +7,7 @@ import { name, version } from "../../package.json";
 
 const SWAGGER_TAGS: Record<string, string> = {
     Role: "Lifecycle management for roles, including complex inheritance and hierarchical structures.",
+    Permission: "System-wide registry of granular capabilities used for both RBAC and DAC logic.",
 };
 
 export abstract class BootstrapSwagger {

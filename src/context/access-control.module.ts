@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
 
 import { REPOSITORIES } from "./infrastructure/repositories";
-import { RoleController } from "./interface";
+import { CONTROLLERS } from "./interface/controllers";
 
 @Module({
     providers: [...REPOSITORIES],
-    controllers: [RoleController],
+    controllers: [...CONTROLLERS],
 })
 export class AccessControlModule {}
