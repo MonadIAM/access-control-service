@@ -1,4 +1,4 @@
-import { Collection, Ref } from "@mikro-orm/core";
+import { Collection } from "@mikro-orm/core";
 
 import { RolePermissionMatrix } from "./role-permission-matrix.entity";
 import { PermissionOverride } from "./permission-override.entity";
@@ -17,7 +17,7 @@ export class Permission {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public realm: Ref<Realm>;
+    public realm: Realm;
 
     public accountOverrides = new Collection<PermissionOverride>(this);
     public roleMatrix = new Collection<RolePermissionMatrix>(this);

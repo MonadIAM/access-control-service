@@ -33,7 +33,6 @@ export const RoleDelegationPolicySchema = new EntitySchema<RoleDelegationPolicy>
         description: { type: "text", nullable: true },
 
         realm: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Realm,
@@ -41,7 +40,6 @@ export const RoleDelegationPolicySchema = new EntitySchema<RoleDelegationPolicy>
             deleteRule: "cascade",
         },
         delegator: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Role,
@@ -49,7 +47,6 @@ export const RoleDelegationPolicySchema = new EntitySchema<RoleDelegationPolicy>
             deleteRule: "cascade",
         },
         target: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Role,

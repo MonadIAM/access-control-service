@@ -34,7 +34,6 @@ export const PermissionOverrideSchema = new EntitySchema<PermissionOverride>({
         effect: { enum: true, items: () => PermissionOverrideEffect, nullable: false },
 
         permission: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Permission,
@@ -42,7 +41,6 @@ export const PermissionOverrideSchema = new EntitySchema<PermissionOverride>({
             deleteRule: "cascade",
         },
         realm: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Realm,

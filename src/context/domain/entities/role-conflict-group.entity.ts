@@ -1,4 +1,4 @@
-import { Collection, Ref } from "@mikro-orm/core";
+import { Collection } from "@mikro-orm/core";
 
 import { RoleConflictMember } from "./role-conflict-member.entity";
 import { Realm } from "./realm.entity";
@@ -17,7 +17,7 @@ export class RoleConflictGroup {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public realm: Ref<Realm>;
+    public realm: Realm;
 
     public members = new Collection<RoleConflictMember>(this);
 

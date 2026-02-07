@@ -31,7 +31,6 @@ export const RolePermissionMatrixSchema = new EntitySchema<RolePermissionMatrix>
         isSystemManaged: { type: "boolean", default: false, nullable: false },
 
         role: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Role,
@@ -39,7 +38,6 @@ export const RolePermissionMatrixSchema = new EntitySchema<RolePermissionMatrix>
             deleteRule: "cascade",
         },
         realm: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Realm,
@@ -47,7 +45,6 @@ export const RolePermissionMatrixSchema = new EntitySchema<RolePermissionMatrix>
             deleteRule: "cascade",
         },
         permission: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Permission,

@@ -1,5 +1,3 @@
-import { Ref } from "@mikro-orm/core";
-
 import { PermissionOverrideEffect } from "~context/enums";
 
 import { Permission } from "./permission.entity";
@@ -16,8 +14,8 @@ export class PermissionOverride {
     public lastActions: DeltaAudit.LastActionsSnapshot;
     public isRevoked: boolean;
 
-    public permission: Ref<Permission>;
-    public realm: Ref<Realm>;
+    public permission: Permission;
+    public realm: Realm;
 
     public constructor(props: Entities.PermissionOverride.ConstructorProps) {
         this.isRevoked = props.isRevoked ?? false;

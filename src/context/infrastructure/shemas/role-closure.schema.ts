@@ -22,7 +22,6 @@ export const RoleClosureSchema = new EntitySchema<RoleClosure>({
         depth: { type: "int", nullable: false },
 
         realm: {
-            ref: true,
             kind: "m:1",
             primary: true,
             nullable: false,
@@ -31,7 +30,6 @@ export const RoleClosureSchema = new EntitySchema<RoleClosure>({
             deleteRule: "cascade",
         },
         ancestor: {
-            ref: true,
             kind: "m:1",
             primary: true,
             nullable: false,
@@ -40,7 +38,6 @@ export const RoleClosureSchema = new EntitySchema<RoleClosure>({
             deleteRule: "cascade",
         },
         descendant: {
-            ref: true,
             kind: "m:1",
             primary: true,
             nullable: false,

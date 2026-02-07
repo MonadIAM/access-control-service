@@ -1,5 +1,3 @@
-import { Ref } from "@mikro-orm/core";
-
 import { RoleConflictGroup } from "./role-conflict-group.entity";
 import { Role } from "./role.entity";
 
@@ -13,8 +11,8 @@ export class RoleConflictMember {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public group: Ref<RoleConflictGroup>;
-    public role: Ref<Role>;
+    public group: RoleConflictGroup;
+    public role: Role;
 
     public constructor(props: Entities.RoleConflictMember.ConstructorProps) {
         this.isSystemManaged = props.isSystemManaged ?? false;

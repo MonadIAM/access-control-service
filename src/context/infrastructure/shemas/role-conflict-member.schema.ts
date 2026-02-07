@@ -29,7 +29,6 @@ export const RoleConflictMemberSchema = new EntitySchema<RoleConflictMember>({
         isSystemManaged: { type: "boolean", default: false, nullable: false },
 
         group: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => RoleConflictGroup,
@@ -37,7 +36,6 @@ export const RoleConflictMemberSchema = new EntitySchema<RoleConflictMember>({
             deleteRule: "cascade",
         },
         role: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Role,

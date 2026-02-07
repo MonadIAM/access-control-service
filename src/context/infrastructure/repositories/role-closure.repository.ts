@@ -175,7 +175,7 @@ export class RoleClosureRepository {
                         orderBy: roleOrderBy ? { ancestor: roleOrderBy } : { depth: QueryOrder.DESC },
                     },
                 )
-                .then(([ancestors, total]) => [ancestors.map(({ ancestor }) => ancestor.$), total]);
+                .then(([ancestors, total]) => [ancestors.map(({ ancestor }) => ancestor), total]);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
@@ -201,7 +201,7 @@ export class RoleClosureRepository {
                         orderBy: roleOrderBy ? { descendant: roleOrderBy } : { depth: QueryOrder.ASC },
                     },
                 )
-                .then(([ancestors, total]) => [ancestors.map(({ descendant }) => descendant.$), total]);
+                .then(([ancestors, total]) => [ancestors.map(({ descendant }) => descendant), total]);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

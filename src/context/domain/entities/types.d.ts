@@ -1,4 +1,4 @@
-import { AnyEntity, Ref } from "@mikro-orm/postgresql";
+import { AnyEntity } from "@mikro-orm/postgresql";
 
 import {
     PermissionOverrideEffect,
@@ -38,7 +38,7 @@ declare global {
             };
 
             type ConstructorProps = Seed & {
-                realm: Ref<RealmEntity>;
+                realm: RealmEntity;
             };
 
             type ChangeDataProps = BaseMethodProps & {
@@ -54,9 +54,9 @@ declare global {
             };
 
             type ConstructorProps = Seed & {
-                permission: Ref<PermissionEntity>;
-                realm: Ref<RealmEntity>;
-                role: Ref<RoleEntity>;
+                permission: PermissionEntity;
+                realm: RealmEntity;
+                role: RoleEntity;
             };
         }
 
@@ -72,9 +72,9 @@ declare global {
             };
 
             type ConstructorProps = Seed & {
-                delegator: Ref<RoleEntity>;
-                target: Ref<RoleEntity>;
-                realm: Ref<RealmEntity>;
+                delegator: RoleEntity;
+                target: RoleEntity;
+                realm: RealmEntity;
             };
 
             type ChangeDataProps = BaseMethodProps & {
@@ -90,8 +90,8 @@ declare global {
             };
 
             type ConstructorProps = Seed & {
-                group: Ref<RoleConflictGroupEntity>;
-                role: Ref<RoleEntity>;
+                group: RoleConflictGroupEntity;
+                role: RoleEntity;
             };
         }
 
@@ -109,7 +109,7 @@ declare global {
             };
 
             type ConstructorProps = Seed & {
-                realm: Ref<RealmEntity>;
+                realm: RealmEntity;
             };
 
             type ChangeDataProps = BaseMethodProps & {
@@ -123,9 +123,9 @@ declare global {
             };
 
             type ConstructorProps = Seed & {
-                descendant: Ref<RoleEntity>;
-                ancestor: Ref<RoleEntity>;
-                realm: Ref<RealmEntity>;
+                descendant: RoleEntity;
+                ancestor: RoleEntity;
+                realm: RealmEntity;
             };
         }
 
@@ -155,7 +155,7 @@ declare global {
             };
 
             type ConstructorProps = Seed & {
-                realm: Ref<RealmEntity>;
+                realm: RealmEntity;
             };
 
             type ChangeDataProps = BaseMethodProps & {
@@ -172,8 +172,8 @@ declare global {
             };
 
             type ConstructorProps = Seed & {
-                permission: Ref<PermissionEntity>;
-                realm: Ref<RealmEntity>;
+                permission: PermissionEntity;
+                realm: RealmEntity;
             };
         }
 

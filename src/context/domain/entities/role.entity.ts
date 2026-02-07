@@ -1,4 +1,4 @@
-import { Collection, Ref } from "@mikro-orm/core";
+import { Collection } from "@mikro-orm/core";
 
 import { RoleActorType, RoleProtoType } from "~context/enums";
 
@@ -24,7 +24,7 @@ export class Role {
     public nonDelegable: boolean;
     public isRevoked: boolean;
 
-    public realm: Ref<Realm>;
+    public realm: Realm;
 
     public delegationPoliciesAsDelegator = new Collection<RoleDelegationPolicy>(this);
     public delegationPoliciesAsTarget = new Collection<RoleDelegationPolicy>(this);

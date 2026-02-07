@@ -1,5 +1,3 @@
-import { Ref } from "@mikro-orm/core";
-
 import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
 
@@ -15,9 +13,9 @@ export class RoleDelegationPolicy {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public delegator: Ref<Role>;
-    public target: Ref<Role>;
-    public realm: Ref<Realm>;
+    public delegator: Role;
+    public target: Role;
+    public realm: Realm;
 
     public constructor(props: Entities.RoleDelegationPolicy.ConstructorProps) {
         this.isSystemManaged = props.isSystemManaged ?? false;

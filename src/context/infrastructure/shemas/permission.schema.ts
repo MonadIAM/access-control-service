@@ -41,7 +41,6 @@ export const PermissionSchema = new EntitySchema<Permission>({
             mappedBy: "permission",
         },
         realm: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Realm,

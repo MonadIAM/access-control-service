@@ -1,5 +1,3 @@
-import { Ref } from "@mikro-orm/core";
-
 import { Permission } from "./permission.entity";
 import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
@@ -14,9 +12,9 @@ export class RolePermissionMatrix {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public permission: Ref<Permission>;
-    public realm: Ref<Realm>;
-    public role: Ref<Role>;
+    public permission: Permission;
+    public realm: Realm;
+    public role: Role;
 
     public constructor(props: Entities.RolePermissionMatrix.ConstructorProps) {
         this.isSystemManaged = props.isSystemManaged ?? false;

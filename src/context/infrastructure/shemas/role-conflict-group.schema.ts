@@ -24,7 +24,6 @@ export const RoleConflictGroupSchema = new EntitySchema<RoleConflictGroup>({
         description: { type: "text", nullable: true },
 
         realm: {
-            ref: true,
             kind: "m:1",
             nullable: false,
             entity: () => Realm,
