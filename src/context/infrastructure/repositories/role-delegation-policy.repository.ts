@@ -2,17 +2,23 @@ import { EntityManager, FilterQuery, Loaded, wrap } from "@mikro-orm/postgresql"
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
+import { RoleDelegationPolicyAdapter } from "~context/infrastructure/adapters";
 import { RoleDelegationPolicy } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleDelegationPolicyRepository implements Repositories.RoleDelegationPolicy.Contract {
+export class RoleDelegationPolicyRepository
+    extends RoleDelegationPolicyAdapter
+    implements Repositories.RoleDelegationPolicy.Contract
+{
     private readonly resource = "RoleDelegationPolicy";
 
     public constructor(
         @InjectEntityManager("write") private readonly writeManager: EntityManager,
         @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {}
+    ) {
+        super();
+    }
 
     public async create({ transaction, entity }: Repositories.RoleDelegationPolicy.Create): Promise<RoleDelegationPolicy> {
         try {
@@ -127,14 +133,21 @@ export class RoleDelegationPolicyRepository implements Repositories.RoleDelegati
         }
     }
 
-    public async findMany<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.RoleDelegationPolicy.FindMany<P, F>): Promise<[Loaded<RoleDelegationPolicy, P, F>[], number]> {
+    public async findMany<P extends string = never, F extends string = "*">(
+        props: Repositories.RoleDelegationPolicy.FindMany<P, F>,
+    ): Promise<[Loaded<RoleDelegationPolicy, P, F>[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findAndCount(RoleDelegationPolicy, where, options);
+            if ("where" in props) {
+                const { transaction, options, where } = props;
+                const entityManager = transaction ?? this.readManager.fork();
+                return await entityManager.findAndCount(RoleDelegationPolicy, where, options);
+            } else {
+                const { pagination, filters, sort, options, realm } = props;
+                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
+                const where = super.buildWhereORM(filters, { realm });
+                const entityManager = this.readManager.fork();
+                return await entityManager.findAndCount(RoleDelegationPolicy, where, opts);
+            }
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
