@@ -3,7 +3,7 @@ import { Expose, Type } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
-import { PaginationDTO } from "~common/dto";
+import { BaseReadQueryDTO, PaginationDTO } from "~common/dto";
 
 import { RolesFiltersDTO } from "../utils/filters.dto";
 import { RolesSortDTO } from "../utils/sort.dto";
@@ -34,7 +34,7 @@ export class GetRolesListBodyDTO {
     public sort!: RolesSortDTO;
 }
 
-export class GetRolesListQueryDTO {
+export class GetRolesListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

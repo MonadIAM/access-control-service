@@ -17,6 +17,11 @@ import {
 @ApiTags("AccountRoleMatrix")
 @Controller("/account-role-matrix")
 export class AccountRoleMatrixController extends BaseController {
+    private readonly populate = {
+        DETAILED: ["realm", "role"] as const,
+        COMPACT: [] as const,
+    };
+
     public constructor(
         private readonly accountRoleMatrixRepository: AccountRoleMatrixRepository,
         i18nService: I18nService,
@@ -30,9 +35,9 @@ export class AccountRoleMatrixController extends BaseController {
     @ApiQuery({ type: GetAccountRoleMatrixByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: AccountRoleMatrixDTO })
-    public getById(@Query() { matrix, realm }: GetAccountRoleMatrixByIdQueryDTO): Promise<AccountRoleMatrixDTO> {
+    public getById(@Query() { matrix, realm, view }: GetAccountRoleMatrixByIdQueryDTO): Promise<AccountRoleMatrixDTO> {
         return this.accountRoleMatrixRepository
-            .findUniqueOrThrow({ options: { populate: ["realm", "role"] }, where: { id: matrix, realm } })
+            .findUniqueOrThrow({ options: { populate: this.populate[view] }, where: { id: matrix, realm } })
             .then((data) => super.formatResponse({ DTO: AccountRoleMatrixDTO, data }));
     }
 
@@ -44,11 +49,11 @@ export class AccountRoleMatrixController extends BaseController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: AccountRoleMatrixListDTO })
     public getList(
-        @Query() { realm }: GetAccountRoleMatricesListQueryDTO,
+        @Query() { realm, view }: GetAccountRoleMatricesListQueryDTO,
         @Body() { pagination, filters, sort }: GetAccountRoleMatricesListBodyDTO,
     ): Promise<AccountRoleMatrixListDTO> {
         return this.accountRoleMatrixRepository
-            .findMany({ options: { populate: ["realm", "role"] }, pagination, filters, sort, realm })
+            .findMany({ options: { populate: this.populate[view] }, pagination, filters, sort, realm })
             .then((data) => super.formatResponse({ DTO: AccountRoleMatrixListDTO, pagination, data }));
     }
 }

@@ -4,9 +4,9 @@ import { ApiProperty } from "@nestjs/swagger";
 import { DeltaAuditLastActionsDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-import { PermissionDTO } from "../../permission";
-import { RealmDTO } from "../../realm";
-import { RoleDTO } from "../../role";
+import { PermissionLookupDTO } from "../../permission";
+import { RealmLookupDTO } from "../../realm";
+import { RoleLookupDTO } from "../../role";
 
 export class RolePermissionMatrixDTO {
     @Expose()
@@ -26,21 +26,21 @@ export class RolePermissionMatrixDTO {
 
     @Expose()
     @Validator.ValidateNested()
-    @Type(() => RoleDTO)
-    @ApiProperty({ required: true, type: RoleDTO })
-    public role!: RoleDTO;
+    @Type(() => RoleLookupDTO)
+    @ApiProperty({ required: true, type: RoleLookupDTO })
+    public role!: RoleLookupDTO;
 
     @Expose()
     @Validator.ValidateNested()
-    @Type(() => RealmDTO)
-    @ApiProperty({ required: true, type: RealmDTO })
-    public realm!: RealmDTO;
+    @Type(() => RealmLookupDTO)
+    @ApiProperty({ required: true, type: RealmLookupDTO })
+    public realm!: RealmLookupDTO;
 
     @Expose()
     @Validator.ValidateNested()
-    @Type(() => PermissionDTO)
-    @ApiProperty({ required: true, type: PermissionDTO })
-    public permission!: PermissionDTO;
+    @Type(() => PermissionLookupDTO)
+    @ApiProperty({ required: true, type: PermissionLookupDTO })
+    public permission!: PermissionLookupDTO;
 
     @Expose()
     @Validator.IsDate()

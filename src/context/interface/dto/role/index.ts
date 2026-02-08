@@ -6,8 +6,8 @@ export { GetRoleHierarchyGraphQueryDTO } from "./req/get-hierarchy-graph.dto";
 export { GetRoleByIdQueryDTO } from "./req/get-by-id.dto";
 
 export { RoleHierarchyGraphDTO } from "./res/hierarchy-graph.dto";
-export { LookupRoleListDTO } from "./res/lookup-list.dto";
-export { LookupRoleDTO } from "./res/lookup-entity.dto";
+export { RoleLookupListDTO } from "./res/lookup-list.dto";
+export { RoleLookupDTO } from "./res/lookup-entity.dto";
 export { RoleListDTO } from "./res/list.dto";
 export { RoleDTO } from "./res/entity.dto";
 

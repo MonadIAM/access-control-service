@@ -4,7 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { DeltaAuditLastActionsDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-import { RealmDTO } from "../../realm";
+import { RealmLookupDTO } from "../../realm";
 
 export class PermissionDTO {
     @Expose()
@@ -30,9 +30,9 @@ export class PermissionDTO {
 
     @Expose()
     @Validator.ValidateNested()
-    @Type(() => RealmDTO)
-    @ApiProperty({ required: true, type: RealmDTO })
-    public realm!: RealmDTO;
+    @Type(() => RealmLookupDTO)
+    @ApiProperty({ required: true, type: RealmLookupDTO })
+    public realm!: RealmLookupDTO;
 
     @Expose()
     @Validator.IsBoolean()

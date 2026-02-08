@@ -17,6 +17,11 @@ import {
 @ApiTags("RolePermissionMatrix")
 @Controller("/role-permission-matrix")
 export class RolePermissionMatrixController extends BaseController {
+    private readonly populate = {
+        DETAILED: ["permission", "realm", "role"] as const,
+        COMPACT: [] as const,
+    };
+
     public constructor(
         private readonly rolePermissionMatrixRepository: RolePermissionMatrixRepository,
         i18nService: I18nService,
@@ -30,9 +35,11 @@ export class RolePermissionMatrixController extends BaseController {
     @ApiQuery({ type: GetRolePermissionMatrixByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RolePermissionMatrixDTO })
-    public getById(@Query() { matrix, realm }: GetRolePermissionMatrixByIdQueryDTO): Promise<RolePermissionMatrixDTO> {
+    public getById(
+        @Query() { matrix, realm, view }: GetRolePermissionMatrixByIdQueryDTO,
+    ): Promise<RolePermissionMatrixDTO> {
         return this.rolePermissionMatrixRepository
-            .findUniqueOrThrow({ where: { id: matrix, realm } })
+            .findUniqueOrThrow({ options: { populate: this.populate[view] }, where: { id: matrix, realm } })
             .then((data) => super.formatResponse({ DTO: RolePermissionMatrixDTO, data }));
     }
 
@@ -44,11 +51,11 @@ export class RolePermissionMatrixController extends BaseController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RolePermissionMatrixListDTO })
     public getList(
-        @Query() { realm }: GetRolePermissionMatricesListQueryDTO,
+        @Query() { realm, view }: GetRolePermissionMatricesListQueryDTO,
         @Body() { pagination, filters, sort }: GetRolePermissionMatricesListBodyDTO,
     ): Promise<RolePermissionMatrixListDTO> {
         return this.rolePermissionMatrixRepository
-            .findMany({ pagination, filters, sort, realm })
+            .findMany({ options: { populate: this.populate[view] }, pagination, filters, sort, realm })
             .then((data) => super.formatResponse({ DTO: RolePermissionMatrixListDTO, pagination, data }));
     }
 }

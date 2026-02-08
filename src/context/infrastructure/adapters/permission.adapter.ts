@@ -27,6 +27,10 @@ export class PermissionAdapter {
             where.id = MikroAdapter.applyStringFilter(filters.id);
         }
 
+        if (filters.role) {
+            where.roleMatrix = { role: MikroAdapter.applyStringFilter(filters.role) };
+        }
+
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }

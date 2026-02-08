@@ -1,10 +1,10 @@
 import { Expose, Type } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 
-import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
+import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class RolesFiltersDTO {
+export class RolesFiltersDTO implements Repositories.Role.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
@@ -25,6 +25,13 @@ export class RolesFiltersDTO {
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
     public name?: StringFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => LinkFilterDTO)
+    @ApiProperty({ required: false, type: LinkFilterDTO })
+    public permission?: LinkFilterDTO;
 
     @Expose()
     @Validator.IsOptional()

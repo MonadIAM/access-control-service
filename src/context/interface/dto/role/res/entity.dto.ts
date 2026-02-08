@@ -5,7 +5,7 @@ import { RoleActorType, RoleProtoType } from "~context/enums";
 import { DeltaAuditLastActionsDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-import { RealmDTO } from "../../realm";
+import { RealmLookupDTO } from "../../realm";
 
 export class RoleDTO {
     @Expose()
@@ -41,9 +41,9 @@ export class RoleDTO {
 
     @Expose()
     @Validator.ValidateNested()
-    @Type(() => RealmDTO)
-    @ApiProperty({ required: true, type: RealmDTO })
-    public realm!: RealmDTO;
+    @Type(() => RealmLookupDTO)
+    @ApiProperty({ required: true, type: RealmLookupDTO })
+    public realm!: RealmLookupDTO;
 
     @Expose()
     @Validator.IsBoolean()

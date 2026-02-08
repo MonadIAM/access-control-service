@@ -38,3 +38,8 @@ export enum DelegatorType {
     ACCOUNT = "ACCOUNT",
     ROLE = "ROLE",
 }
+
+export enum ResponseViewType {
+    DETAILED = "DETAILED",
+    COMPACT = "COMPACT",
+}

@@ -4,8 +4,8 @@ import { ApiProperty } from "@nestjs/swagger";
 import { DeltaAuditLastActionsDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-import { RealmDTO } from "../../realm";
-import { RoleDTO } from "../../role";
+import { RealmLookupDTO } from "../../realm";
+import { RoleLookupDTO } from "../../role";
 
 export class AccountRoleMatrixDTO {
     @Expose()
@@ -30,15 +30,15 @@ export class AccountRoleMatrixDTO {
 
     @Expose()
     @Validator.ValidateNested()
-    @Type(() => RoleDTO)
-    @ApiProperty({ required: true, type: RoleDTO })
-    public role!: RoleDTO;
+    @Type(() => RoleLookupDTO)
+    @ApiProperty({ required: true, type: RoleLookupDTO })
+    public role!: RoleLookupDTO;
 
     @Expose()
     @Validator.ValidateNested()
-    @Type(() => RealmDTO)
-    @ApiProperty({ required: true, type: RealmDTO })
-    public realm!: RealmDTO;
+    @Type(() => RealmLookupDTO)
+    @ApiProperty({ required: true, type: RealmLookupDTO })
+    public realm!: RealmLookupDTO;
 
     @Expose()
     @Validator.IsDate()

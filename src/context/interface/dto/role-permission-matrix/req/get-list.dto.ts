@@ -2,8 +2,8 @@ import { IsNotEmptyObject, ValidateIf } from "class-validator";
 import { Expose, Type } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 
+import { BaseReadQueryDTO, PaginationDTO } from "~common/dto";
 import { Validator } from "~common/validator";
-import { PaginationDTO } from "~common/dto";
 
 import { RolePermissionMatricesFiltersDTO } from "../utils/filters.dto";
 import { RolePermissionMatricesSortDTO } from "../utils/sort.dto";
@@ -34,7 +34,7 @@ export class GetRolePermissionMatricesListBodyDTO {
     public sort!: RolePermissionMatricesSortDTO;
 }
 
-export class GetRolePermissionMatricesListQueryDTO {
+export class GetRolePermissionMatricesListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

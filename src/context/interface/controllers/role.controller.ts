@@ -18,7 +18,7 @@ import {
     GetRolesListQueryDTO,
     GetRoleByIdQueryDTO,
     GetRolesListBodyDTO,
-    LookupRoleListDTO,
+    RoleLookupListDTO,
     RoleListDTO,
     RoleDTO,
 } from "../dto/role";
@@ -26,6 +26,11 @@ import {
 @ApiTags("Role")
 @Controller("/role")
 export class RoleController extends BaseController {
+    private readonly populate = {
+        DETAILED: ["realm"] as const,
+        COMPACT: [] as const,
+    };
+
     public constructor(
         private readonly roleRepository: RoleRepository,
         i18nService: I18nService,
@@ -39,9 +44,9 @@ export class RoleController extends BaseController {
     @ApiQuery({ type: GetRoleByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDTO })
-    public getById(@Query() { realm, role }: GetRoleByIdQueryDTO): Promise<RoleDTO> {
+    public getById(@Query() { realm, role, view }: GetRoleByIdQueryDTO): Promise<RoleDTO> {
         return this.roleRepository
-            .findUniqueOrThrow({ where: { id: role, realm } })
+            .findUniqueOrThrow({ options: { populate: this.populate[view] }, where: { id: role, realm } })
             .then((data) => super.formatResponse({ DTO: RoleDTO, data }));
     }
 
@@ -53,11 +58,11 @@ export class RoleController extends BaseController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleListDTO })
     public getList(
-        @Query() { realm }: GetRolesListQueryDTO,
+        @Query() { realm, view }: GetRolesListQueryDTO,
         @Body() { pagination, filters, sort }: GetRolesListBodyDTO,
     ): Promise<RoleListDTO> {
         return this.roleRepository
-            .findMany({ pagination, filters, realm, sort })
+            .findMany({ options: { populate: this.populate[view] }, pagination, filters, realm, sort })
             .then((data) => super.formatResponse({ DTO: RoleListDTO, pagination, data }));
     }
 
@@ -67,14 +72,14 @@ export class RoleController extends BaseController {
     @ApiBody({ type: GetRolesLookupListBodyDTO, required: true })
     @ApiQuery({ type: GetRolesLookupListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    @ApiResponse({ status: HttpStatus.OK, type: LookupRoleListDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: RoleLookupListDTO })
     public getLookupList(
         @Query() { realm, term }: GetRolesLookupListQueryDTO,
         @Body() { pagination }: GetRolesLookupListBodyDTO,
-    ): Promise<LookupRoleListDTO> {
+    ): Promise<RoleLookupListDTO> {
         return this.roleRepository
             .getLookupList({ pagination, realm, term })
-            .then((data) => super.formatResponse({ DTO: LookupRoleListDTO, pagination, data }));
+            .then((data) => super.formatResponse({ DTO: RoleLookupListDTO, pagination, data }));
     }
 
     @Post("list/delegable")

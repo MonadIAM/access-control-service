@@ -22,6 +22,11 @@ import {
 @ApiTags("Permission")
 @Controller("/permission")
 export class PermissionController extends BaseController {
+    private readonly populate = {
+        DETAILED: ["realm"] as const,
+        COMPACT: [] as const,
+    };
+
     public constructor(
         private readonly permissionRepository: PermissionRepository,
         i18nService: I18nService,
@@ -35,9 +40,9 @@ export class PermissionController extends BaseController {
     @ApiQuery({ type: GetPermissionByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionDTO })
-    public getById(@Query() { realm, permission }: GetPermissionByIdQueryDTO): Promise<PermissionDTO> {
+    public getById(@Query() { realm, permission, view }: GetPermissionByIdQueryDTO): Promise<PermissionDTO> {
         return this.permissionRepository
-            .findUniqueOrThrow({ where: { id: permission, realm } })
+            .findUniqueOrThrow({ options: { populate: this.populate[view] }, where: { id: permission, realm } })
             .then((data) => super.formatResponse({ DTO: PermissionDTO, data }));
     }
 
@@ -49,11 +54,11 @@ export class PermissionController extends BaseController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionListDTO })
     public getList(
-        @Query() { realm }: GetPermissionsListQueryDTO,
+        @Query() { realm, view }: GetPermissionsListQueryDTO,
         @Body() { pagination, filters, sort }: GetPermissionsListBodyDTO,
     ): Promise<PermissionListDTO> {
         return this.permissionRepository
-            .findMany({ pagination, filters, realm, sort })
+            .findMany({ options: { populate: this.populate[view] }, pagination, filters, realm, sort })
             .then((data) => super.formatResponse({ DTO: PermissionListDTO, pagination, data }));
     }
 

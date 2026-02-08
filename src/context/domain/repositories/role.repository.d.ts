@@ -131,13 +131,13 @@ declare global {
                 id?: StringFilterDTO;
                 code?: StringFilterDTO;
                 name?: StringFilterDTO;
+                permission?: LinkFilterDTO;
                 actorType?: StringFilterDTO;
                 protoType?: StringFilterDTO;
                 createdAt?: OrdinalFilterDTO<Date>;
                 nonDelegable?: boolean;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
-                permission?: LinkFilterDTO;
             };
 
             type Sort = {
