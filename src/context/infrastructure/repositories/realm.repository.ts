@@ -19,7 +19,7 @@ export class RealmRepository extends RealmAdapter implements Repositories.Realm.
 
     public async create({ transaction, entity }: Repositories.Realm.Create): Promise<Realm> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             entityManager.persist(entity);
             await entityManager.flush();
@@ -32,7 +32,7 @@ export class RealmRepository extends RealmAdapter implements Repositories.Realm.
 
     public async update({ transaction, entity, patch }: Repositories.Realm.Update): Promise<Realm> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             wrap(entity).assign(patch, { merge: true });
             await entityManager.flush();
@@ -45,7 +45,7 @@ export class RealmRepository extends RealmAdapter implements Repositories.Realm.
 
     public async delete({ transaction, id }: Repositories.Realm.Delete): Promise<void> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             const where: FilterQuery<Realm> = {
                 isSystemManaged: false,
                 isRevoked: true,
@@ -60,46 +60,46 @@ export class RealmRepository extends RealmAdapter implements Repositories.Realm.
         }
     }
 
-    public findUnique<P extends string = never, F extends string = "*">({
+    public async findUnique<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.Realm.FindUnique<P, F>): Promise<Nullable<Loaded<Realm, P, F>>> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findOne(Realm, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.findOne(Realm, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findUniqueOrThrow<P extends string = never, F extends string = "*">({
+    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.Realm.FindUniqueOrThrow<P, F>): Promise<Loaded<Realm, P, F>> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findOneOrFail(Realm, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.findOneOrFail(Realm, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findMany<P extends string = never, F extends string = "*">(
+    public async findMany<P extends string = never, F extends string = "*">(
         props: Repositories.Realm.FindMany<P, F>,
     ): Promise<[Loaded<Realm, P, F>[], number]> {
         try {
             if ("where" in props) {
                 const { transaction, options, where } = props;
                 const entityManager = transaction ?? this.readManager.fork();
-                return entityManager.findAndCount(Realm, where, options);
+                return await entityManager.findAndCount(Realm, where, options);
             } else {
                 const { pagination, filters, sort, options } = props;
                 const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
                 const where = super.buildWhereORM(filters);
                 const entityManager = this.readManager.fork();
-                return entityManager.findAndCount(Realm, where, opts);
+                return await entityManager.findAndCount(Realm, where, opts);
             }
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
@@ -107,22 +107,26 @@ export class RealmRepository extends RealmAdapter implements Repositories.Realm.
     }
 
     public async getLookupList({ pagination, term }: Repositories.Realm.GetLookupList): Promise<[Realm[], number]> {
-        const entityManager = this.readManager.fork();
-        const builder = entityManager.createQueryBuilder(Realm, "r");
+        try {
+            const entityManager = this.readManager.fork();
+            const builder = entityManager.createQueryBuilder(Realm, "r");
 
-        builder
-            .select(["r.id", "r.code", "r.name"])
-            .limit(pagination.elementsPerPage)
-            .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
+            builder
+                .select(["r.id", "r.code", "r.name"])
+                .limit(pagination.elementsPerPage)
+                .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
 
-        if (term) {
-            builder.andWhere("r.name % ?", [term]).orderBy({
-                [raw("similarity(r.name, ?)", [term])]: "DESC",
-            });
-        } else {
-            builder.orderBy({ "r.name": "ASC" });
+            if (term) {
+                builder.andWhere("r.name % ?", [term]).orderBy({
+                    [raw("similarity(r.name, ?)", [term])]: "DESC",
+                });
+            } else {
+                builder.orderBy({ "r.name": "ASC" });
+            }
+
+            return await builder.getResultAndCount();
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
         }
-
-        return await builder.getResultAndCount();
     }
 }

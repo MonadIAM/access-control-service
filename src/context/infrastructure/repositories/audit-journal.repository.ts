@@ -16,7 +16,7 @@ export class AuditJournalRepository implements Repositories.AuditJournal.Contrac
 
     public async create({ transaction, entity }: Repositories.AuditJournal.Create): Promise<AuditJournal> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             entityManager.persist(entity);
             await entityManager.flush();
@@ -29,7 +29,7 @@ export class AuditJournalRepository implements Repositories.AuditJournal.Contrac
 
     public async bulkCreate({ transaction, entities }: Repositories.AuditJournal.BulkCreate): Promise<AuditJournal[]> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             entityManager.persist(entities);
             await entityManager.flush();
@@ -42,60 +42,60 @@ export class AuditJournalRepository implements Repositories.AuditJournal.Contrac
 
     public async bulkDelete({ transaction, where }: Repositories.AuditJournal.BulkDelete): Promise<number> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             return await entityManager.nativeDelete(AuditJournal, where);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findUnique<P extends string = never, F extends string = "*">({
+    public async findUnique<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.AuditJournal.FindUnique<P, F>): Promise<Nullable<Loaded<AuditJournal, P, F>>> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findOne(AuditJournal, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.findOne(AuditJournal, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findUniqueOrThrow<P extends string = never, F extends string = "*">({
+    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.AuditJournal.FindUniqueOrThrow<P, F>): Promise<Loaded<AuditJournal, P, F>> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findOneOrFail(AuditJournal, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.findOneOrFail(AuditJournal, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findMany<P extends string = never, F extends string = "*">({
+    public async findMany<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.AuditJournal.FindMany<P, F>): Promise<[Loaded<AuditJournal, P, F>[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findAndCount(AuditJournal, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.findAndCount(AuditJournal, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public find<P extends string = never, F extends string = "*">({
+    public async find<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.AuditJournal.Find<P, F>): Promise<Loaded<AuditJournal, P, F>[]> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.find(AuditJournal, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.find(AuditJournal, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

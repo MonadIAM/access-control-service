@@ -16,7 +16,7 @@ export class RoleConflictMemberRepository implements Repositories.RoleConflictMe
 
     public async create({ transaction, entity }: Repositories.RoleConflictMember.Create): Promise<RoleConflictMember> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             entityManager.persist(entity);
             await entityManager.flush();
@@ -29,7 +29,7 @@ export class RoleConflictMemberRepository implements Repositories.RoleConflictMe
 
     public async delete({ transaction, id }: Repositories.RoleConflictMember.Delete): Promise<void> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             const where: FilterQuery<RoleConflictMember> = {
                 isSystemManaged: false,
                 isRevoked: true,
@@ -49,7 +49,7 @@ export class RoleConflictMemberRepository implements Repositories.RoleConflictMe
         entities,
     }: Repositories.RoleConflictMember.BulkCreate): Promise<RoleConflictMember[]> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             entityManager.persist(entities);
             await entityManager.flush();
@@ -62,7 +62,7 @@ export class RoleConflictMemberRepository implements Repositories.RoleConflictMe
 
     public async bulkDelete({ transaction, identifiers }: Repositories.RoleConflictMember.BulkDelete): Promise<number> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             const where: FilterQuery<RoleConflictMember> = {
                 id: { $in: identifiers },
                 isSystemManaged: false,
@@ -74,40 +74,40 @@ export class RoleConflictMemberRepository implements Repositories.RoleConflictMe
         }
     }
 
-    public findUnique<P extends string = never, F extends string = "*">({
+    public async findUnique<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.RoleConflictMember.FindUnique<P, F>): Promise<Nullable<Loaded<RoleConflictMember, P, F>>> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findOne(RoleConflictMember, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.findOne(RoleConflictMember, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findUniqueOrThrow<P extends string = never, F extends string = "*">({
+    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.RoleConflictMember.FindUniqueOrThrow<P, F>): Promise<Loaded<RoleConflictMember, P, F>> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findOneOrFail(RoleConflictMember, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.findOneOrFail(RoleConflictMember, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findMany<P extends string = never, F extends string = "*">({
+    public async findMany<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.RoleConflictMember.FindMany<P, F>): Promise<[Loaded<RoleConflictMember, P, F>[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findAndCount(RoleConflictMember, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.findAndCount(RoleConflictMember, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

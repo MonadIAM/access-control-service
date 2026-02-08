@@ -21,7 +21,8 @@ export class RoleClosureRepository {
         realm,
     }: Repositories.RoleClosure.InsertNewHierarchy): Promise<void> {
         try {
-            const knex = (transaction ?? this.writeManager).getKnex();
+            const entityManager = transaction ?? this.writeManager.fork();
+            const knex = entityManager.getKnex();
 
             await knex("access_control.role_closure").insert({
                 descendant_id: descendant,
@@ -55,7 +56,8 @@ export class RoleClosureRepository {
         realm,
     }: Repositories.RoleClosure.MoveSubtrees): Promise<void> {
         try {
-            const knex = (transaction ?? this.writeManager).getKnex();
+            const entityManager = transaction ?? this.writeManager.fork();
+            const knex = entityManager.getKnex();
 
             await knex("access_control.role_closure as RC")
                 .where("RC.realm_id", realm)
@@ -102,7 +104,8 @@ export class RoleClosureRepository {
         realm,
     }: Repositories.RoleClosure.RebuildTransitivePathsOnCollapse): Promise<void> {
         try {
-            const knex = (transaction ?? this.writeManager).getKnex();
+            const entityManager = transaction ?? this.writeManager.fork();
+            const knex = entityManager.getKnex();
 
             await knex("access_control.role_closure").insert((builder: Knex.QueryBuilder) => {
                 builder
@@ -135,7 +138,8 @@ export class RoleClosureRepository {
         role,
     }: Repositories.RoleClosure.DeleteTransitivePathsOnCollapse): Promise<void> {
         try {
-            const knex = (transaction ?? this.writeManager).getKnex();
+            const entityManager = transaction ?? this.writeManager.fork();
+            const knex = entityManager.getKnex();
 
             await knex("access_control.role_closure AS RC")
                 .where("RC.realm_id", realm)
@@ -155,7 +159,7 @@ export class RoleClosureRepository {
         }
     }
 
-    public findAncestors({
+    public async findAncestors({
         transaction,
         roleOrderBy,
         descendant,
@@ -164,8 +168,8 @@ export class RoleClosureRepository {
         depth,
     }: Repositories.RoleClosure.FindAncestors): Promise<[Role[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager
                 .findAndCount(
                     RoleClosure,
                     { descendant, ancestor: roleWhere, ...(depth ? { depth } : {}) },
@@ -181,7 +185,7 @@ export class RoleClosureRepository {
         }
     }
 
-    public findDescendants({
+    public async findDescendants({
         transaction,
         roleOrderBy,
         roleWhere,
@@ -190,8 +194,8 @@ export class RoleClosureRepository {
         depth,
     }: Repositories.RoleClosure.FindDescendants): Promise<[Role[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager
                 .findAndCount(
                     RoleClosure,
                     { ancestor, descendant: roleWhere, ...(depth ? { depth } : {}) },

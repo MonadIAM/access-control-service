@@ -121,46 +121,46 @@ export class AccountRoleMatrixRepository
         }
     }
 
-    public findUnique<P extends string = never, F extends string = "*">({
+    public async findUnique<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.AccountRoleMatrix.FindUnique<P, F>): Promise<Nullable<Loaded<AccountRoleMatrix, P, F>>> {
         try {
             const entityManager = transaction ?? this.readManager.fork();
-            return entityManager.findOne(AccountRoleMatrix, where, options);
+            return await entityManager.findOne(AccountRoleMatrix, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findUniqueOrThrow<P extends string = never, F extends string = "*">({
+    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.AccountRoleMatrix.FindUniqueOrThrow<P, F>): Promise<Loaded<AccountRoleMatrix, P, F>> {
         try {
             const entityManager = transaction ?? this.readManager.fork();
-            return entityManager.findOneOrFail(AccountRoleMatrix, where, options);
+            return await entityManager.findOneOrFail(AccountRoleMatrix, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findMany<P extends string = never, F extends string = "*">(
+    public async findMany<P extends string = never, F extends string = "*">(
         props: Repositories.AccountRoleMatrix.FindMany<P, F>,
     ): Promise<[Loaded<AccountRoleMatrix, P, F>[], number]> {
         try {
             if ("where" in props) {
                 const { transaction, options, where } = props;
                 const entityManager = transaction ?? this.readManager.fork();
-                return entityManager.findAndCount(AccountRoleMatrix, where, options);
+                return await entityManager.findAndCount(AccountRoleMatrix, where, options);
             } else {
                 const { pagination, filters, sort, options, realm } = props;
                 const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
                 const where = super.buildWhereORM(filters, { realm });
                 const entityManager = this.readManager.fork();
-                return entityManager.findAndCount(AccountRoleMatrix, where, opts);
+                return await entityManager.findAndCount(AccountRoleMatrix, where, opts);
             }
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);

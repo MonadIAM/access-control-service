@@ -16,7 +16,7 @@ export class RoleDelegationPolicyRepository implements Repositories.RoleDelegati
 
     public async create({ transaction, entity }: Repositories.RoleDelegationPolicy.Create): Promise<RoleDelegationPolicy> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             entityManager.persist(entity);
             await entityManager.flush();
@@ -33,7 +33,7 @@ export class RoleDelegationPolicyRepository implements Repositories.RoleDelegati
         patch,
     }: Repositories.RoleDelegationPolicy.Update): Promise<RoleDelegationPolicy> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             wrap(entity).assign(patch, { merge: true });
             await entityManager.flush();
@@ -46,7 +46,7 @@ export class RoleDelegationPolicyRepository implements Repositories.RoleDelegati
 
     public async delete({ transaction, realm, id }: Repositories.RoleDelegationPolicy.Delete): Promise<void> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             const where: FilterQuery<RoleDelegationPolicy> = {
                 isSystemManaged: false,
                 isRevoked: true,
@@ -67,7 +67,7 @@ export class RoleDelegationPolicyRepository implements Repositories.RoleDelegati
         updates,
     }: Repositories.RoleDelegationPolicy.BulkUpdate): Promise<RoleDelegationPolicy[]> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             for (const { entity, patch } of updates) {
                 wrap(entity).assign(patch, { merge: true });
@@ -88,7 +88,7 @@ export class RoleDelegationPolicyRepository implements Repositories.RoleDelegati
         realm,
     }: Repositories.RoleDelegationPolicy.BulkDelete): Promise<number> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             const where: FilterQuery<RoleDelegationPolicy> = {
                 ...(identifiers ? { id: { $in: identifiers } } : { delegatorRole }),
                 isSystemManaged: false,
@@ -101,40 +101,40 @@ export class RoleDelegationPolicyRepository implements Repositories.RoleDelegati
         }
     }
 
-    public findUnique<P extends string = never, F extends string = "*">({
+    public async findUnique<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.RoleDelegationPolicy.FindUnique<P, F>): Promise<Nullable<Loaded<RoleDelegationPolicy, P, F>>> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findOne(RoleDelegationPolicy, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.findOne(RoleDelegationPolicy, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findUniqueOrThrow<P extends string = never, F extends string = "*">({
+    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.RoleDelegationPolicy.FindUniqueOrThrow<P, F>): Promise<Loaded<RoleDelegationPolicy, P, F>> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findOneOrFail(RoleDelegationPolicy, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.findOneOrFail(RoleDelegationPolicy, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findMany<P extends string = never, F extends string = "*">({
+    public async findMany<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.RoleDelegationPolicy.FindMany<P, F>): Promise<[Loaded<RoleDelegationPolicy, P, F>[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager;
-            return entityManager.findAndCount(RoleDelegationPolicy, where, options);
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.findAndCount(RoleDelegationPolicy, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
@@ -146,7 +146,7 @@ export class RoleDelegationPolicyRepository implements Repositories.RoleDelegati
         to,
     }: Repositories.RoleDelegationPolicy.ExistsTransitivePath): Promise<boolean> {
         try {
-            const entityManager = transaction ?? this.readManager;
+            const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
             const targetIds = Array.isArray(to) ? to : [to];
 
@@ -209,7 +209,7 @@ export class RoleDelegationPolicyRepository implements Repositories.RoleDelegati
         targetRole,
     }: Repositories.RoleDelegationPolicy.IsDelegationAllowed): Promise<boolean> {
         try {
-            const entityManager = transaction ?? this.readManager;
+            const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
             const query = knex("access_control.role_delegation_policy as rdp")
@@ -248,7 +248,7 @@ export class RoleDelegationPolicyRepository implements Repositories.RoleDelegati
         targetRole,
     }: Repositories.RoleDelegationPolicy.IsUpwardGrant): Promise<boolean> {
         try {
-            const entityManager = transaction ?? this.readManager;
+            const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
             const query = knex("access_control.role_closure")

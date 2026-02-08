@@ -19,7 +19,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
 
     public async create({ transaction, entity }: Repositories.Role.Create): Promise<Role> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             entityManager.persist(entity);
             await entityManager.flush();
@@ -32,7 +32,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
 
     public async update({ transaction, entity, patch }: Repositories.Role.Update): Promise<Role> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             wrap(entity).assign(patch, { merge: true });
             await entityManager.flush();
@@ -45,7 +45,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
 
     public async delete({ transaction, realm, id }: Repositories.Role.Delete): Promise<void> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             const where: FilterQuery<Role> = {
                 isSystemManaged: false,
                 isRevoked: true,
@@ -63,7 +63,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
 
     public async bulkUpdate({ transaction, updates }: Repositories.Role.BulkUpdate): Promise<Role[]> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
 
             for (const { entity, patch } of updates) {
                 wrap(entity).assign(patch, { merge: true });
@@ -79,7 +79,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
 
     public async bulkDelete({ transaction, identifiers, realm }: Repositories.Role.BulkDelete): Promise<number> {
         try {
-            const entityManager = transaction ?? this.writeManager;
+            const entityManager = transaction ?? this.writeManager.fork();
             const where: FilterQuery<Role> = {
                 id: { $in: identifiers },
                 isSystemManaged: false,
@@ -92,46 +92,46 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         }
     }
 
-    public findUnique<P extends string = never, F extends string = "*">({
+    public async findUnique<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.Role.FindUnique<P, F>): Promise<Nullable<Loaded<Role, P, F>>> {
         try {
             const entityManager = transaction ?? this.readManager.fork();
-            return entityManager.findOne(Role, where, options);
+            return await entityManager.findOne(Role, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findUniqueOrThrow<P extends string = never, F extends string = "*">({
+    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
         transaction,
         options,
         where,
     }: Repositories.Role.FindUniqueOrThrow<P, F>): Promise<Loaded<Role, P, F>> {
         try {
             const entityManager = transaction ?? this.readManager.fork();
-            return entityManager.findOneOrFail(Role, where, options);
+            return await entityManager.findOneOrFail(Role, where, options);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public findMany<P extends string = never, F extends string = "*">(
+    public async findMany<P extends string = never, F extends string = "*">(
         props: Repositories.Role.FindMany<P, F>,
     ): Promise<[Loaded<Role, P, F>[], number]> {
         try {
             if ("where" in props) {
                 const { transaction, options, where } = props;
                 const entityManager = transaction ?? this.readManager.fork();
-                return entityManager.findAndCount(Role, where, options);
+                return await entityManager.findAndCount(Role, where, options);
             } else {
                 const { pagination, filters, sort, options, realm } = props;
                 const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
                 const where = super.buildWhereORM(filters, { realm });
                 const entityManager = this.readManager.fork();
-                return entityManager.findAndCount(Role, where, opts);
+                return await entityManager.findAndCount(Role, where, opts);
             }
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
@@ -139,24 +139,28 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
     }
 
     public async getLookupList({ pagination, realm, term }: Repositories.Role.GetLookupList): Promise<[Role[], number]> {
-        const entityManager = this.readManager.fork();
-        const builder = entityManager.createQueryBuilder(Role, "r");
+        try {
+            const entityManager = this.readManager.fork();
+            const builder = entityManager.createQueryBuilder(Role, "r");
 
-        builder
-            .select(["r.id", "r.code", "r.name"])
-            .where({ "r.realm": realm })
-            .limit(pagination.elementsPerPage)
-            .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
+            builder
+                .select(["r.id", "r.code", "r.name"])
+                .where({ "r.realm": realm })
+                .limit(pagination.elementsPerPage)
+                .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
 
-        if (term) {
-            builder.andWhere("r.name % ?", [term]).orderBy({
-                [raw("similarity(r.name, ?)", [term])]: "DESC",
-            });
-        } else {
-            builder.orderBy({ "r.name": "ASC" });
+            if (term) {
+                builder.andWhere("r.name % ?", [term]).orderBy({
+                    [raw("similarity(r.name, ?)", [term])]: "DESC",
+                });
+            } else {
+                builder.orderBy({ "r.name": "ASC" });
+            }
+
+            return await builder.getResultAndCount();
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
         }
-
-        return await builder.getResultAndCount();
     }
 
     public async findDelegateableRoles({
