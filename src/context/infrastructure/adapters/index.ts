@@ -1,5 +1,6 @@
 export { RolePermissionMatrixAdapter } from "./role-permission-matrix.adapter";
 export { RoleDelegationPolicyAdapter } from "./role-delegation-policy.adapter";
+export { RoleConflictMemberAdapter } from "./role-conflict-member.adapter";
 export { PermissionOverrideAdapter } from "./permission-override.adapter";
 export { AccountRoleMatrixAdapter } from "./account-role-matrix.adapter";
 export { RoleConflictGroupAdapter } from "./role-conflict-group.adapter";

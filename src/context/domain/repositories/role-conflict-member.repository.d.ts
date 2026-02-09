@@ -1,4 +1,6 @@
-import { EntityManager, FilterQuery, FindOptions, Loaded } from "@mikro-orm/postgresql";
+import { EntityManager, FilterQuery, FindOptions, Loaded, QueryOrder } from "@mikro-orm/postgresql";
+
+import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 
 import { RoleConflictMember as RoleConflictMemberEntity } from "../entities";
 
@@ -58,10 +60,31 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
-            type FindMany<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
+            type FindMany<P extends string, F extends string> =
+                | {
+                      transaction?: EntityManager;
+                      options?: FindOptions<Entity, P, F>;
+                      where: FilterQuery<Entity>;
+                  }
+                | {
+                      pagination: Pagination;
+                      filters: Filters;
+                      sort: Sort;
+                      options?: FindOptions<Entity, P, F>;
+                  };
+
+            type Filters = {
+                id?: StringFilterDTO;
+                role?: LinkFilterDTO;
+                group?: LinkFilterDTO;
+                createdAt?: OrdinalFilterDTO<Date>;
+                isSystemManaged?: boolean;
+                isRevoked?: boolean;
+            };
+
+            type Sort = {
+                createdAt?: QueryOrder;
+                updatedAt?: QueryOrder;
             };
         }
     }

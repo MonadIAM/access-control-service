@@ -2,17 +2,23 @@ import { EntityManager, FilterQuery, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
+import { RoleConflictMemberAdapter } from "~context/infrastructure/adapters";
 import { RoleConflictMember } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleConflictMemberRepository implements Repositories.RoleConflictMember.Contract {
+export class RoleConflictMemberRepository
+    extends RoleConflictMemberAdapter
+    implements Repositories.RoleConflictMember.Contract
+{
     private readonly resource = "RoleConflictMember";
 
     public constructor(
         @InjectEntityManager("write") private readonly writeManager: EntityManager,
         @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {}
+    ) {
+        super();
+    }
 
     public async create({ transaction, entity }: Repositories.RoleConflictMember.Create): Promise<RoleConflictMember> {
         try {
@@ -100,14 +106,21 @@ export class RoleConflictMemberRepository implements Repositories.RoleConflictMe
         }
     }
 
-    public async findMany<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.RoleConflictMember.FindMany<P, F>): Promise<[Loaded<RoleConflictMember, P, F>[], number]> {
+    public async findMany<P extends string = never, F extends string = "*">(
+        props: Repositories.RoleConflictMember.FindMany<P, F>,
+    ): Promise<[Loaded<RoleConflictMember, P, F>[], number]> {
         try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findAndCount(RoleConflictMember, where, options);
+            if ("where" in props) {
+                const { transaction, options, where } = props;
+                const entityManager = transaction ?? this.readManager.fork();
+                return await entityManager.findAndCount(RoleConflictMember, where, options);
+            } else {
+                const { pagination, filters, sort, options } = props;
+                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
+                const where = super.buildWhereORM(filters);
+                const entityManager = this.readManager.fork();
+                return await entityManager.findAndCount(RoleConflictMember, where, opts);
+            }
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

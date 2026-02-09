@@ -14,6 +14,7 @@ const SWAGGER_TAGS: Record<string, string> = {
     PermissionOverride: "DAC Provider: Manages explicit permission grants/denials for specific accounts, bypassing roles.",
     RoleDelegationPolicy: "Defines rules and constraints for the elective transfer of roles between accounts.",
     RoleConflictGroup: "SoD Engine: Defines sets of mutually exclusive roles to prevent administrative toxic combinations.",
+    RoleConflictMember: "Configures specific roles belonging to a defined Separation of Duties (SoD) group.",
 };
 
 export abstract class BootstrapSwagger {
