@@ -1,18 +1,14 @@
-import { EntityManager, QueryOrder, Knex } from "@mikro-orm/postgresql";
+import { EntityManager, Knex } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { RoleClosure, Role } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleClosureRepository {
     private readonly resource = "RoleClosure";
 
-    public constructor(
-        @InjectEntityManager("write") private readonly writeManager: EntityManager,
-        @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {}
+    public constructor(@InjectEntityManager("write") private readonly writeManager: EntityManager) {}
 
     public async insertNewHierarchy({
         transaction,
@@ -154,58 +150,6 @@ export class RoleClosureRepository {
                         .andOn("D.realm_id", "=", knex.raw("?", [realm]));
                 })
                 .delete();
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findAncestors({
-        transaction,
-        roleOrderBy,
-        descendant,
-        roleWhere,
-        options,
-        depth,
-    }: Repositories.RoleClosure.FindAncestors): Promise<[Role[], number]> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager
-                .findAndCount(
-                    RoleClosure,
-                    { descendant, ancestor: roleWhere, ...(depth ? { depth } : {}) },
-                    {
-                        ...options,
-                        populate: ["ancestor"],
-                        orderBy: roleOrderBy ? { ancestor: roleOrderBy } : { depth: QueryOrder.DESC },
-                    },
-                )
-                .then(([ancestors, total]) => [ancestors.map(({ ancestor }) => ancestor), total]);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findDescendants({
-        transaction,
-        roleOrderBy,
-        roleWhere,
-        ancestor,
-        options,
-        depth,
-    }: Repositories.RoleClosure.FindDescendants): Promise<[Role[], number]> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager
-                .findAndCount(
-                    RoleClosure,
-                    { ancestor, descendant: roleWhere, ...(depth ? { depth } : {}) },
-                    {
-                        ...options,
-                        populate: ["descendant"],
-                        orderBy: roleOrderBy ? { descendant: roleOrderBy } : { depth: QueryOrder.ASC },
-                    },
-                )
-                .then(([ancestors, total]) => [ancestors.map(({ descendant }) => descendant), total]);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

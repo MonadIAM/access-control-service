@@ -1,10 +1,11 @@
-import { EntityDictionary, EntityManager, FilterQuery, Knex, Loaded, raw, wrap } from "@mikro-orm/postgresql";
+import { EntityDictionary, EntityManager, FilterQuery, Knex, Loaded, QueryOrder, raw, wrap } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
 import { RoleAdapter } from "~context/infrastructure/adapters";
 import { RepositoryException } from "~common/exceptions";
-import { Role } from "~context/domain/entities";
+import { Role, RoleClosure } from "~context/domain/entities";
+import { MikroAdapter } from "~infrastructure/database";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleRepository extends RoleAdapter implements Repositories.Role.Contract {
@@ -133,6 +134,98 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
                 const entityManager = this.readManager.fork();
                 return await entityManager.findAndCount(Role, where, opts);
             }
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async getAncestors(props: Repositories.Role.GetAncestors): Promise<Role[]> {
+        try {
+            const entityManager = props.transaction ?? this.readManager.fork();
+            const where: FilterQuery<RoleClosure> = {
+                ...(props.depth ? { depth: props.depth } : {}),
+                descendant: props.descendant,
+                ancestor: props.where,
+            };
+            return await entityManager
+                .find(RoleClosure, where, {
+                    ...props.options,
+                    populate: ["ancestor"],
+                    orderBy: { depth: QueryOrder.DESC },
+                })
+                .then((relations) => relations.map(({ ancestor }) => ancestor));
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async findAncestors(props: Repositories.Role.FindAncestors): Promise<[Repositories.Role.DepthEntity[], number]> {
+        try {
+            const { populate, pagination, filters, descendant } = props;
+            const ancestorPopulate = populate.map((key) => `ancestor.${key}` as const);
+            const where = super.buildWhereORM(filters);
+            const entityManager = this.readManager.fork();
+            return await entityManager
+                .findAndCount(
+                    RoleClosure,
+                    { descendant, ancestor: where },
+                    {
+                        populate: ["ancestor", ...ancestorPopulate],
+                        orderBy: { depth: QueryOrder.DESC },
+                        ...MikroAdapter.pagination(pagination),
+                    },
+                )
+                .then(([relations, total]) => [
+                    relations.map(({ ancestor, depth }) => Object.assign(ancestor, { depth })),
+                    total,
+                ]);
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async getDescendants(props: Repositories.Role.GetDescendants): Promise<Role[]> {
+        try {
+            const entityManager = props.transaction ?? this.readManager.fork();
+            const where: FilterQuery<RoleClosure> = {
+                ...(props.depth ? { depth: props.depth } : {}),
+                ancestor: props.ancestor,
+                descendant: props.where,
+            };
+            return await entityManager
+                .find(RoleClosure, where, {
+                    ...props.options,
+                    populate: ["descendant"],
+                    orderBy: { depth: QueryOrder.DESC },
+                })
+                .then((relations) => relations.map(({ descendant }) => descendant));
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async findDescendants(
+        props: Repositories.Role.FindDescendants,
+    ): Promise<[Repositories.Role.DepthEntity[], number]> {
+        try {
+            const { populate, pagination, filters, ancestor } = props;
+            const descendantPopulate = populate.map((key) => `descendant.${key}` as const);
+            const where = super.buildWhereORM(filters);
+            const entityManager = this.readManager.fork();
+            return await entityManager
+                .findAndCount(
+                    RoleClosure,
+                    { ancestor, descendant: where },
+                    {
+                        populate: ["descendant", ...descendantPopulate],
+                        orderBy: { depth: QueryOrder.DESC },
+                        ...MikroAdapter.pagination(pagination),
+                    },
+                )
+                .then(([relations, total]) => [
+                    relations.map(({ descendant, depth }) => Object.assign(descendant, { depth })),
+                    total,
+                ]);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

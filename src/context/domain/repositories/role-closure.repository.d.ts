@@ -1,6 +1,4 @@
-import { QueryOrderKeys, EntityManager, FilterQuery, FindOptions } from "@mikro-orm/postgresql";
-
-import { RoleClosure as RoleClosureEntity, Role as RoleEntity } from "../entities";
+import { EntityManager } from "@mikro-orm/postgresql";
 
 declare global {
     namespace Repositories {
@@ -10,8 +8,6 @@ declare global {
                 moveSubtrees: (props: MoveSubtrees) => Promise<void>;
                 rebuildTransitivePathsOnCollapse: (props: RebuildTransitivePathsOnCollapse) => Promise<void>;
                 deleteTransitivePathsOnCollapse: (props: DeleteTransitivePathsOnCollapse) => Promise<void>;
-                findAncestors: (props: FindAncestors) => Promise<[RoleEntity[], number]>;
-                findDescendants: (props: FindDescendants) => Promise<[RoleEntity[], number]>;
             }
 
             type InsertNewHierarchy = {
@@ -40,24 +36,6 @@ declare global {
                 transaction?: EntityManager;
                 realm: string;
                 role: string;
-            };
-
-            type FindAncestors = {
-                transaction?: EntityManager;
-                options?: FindOptions<RoleClosureEntity>;
-                roleOrderBy?: QueryOrderKeys<RoleEntity>;
-                roleWhere?: FilterQuery<RoleEntity>;
-                descendant: string;
-                depth?: number;
-            };
-
-            type FindDescendants = {
-                transaction?: EntityManager;
-                options?: FindOptions<RoleClosureEntity>;
-                roleOrderBy?: QueryOrderKeys<RoleEntity>;
-                roleWhere?: FilterQuery<RoleEntity>;
-                ancestor: string;
-                depth?: number;
             };
         }
     }

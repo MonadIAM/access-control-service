@@ -1,14 +1,15 @@
-import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded, QueryOrder } from "@mikro-orm/postgresql";
+import { EntityManager, FilterQuery, FindOptions, EntityData, QueryOrder, Loaded, EntityKey } from "@mikro-orm/postgresql";
 
 import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { DelegatorType } from "~context/enums";
 
-import { Role as RoleEntity } from "../entities";
+import { RoleClosure as RoleClosureEntity, Role as RoleEntity } from "../entities";
 
 declare global {
     namespace Repositories {
         namespace Role {
             type Entity = RoleEntity;
+            type DepthEntity = Entity & { depth: number };
 
             interface Contract {
                 create: (props: Create) => Promise<Entity>;
@@ -28,6 +29,12 @@ declare global {
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
+
+                getAncestors: (props: GetAncestors) => Promise<Entity[]>;
+                findAncestors: (props: FindAncestors) => Promise<[DepthEntity[], number]>;
+
+                getDescendants: (props: GetDescendants) => Promise<Entity[]>;
+                findDescendants: (props: FindDescendants) => Promise<[DepthEntity[], number]>;
 
                 getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
 
@@ -94,6 +101,36 @@ declare global {
                       realm: string;
                       options?: FindOptions<Entity, P, F>;
                   };
+
+            type GetAncestors = {
+                descendant: string;
+                transaction?: EntityManager;
+                options?: FindOptions<RoleClosureEntity>;
+                where: FilterQuery<Entity>;
+                depth?: number;
+            };
+
+            type FindAncestors = {
+                populate: readonly EntityKey<Entity>[];
+                descendant: string;
+                pagination: Pagination;
+                filters: Filters;
+            };
+
+            type GetDescendants = {
+                ancestor: string;
+                transaction?: EntityManager;
+                options?: FindOptions<RoleClosureEntity>;
+                where?: FilterQuery<Entity>;
+                depth?: number;
+            };
+
+            type FindDescendants = {
+                populate: readonly EntityKey<Entity>[];
+                ancestor: string;
+                pagination: Pagination;
+                filters: Filters;
+            };
 
             type GetLookupList = {
                 pagination: Pagination;

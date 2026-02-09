@@ -7,14 +7,19 @@ import { ErrorResponseBodyDTO } from "~common/dto";
 import { BaseController } from "~common/abstract";
 
 import {
+    GetRoleDescendantsListQueryDTO,
+    GetRoleDescendantsListBodyDTO,
     GetRoleHierarchyGraphQueryDTO,
     GetDelegableRolesListQueryDTO,
     GetEffectiveRolesListQueryDTO,
     GetDelegableRolesListBodyDTO,
     GetEffectiveRolesListBodyDTO,
+    GetRoleAncestorsListQueryDTO,
+    GetRoleAncestorsListBodyDTO,
     GetRolesLookupListQueryDTO,
     GetRolesLookupListBodyDTO,
     RoleHierarchyGraphDTO,
+    RoleHierarchyListDTO,
     GetRolesListQueryDTO,
     GetRoleByIdQueryDTO,
     GetRolesListBodyDTO,
@@ -75,6 +80,44 @@ export class RoleController extends BaseController {
         return this.roleRepository
             .getLookupList({ pagination, realm, term })
             .then((data) => super.formatResponse({ DTO: RoleLookupListDTO, pagination, data }));
+    }
+
+    @Post("list/ancestors")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Returns a paginated list of ancestor roles of the specified role, including itself" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: RoleHierarchyListDTO })
+    public getAncestorsList(
+        @Query() { descendant, view }: GetRoleAncestorsListQueryDTO,
+        @Body() { pagination, filters }: GetRoleAncestorsListBodyDTO,
+    ): Promise<RoleHierarchyListDTO> {
+        return this.roleRepository
+            .findAncestors({
+                populate: this.populate[view],
+                descendant,
+                pagination,
+                filters,
+            })
+            .then((data) => super.formatResponse({ DTO: RoleHierarchyListDTO, pagination, data }));
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Post("list/descendants")
+    @ApiOperation({ summary: "Returns a paginated list of descendant roles of the specified role, including itself" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: RoleHierarchyListDTO })
+    public getDescendantsList(
+        @Query() { ancestor, view }: GetRoleDescendantsListQueryDTO,
+        @Body() { pagination, filters }: GetRoleDescendantsListBodyDTO,
+    ): Promise<RoleHierarchyListDTO> {
+        return this.roleRepository
+            .findDescendants({
+                populate: this.populate[view],
+                ancestor,
+                pagination,
+                filters,
+            })
+            .then((data) => super.formatResponse({ DTO: RoleHierarchyListDTO, pagination, data }));
     }
 
     @Post("list/delegable")
