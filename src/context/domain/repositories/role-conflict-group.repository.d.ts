@@ -1,4 +1,6 @@
-import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded } from "@mikro-orm/postgresql";
+import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded, QueryOrder } from "@mikro-orm/postgresql";
+
+import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 
 import { RoleConflictGroup as RoleConflictGroupEntity } from "../entities";
 
@@ -26,10 +28,11 @@ declare global {
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
 
-                findAssignmentViolation: (props: FindAssignmentViolation) => Promise<Entity[]>;
+                findViolationDetails: (props: FindViolationDetails) => Promise<Entity[]>;
+
+                hasViolations: (props: HasViolations) => Promise<boolean>;
 
                 hasAccountViolatingConflictGroup: (props: HasAccountViolatingConflictGroup) => Promise<boolean>;
-                wouldRolesViolateSoDPolicy: (props: WouldRolesViolateSoDPolicy) => Promise<boolean>;
             }
 
             type Create = {
@@ -75,16 +78,38 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
-            type FindMany<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
+            type FindMany<P extends string, F extends string> =
+                | {
+                      transaction?: EntityManager;
+                      options?: FindOptions<Entity, P, F>;
+                      where: FilterQuery<Entity>;
+                  }
+                | {
+                      pagination: Pagination;
+                      filters: Filters;
+                      sort: Sort;
+                      realm: string;
+                      options?: FindOptions<Entity, P, F>;
+                  };
+
+            type FindViolationDetails = {
+                account: string;
+                roles: string[];
+                realm: string;
             };
 
-            type FindAssignmentViolation = {
+            type HasViolations = {
                 transaction?: EntityManager;
                 account: string;
-                role: string;
+                roles: string[];
+                realm: string;
+            };
+
+            type GetViolationsQuery = {
+                transaction?: EntityManager;
+                account: string;
+                roles: string[];
+                realm: string;
             };
 
             type HasAccountViolatingConflictGroup = {
@@ -93,10 +118,20 @@ declare global {
                 maxAllowed: number;
             };
 
-            type WouldRolesViolateSoDPolicy = {
-                transaction?: EntityManager;
-                account: string;
-                roles: string[];
+            type Filters = {
+                id?: StringFilterDTO;
+                code?: StringFilterDTO;
+                name?: StringFilterDTO;
+                maxAllowed?: OrdinalFilterDTO<number>;
+                realm?: LinkFilterDTO;
+                createdAt?: OrdinalFilterDTO<Date>;
+                isSystemManaged?: boolean;
+                isRevoked?: boolean;
+            };
+
+            type Sort = {
+                createdAt?: QueryOrder;
+                updatedAt?: QueryOrder;
             };
         }
     }

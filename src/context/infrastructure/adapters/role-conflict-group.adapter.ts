@@ -1,0 +1,42 @@
+import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+
+import { MikroAdapter } from "~infrastructure/database/utils";
+import { RoleConflictGroup } from "~context/domain/entities";
+
+export class RoleConflictGroupAdapter {
+    protected buildWhereORM(
+        filters: Repositories.RoleConflictGroup.Filters,
+        basic: ObjectQuery<RoleConflictGroup> = {},
+    ): ObjectQuery<RoleConflictGroup> {
+        const where: ObjectQuery<RoleConflictGroup> = basic;
+
+        if (filters.isRevoked !== undefined) {
+            where.isRevoked = { $eq: filters.isRevoked };
+        }
+        if (filters.isSystemManaged !== undefined) {
+            where.isSystemManaged = { $eq: filters.isSystemManaged };
+        }
+
+        if (filters.realm) {
+            where.realm = MikroAdapter.applyStringFilter(filters.realm);
+        }
+
+        if (filters.createdAt) {
+            where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+        }
+
+        return where;
+    }
+
+    protected buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Repositories.RoleConflictGroup.Sort,
+        pagination: Pagination,
+        basic: FindOptions<RoleConflictGroup, P, F> = {},
+    ): FindOptions<RoleConflictGroup, P, F> {
+        return {
+            ...basic,
+            orderBy: MikroAdapter.orderBy<RoleConflictGroup>(sort, { createdAt: QueryOrder.ASC }),
+            ...MikroAdapter.pagination(pagination),
+        };
+    }
+}

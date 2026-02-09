@@ -13,6 +13,7 @@ const SWAGGER_TAGS: Record<string, string> = {
     AccountRoleMatrix: "Management of account-to-role assignments, supporting complex RBAC lifecycle.",
     PermissionOverride: "DAC Provider: Manages explicit permission grants/denials for specific accounts, bypassing roles.",
     RoleDelegationPolicy: "Defines rules and constraints for the elective transfer of roles between accounts.",
+    RoleConflictGroup: "SoD Engine: Defines sets of mutually exclusive roles to prevent administrative toxic combinations.",
 };
 
 export abstract class BootstrapSwagger {
