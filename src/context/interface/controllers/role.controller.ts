@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { RoleRepository } from "~context/infrastructure";
@@ -41,7 +41,6 @@ export class RoleController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a role by identifier" })
-    @ApiQuery({ type: GetRoleByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDTO })
     public getById(@Query() { realm, role, view }: GetRoleByIdQueryDTO): Promise<RoleDTO> {
@@ -53,8 +52,6 @@ export class RoleController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of roles" })
-    @ApiBody({ type: GetRolesListBodyDTO, required: true })
-    @ApiQuery({ type: GetRolesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleListDTO })
     public getList(
@@ -69,8 +66,6 @@ export class RoleController extends BaseController {
     @Post("list/lookup")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a lookup list of roles" })
-    @ApiBody({ type: GetRolesLookupListBodyDTO, required: true })
-    @ApiQuery({ type: GetRolesLookupListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleLookupListDTO })
     public getLookupList(
@@ -85,8 +80,6 @@ export class RoleController extends BaseController {
     @Post("list/delegable")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of delegable roles for the specified role/account" })
-    @ApiBody({ type: GetDelegableRolesListBodyDTO, required: true })
-    @ApiQuery({ type: GetDelegableRolesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleListDTO })
     public getDelegableList(
@@ -101,8 +94,6 @@ export class RoleController extends BaseController {
     @Post("list/effective")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of effective roles for the account" })
-    @ApiBody({ type: GetEffectiveRolesListBodyDTO, required: true })
-    @ApiQuery({ type: GetEffectiveRolesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleListDTO })
     public getEffectiveList(
@@ -117,9 +108,8 @@ export class RoleController extends BaseController {
     @Get("hierarchy-graph")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns the role hierarchy graph (nodes and edges)" })
-    @ApiQuery({ type: GetRoleHierarchyGraphQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
-    public getHierarchyGraph(@Query() { realm }: { realm: string }): Promise<RoleHierarchyGraphDTO> {
+    public getHierarchyGraph(@Query() { realm }: GetRoleHierarchyGraphQueryDTO): Promise<RoleHierarchyGraphDTO> {
         return this.roleRepository
             .getHierarchyGraph({ realm })
             .then((data) => super.formatResponse({ DTO: RoleHierarchyGraphDTO, data }));

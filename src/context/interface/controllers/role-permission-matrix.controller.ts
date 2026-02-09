@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { RolePermissionMatrixRepository } from "~context/infrastructure";
@@ -32,7 +32,6 @@ export class RolePermissionMatrixController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a role-permission-matrix by identifier" })
-    @ApiQuery({ type: GetRolePermissionMatrixByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RolePermissionMatrixDTO })
     public getById(
@@ -46,8 +45,6 @@ export class RolePermissionMatrixController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of role-permission-matrices" })
-    @ApiBody({ type: GetRolePermissionMatricesListBodyDTO, required: true })
-    @ApiQuery({ type: GetRolePermissionMatricesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RolePermissionMatrixListDTO })
     public getList(

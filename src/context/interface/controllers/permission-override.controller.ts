@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { PermissionOverrideRepository } from "~context/infrastructure";
@@ -32,7 +32,6 @@ export class PermissionOverrideController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a permission-override by identifier" })
-    @ApiQuery({ type: GetPermissionOverrideByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionOverrideDTO })
     public getById(@Query() { override, realm, view }: GetPermissionOverrideByIdQueryDTO): Promise<PermissionOverrideDTO> {
@@ -44,8 +43,6 @@ export class PermissionOverrideController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of permission-overrides" })
-    @ApiBody({ type: GetPermissionOverridesListBodyDTO, required: true })
-    @ApiQuery({ type: GetPermissionOverridesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionOverrideListDTO })
     public getList(

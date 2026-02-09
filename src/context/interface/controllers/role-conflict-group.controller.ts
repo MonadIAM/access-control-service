@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { RoleConflictGroupRepository } from "~context/infrastructure";
@@ -35,7 +35,6 @@ export class RoleConflictGroupController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a role-conflict-group by identifier" })
-    @ApiQuery({ type: GetRoleConflictGroupByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupDTO })
     public getById(@Query() { group, realm, view }: GetRoleConflictGroupByIdQueryDTO): Promise<RoleConflictGroupDTO> {
@@ -47,8 +46,6 @@ export class RoleConflictGroupController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of role-conflict-groups" })
-    @ApiBody({ type: GetRoleConflictGroupsListBodyDTO, required: true })
-    @ApiQuery({ type: GetRoleConflictGroupsListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupPaginatedListDTO })
     public getList(
@@ -63,8 +60,6 @@ export class RoleConflictGroupController extends BaseController {
     @Post("violation-details")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a list of SoD violation-details" })
-    @ApiBody({ type: GetViolationDetailsBodyDTO, required: true })
-    @ApiQuery({ type: GetViolationDetailsQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupListDTO })
     public findViolationDetails(

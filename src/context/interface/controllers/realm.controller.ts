@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { RealmRepository } from "~context/infrastructure";
@@ -29,7 +29,6 @@ export class RealmController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a realm by identifier" })
-    @ApiQuery({ type: GetRealmByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RealmDTO })
     public getById(@Query() { realm }: GetRealmByIdQueryDTO): Promise<RealmDTO> {
@@ -41,7 +40,6 @@ export class RealmController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of realms" })
-    @ApiBody({ type: GetRealmsListBodyDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RealmListDTO })
     public getList(@Body() { pagination, filters, sort }: GetRealmsListBodyDTO): Promise<RealmListDTO> {
@@ -53,8 +51,6 @@ export class RealmController extends BaseController {
     @Post("list/lookup")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a lookup list of realms" })
-    @ApiBody({ type: GetRealmsLookupListBodyDTO, required: true })
-    @ApiQuery({ type: GetRealmsLookupListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RealmLookupListDTO })
     public getLookupList(

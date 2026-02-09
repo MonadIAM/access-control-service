@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { PermissionRepository } from "~context/infrastructure";
@@ -37,7 +37,6 @@ export class PermissionController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a permission by identifier" })
-    @ApiQuery({ type: GetPermissionByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionDTO })
     public getById(@Query() { realm, permission, view }: GetPermissionByIdQueryDTO): Promise<PermissionDTO> {
@@ -49,8 +48,6 @@ export class PermissionController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of permissions" })
-    @ApiBody({ type: GetPermissionsListBodyDTO, required: true })
-    @ApiQuery({ type: GetPermissionsListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionListDTO })
     public getList(
@@ -65,8 +62,6 @@ export class PermissionController extends BaseController {
     @Post("list/lookup")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a lookup list of permissions" })
-    @ApiBody({ type: GetPermissionsLookupListBodyDTO, required: true })
-    @ApiQuery({ type: GetPermissionsLookupListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionLookupListDTO })
     public getLookupList(
@@ -81,8 +76,6 @@ export class PermissionController extends BaseController {
     @Post("list/effective")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of effective permissions for the account" })
-    @ApiBody({ type: GetEffectivePermissionsListBodyDTO, required: true })
-    @ApiQuery({ type: GetEffectivePermissionsListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionListDTO })
     public getEffectiveList(

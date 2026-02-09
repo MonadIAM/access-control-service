@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { RoleDelegationPolicyRepository } from "~context/infrastructure";
@@ -32,7 +32,6 @@ export class RoleDelegationPolicyController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a role-delegation-policy by identifier" })
-    @ApiQuery({ type: GetRoleDelegationPolicyByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDelegationPolicyDTO })
     public getById(
@@ -46,8 +45,6 @@ export class RoleDelegationPolicyController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of role-delegation-policies" })
-    @ApiBody({ type: GetRoleDelegationPoliciesListBodyDTO, required: true })
-    @ApiQuery({ type: GetRoleDelegationPoliciesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDelegationPolicyListDTO })
     public getList(

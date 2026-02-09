@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { AccountRoleMatrixRepository } from "~context/infrastructure";
@@ -32,7 +32,6 @@ export class AccountRoleMatrixController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a account-role-matrix by identifier" })
-    @ApiQuery({ type: GetAccountRoleMatrixByIdQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: AccountRoleMatrixDTO })
     public getById(@Query() { matrix, realm, view }: GetAccountRoleMatrixByIdQueryDTO): Promise<AccountRoleMatrixDTO> {
@@ -44,8 +43,6 @@ export class AccountRoleMatrixController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of account-role-matrices" })
-    @ApiBody({ type: GetAccountRoleMatricesListBodyDTO, required: true })
-    @ApiQuery({ type: GetAccountRoleMatricesListQueryDTO, required: true })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: AccountRoleMatrixListDTO })
     public getList(
