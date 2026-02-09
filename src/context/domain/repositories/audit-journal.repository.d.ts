@@ -1,5 +1,6 @@
-import { EntityManager, FilterQuery, FindOptions, Loaded } from "@mikro-orm/postgresql";
+import { EntityManager, FilterQuery, FindOptions, Loaded, QueryOrder } from "@mikro-orm/postgresql";
 
+import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { AuditJournal as AuditJournalEntity } from "~context/domain/entities";
 
 declare global {
@@ -56,16 +57,38 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
-            type FindMany<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            };
+            type FindMany<P extends string, F extends string> =
+                | {
+                      transaction?: EntityManager;
+                      options?: FindOptions<Entity, P, F>;
+                      where: FilterQuery<Entity>;
+                  }
+                | {
+                      pagination: Pagination;
+                      filters: Filters;
+                      sort: Sort;
+                  };
 
             type Find<P extends string, F extends string> = {
                 transaction?: EntityManager;
                 options?: FindOptions<Entity, P, F>;
                 where: FilterQuery<Entity>;
+            };
+
+            type Filters = {
+                id?: StringFilterDTO;
+                by?: LinkFilterDTO;
+                realm?: LinkFilterDTO;
+                entity?: LinkFilterDTO;
+                at?: OrdinalFilterDTO<Date>;
+                createdAt?: OrdinalFilterDTO<Date>;
+                actionType?: StringFilterDTO;
+                entityType?: StringFilterDTO;
+            };
+
+            type Sort = {
+                createdAt?: QueryOrder;
+                at?: QueryOrder;
             };
         }
     }

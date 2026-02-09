@@ -15,6 +15,7 @@ const SWAGGER_TAGS: Record<string, string> = {
     RoleDelegationPolicy: "Defines rules and constraints for the elective transfer of roles between accounts.",
     RoleConflictGroup: "SoD Engine: Defines sets of mutually exclusive roles to prevent administrative toxic combinations.",
     RoleConflictMember: "Configures specific roles belonging to a defined Separation of Duties (SoD) group.",
+    AuditJournal: "Centralized security log for tracking RBAC changes, SoD violations, and DAC overrides.",
 };
 
 export abstract class BootstrapSwagger {

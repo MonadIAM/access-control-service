@@ -4,6 +4,7 @@ export { RoleConflictMemberAdapter } from "./role-conflict-member.adapter";
 export { PermissionOverrideAdapter } from "./permission-override.adapter";
 export { AccountRoleMatrixAdapter } from "./account-role-matrix.adapter";
 export { RoleConflictGroupAdapter } from "./role-conflict-group.adapter";
+export { AuditJournalAdapter } from "./audit-journal.adapter";
 export { PermissionAdapter } from "./permission.adapter";
 export { RealmAdapter } from "./realm.adapter";
 export { RoleAdapter } from "./role.adapter";
