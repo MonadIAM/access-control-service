@@ -22,7 +22,15 @@ export class MikroAdapter {
     }
 
     public static applyOrdinalFilter<T extends Ordinal>(filter: OrdinalFilterDTO<T>): OperatorMap<T> {
-        return { [PUBLIC_TO_ORM_OPERATORS[filter.operator]]: filter.value };
+        if (filter.operator === "BETWEEN") {
+            if (filter.value instanceof Array && filter.value.length > 1) {
+                return { $gte: filter.value[0], $lte: filter.value[1] } as OperatorMap<T>;
+            } else {
+                return { $gte: filter.value } as OperatorMap<T>;
+            }
+        } else {
+            return { [PUBLIC_TO_ORM_OPERATORS[filter.operator]]: filter.value };
+        }
     }
 
     public static orderBy<T extends AnyEntity>(

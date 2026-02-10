@@ -17,5 +17,5 @@ export class OrdinalFilterDTO<T extends Ordinal> {
         required: true,
         oneOf: [{ type: "Date" }, { type: "number" }, { type: "array", oneOf: [{ type: "Date" }, { type: "number" }] }],
     })
-    public value!: T | T[];
+    public value!: T | [T, T] | T[];
 }

@@ -47,9 +47,9 @@ export const AccountRoleMatrixSchema = new EntitySchema<AccountRoleMatrix>({
             deleteRule: "cascade",
         },
 
-        updatedAt: { type: "timestamptz", nullable: true, default: null, onUpdate: () => new Date() },
+        updatedAt: { type: "timestamptz", length: 3, nullable: true, default: null, onUpdate: () => new Date() },
+        createdAt: { type: "timestamptz", length: 3, defaultRaw: "now()", nullable: false },
         lastActions: { type: "jsonb", defaultRaw: "'{}'::jsonb", nullable: false },
-        createdAt: { type: "timestamptz", defaultRaw: "now()", nullable: false },
         isRevoked: { type: "boolean", default: false, nullable: false },
         version: { type: "int", version: true },
     },

@@ -1,6 +1,9 @@
 import { PublicOrdinalOperator, PublicStringOperator, ORMOperator } from "../enums";
 
-export const PUBLIC_TO_ORM_OPERATORS: Record<PublicOrdinalOperator | PublicStringOperator, ORMOperator> = {
+export const PUBLIC_TO_ORM_OPERATORS: Record<
+    Exclude<PublicOrdinalOperator, "BETWEEN"> | PublicStringOperator,
+    ORMOperator
+> = {
     /* eslint-disable prettier/prettier */
     [PublicOrdinalOperator.EQUAL]:            ORMOperator.EQUAL,
     [PublicOrdinalOperator.NOT_EQUAL]:        ORMOperator.NOT_EQUAL,

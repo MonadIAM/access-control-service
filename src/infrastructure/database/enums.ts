@@ -7,6 +7,7 @@ export enum PublicOrdinalOperator {
     GREATER_OR_EQUAL = "GREATER_OR_EQUAL",
     LESS_THAN = "LESS_THAN",
     LESS_OR_EQUAL = "LESS_OR_EQUAL",
+    BETWEEN = "BETWEEN",
 }
 
 export enum PublicStringOperator {
