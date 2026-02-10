@@ -4,7 +4,7 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class PermissionOverridesSortDTO {
+export class PermissionOverridesSortDTO implements Repositories.PermissionOverride.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

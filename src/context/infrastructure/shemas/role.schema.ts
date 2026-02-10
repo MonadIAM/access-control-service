@@ -47,6 +47,7 @@ export const RoleSchema = new EntitySchema<Role>({
             fieldName: "realm_id",
             deleteRule: "cascade",
         },
+
         delegationPoliciesAsDelegator: {
             kind: "1:m",
             entity: () => RoleDelegationPolicy,

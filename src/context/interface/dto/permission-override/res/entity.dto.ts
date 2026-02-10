@@ -1,6 +1,7 @@
 import { Expose, Type } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 
+import { PermissionOverrideEffect } from "~context/enums";
 import { DeltaAuditLastActionsDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
@@ -14,9 +15,14 @@ export class PermissionOverrideDTO {
     public id!: string;
 
     @Expose()
-    @Validator.IsBoolean()
-    @ApiProperty({ required: true, type: Boolean })
-    public isRevoked!: boolean;
+    @Validator.IsUUID()
+    @ApiProperty({ required: true, type: String, format: "uuid" })
+    public accountId!: string;
+
+    @Expose()
+    @Validator.IsEnum(PermissionOverrideEffect)
+    @ApiProperty({ required: true, enum: PermissionOverrideEffect, enumName: "PermissionOverrideEffect" })
+    public effect!: PermissionOverrideEffect;
 
     @Expose()
     @Validator.ValidateNested()
@@ -32,23 +38,28 @@ export class PermissionOverrideDTO {
 
     @Expose()
     @Validator.IsDate()
-    @ApiProperty({ required: true, type: Date })
-    public createdAt!: Date;
-
-    @Expose()
-    @Validator.IsDate()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: Date })
     public updatedAt?: Date;
-
-    @Expose()
-    @Validator.IsInt()
-    @ApiProperty({ required: true, type: Number })
-    public version!: number;
 
     @Expose()
     @Validator.ValidateNested()
     @Type(() => DeltaAuditLastActionsDTO)
     @ApiProperty({ required: true, type: DeltaAuditLastActionsDTO })
     public lastActions!: DeltaAudit.LastActionsSnapshot;
+
+    @Expose()
+    @Validator.IsDate()
+    @ApiProperty({ required: true, type: Date })
+    public createdAt!: Date;
+
+    @Expose()
+    @Validator.IsBoolean()
+    @ApiProperty({ required: true, type: Boolean })
+    public isRevoked!: boolean;
+
+    @Expose()
+    @Validator.IsInt()
+    @ApiProperty({ required: true, type: Number })
+    public version!: number;
 }

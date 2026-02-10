@@ -10,22 +10,26 @@ export class RoleConflictMemberAdapter {
     ): ObjectQuery<RoleConflictMember> {
         const where: ObjectQuery<RoleConflictMember> = basic;
 
-        if (filters.isRevoked !== undefined) {
-            where.isRevoked = { $eq: filters.isRevoked };
+        if (filters.id) {
+            where.id = MikroAdapter.applyStringFilter(filters.id);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
-
         if (filters.group) {
             where.group = MikroAdapter.applyStringFilter(filters.group);
         }
         if (filters.role) {
             where.role = MikroAdapter.applyStringFilter(filters.role);
         }
-
+        if (filters.updatedAt) {
+            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
+        }
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+        }
+        if (filters.isRevoked !== undefined) {
+            where.isRevoked = { $eq: filters.isRevoked };
         }
 
         return where;

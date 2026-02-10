@@ -4,7 +4,7 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class RoleDelegationPoliciesSortDTO {
+export class RoleDelegationPoliciesSortDTO implements Repositories.RoleDelegationPolicy.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

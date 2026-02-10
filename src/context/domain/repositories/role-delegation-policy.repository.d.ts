@@ -1,6 +1,6 @@
 import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded, QueryOrder } from "@mikro-orm/postgresql";
 
-import { LinkFilterDTO, OrdinalFilterDTO } from "~common/dto";
+import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 
 import { RoleDelegationPolicy as RoleDelegationPolicyEntity } from "../entities";
 
@@ -108,11 +108,14 @@ declare global {
             };
 
             type Filters = {
+                id?: StringFilterDTO;
+                isSystemManaged?: boolean;
+                depthLimit?: OrdinalFilterDTO<number>;
+                realm?: LinkFilterDTO;
                 delegator?: LinkFilterDTO;
                 target?: LinkFilterDTO;
-                realm?: LinkFilterDTO;
+                updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
-                isSystemManaged?: boolean;
                 isRevoked?: boolean;
             };
 

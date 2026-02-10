@@ -2,6 +2,7 @@ import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { PermissionOverride } from "~context/domain/entities";
+import { PermissionOverrideEffect } from "~context/enums";
 
 export class PermissionOverrideAdapter {
     protected buildWhereORM(
@@ -10,19 +11,29 @@ export class PermissionOverrideAdapter {
     ): ObjectQuery<PermissionOverride> {
         const where: ObjectQuery<PermissionOverride> = basic;
 
-        if (filters.isRevoked !== undefined) {
-            where.isRevoked = { $eq: filters.isRevoked };
-        }
-
-        if (filters.permission) {
-            where.permission = MikroAdapter.applyStringFilter(filters.permission);
+        if (filters.id) {
+            where.id = MikroAdapter.applyStringFilter(filters.id);
         }
         if (filters.account) {
             where.accountId = MikroAdapter.applyStringFilter(filters.account);
         }
-
+        if (filters.effect) {
+            where.effect = MikroAdapter.applyStringFilter<PermissionOverrideEffect>(filters.effect);
+        }
+        if (filters.permission) {
+            where.permission = MikroAdapter.applyStringFilter(filters.permission);
+        }
+        if (filters.realm) {
+            where.realm = MikroAdapter.applyStringFilter(filters.realm);
+        }
+        if (filters.updatedAt) {
+            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
+        }
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+        }
+        if (filters.isRevoked !== undefined) {
+            where.isRevoked = { $eq: filters.isRevoked };
         }
 
         return where;

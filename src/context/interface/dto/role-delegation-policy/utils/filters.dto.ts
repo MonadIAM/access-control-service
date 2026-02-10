@@ -1,16 +1,29 @@
 import { Expose, Type } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 
-import { OrdinalFilterDTO, LinkFilterDTO } from "~common/dto";
+import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class RoleDelegationPoliciesFiltersDTO {
+export class RoleDelegationPoliciesFiltersDTO implements Repositories.RoleDelegationPolicy.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
-    @Type(() => LinkFilterDTO)
-    @ApiProperty({ required: false, type: LinkFilterDTO })
-    public role?: LinkFilterDTO;
+    @Type(() => StringFilterDTO)
+    @ApiProperty({ required: false, type: StringFilterDTO })
+    public id?: StringFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.IsBoolean()
+    @ApiProperty({ required: false, type: Boolean })
+    public isSystemManaged?: boolean;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => OrdinalFilterDTO)
+    @ApiProperty({ required: false, type: OrdinalFilterDTO })
+    public depthLimit?: OrdinalFilterDTO<number>;
 
     @Expose()
     @Validator.IsOptional()
@@ -24,7 +37,21 @@ export class RoleDelegationPoliciesFiltersDTO {
     @Validator.ValidateNested()
     @Type(() => LinkFilterDTO)
     @ApiProperty({ required: false, type: LinkFilterDTO })
-    public permission?: LinkFilterDTO;
+    public delegator?: LinkFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => LinkFilterDTO)
+    @ApiProperty({ required: false, type: LinkFilterDTO })
+    public target?: LinkFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => OrdinalFilterDTO)
+    @ApiProperty({ required: false, type: OrdinalFilterDTO })
+    public updatedAt?: OrdinalFilterDTO<Date>;
 
     @Expose()
     @Validator.IsOptional()
@@ -32,12 +59,6 @@ export class RoleDelegationPoliciesFiltersDTO {
     @Type(() => OrdinalFilterDTO)
     @ApiProperty({ required: false, type: OrdinalFilterDTO })
     public createdAt?: OrdinalFilterDTO<Date>;
-
-    @Expose()
-    @Validator.IsOptional()
-    @Validator.IsBoolean()
-    @ApiProperty({ required: false, type: Boolean })
-    public isSystemManaged?: boolean;
 
     @Expose()
     @Validator.IsOptional()

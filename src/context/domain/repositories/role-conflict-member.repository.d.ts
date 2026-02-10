@@ -75,10 +75,11 @@ declare global {
 
             type Filters = {
                 id?: StringFilterDTO;
-                role?: LinkFilterDTO;
-                group?: LinkFilterDTO;
-                createdAt?: OrdinalFilterDTO<Date>;
                 isSystemManaged?: boolean;
+                group?: LinkFilterDTO;
+                role?: LinkFilterDTO;
+                updatedAt?: OrdinalFilterDTO<Date>;
+                createdAt?: OrdinalFilterDTO<Date>;
                 isRevoked?: boolean;
             };
 

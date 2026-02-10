@@ -77,13 +77,15 @@ declare global {
 
             type Filters = {
                 id?: StringFilterDTO;
-                by?: LinkFilterDTO;
-                realm?: LinkFilterDTO;
                 entity?: LinkFilterDTO;
+                realm?: LinkFilterDTO;
+                by?: LinkFilterDTO;
                 at?: OrdinalFilterDTO<Date>;
-                createdAt?: OrdinalFilterDTO<Date>;
+                ip?: StringFilterDTO;
+                userAgent?: StringFilterDTO;
                 actionType?: StringFilterDTO;
                 entityType?: StringFilterDTO;
+                createdAt?: OrdinalFilterDTO<Date>;
             };
 
             type Sort = {

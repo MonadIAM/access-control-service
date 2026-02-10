@@ -7,25 +7,26 @@ export class RealmAdapter {
     protected buildWhereORM(filters: Repositories.Realm.Filters, basic: ObjectQuery<Realm> = {}): ObjectQuery<Realm> {
         const where: ObjectQuery<Realm> = basic;
 
-        if (filters.isRevoked !== undefined) {
-            where.isRevoked = { $eq: filters.isRevoked };
+        if (filters.id) {
+            where.id = MikroAdapter.applyStringFilter(filters.id);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
-
         if (filters.code) {
             where.code = MikroAdapter.applyStringFilter(filters.code);
         }
         if (filters.name) {
             where.name = MikroAdapter.applyStringFilter(filters.name);
         }
-        if (filters.id) {
-            where.id = MikroAdapter.applyStringFilter(filters.id);
+        if (filters.updatedAt) {
+            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
-
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+        }
+        if (filters.isRevoked !== undefined) {
+            where.isRevoked = { $eq: filters.isRevoked };
         }
 
         return where;

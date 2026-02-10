@@ -120,12 +120,13 @@ declare global {
 
             type Filters = {
                 id?: StringFilterDTO;
+                isSystemManaged?: boolean;
+                maxAllowed?: OrdinalFilterDTO<number>;
                 code?: StringFilterDTO;
                 name?: StringFilterDTO;
-                maxAllowed?: OrdinalFilterDTO<number>;
                 realm?: LinkFilterDTO;
+                updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
-                isSystemManaged?: boolean;
                 isRevoked?: boolean;
             };
 

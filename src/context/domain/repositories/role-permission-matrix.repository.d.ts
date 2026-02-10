@@ -1,6 +1,6 @@
 import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded, QueryOrder } from "@mikro-orm/postgresql";
 
-import { LinkFilterDTO, OrdinalFilterDTO } from "~common/dto";
+import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 
 import { RolePermissionMatrix as RolePermissionMatrixEntity } from "../entities";
 
@@ -93,10 +93,12 @@ declare global {
                   };
 
             type Filters = {
+                id?: StringFilterDTO;
+                isSystemManaged?: boolean;
                 role?: LinkFilterDTO;
                 permission?: LinkFilterDTO;
+                updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
-                isSystemManaged?: boolean;
                 isRevoked?: boolean;
             };
 

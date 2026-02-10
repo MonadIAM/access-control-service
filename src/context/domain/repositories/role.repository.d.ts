@@ -166,15 +166,16 @@ declare global {
 
             type Filters = {
                 id?: StringFilterDTO;
-                code?: StringFilterDTO;
-                name?: StringFilterDTO;
-                permission?: LinkFilterDTO;
                 actorType?: StringFilterDTO;
                 protoType?: StringFilterDTO;
-                createdAt?: OrdinalFilterDTO<Date>;
                 nonDelegable?: boolean;
                 isSystemManaged?: boolean;
+                code?: StringFilterDTO;
+                name?: StringFilterDTO;
+                updatedAt?: OrdinalFilterDTO<Date>;
+                createdAt?: OrdinalFilterDTO<Date>;
                 isRevoked?: boolean;
+                permission?: LinkFilterDTO;
             };
 
             type Sort = {

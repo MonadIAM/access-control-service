@@ -1,6 +1,6 @@
 import { EntityManager, FilterQuery, FindOptions, EntityData, Loaded, QueryOrder } from "@mikro-orm/postgresql";
 
-import { OrdinalFilterDTO, LinkFilterDTO } from "~common/dto";
+import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 
 import { PermissionOverride as PermissionOverrideEntity } from "../entities";
 
@@ -84,14 +84,19 @@ declare global {
                   };
 
             type Filters = {
+                id?: StringFilterDTO;
                 account?: LinkFilterDTO;
+                effect?: StringFilterDTO;
                 permission?: LinkFilterDTO;
+                realm?: LinkFilterDTO;
+                updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
                 isRevoked?: boolean;
             };
 
             type Sort = {
                 createdAt?: QueryOrder;
+                updatedAt?: QueryOrder;
             };
         }
     }

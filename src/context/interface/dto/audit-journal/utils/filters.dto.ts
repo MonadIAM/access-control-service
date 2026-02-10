@@ -4,7 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class AuditJournalsFiltersDTO {
+export class AuditJournalsFiltersDTO implements Repositories.AuditJournal.Filters {
     @Expose()
     @Validator.IsOptional()
     @Type(() => StringFilterDTO)
@@ -16,7 +16,7 @@ export class AuditJournalsFiltersDTO {
     @Validator.ValidateNested()
     @Type(() => LinkFilterDTO)
     @ApiProperty({ required: false, type: LinkFilterDTO })
-    public by?: LinkFilterDTO;
+    public entity?: LinkFilterDTO;
 
     @Expose()
     @Validator.IsOptional()
@@ -30,7 +30,26 @@ export class AuditJournalsFiltersDTO {
     @Validator.ValidateNested()
     @Type(() => LinkFilterDTO)
     @ApiProperty({ required: false, type: LinkFilterDTO })
-    public entity?: LinkFilterDTO;
+    public by?: LinkFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => OrdinalFilterDTO)
+    @ApiProperty({ required: false, type: OrdinalFilterDTO })
+    public at?: OrdinalFilterDTO<Date>;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Type(() => StringFilterDTO)
+    @ApiProperty({ required: false, type: StringFilterDTO })
+    public ip?: StringFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Type(() => StringFilterDTO)
+    @ApiProperty({ required: false, type: StringFilterDTO })
+    public userAgent?: StringFilterDTO;
 
     @Expose()
     @Validator.IsOptional()
@@ -43,13 +62,6 @@ export class AuditJournalsFiltersDTO {
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
     public entityType?: StringFilterDTO;
-
-    @Expose()
-    @Validator.IsOptional()
-    @Validator.ValidateNested()
-    @Type(() => OrdinalFilterDTO)
-    @ApiProperty({ required: false, type: OrdinalFilterDTO })
-    public at?: OrdinalFilterDTO<Date>;
 
     @Expose()
     @Validator.IsOptional()

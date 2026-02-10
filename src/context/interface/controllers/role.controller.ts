@@ -2,7 +2,7 @@ import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestj
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
-import { RoleRepository } from "~context/infrastructure";
+import { RoleRepository } from "~context/infrastructure/repositories";
 import { ErrorResponseBodyDTO } from "~common/dto";
 import { BaseController } from "~common/abstract";
 
@@ -152,6 +152,7 @@ export class RoleController extends BaseController {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns the role hierarchy graph (nodes and edges)" })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: RoleHierarchyGraphDTO })
     public getHierarchyGraph(@Query() { realm }: GetRoleHierarchyGraphQueryDTO): Promise<RoleHierarchyGraphDTO> {
         return this.roleRepository
             .getHierarchyGraph({ realm })

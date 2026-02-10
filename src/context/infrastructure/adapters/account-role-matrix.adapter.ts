@@ -10,25 +10,29 @@ export class AccountRoleMatrixAdapter {
     ): ObjectQuery<AccountRoleMatrix> {
         const where: ObjectQuery<AccountRoleMatrix> = basic;
 
-        if (filters.isRevoked !== undefined) {
-            where.isRevoked = { $eq: filters.isRevoked };
+        if (filters.id) {
+            where.id = MikroAdapter.applyStringFilter(filters.id);
+        }
+        if (filters.account) {
+            where.accountId = MikroAdapter.applyStringFilter(filters.account);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
-
-        if (filters.account) {
-            where.accountId = MikroAdapter.applyStringFilter(filters.account);
+        if (filters.role) {
+            where.role = MikroAdapter.applyStringFilter(filters.role);
         }
         if (filters.realm) {
             where.realm = MikroAdapter.applyStringFilter(filters.realm);
         }
-        if (filters.role) {
-            where.role = MikroAdapter.applyStringFilter(filters.role);
+        if (filters.updatedAt) {
+            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
-
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+        }
+        if (filters.isRevoked !== undefined) {
+            where.isRevoked = { $eq: filters.isRevoked };
         }
 
         return where;

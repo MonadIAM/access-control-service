@@ -13,6 +13,16 @@ export class RoleConflictGroupDTO {
     public id!: string;
 
     @Expose()
+    @Validator.IsBoolean()
+    @ApiProperty({ required: true, type: Boolean })
+    public isSystemManaged!: boolean;
+
+    @Expose()
+    @Validator.IsPositiveInt()
+    @ApiProperty({ required: true, type: Number })
+    public maxAllowed!: number;
+
+    @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
     public code!: string;
@@ -29,30 +39,10 @@ export class RoleConflictGroupDTO {
     public description?: string;
 
     @Expose()
-    @Validator.IsPositiveInt()
-    @ApiProperty({ required: true, type: Number })
-    public maxAllowed!: number;
-
-    @Expose()
     @Validator.ValidateNested()
     @Type(() => RealmLookupDTO)
     @ApiProperty({ required: true, type: RealmLookupDTO })
     public realm!: RealmLookupDTO;
-
-    @Expose()
-    @Validator.IsBoolean()
-    @ApiProperty({ required: true, type: Boolean })
-    public isRevoked!: boolean;
-
-    @Expose()
-    @Validator.IsBoolean()
-    @ApiProperty({ required: true, type: Boolean })
-    public isSystemManaged!: boolean;
-
-    @Expose()
-    @Validator.IsDate()
-    @ApiProperty({ required: true, type: Date })
-    public createdAt!: Date;
 
     @Expose()
     @Validator.IsDate()
@@ -61,13 +51,23 @@ export class RoleConflictGroupDTO {
     public updatedAt?: Date;
 
     @Expose()
-    @Validator.IsInt()
-    @ApiProperty({ required: true, type: Number })
-    public version!: number;
-
-    @Expose()
     @Validator.ValidateNested()
     @Type(() => DeltaAuditLastActionsDTO)
     @ApiProperty({ required: true, type: DeltaAuditLastActionsDTO })
     public lastActions!: DeltaAudit.LastActionsSnapshot;
+
+    @Expose()
+    @Validator.IsDate()
+    @ApiProperty({ required: true, type: Date })
+    public createdAt!: Date;
+
+    @Expose()
+    @Validator.IsBoolean()
+    @ApiProperty({ required: true, type: Boolean })
+    public isRevoked!: boolean;
+
+    @Expose()
+    @Validator.IsInt()
+    @ApiProperty({ required: true, type: Number })
+    public version!: number;
 }

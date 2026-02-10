@@ -2,7 +2,7 @@ import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestj
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
-import { RealmRepository } from "~context/infrastructure";
+import { RealmRepository } from "~context/infrastructure/repositories";
 import { ErrorResponseBodyDTO } from "~common/dto";
 import { BaseController } from "~common/abstract";
 

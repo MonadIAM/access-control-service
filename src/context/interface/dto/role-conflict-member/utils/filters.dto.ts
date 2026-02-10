@@ -4,7 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class RoleConflictMembersFiltersDTO {
+export class RoleConflictMembersFiltersDTO implements Repositories.RoleConflictMember.Filters {
     @Expose()
     @Validator.IsOptional()
     @Type(() => StringFilterDTO)
@@ -13,10 +13,9 @@ export class RoleConflictMembersFiltersDTO {
 
     @Expose()
     @Validator.IsOptional()
-    @Validator.ValidateNested()
-    @Type(() => LinkFilterDTO)
-    @ApiProperty({ required: false, type: LinkFilterDTO })
-    public role?: LinkFilterDTO;
+    @Validator.IsBoolean()
+    @ApiProperty({ required: false, type: Boolean })
+    public isSystemManaged?: boolean;
 
     @Expose()
     @Validator.IsOptional()
@@ -28,15 +27,23 @@ export class RoleConflictMembersFiltersDTO {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
-    @Type(() => OrdinalFilterDTO)
-    @ApiProperty({ required: false, type: OrdinalFilterDTO })
-    public createdAt?: OrdinalFilterDTO<Date>;
+    @Type(() => LinkFilterDTO)
+    @ApiProperty({ required: false, type: LinkFilterDTO })
+    public role?: LinkFilterDTO;
 
     @Expose()
     @Validator.IsOptional()
-    @Validator.IsBoolean()
-    @ApiProperty({ required: false, type: Boolean })
-    public isSystemManaged?: boolean;
+    @Validator.ValidateNested()
+    @Type(() => OrdinalFilterDTO)
+    @ApiProperty({ required: false, type: OrdinalFilterDTO })
+    public updatedAt?: OrdinalFilterDTO<Date>;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => OrdinalFilterDTO)
+    @ApiProperty({ required: false, type: OrdinalFilterDTO })
+    public createdAt?: OrdinalFilterDTO<Date>;
 
     @Expose()
     @Validator.IsOptional()

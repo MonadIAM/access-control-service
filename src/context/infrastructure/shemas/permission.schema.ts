@@ -30,6 +30,14 @@ export const PermissionSchema = new EntitySchema<Permission>({
         name: { type: "string", length: 255, nullable: false },
         description: { type: "text", nullable: true },
 
+        realm: {
+            kind: "m:1",
+            nullable: false,
+            entity: () => Realm,
+            fieldName: "realm_id",
+            deleteRule: "cascade",
+        },
+
         accountOverrides: {
             kind: "1:m",
             entity: () => PermissionOverride,
@@ -39,13 +47,6 @@ export const PermissionSchema = new EntitySchema<Permission>({
             kind: "1:m",
             entity: () => RolePermissionMatrix,
             mappedBy: "permission",
-        },
-        realm: {
-            kind: "m:1",
-            nullable: false,
-            entity: () => Realm,
-            fieldName: "realm_id",
-            deleteRule: "cascade",
         },
 
         updatedAt: { type: "timestamptz", nullable: true, default: null, onUpdate: () => new Date() },

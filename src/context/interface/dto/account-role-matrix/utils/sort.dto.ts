@@ -4,7 +4,7 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class AccountRoleMatricesSortDTO {
+export class AccountRoleMatricesSortDTO implements Repositories.AccountRoleMatrix.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

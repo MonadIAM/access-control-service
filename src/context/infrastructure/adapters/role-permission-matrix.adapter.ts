@@ -10,22 +10,26 @@ export class RolePermissionMatrixAdapter {
     ): ObjectQuery<RolePermissionMatrix> {
         const where: ObjectQuery<RolePermissionMatrix> = basic;
 
-        if (filters.isRevoked !== undefined) {
-            where.isRevoked = { $eq: filters.isRevoked };
+        if (filters.id) {
+            where.id = MikroAdapter.applyStringFilter(filters.id);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
-
-        if (filters.permission) {
-            where.permission = MikroAdapter.applyStringFilter(filters.permission);
-        }
         if (filters.role) {
             where.role = MikroAdapter.applyStringFilter(filters.role);
         }
-
+        if (filters.permission) {
+            where.permission = MikroAdapter.applyStringFilter(filters.permission);
+        }
+        if (filters.updatedAt) {
+            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
+        }
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+        }
+        if (filters.isRevoked !== undefined) {
+            where.isRevoked = { $eq: filters.isRevoked };
         }
 
         return where;

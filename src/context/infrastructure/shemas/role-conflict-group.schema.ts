@@ -30,6 +30,7 @@ export const RoleConflictGroupSchema = new EntitySchema<RoleConflictGroup>({
             fieldName: "realm_id",
             deleteRule: "cascade",
         },
+
         members: {
             kind: "1:m",
             entity: () => RoleConflictMember,

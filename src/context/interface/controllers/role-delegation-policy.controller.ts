@@ -2,7 +2,7 @@ import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestj
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
-import { RoleDelegationPolicyRepository } from "~context/infrastructure";
+import { RoleDelegationPolicyRepository } from "~context/infrastructure/repositories";
 import { ErrorResponseBodyDTO } from "~common/dto";
 import { BaseController } from "~common/abstract";
 

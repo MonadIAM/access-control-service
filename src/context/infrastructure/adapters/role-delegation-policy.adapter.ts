@@ -10,25 +10,29 @@ export class RoleDelegationPolicyAdapter {
     ): ObjectQuery<RoleDelegationPolicy> {
         const where: ObjectQuery<RoleDelegationPolicy> = basic;
 
-        if (filters.isRevoked !== undefined) {
-            where.isRevoked = { $eq: filters.isRevoked };
+        if (filters.id) {
+            where.id = MikroAdapter.applyStringFilter(filters.id);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
-
+        if (filters.realm) {
+            where.realm = MikroAdapter.applyStringFilter(filters.realm);
+        }
         if (filters.delegator) {
             where.delegator = MikroAdapter.applyStringFilter(filters.delegator);
         }
         if (filters.target) {
             where.target = MikroAdapter.applyStringFilter(filters.target);
         }
-        if (filters.realm) {
-            where.realm = MikroAdapter.applyStringFilter(filters.realm);
+        if (filters.updatedAt) {
+            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
-
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+        }
+        if (filters.isRevoked !== undefined) {
+            where.isRevoked = { $eq: filters.isRevoked };
         }
 
         return where;

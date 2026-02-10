@@ -8,15 +8,20 @@ export class RoleAdapter {
     protected buildWhereORM(filters: Repositories.Role.Filters, basic: ObjectQuery<Role> = {}): ObjectQuery<Role> {
         const where: ObjectQuery<Role> = basic;
 
-        if (filters.permission) {
-            where.permissionMatrix = { permission: MikroAdapter.applyStringFilter(filters.permission) };
+        if (filters.id) {
+            where.id = MikroAdapter.applyStringFilter(filters.id);
         }
-
         if (filters.actorType) {
             where.actorType = MikroAdapter.applyStringFilter<RoleActorType>(filters.actorType);
         }
         if (filters.protoType) {
             where.protoType = MikroAdapter.applyStringFilter<RoleProtoType>(filters.protoType);
+        }
+        if (filters.isSystemManaged !== undefined) {
+            where.isSystemManaged = { $eq: filters.isSystemManaged };
+        }
+        if (filters.nonDelegable !== undefined) {
+            where.nonDelegable = { $eq: filters.nonDelegable };
         }
         if (filters.code) {
             where.code = MikroAdapter.applyStringFilter(filters.code);
@@ -24,26 +29,17 @@ export class RoleAdapter {
         if (filters.name) {
             where.name = MikroAdapter.applyStringFilter(filters.name);
         }
-        if (filters.id) {
-            where.id = MikroAdapter.applyStringFilter(filters.id);
+        if (filters.updatedAt) {
+            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
-
-        if (filters.permission) {
-            where.permissionMatrix = { permission: MikroAdapter.applyStringFilter(filters.permission) };
-        }
-
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
-
-        if (filters.isSystemManaged !== undefined) {
-            where.isSystemManaged = { $eq: filters.isSystemManaged };
-        }
-        if (filters.nonDelegable !== undefined) {
-            where.nonDelegable = { $eq: filters.nonDelegable };
-        }
         if (filters.isRevoked !== undefined) {
             where.isRevoked = { $eq: filters.isRevoked };
+        }
+        if (filters.permission) {
+            where.permissionMatrix = { permission: MikroAdapter.applyStringFilter(filters.permission) };
         }
 
         return where;

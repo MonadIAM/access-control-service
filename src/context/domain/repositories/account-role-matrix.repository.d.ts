@@ -100,16 +100,19 @@ declare global {
             };
 
             type Filters = {
-                account?: StringFilterDTO;
-                realm?: LinkFilterDTO;
-                role?: LinkFilterDTO;
-                createdAt?: OrdinalFilterDTO<Date>;
+                id?: StringFilterDTO;
+                account?: LinkFilterDTO;
                 isSystemManaged?: boolean;
+                role?: LinkFilterDTO;
+                realm?: LinkFilterDTO;
+                updatedAt?: OrdinalFilterDTO<Date>;
+                createdAt?: OrdinalFilterDTO<Date>;
                 isRevoked?: boolean;
             };
 
             type Sort = {
                 createdAt?: QueryOrder;
+                updatedAt?: QueryOrder;
             };
         }
     }
