@@ -1,8 +1,9 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { RealmRepository } from "~context/infrastructure/repositories";
+import { MonitoringInterceptor } from "~common/interceptors";
 import { ErrorResponseBodyDTO } from "~common/dto";
 import { BaseController } from "~common/abstract";
 
@@ -18,6 +19,7 @@ import {
 
 @ApiTags("Realm")
 @Controller("/realm")
+@UseInterceptors(MonitoringInterceptor)
 export class RealmController extends BaseController {
     public constructor(
         private readonly realmRepository: RealmRepository,

@@ -1,8 +1,9 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { AuditJournalRepository } from "~context/infrastructure/repositories";
+import { MonitoringInterceptor } from "~common/interceptors";
 import { ErrorResponseBodyDTO } from "~common/dto";
 import { BaseController } from "~common/abstract";
 
@@ -15,6 +16,7 @@ import {
 
 @ApiTags("AuditJournal")
 @Controller("/audit-journal")
+@UseInterceptors(MonitoringInterceptor)
 export class AuditJournalController extends BaseController {
     public constructor(
         private readonly auditJournalRepository: AuditJournalRepository,

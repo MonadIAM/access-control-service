@@ -1,8 +1,9 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { PermissionRepository } from "~context/infrastructure/repositories";
+import { MonitoringInterceptor } from "~common/interceptors";
 import { ErrorResponseBodyDTO } from "~common/dto";
 import { BaseController } from "~common/abstract";
 
@@ -21,6 +22,7 @@ import {
 
 @ApiTags("Permission")
 @Controller("/permission")
+@UseInterceptors(MonitoringInterceptor)
 export class PermissionController extends BaseController {
     private readonly populate = {
         DETAILED: ["realm"] as const,

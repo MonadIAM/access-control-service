@@ -1,15 +1,21 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from "@nestjs/common";
+import { InjectMetric } from "@willsoto/nestjs-prometheus";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { I18nContext, I18nService } from "nestjs-i18n";
 import { ThrottlerException } from "@nestjs/throttler";
+import { Counter } from "prom-client";
 
+import { RepositoryException } from "./types/repository.exception";
 import { BaseException } from "./types/base.exception";
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
     private readonly logger = new Logger(GlobalExceptionFilter.name);
 
-    public constructor(private readonly i18n: I18nService) {}
+    public constructor(
+        @InjectMetric("app_unhandled_errors_total") private readonly unhandledErrorsCounter: Counter<string>,
+        private readonly i18n: I18nService,
+    ) {}
 
     public async catch(exception: unknown, host: ArgumentsHost): Promise<void> {
         const context = host.switchToHttp();
@@ -81,6 +87,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             method: request.method,
             statusCode: result.statusCode,
         };
+
+        if (result.statusCode !== 404) {
+            if (exception instanceof ThrottlerException) {
+                this.unhandledErrorsCounter.inc({ type: "Throttling" });
+            } else if (exception instanceof RepositoryException) {
+                this.unhandledErrorsCounter.inc({ type: "Database" });
+            } else if (result.statusCode! >= 500) {
+                this.unhandledErrorsCounter.inc({ type: "Internal" });
+            }
+        }
 
         if (result.statusCode! >= 500) {
             this.logger.error({ ...logPayload, err: exception }, "Internal Server Error");

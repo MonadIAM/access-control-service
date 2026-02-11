@@ -8,8 +8,8 @@ import { catchError, tap } from "rxjs/operators";
 @Injectable()
 export class MonitoringInterceptor implements NestInterceptor {
     public constructor(
-        @InjectMetric("http_request_duration_seconds") private readonly histogram: Histogram,
-        @InjectMetric("http_requests_total") private readonly counter: Counter,
+        @InjectMetric("http_request_duration_seconds") private readonly histogram: Histogram<string>,
+        @InjectMetric("http_requests_total") private readonly counter: Counter<string>,
     ) {}
 
     public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {

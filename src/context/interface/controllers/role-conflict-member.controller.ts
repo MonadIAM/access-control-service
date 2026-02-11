@@ -1,9 +1,10 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { RoleConflictMemberRepository } from "~context/infrastructure/repositories";
 import { BaseReadQueryDTO, ErrorResponseBodyDTO } from "~common/dto";
+import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 
 import {
@@ -15,6 +16,7 @@ import {
 
 @ApiTags("RoleConflictMember")
 @Controller("/role-conflict-member")
+@UseInterceptors(MonitoringInterceptor)
 export class RoleConflictMemberController extends BaseController {
     private readonly populate = {
         DETAILED: ["group", "role"] as const,
