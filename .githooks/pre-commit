@@ -12,7 +12,7 @@ RESET="${ESC}[0m"
 FILES_FOR_CHECK=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.ts$" | grep -v "node_modules")
 
 if [ -n "$FILES_FOR_CHECK" ]; then
-    printf "\n${YELLOW}Файлы для линтинга:${RESET}\n"
+    printf "\n${YELLOW}Files to be linted:${RESET}\n"
     printf "${CYAN}%s${RESET}\n" "$FILES_FOR_CHECK"
 fi
 
@@ -20,7 +20,7 @@ run_gitleaks() {
     local start_time end_time elapsed exit_code
 
     if ! command -v gitleaks >/dev/null 2>&1; then
-        printf "\n${YELLOW}Gitleaks не найден в PATH, проверка секретов пропущена.${RESET}\n"
+        printf "\n${YELLOW}Gitleaks not found in PATH, skipping secrets detection.${RESET}\n"
         return 0
     fi
 
@@ -30,7 +30,7 @@ run_gitleaks() {
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
 
-    printf "\n${YELLOW}Время проверки Gitleaks: ${elapsed} sec${RESET}\n"
+    printf "\n${YELLOW}Gitleaks execution time: ${elapsed} sec${RESET}\n"
     return $exit_code
 }
 
@@ -43,7 +43,7 @@ run_eslint() {
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
 
-    printf "\n${YELLOW}Время проверки ESLint: ${elapsed} sec${RESET}\n"
+    printf "\n${YELLOW}ESLint execution time: ${elapsed} sec${RESET}\n"
     return $exit_code
 }
 
@@ -56,27 +56,27 @@ run_tsc() {
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
 
-    printf "\n${YELLOW}Время глобальной проверки TSC: ${elapsed} sec${RESET}\n"
+    printf "\n${YELLOW}Global TSC check time: ${elapsed} sec${RESET}\n"
     return $exit_code
 }
 
 run_gitleaks
 if [ $? -ne 0 ]; then
-    printf "\n${BG_RED}COMMIT FAILED:${RESET}${RED} Обнаружены потенциальные секреты (gitleaks).${RESET}\n"
+    printf "\n${BG_RED}COMMIT FAILED:${RESET}${RED} Potential secrets detected (gitleaks).${RESET}\n"
     exit 1
 fi
 
 run_tsc
 if [ $? -ne 0 ]; then
-    printf "\n${BG_RED}COMMIT FAILED:${RESET}${RED} Ошибки TypeScript.${RESET}\n"
+    printf "\n${BG_RED}COMMIT FAILED:${RESET}${RED} TypeScript compilation errors.${RESET}\n"
     exit 1
 fi
 
 run_eslint
 if [ $? -ne 0 ]; then
-    printf "\n${BG_RED}COMMIT FAILED:${RESET}${RED} Ошибки ESLint.${RESET}\n"
+    printf "\n${BG_RED}COMMIT FAILED:${RESET}${RED} ESLint violations found.${RESET}\n"
     exit 1
 fi
 
-printf "\n${BG_GREEN}COMMIT SUCCEEDED:${RESET}${GREEN} Gitleaks, TSC и ESLint пройдены.${RESET}\n"
+printf "\n${BG_GREEN}COMMIT SUCCEEDED:${RESET}${GREEN} Gitleaks, TSC, and ESLint checks passed.${RESET}\n"
 exit 0

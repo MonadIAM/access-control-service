@@ -6,20 +6,26 @@ BG_RED="${ESC}[41m"
 RESET="${ESC}[0m"
 
 PREFIXES="feat|fix|docs|refactor|perf|test|build|ci|chore|revert"
-BRANCH_PATTERN="^($PREFIXES)(/[a-zA-Z0-9-]+)?/[a-zA-Z0-9_-]{1,50}$"
+MAX_LENGTH=50
 
-WHITELISTED_BRANCHES="dev main master"
+PATTERN="^($PREFIXES)(/[a-zA-Z0-9-]+)?/[a-zA-Z0-9_-]+$"
+WHITELIST="^(dev|main|master)$"
 
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+BRANCH_LEN=${#CURRENT_BRANCH}
 
-for BRANCH in $WHITELISTED_BRANCHES; do
-    if [ "$CURRENT_BRANCH" = "$BRANCH" ]; then
-        exit 0
-    fi
-done
+if echo "$CURRENT_BRANCH" | grep -qE "$WHITELIST"; then
+    exit 0
+fi
 
-if ! echo "$CURRENT_BRANCH" | grep -qE "$BRANCH_PATTERN"; then
-    printf "\n${BG_RED}PUSH FAILED:${RESET}${RED} Неверный формат названия ветки!${RESET}\n"
+if ! echo "$CURRENT_BRANCH" | grep -qE "$PATTERN"; then
+    printf "\n${BG_RED}PUSH FAILED:${RESET}${RED} Invalid branch name format!${RESET}\n"
+    exit 1
+fi
+
+if [ "$BRANCH_LEN" -gt "$MAX_LENGTH" ]; then
+    printf "\n${BG_RED}PUSH FAILED:${RESET}${RED} Branch name is too long!${RESET}\n"
+    printf "Current length: ${BRANCH_LEN} characters (max: ${MAX_LENGTH})\n"
     exit 1
 fi
 
