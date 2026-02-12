@@ -1,0 +1,74 @@
+{
+  "role": {
+    "NO_CHANGES_DETECTED": "No changes detected to save.",
+    "EMPTY_UPDATE_PATCH": "Empty update patch provided.",
+    "ALREADY_REVOKED": "Role is already revoked.",
+    "ALREADY_ACTIVE": "Role is already active.",
+    "CANNOT_PURGE_ACTIVE": "Cannot purge an active entity. Revoke it first.",
+    "CANNOT_PURGE_SYSTEM": "System managed records cannot be purged."
+  },
+  "role-permission-matrix": {
+    "NO_CHANGES_DETECTED": "No changes detected in permission matrix.",
+    "EMPTY_UPDATE_PATCH": "Permission matrix update patch is empty.",
+    "ALREADY_REVOKED": "Permission mapping is already revoked.",
+    "ALREADY_ACTIVE": "Permission mapping is already active.",
+    "CANNOT_PURGE_ACTIVE": "Cannot purge an active permission mapping.",
+    "CANNOT_PURGE_SYSTEM": "System permission matrix is protected from purging."
+  },
+  "role-delegation-policy": {
+    "NO_CHANGES_DETECTED": "No changes detected in delegation policy.",
+    "EMPTY_UPDATE_PATCH": "Delegation policy patch is empty.",
+    "ALREADY_REVOKED": "Delegation policy is already revoked.",
+    "ALREADY_ACTIVE": "Delegation policy is already active.",
+    "CANNOT_PURGE_ACTIVE": "Cannot purge an active delegation policy.",
+    "CANNOT_PURGE_SYSTEM": "System delegation policy cannot be purged."
+  },
+  "role-conflict-member": {
+    "NO_CHANGES_DETECTED": "No changes detected in conflict membership.",
+    "EMPTY_UPDATE_PATCH": "Conflict member update data is missing.",
+    "ALREADY_REVOKED": "Conflict member is already revoked.",
+    "ALREADY_ACTIVE": "Conflict member is already active.",
+    "CANNOT_PURGE_ACTIVE": "Cannot purge an active conflict member.",
+    "CANNOT_PURGE_SYSTEM": "System conflict membership cannot be purged."
+  },
+  "role-conflict-group": {
+    "NO_CHANGES_DETECTED": "No changes detected in conflict group.",
+    "EMPTY_UPDATE_PATCH": "Conflict group patch is empty.",
+    "ALREADY_REVOKED": "Conflict group is already revoked.",
+    "ALREADY_ACTIVE": "Conflict group is already active.",
+    "CANNOT_PURGE_ACTIVE": "Cannot purge an active conflict group.",
+    "CANNOT_PURGE_SYSTEM": "System conflict group is protected from purging."
+  },
+  "realm": {
+    "NO_CHANGES_DETECTED": "No changes detected in realm.",
+    "EMPTY_UPDATE_PATCH": "Realm update patch is empty.",
+    "ALREADY_REVOKED": "Realm is already revoked.",
+    "ALREADY_ACTIVE": "Realm is already active.",
+    "CANNOT_PURGE_ACTIVE": "Cannot purge an active realm.",
+    "CANNOT_PURGE_SYSTEM": "System realm cannot be purged."
+  },
+  "permission": {
+    "NO_CHANGES_DETECTED": "No changes detected in permission.",
+    "EMPTY_UPDATE_PATCH": "Permission update patch is missing.",
+    "ALREADY_REVOKED": "Permission is already revoked.",
+    "ALREADY_ACTIVE": "Permission is already active.",
+    "CANNOT_PURGE_ACTIVE": "Cannot purge an active permission.",
+    "CANNOT_PURGE_SYSTEM": "System permission cannot be purged."
+  },
+  "permission-override": {
+    "NO_CHANGES_DETECTED": "No changes detected in permission override.",
+    "EMPTY_UPDATE_PATCH": "Permission override patch is empty.",
+    "ALREADY_REVOKED": "Permission override is already revoked.",
+    "ALREADY_ACTIVE": "Permission override is already active.",
+    "CANNOT_PURGE_ACTIVE": "Cannot purge an active permission override.",
+    "CANNOT_PURGE_SYSTEM": "System permission override is protected from purging."
+  },
+  "account-role-matrix": {
+    "NO_CHANGES_DETECTED": "No changes detected in account-role assignment.",
+    "EMPTY_UPDATE_PATCH": "Account-role matrix patch is empty.",
+    "ALREADY_REVOKED": "Account-role assignment is already revoked.",
+    "ALREADY_ACTIVE": "Account-role assignment is already active.",
+    "CANNOT_PURGE_ACTIVE": "Cannot purge an active account-role assignment.",
+    "CANNOT_PURGE_SYSTEM": "System managed assignment cannot be purged."
+  }
+}

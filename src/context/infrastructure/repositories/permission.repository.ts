@@ -1,4 +1,4 @@
-import { EntityDictionary, EntityManager, FilterQuery, Knex, Loaded, raw, wrap } from "@mikro-orm/postgresql";
+import { EntityDictionary, EntityManager, Knex, Loaded, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
@@ -11,86 +11,8 @@ import { Permission } from "~context/domain/entities";
 export class PermissionRepository extends PermissionAdapter implements Repositories.Permission.Contract {
     private readonly resource = "Permission";
 
-    public constructor(
-        @InjectEntityManager("write") private readonly writeManager: EntityManager,
-        @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {
+    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
         super();
-    }
-
-    public async create({ transaction, entity }: Repositories.Permission.Create): Promise<Permission> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            entityManager.persist(entity);
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async update({ transaction, entity, patch }: Repositories.Permission.Update): Promise<Permission> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            wrap(entity).assign(patch, { merge: true });
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async delete({ transaction, realm, id }: Repositories.Permission.Delete): Promise<void> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const where: FilterQuery<Permission> = {
-                isSystemManaged: false,
-                isRevoked: true,
-                realm,
-                id,
-            };
-            const affected = await entityManager.nativeDelete(Permission, where);
-            if (!affected) {
-                throw RepositoryException.notFound({ resource: this.resource });
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkUpdate({ transaction, updates }: Repositories.Permission.BulkUpdate): Promise<Permission[]> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            for (const { entity, patch } of updates) {
-                wrap(entity).assign(patch, { merge: true });
-            }
-
-            await entityManager.flush();
-
-            return updates.map(({ entity }) => entity);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkDelete({ transaction, identifiers, realm }: Repositories.Permission.BulkDelete): Promise<number> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const where: FilterQuery<Permission> = {
-                id: { $in: identifiers },
-                isSystemManaged: false,
-                isRevoked: true,
-                realm,
-            };
-            return await entityManager.nativeDelete(Permission, where);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({

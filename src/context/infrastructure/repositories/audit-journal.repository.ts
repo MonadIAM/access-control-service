@@ -10,46 +10,8 @@ import { AuditJournal } from "~context/domain/entities";
 export class AuditJournalRepository extends AuditJournalAdapter implements Repositories.AuditJournal.Contract {
     private readonly resource = "AuditJournal";
 
-    public constructor(
-        @InjectEntityManager("write") private readonly writeManager: EntityManager,
-        @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {
+    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
         super();
-    }
-
-    public async create({ transaction, entity }: Repositories.AuditJournal.Create): Promise<AuditJournal> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            entityManager.persist(entity);
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkCreate({ transaction, entities }: Repositories.AuditJournal.BulkCreate): Promise<AuditJournal[]> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            entityManager.persist(entities);
-            await entityManager.flush();
-
-            return entities;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkDelete({ transaction, where }: Repositories.AuditJournal.BulkDelete): Promise<number> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            return await entityManager.nativeDelete(AuditJournal, where);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({

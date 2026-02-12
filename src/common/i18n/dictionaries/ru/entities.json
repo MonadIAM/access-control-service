@@ -1,0 +1,65 @@
+{
+  "role": {
+    "NO_CHANGES_DETECTED": "Нет изменений для сохранения.",
+    "EMPTY_UPDATE_PATCH": "Передан пустой объект обновления.",
+    "ALREADY_REVOKED": "Роль уже отозвана.",
+    "ALREADY_ACTIVE": "Роль уже активна.",
+    "CANNOT_PURGE_ACTIVE": "Нельзя безвозвратно удалить активный объект. Сначала отзовите его.",
+    "CANNOT_PURGE_SYSTEM": "Системные записи не подлежат удалению."
+  },
+  "role-permission-matrix": {
+    "ALREADY_REVOKED": "Связь разрешения уже деактивирована.",
+    "ALREADY_ACTIVE": "Связь разрешения уже активна.",
+    "CANNOT_PURGE_ACTIVE": "Нельзя удалить активную связь из матрицы.",
+    "CANNOT_PURGE_SYSTEM": "Системная матрица разрешений защищена от удаления."
+  },
+  "role-delegation-policy": {
+    "NO_CHANGES_DETECTED": "Изменения в политике делегирования не обнаружены.",
+    "EMPTY_UPDATE_PATCH": "Патч политики делегирования пуст.",
+    "ALREADY_REVOKED": "Политика делегирования уже отозвана.",
+    "ALREADY_ACTIVE": "Политика делегирования уже активна.",
+    "CANNOT_PURGE_ACTIVE": "Нельзя удалить действующую политику.",
+    "CANNOT_PURGE_SYSTEM": "Системная политика делегирования не может быть удалена."
+  },
+  "role-conflict-member": {
+    "ALREADY_REVOKED": "Участник конфликта уже деактивирован.",
+    "ALREADY_ACTIVE": "Участник конфликта уже значится активным.",
+    "CANNOT_PURGE_ACTIVE": "Нельзя удалить активного участника конфликта.",
+    "CANNOT_PURGE_SYSTEM": "Системная запись конфликта не подлежит удалению."
+  },
+  "role-conflict-group": {
+    "NO_CHANGES_DETECTED": "Изменения в группе конфликтов не обнаружены.",
+    "EMPTY_UPDATE_PATCH": "Патч группы конфликтов пуст.",
+    "ALREADY_REVOKED": "Группа конфликтов уже деактивирована.",
+    "ALREADY_ACTIVE": "Группа конфликтов уже активна.",
+    "CANNOT_PURGE_ACTIVE": "Нельзя удалить активную группу конфликтов.",
+    "CANNOT_PURGE_SYSTEM": "Системная группа конфликтов защищена от удаления."
+  },
+  "realm": {
+    "NO_CHANGES_DETECTED": "Изменения в Realm не обнаружены.",
+    "EMPTY_UPDATE_PATCH": "Патч обновления Realm пуст.",
+    "ALREADY_REVOKED": "Realm уже отозван.",
+    "ALREADY_ACTIVE": "Realm уже активен.",
+    "CANNOT_PURGE_ACTIVE": "Нельзя удалить активный Realm.",
+    "CANNOT_PURGE_SYSTEM": "Системный Realm не подлежит удалению."
+  },
+  "permission": {
+    "NO_CHANGES_DETECTED": "Изменения в разрешении не обнаружены.",
+    "EMPTY_UPDATE_PATCH": "Данные для обновления разрешения отсутствуют.",
+    "ALREADY_REVOKED": "Разрешение уже отозвано.",
+    "ALREADY_ACTIVE": "Разрешение уже активно.",
+    "CANNOT_PURGE_ACTIVE": "Нельзя удалить активное разрешение.",
+    "CANNOT_PURGE_SYSTEM": "Системное разрешение нельзя удалить."
+  },
+  "permission-override": {
+    "ALREADY_REVOKED": "Переопределение уже отозвано.",
+    "ALREADY_ACTIVE": "Переопределение уже активно.",
+    "CANNOT_PURGE_ACTIVE": "Нельзя удалить действующее переопределение."
+  },
+  "account-role-matrix": {
+    "ALREADY_REVOKED": "Связь роли с аккаунтом уже отозвана.",
+    "ALREADY_ACTIVE": "Связь роли с аккаунтом уже активна.",
+    "CANNOT_PURGE_ACTIVE": "Нельзя удалить активную привязку роли.",
+    "CANNOT_PURGE_SYSTEM": "Системная привязка не подлежит удалению."
+  }
+}

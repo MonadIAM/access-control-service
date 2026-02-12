@@ -9,10 +9,6 @@ declare global {
             type Entity = AuditJournalEntity;
 
             interface Contract {
-                create: (props: Create) => Promise<Entity>;
-                bulkCreate: (props: BulkCreate) => Promise<Entity[]>;
-                bulkDelete: (props: BulkDelete) => Promise<number>;
-
                 findUnique: <P extends string = never, F extends string = "*">(
                     props: FindUnique<P, F>,
                 ) => Promise<Nullable<Loaded<Entity, P, F>>>;
@@ -29,21 +25,6 @@ declare global {
                     props: Find<P, F>,
                 ) => Promise<Loaded<Entity, P, F>[]>;
             }
-
-            type Create = {
-                transaction?: EntityManager;
-                entity: Entity;
-            };
-
-            type BulkCreate = {
-                transaction?: EntityManager;
-                entities: Entity[];
-            };
-
-            type BulkDelete = {
-                transaction?: EntityManager;
-                where: FilterQuery<Entity>;
-            };
 
             type FindUnique<P extends string, F extends string> = {
                 transaction?: EntityManager;

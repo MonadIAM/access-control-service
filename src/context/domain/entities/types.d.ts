@@ -17,7 +17,6 @@ import { Role as RoleEntity } from "./role.entity";
 declare global {
     namespace Entities {
         type BaseMethodProps = {
-            now: Date;
             actor: string;
             reason: string;
         };
@@ -26,11 +25,11 @@ declare global {
             type MutableFields = Pick<RoleEntity, "name" | "description">;
 
             type Seed = {
+                actor: string;
                 code: string;
                 name: string;
                 actorType: RoleActorType;
                 protoType: RoleProtoType;
-                lastActions: DeltaAudit.LastActionsSnapshot<MutableFields>;
                 description?: string;
                 isSystemManaged?: boolean;
                 nonDelegable?: boolean;
@@ -48,7 +47,7 @@ declare global {
 
         namespace RolePermissionMatrix {
             type Seed = {
-                lastActions: DeltaAudit.LastActionsSnapshot;
+                actor: string;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
             };
@@ -64,7 +63,7 @@ declare global {
             type MutableFields = Pick<RoleDelegationPolicyEntity, "depthLimit" | "description">;
 
             type Seed = {
-                lastActions: DeltaAudit.LastActionsSnapshot<MutableFields>;
+                actor: string;
                 description?: string;
                 depthLimit?: number;
                 isSystemManaged?: boolean;
@@ -84,7 +83,7 @@ declare global {
 
         namespace RoleConflictMember {
             type Seed = {
-                lastActions: DeltaAudit.LastActionsSnapshot;
+                actor: string;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
             };
@@ -99,10 +98,10 @@ declare global {
             type MutableFields = Pick<RoleConflictGroupEntity, "name" | "description" | "maxAllowed">;
 
             type Seed = {
+                actor: string;
                 code: string;
                 name: string;
                 maxAllowed: number;
-                lastActions: DeltaAudit.LastActionsSnapshot<MutableFields>;
                 description?: string;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
@@ -130,25 +129,31 @@ declare global {
         }
 
         namespace Realm {
+            type MutableFields = Pick<PermissionEntity, "name" | "description">;
+
             type Seed = {
+                actor: string;
                 code: string;
                 name: string;
-                lastActions: DeltaAudit.LastActionsSnapshot;
                 description?: string;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
             };
 
             type ConstructorProps = Seed;
+
+            type ChangeDataProps = BaseMethodProps & {
+                patch: Partial<MutableFields>;
+            };
         }
 
         namespace Permission {
             type MutableFields = Pick<PermissionEntity, "name" | "description">;
 
             type Seed = {
+                actor: string;
                 code: string;
                 name: string;
-                lastActions: DeltaAudit.LastActionsSnapshot<MutableFields>;
                 description?: string;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
@@ -165,9 +170,9 @@ declare global {
 
         namespace PermissionOverride {
             type Seed = {
-                accountId: string;
+                actor: string;
+                account: string;
                 effect: PermissionOverrideEffect;
-                lastActions: DeltaAudit.LastActionsSnapshot;
                 isRevoked?: boolean;
             };
 
@@ -196,8 +201,8 @@ declare global {
 
         namespace AccountRoleMatrix {
             type Seed = {
-                accountId: string;
-                lastActions: DeltaAudit.LastActionsSnapshot;
+                actor: string;
+                account: string;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
             };

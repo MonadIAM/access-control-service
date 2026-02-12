@@ -1,4 +1,4 @@
-import { EntityManager, FilterQuery, Loaded, raw, wrap } from "@mikro-orm/postgresql";
+import { EntityManager, Loaded, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
@@ -10,54 +10,8 @@ import { Realm } from "~context/domain/entities";
 export class RealmRepository extends RealmAdapter implements Repositories.Realm.Contract {
     private readonly resource = "Realm";
 
-    public constructor(
-        @InjectEntityManager("write") private readonly writeManager: EntityManager,
-        @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {
+    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
         super();
-    }
-
-    public async create({ transaction, entity }: Repositories.Realm.Create): Promise<Realm> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            entityManager.persist(entity);
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async update({ transaction, entity, patch }: Repositories.Realm.Update): Promise<Realm> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            wrap(entity).assign(patch, { merge: true });
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async delete({ transaction, id }: Repositories.Realm.Delete): Promise<void> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const where: FilterQuery<Realm> = {
-                isSystemManaged: false,
-                isRevoked: true,
-                id,
-            };
-            const affected = await entityManager.nativeDelete(Realm, where);
-            if (!affected) {
-                throw RepositoryException.notFound({ resource: this.resource });
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({

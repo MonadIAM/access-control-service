@@ -1,4 +1,4 @@
-import { EntityData, EntityManager, FilterQuery, FindOptions, Loaded, QueryOrder } from "@mikro-orm/postgresql";
+import { EntityManager, FilterQuery, FindOptions, Loaded, QueryOrder } from "@mikro-orm/postgresql";
 
 import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 
@@ -10,10 +10,6 @@ declare global {
             type Entity = RealmEntity;
 
             interface Contract {
-                create: (props: Create) => Promise<Entity>;
-                update: (props: Update) => Promise<Entity>;
-                delete: (props: Delete) => Promise<void>;
-
                 findUnique: <P extends string = never, F extends string = "*">(
                     props: FindUnique<P, F>,
                 ) => Promise<Nullable<Loaded<Entity, P, F>>>;
@@ -28,22 +24,6 @@ declare global {
 
                 getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
             }
-
-            type Create = {
-                transaction?: EntityManager;
-                entity: Entity;
-            };
-
-            type Update = {
-                transaction?: EntityManager;
-                patch: Partial<EntityData<Entity>>;
-                entity: Entity;
-            };
-
-            type Delete = {
-                transaction?: EntityManager;
-                id: string;
-            };
 
             type FindUnique<P extends string, F extends string> = {
                 transaction?: EntityManager;

@@ -10,11 +10,6 @@ declare global {
             type Entity = RoleConflictMemberEntity;
 
             interface Contract {
-                create: (props: Create) => Promise<Entity>;
-                delete: (props: Delete) => Promise<void>;
-                bulkCreate: (props: BulkCreate) => Promise<Entity[]>;
-                bulkDelete: (props: BulkDelete) => Promise<number>;
-
                 findUnique: <P extends string = never, F extends string = "*">(
                     props: FindUnique<P, F>,
                 ) => Promise<Nullable<Loaded<Entity, P, F>>>;
@@ -27,26 +22,6 @@ declare global {
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
             }
-
-            type Create = {
-                transaction?: EntityManager;
-                entity: Entity;
-            };
-
-            type Delete = {
-                transaction?: EntityManager;
-                id: string;
-            };
-
-            type BulkCreate = {
-                transaction?: EntityManager;
-                entities: Entity[];
-            };
-
-            type BulkDelete = {
-                transaction?: EntityManager;
-                identifiers: string[];
-            };
 
             type FindUnique<P extends string, F extends string> = {
                 transaction?: EntityManager;

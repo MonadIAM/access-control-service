@@ -1,4 +1,4 @@
-import { EntityDictionary, EntityManager, FilterQuery, Knex, Loaded, QueryOrder, raw, wrap } from "@mikro-orm/postgresql";
+import { EntityDictionary, EntityManager, FilterQuery, Knex, Loaded, QueryOrder, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
@@ -11,86 +11,8 @@ import { MikroAdapter } from "~infrastructure/database";
 export class RoleRepository extends RoleAdapter implements Repositories.Role.Contract {
     private readonly resource = "Role";
 
-    public constructor(
-        @InjectEntityManager("write") private readonly writeManager: EntityManager,
-        @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {
+    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
         super();
-    }
-
-    public async create({ transaction, entity }: Repositories.Role.Create): Promise<Role> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            entityManager.persist(entity);
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async update({ transaction, entity, patch }: Repositories.Role.Update): Promise<Role> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            wrap(entity).assign(patch, { merge: true });
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async delete({ transaction, realm, id }: Repositories.Role.Delete): Promise<void> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const where: FilterQuery<Role> = {
-                isSystemManaged: false,
-                isRevoked: true,
-                realm,
-                id,
-            };
-            const affected = await entityManager.nativeDelete(Role, where);
-            if (!affected) {
-                throw RepositoryException.notFound({ resource: this.resource });
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkUpdate({ transaction, updates }: Repositories.Role.BulkUpdate): Promise<Role[]> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            for (const { entity, patch } of updates) {
-                wrap(entity).assign(patch, { merge: true });
-            }
-
-            await entityManager.flush();
-
-            return updates.map(({ entity }) => entity);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkDelete({ transaction, identifiers, realm }: Repositories.Role.BulkDelete): Promise<number> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const where: FilterQuery<Role> = {
-                id: { $in: identifiers },
-                isSystemManaged: false,
-                isRevoked: true,
-                realm,
-            };
-            return await entityManager.nativeDelete(Role, where);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({

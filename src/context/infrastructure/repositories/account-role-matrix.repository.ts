@@ -1,4 +1,4 @@
-import { EntityManager, FilterQuery, Loaded, wrap } from "@mikro-orm/postgresql";
+import { EntityManager, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -15,110 +15,10 @@ export class AccountRoleMatrixRepository
     private readonly resource = "AccountRoleMatrix";
 
     public constructor(
-        @InjectEntityManager("write") private readonly writeManager: EntityManager,
         @InjectEntityManager("read") private readonly readManager: EntityManager,
         private readonly configService: ConfigService,
     ) {
         super();
-    }
-
-    public async create({ transaction, entity }: Repositories.AccountRoleMatrix.Create): Promise<AccountRoleMatrix> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            entityManager.persist(entity);
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async update({ transaction, entity, patch }: Repositories.AccountRoleMatrix.Update): Promise<AccountRoleMatrix> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            wrap(entity).assign(patch, { merge: true });
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async delete({ transaction, realm, id }: Repositories.AccountRoleMatrix.Delete): Promise<void> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const where: FilterQuery<AccountRoleMatrix> = {
-                isSystemManaged: false,
-                isRevoked: true,
-                realm,
-                id,
-            };
-            const affected = await entityManager.nativeDelete(AccountRoleMatrix, where);
-            if (!affected) {
-                throw RepositoryException.notFound({ resource: this.resource });
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkCreate({
-        transaction,
-        entities,
-    }: Repositories.AccountRoleMatrix.BulkCreate): Promise<AccountRoleMatrix[]> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            entityManager.persist(entities);
-            await entityManager.flush();
-
-            return entities;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkUpdate({
-        transaction,
-        updates,
-    }: Repositories.AccountRoleMatrix.BulkUpdate): Promise<AccountRoleMatrix[]> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            for (const { entity, patch } of updates) {
-                wrap(entity).assign(patch, { merge: true });
-            }
-
-            await entityManager.flush();
-
-            return updates.map(({ entity }) => entity);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkDelete({
-        transaction,
-        identifiers,
-        accountId,
-        realm,
-    }: Repositories.AccountRoleMatrix.BulkDelete): Promise<number> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const where: FilterQuery<AccountRoleMatrix> = {
-                ...(identifiers ? { id: { $in: identifiers } } : { accountId }),
-                isSystemManaged: false,
-                isRevoked: true,
-                realm,
-            };
-            return await entityManager.nativeDelete(AccountRoleMatrix, where);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({

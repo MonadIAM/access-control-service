@@ -1,4 +1,4 @@
-import { EntityManager, FilterQuery, Loaded, wrap } from "@mikro-orm/postgresql";
+import { EntityManager, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
@@ -13,98 +13,8 @@ export class RoleDelegationPolicyRepository
 {
     private readonly resource = "RoleDelegationPolicy";
 
-    public constructor(
-        @InjectEntityManager("write") private readonly writeManager: EntityManager,
-        @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {
+    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
         super();
-    }
-
-    public async create({ transaction, entity }: Repositories.RoleDelegationPolicy.Create): Promise<RoleDelegationPolicy> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            entityManager.persist(entity);
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async update({
-        transaction,
-        entity,
-        patch,
-    }: Repositories.RoleDelegationPolicy.Update): Promise<RoleDelegationPolicy> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            wrap(entity).assign(patch, { merge: true });
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async delete({ transaction, realm, id }: Repositories.RoleDelegationPolicy.Delete): Promise<void> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const where: FilterQuery<RoleDelegationPolicy> = {
-                isSystemManaged: false,
-                isRevoked: true,
-                realm,
-                id,
-            };
-            const affected = await entityManager.nativeDelete(RoleDelegationPolicy, where);
-            if (!affected) {
-                throw RepositoryException.notFound({ resource: this.resource });
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkUpdate({
-        transaction,
-        updates,
-    }: Repositories.RoleDelegationPolicy.BulkUpdate): Promise<RoleDelegationPolicy[]> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            for (const { entity, patch } of updates) {
-                wrap(entity).assign(patch, { merge: true });
-            }
-
-            await entityManager.flush();
-
-            return updates.map(({ entity }) => entity);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkDelete({
-        delegatorRole,
-        transaction,
-        identifiers,
-        realm,
-    }: Repositories.RoleDelegationPolicy.BulkDelete): Promise<number> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const where: FilterQuery<RoleDelegationPolicy> = {
-                ...(identifiers ? { id: { $in: identifiers } } : { delegatorRole }),
-                isSystemManaged: false,
-                isRevoked: true,
-                realm,
-            };
-            return await entityManager.nativeDelete(RoleDelegationPolicy, where);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({

@@ -1,4 +1,4 @@
-import { EntityManager, FilterQuery, Knex, Loaded, wrap } from "@mikro-orm/postgresql";
+import { EntityManager, Knex, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
@@ -13,93 +13,8 @@ export class RoleConflictGroupRepository
 {
     private readonly resource = "RoleConflictGroup";
 
-    public constructor(
-        @InjectEntityManager("write") private readonly writeManager: EntityManager,
-        @InjectEntityManager("read") private readonly readManager: EntityManager,
-    ) {
+    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
         super();
-    }
-
-    public async create({ transaction, entity }: Repositories.RoleConflictGroup.Create): Promise<RoleConflictGroup> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            entityManager.persist(entity);
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async update({ transaction, entity, patch }: Repositories.RoleConflictGroup.Update): Promise<RoleConflictGroup> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            wrap(entity).assign(patch, { merge: true });
-            await entityManager.flush();
-
-            return entity;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async delete({ transaction, realm, id }: Repositories.RoleConflictGroup.Delete): Promise<void> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const where: FilterQuery<RoleConflictGroup> = {
-                isSystemManaged: false,
-                isRevoked: true,
-                realm,
-                id,
-            };
-            const affected = await entityManager.nativeDelete(RoleConflictGroup, where);
-            if (!affected) {
-                throw RepositoryException.notFound({ resource: this.resource });
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkUpdate({
-        transaction,
-        updates,
-    }: Repositories.RoleConflictGroup.BulkUpdate): Promise<RoleConflictGroup[]> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-
-            for (const { entity, patch } of updates) {
-                wrap(entity).assign(patch, { merge: true });
-            }
-
-            await entityManager.flush();
-
-            return updates.map(({ entity }) => entity);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async bulkDelete({
-        transaction,
-        identifiers,
-        realm,
-    }: Repositories.RoleConflictGroup.BulkDelete): Promise<number> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const where: FilterQuery<RoleConflictGroup> = {
-                id: { $in: identifiers },
-                isSystemManaged: false,
-                isRevoked: true,
-                realm,
-            };
-            return await entityManager.nativeDelete(RoleConflictGroup, where);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({
