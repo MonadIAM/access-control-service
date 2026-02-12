@@ -83,7 +83,7 @@ export abstract class BaseException extends Error {
         if (error instanceof DriverException) {
             return Reflect.construct(this, [
                 DatabaseErrorKind.Internal,
-                500,
+                HttpStatus.INTERNAL_SERVER_ERROR,
                 "db.internal_driver_error",
                 {
                     ...params,

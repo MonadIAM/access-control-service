@@ -6,11 +6,11 @@ export class AuditJournal {
     public id?: string;
     public createdAt?: Date;
 
-    public action: AccessControlActionType;
-    public entity: AccessControlEntityType;
+    public actionType: AccessControlActionType;
+    public entityType: AccessControlEntityType;
 
-    public realmId: string;
-    public entityId: string;
+    public realm?: string;
+    public entity: string;
 
     public by: string;
     public at: Date;
@@ -22,11 +22,11 @@ export class AuditJournal {
     public reason?: string;
 
     public constructor(props: Entities.AuditJournal.ConstructorProps) {
-        this.action = props.action;
-        this.entity = props.entity;
+        this.actionType = props.actionType;
+        this.entityType = props.entityType;
 
-        this.realmId = props.realmId;
-        this.entityId = props.entityId;
+        this.realm = props.realm;
+        this.entity = props.entity;
 
         this.by = props.by;
         this.at = props.at;

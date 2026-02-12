@@ -184,10 +184,10 @@ declare global {
 
         namespace AuditJournal {
             type Seed = {
-                action: AccessControlActionType;
-                entity: AccessControlEntityType;
-                realmId: string;
-                entityId: string;
+                realm?: string;
+                entity: string;
+                actionType: AccessControlActionType;
+                entityType: AccessControlEntityType;
                 by: string;
                 at: Date;
                 ip?: string;

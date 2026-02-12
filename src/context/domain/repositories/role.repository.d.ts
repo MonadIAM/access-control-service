@@ -69,7 +69,7 @@ declare global {
                 descendant: string;
                 transaction?: EntityManager;
                 options?: FindOptions<RoleClosureEntity>;
-                where: FilterQuery<Entity>;
+                where?: FilterQuery<Entity>;
                 depth?: number;
             };
 

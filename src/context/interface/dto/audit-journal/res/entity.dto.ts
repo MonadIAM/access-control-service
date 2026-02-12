@@ -14,12 +14,12 @@ export class AuditJournalDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public entityId!: string;
+    public entity!: string;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realmId!: string;
+    public realm!: string;
 
     @Expose()
     @Validator.IsUUID()
@@ -56,12 +56,12 @@ export class AuditJournalDTO {
     @Expose()
     @Validator.IsEnum(AccessControlActionType)
     @ApiProperty({ required: true, enum: AccessControlActionType, enumName: "AccessControlActionType" })
-    public action!: AccessControlActionType;
+    public actionType!: AccessControlActionType;
 
     @Expose()
     @Validator.IsEnum(AccessControlEntityType)
     @ApiProperty({ required: true, enum: AccessControlEntityType, enumName: "AccessControlEntityType" })
-    public entity!: AccessControlEntityType;
+    public entityType!: AccessControlEntityType;
 
     @Expose()
     @Validator.IsDate()

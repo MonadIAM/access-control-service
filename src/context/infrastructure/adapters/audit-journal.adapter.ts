@@ -15,10 +15,10 @@ export class AuditJournalAdapter {
             where.id = MikroAdapter.applyStringFilter(filters.id);
         }
         if (filters.entity) {
-            where.entityId = MikroAdapter.applyStringFilter(filters.entity);
+            where.entity = MikroAdapter.applyStringFilter(filters.entity);
         }
         if (filters.realm) {
-            where.realmId = MikroAdapter.applyStringFilter(filters.realm);
+            where.realm = MikroAdapter.applyStringFilter(filters.realm);
         }
         if (filters.by) {
             where.by = MikroAdapter.applyStringFilter(filters.by);
@@ -33,10 +33,10 @@ export class AuditJournalAdapter {
             where.userAgent = MikroAdapter.applyStringFilter(filters.userAgent);
         }
         if (filters.actionType) {
-            where.action = MikroAdapter.applyStringFilter<AccessControlActionType>(filters.actionType);
+            where.actionType = MikroAdapter.applyStringFilter<AccessControlActionType>(filters.actionType);
         }
         if (filters.entityType) {
-            where.entity = MikroAdapter.applyStringFilter<AccessControlEntityType>(filters.entityType);
+            where.entityType = MikroAdapter.applyStringFilter<AccessControlEntityType>(filters.entityType);
         }
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);

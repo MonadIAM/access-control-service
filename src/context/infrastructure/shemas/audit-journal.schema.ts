@@ -11,11 +11,11 @@ export const AuditJournalSchema = new EntitySchema<AuditJournal>({
     indexes: [
         {
             name: "audit_journal_entity_idx",
-            properties: ["entity", "entityId"],
+            properties: ["entityType", "entity"],
         },
         {
             name: "audit_journal_realm_idx",
-            properties: ["realmId"],
+            properties: ["realm"],
         },
         {
             name: "audit_journal_by_at_idx",
@@ -26,8 +26,8 @@ export const AuditJournalSchema = new EntitySchema<AuditJournal>({
     properties: {
         id: { type: "uuid", primary: true, defaultRaw: "gen_random_uuid()" },
 
-        entityId: { type: "uuid", nullable: false },
-        realmId: { type: "uuid", nullable: false },
+        entity: { type: "uuid", nullable: false },
+        realm: { type: "uuid", nullable: false },
 
         by: { type: "uuid", nullable: false },
         at: { type: "timestamptz", length: 3, nullable: false },
@@ -38,8 +38,8 @@ export const AuditJournalSchema = new EntitySchema<AuditJournal>({
         ip: { type: "text", nullable: true },
         userAgent: { type: "text", nullable: true },
 
-        action: { enum: true, items: () => AccessControlActionType },
-        entity: { enum: true, items: () => AccessControlEntityType },
+        actionType: { enum: true, items: () => AccessControlActionType },
+        entityType: { enum: true, items: () => AccessControlEntityType },
 
         createdAt: { type: "timestamptz", length: 3, defaultRaw: "now()", nullable: false },
     },
