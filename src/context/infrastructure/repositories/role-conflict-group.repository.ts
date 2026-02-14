@@ -13,7 +13,10 @@ export class RoleConflictGroupRepository
 {
     private readonly resource = "RoleConflictGroup";
 
-    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
+    public constructor(
+        @InjectEntityManager("read")
+        private readonly readManager: EntityManager,
+    ) {
         super();
     }
 

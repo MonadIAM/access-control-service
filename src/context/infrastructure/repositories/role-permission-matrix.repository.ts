@@ -13,7 +13,10 @@ export class RolePermissionMatrixRepository
 {
     private readonly resource = "RolePermissionMatrix";
 
-    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
+    public constructor(
+        @InjectEntityManager("read")
+        private readonly readManager: EntityManager,
+    ) {
         super();
     }
 

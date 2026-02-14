@@ -1,8 +1,8 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
-import { PermissionRepository } from "~context/infrastructure/repositories";
+import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { ErrorResponseBodyDTO } from "~common/dto";
 import { BaseController } from "~common/abstract";
@@ -30,7 +30,8 @@ export class PermissionController extends BaseController {
     };
 
     public constructor(
-        private readonly permissionRepository: PermissionRepository,
+        @Inject(PERMISSION_REPOSITORY)
+        private readonly permissionRepository: Repositories.Permission.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);

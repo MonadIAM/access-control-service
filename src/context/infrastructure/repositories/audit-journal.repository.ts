@@ -10,7 +10,10 @@ import { AuditJournal } from "~context/domain/entities";
 export class AuditJournalRepository extends AuditJournalAdapter implements Repositories.AuditJournal.Contract {
     private readonly resource = "AuditJournal";
 
-    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
+    public constructor(
+        @InjectEntityManager("read")
+        private readonly readManager: EntityManager,
+    ) {
         super();
     }
 

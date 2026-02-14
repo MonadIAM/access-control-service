@@ -15,7 +15,8 @@ export class AccountRoleMatrixRepository
     private readonly resource = "AccountRoleMatrix";
 
     public constructor(
-        @InjectEntityManager("read") private readonly readManager: EntityManager,
+        @InjectEntityManager("read")
+        private readonly readManager: EntityManager,
         private readonly configService: ConfigService,
     ) {
         super();

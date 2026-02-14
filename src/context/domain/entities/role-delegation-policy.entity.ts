@@ -52,9 +52,9 @@ export class RoleDelegationPolicy {
             this.lastActions.update = { at: new Date(), by: { id: actor }, reason, patch: historyPatch };
             return historyPatch;
         } else if (Object.keys(patch).length) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.EMPTY_UPDATE_PATCH`);
-        } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.NO_CHANGES_DETECTED`);
+        } else {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.EMPTY_UPDATE_PATCH`);
         }
     }
 

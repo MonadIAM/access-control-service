@@ -10,7 +10,10 @@ import { Realm } from "~context/domain/entities";
 export class RealmRepository extends RealmAdapter implements Repositories.Realm.Contract {
     private readonly resource = "Realm";
 
-    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
+    public constructor(
+        @InjectEntityManager("read")
+        private readonly readManager: EntityManager,
+    ) {
         super();
     }
 

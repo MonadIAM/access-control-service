@@ -11,7 +11,10 @@ import { Permission } from "~context/domain/entities";
 export class PermissionRepository extends PermissionAdapter implements Repositories.Permission.Contract {
     private readonly resource = "Permission";
 
-    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
+    public constructor(
+        @InjectEntityManager("read")
+        private readonly readManager: EntityManager,
+    ) {
         super();
     }
 

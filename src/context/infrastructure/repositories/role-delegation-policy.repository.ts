@@ -13,7 +13,10 @@ export class RoleDelegationPolicyRepository
 {
     private readonly resource = "RoleDelegationPolicy";
 
-    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
+    public constructor(
+        @InjectEntityManager("read")
+        private readonly readManager: EntityManager,
+    ) {
         super();
     }
 

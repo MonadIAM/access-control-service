@@ -20,6 +20,10 @@ declare global {
                     props: FindUniqueOrThrow<P, F>,
                 ) => Promise<Loaded<Entity, P, F>>;
 
+                find: <P extends string = never, F extends string = "*">(
+                    props: Find<P, F>,
+                ) => Promise<Loaded<Entity, P, F>[]>;
+
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
@@ -51,6 +55,12 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
+            type Find<P extends string, F extends string> = {
+                transaction?: EntityManager;
+                options?: FindOptions<Entity, P, F>;
+                where: FilterQuery<Entity>;
+            };
+
             type FindMany<P extends string, F extends string> =
                 | {
                       transaction?: EntityManager;
@@ -66,10 +76,10 @@ declare global {
                   };
 
             type GetAncestors = {
-                descendant: string;
-                transaction?: EntityManager;
+                transaction: EntityManager;
                 options?: FindOptions<RoleClosureEntity>;
                 where?: FilterQuery<Entity>;
+                descendant: string;
                 depth?: number;
             };
 
@@ -81,10 +91,10 @@ declare global {
             };
 
             type GetDescendants = {
-                ancestor: string;
-                transaction?: EntityManager;
+                transaction: EntityManager;
                 options?: FindOptions<RoleClosureEntity>;
                 where?: FilterQuery<Entity>;
+                ancestor: string;
                 depth?: number;
             };
 

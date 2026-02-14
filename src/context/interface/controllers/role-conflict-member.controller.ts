@@ -1,8 +1,8 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
-import { RoleConflictMemberRepository } from "~context/infrastructure/repositories";
+import { ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/infrastructure/repositories";
 import { BaseReadQueryDTO, ErrorResponseBodyDTO } from "~common/dto";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
@@ -24,7 +24,8 @@ export class RoleConflictMemberController extends BaseController {
     };
 
     public constructor(
-        private readonly roleConflictMemberRepository: RoleConflictMemberRepository,
+        @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
+        private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);

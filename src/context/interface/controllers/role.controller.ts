@@ -1,10 +1,24 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { I18nService } from "nestjs-i18n";
+import { I18nLang as Lang, I18nService } from "nestjs-i18n";
+import {
+    UseInterceptors,
+    Controller,
+    HttpStatus,
+    HttpCode,
+    Delete,
+    Inject,
+    Patch,
+    Query,
+    Body,
+    Post,
+    Get,
+} from "@nestjs/common";
 
-import { RoleRepository } from "~context/infrastructure/repositories";
+import { ROLE_REPOSITORY } from "~context/infrastructure/repositories";
+import { ErrorResponseBodyDTO, SuccessMessageDTO } from "~common/dto";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ErrorResponseBodyDTO } from "~common/dto";
+import { ROLE_HANDLER } from "~context/application/handlers";
+import { ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
 
 import {
@@ -19,12 +33,24 @@ import {
     GetRoleAncestorsListBodyDTO,
     GetRolesLookupListQueryDTO,
     GetRolesLookupListBodyDTO,
+    PurgeRoleSubtreeQueryDTO,
+    PurgeRoleSubtreeBodyDTO,
     RoleHierarchyGraphDTO,
     RoleHierarchyListDTO,
     GetRolesListQueryDTO,
+    RestoreRoleQueryDTO,
     GetRoleByIdQueryDTO,
     GetRolesListBodyDTO,
+    CreateRoleQueryDTO,
+    RevokeRoleQueryDTO,
+    UpdateRoleQueryDTO,
+    RestoreRoleBodyDTO,
+    CreateRoleBodyDTO,
+    RevokeRoleBodyDTO,
+    UpdateRoleBodyDTO,
+    PurgeRoleQueryDTO,
     RoleLookupListDTO,
+    PurgeRoleBodyDTO,
     RoleListDTO,
     RoleDTO,
 } from "../dto/role";
@@ -39,7 +65,10 @@ export class RoleController extends BaseController {
     };
 
     public constructor(
-        private readonly roleRepository: RoleRepository,
+        @Inject(ROLE_REPOSITORY)
+        private readonly roleRepository: Repositories.Role.Contract,
+        @Inject(ROLE_HANDLER)
+        private readonly roleHandler: Handlers.Role.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -159,5 +188,101 @@ export class RoleController extends BaseController {
         return this.roleRepository
             .getHierarchyGraph({ realm })
             .then((data) => super.formatResponse({ DTO: RoleHierarchyGraphDTO, data }));
+    }
+
+    @Post("create")
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: "Creates a new role" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
+    public create(
+        @ExtractContext() context: RequestContext,
+        @Query() { realm }: CreateRoleQueryDTO,
+        @Body() input: CreateRoleBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.roleHandler
+            .create({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000" })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Patch("update")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Updates role metadata" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public updateMetadata(
+        @ExtractContext() context: RequestContext,
+        @Query() { realm, id }: UpdateRoleQueryDTO,
+        @Body() input: UpdateRoleBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.roleHandler
+            .update({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000", id })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Patch("revoke")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Revokes a non-system role" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public revoke(
+        @ExtractContext() context: RequestContext,
+        @Query() { realm }: RevokeRoleQueryDTO,
+        @Body() input: RevokeRoleBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.roleHandler
+            .revoke({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000" })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Patch("restore")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Restores a non-system role" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public restore(
+        @ExtractContext() context: RequestContext,
+        @Query() { realm }: RestoreRoleQueryDTO,
+        @Body() input: RestoreRoleBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.roleHandler
+            .restore({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000" })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Delete("purge")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Permanently deletes a revoked non-system role" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public purge(
+        @ExtractContext() context: RequestContext,
+        @Query() { realm, id }: PurgeRoleQueryDTO,
+        @Body() input: PurgeRoleBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.roleHandler
+            .purge({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000", id })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Delete("purge-subtree")
+    @ApiOperation({ summary: "Permanently deletes a role and its entire subtree" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public purgeSubtree(
+        @ExtractContext() context: RequestContext,
+        @Query() { realm, id }: PurgeRoleSubtreeQueryDTO,
+        @Body() input: PurgeRoleSubtreeBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.roleHandler
+            .purgeSubtree({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000", id })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }

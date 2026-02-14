@@ -1,8 +1,8 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
-import { AccountRoleMatrixRepository } from "~context/infrastructure/repositories";
+import { ACCOUNT_ROLE_MATRIX_REPOSITORY } from "~context/infrastructure/repositories";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { ErrorResponseBodyDTO } from "~common/dto";
 import { BaseController } from "~common/abstract";
@@ -25,7 +25,8 @@ export class AccountRoleMatrixController extends BaseController {
     };
 
     public constructor(
-        private readonly accountRoleMatrixRepository: AccountRoleMatrixRepository,
+        @Inject(ACCOUNT_ROLE_MATRIX_REPOSITORY)
+        private readonly accountRoleMatrixRepository: Repositories.AccountRoleMatrix.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);

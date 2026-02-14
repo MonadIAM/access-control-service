@@ -3,15 +3,18 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
 import { RoleAdapter } from "~context/infrastructure/adapters";
-import { RepositoryException } from "~common/exceptions";
 import { Role, RoleClosure } from "~context/domain/entities";
+import { RepositoryException } from "~common/exceptions";
 import { MikroAdapter } from "~infrastructure/database";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleRepository extends RoleAdapter implements Repositories.Role.Contract {
     private readonly resource = "Role";
 
-    public constructor(@InjectEntityManager("read") private readonly readManager: EntityManager) {
+    public constructor(
+        @InjectEntityManager("read")
+        private readonly readManager: EntityManager,
+    ) {
         super();
     }
 
@@ -41,6 +44,18 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         }
     }
 
+    public async find<P extends string = never, F extends string = "*">(
+        props: Repositories.Role.Find<P, F>,
+    ): Promise<Loaded<Role, P, F>[]> {
+        try {
+            const { transaction, options, where } = props;
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.find(Role, where, options);
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
     public async findMany<P extends string = never, F extends string = "*">(
         props: Repositories.Role.FindMany<P, F>,
     ): Promise<[Loaded<Role, P, F>[], number]> {
@@ -63,13 +78,12 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
 
     public async getAncestors(props: Repositories.Role.GetAncestors): Promise<Role[]> {
         try {
-            const entityManager = props.transaction ?? this.readManager.fork();
             const where: FilterQuery<RoleClosure> = {
                 ...(props.depth ? { depth: props.depth } : {}),
                 descendant: props.descendant,
-                ancestor: props.where,
+                ancestor: props.where ?? {},
             };
-            return await entityManager
+            return await props.transaction
                 .find(RoleClosure, where, {
                     ...props.options,
                     populate: ["ancestor"],
@@ -108,19 +122,20 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
 
     public async getDescendants(props: Repositories.Role.GetDescendants): Promise<Role[]> {
         try {
-            const entityManager = props.transaction ?? this.readManager.fork();
             const where: FilterQuery<RoleClosure> = {
                 ...(props.depth ? { depth: props.depth } : {}),
+                descendant: props.where ?? {},
                 ancestor: props.ancestor,
-                descendant: props.where,
             };
-            return await entityManager
+            return await props.transaction
                 .find(RoleClosure, where, {
                     ...props.options,
                     populate: ["descendant"],
                     orderBy: { depth: QueryOrder.DESC },
                 })
-                .then((relations) => relations.map(({ descendant }) => descendant));
+                .then((relations) => {
+                    return relations.map(({ descendant }) => descendant);
+                });
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

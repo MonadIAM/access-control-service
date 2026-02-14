@@ -6,34 +6,26 @@ declare global {
             interface Contract {
                 insertNewHierarchy: (props: InsertNewHierarchy) => Promise<void>;
                 moveSubtrees: (props: MoveSubtrees) => Promise<void>;
-                rebuildTransitivePathsOnCollapse: (props: RebuildTransitivePathsOnCollapse) => Promise<void>;
-                deleteTransitivePathsOnCollapse: (props: DeleteTransitivePathsOnCollapse) => Promise<void>;
+                decreaseTransitiveDepth: (props: DecreaseTransitiveDepth) => Promise<void>;
             }
 
             type InsertNewHierarchy = {
-                transaction?: EntityManager;
+                transaction: EntityManager;
                 descendant: string;
                 ancestor: string;
                 realm: string;
             };
 
             type MoveSubtrees = {
-                transaction?: EntityManager;
+                transaction: EntityManager;
                 oldParent: string;
                 newParent: string;
                 children: string[];
                 realm: string;
             };
 
-            type RebuildTransitivePathsOnCollapse = {
-                transaction?: EntityManager;
-                deletedRole: string;
-                newAncestor: string;
-                realm: string;
-            };
-
-            type DeleteTransitivePathsOnCollapse = {
-                transaction?: EntityManager;
+            type DecreaseTransitiveDepth = {
+                transaction: EntityManager;
                 realm: string;
                 role: string;
             };

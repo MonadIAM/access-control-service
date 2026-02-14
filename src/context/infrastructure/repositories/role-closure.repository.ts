@@ -1,14 +1,11 @@
-import { EntityManager, Knex } from "@mikro-orm/postgresql";
-import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { Knex } from "@mikro-orm/postgresql";
 
 import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleClosureRepository {
+export class RoleClosureRepository implements Repositories.RoleClosure.Contract {
     private readonly resource = "RoleClosure";
-
-    public constructor(@InjectEntityManager("write") private readonly writeManager: EntityManager) {}
 
     public async insertNewHierarchy({
         transaction,
@@ -17,28 +14,31 @@ export class RoleClosureRepository {
         realm,
     }: Repositories.RoleClosure.InsertNewHierarchy): Promise<void> {
         try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const knex = entityManager.getKnex();
+            const context = transaction.getTransactionContext();
+            const knex = transaction.getKnex();
 
-            await knex("access_control.role_closure").insert({
-                descendant_id: descendant,
-                ancestor_id: descendant,
-                realm_id: realm,
-                depth: 0,
-            });
-
-            await knex("access_control.role_closure").insert((builder: Knex.QueryBuilder) => {
-                builder
-                    .select(
-                        knex.raw("? as realm_id", [realm]),
-                        "RC.ancestor_id",
-                        knex.raw("? as descendant_id", [descendant]),
-                        knex.raw("RC.depth + 1"),
-                    )
-                    .from("access_control.role_closure AS RC")
-                    .where("RC.descendant_id", ancestor)
-                    .andWhere("RC.realm_id", realm);
-            });
+            await knex("access_control.role_closure")
+                .transacting(context)
+                .insert(
+                    knex
+                        .select(
+                            knex.raw("?::uuid as realm_id", [realm]),
+                            "closure.ancestor_id",
+                            knex.raw("?::uuid as descendant_id", [descendant]),
+                            knex.raw("closure.depth + 1 as depth"),
+                        )
+                        .from("access_control.role_closure as closure")
+                        .where("closure.descendant_id", ancestor)
+                        .andWhere("closure.realm_id", realm)
+                        .unionAll(
+                            knex.select(
+                                knex.raw("?::uuid as realm_id", [realm]),
+                                knex.raw("?::uuid as ancestor_id", [descendant]),
+                                knex.raw("?::uuid as descendant_id", [descendant]),
+                                knex.raw("0 as depth"),
+                            ),
+                        ),
+                );
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
@@ -52,19 +52,20 @@ export class RoleClosureRepository {
         realm,
     }: Repositories.RoleClosure.MoveSubtrees): Promise<void> {
         try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const knex = entityManager.getKnex();
+            const context = transaction.getTransactionContext();
+            const knex = transaction.getKnex();
 
-            await knex("access_control.role_closure as RC")
-                .where("RC.realm_id", realm)
-                .whereIn("RC.descendant_id", (builder: Knex.QueryBuilder) => {
+            await knex("access_control.role_closure as closure")
+                .transacting(context)
+                .where("closure.realm_id", realm)
+                .whereIn("closure.descendant_id", (builder: Knex.QueryBuilder) => {
                     builder
                         .select("descendant_id")
                         .from("access_control.role_closure")
                         .whereIn("ancestor_id", children)
                         .andWhere("realm_id", realm);
                 })
-                .whereIn("RC.ancestor_id", (builder: Knex.QueryBuilder) => {
+                .whereIn("closure.ancestor_id", (builder: Knex.QueryBuilder) => {
                     builder
                         .select("ancestor_id")
                         .from("access_control.role_closure")
@@ -73,83 +74,60 @@ export class RoleClosureRepository {
                 })
                 .delete();
 
-            await knex("access_control.role_closure").insert((builder: Knex.QueryBuilder) => {
-                builder
-                    .select(
-                        knex.raw("? as realm_id", [realm]),
-                        "A.ancestor_id",
-                        "D.descendant_id",
-                        knex.raw("A.depth + D.depth + 1"),
-                    )
-                    .from("access_control.role_closure AS A")
-                    .join("access_control.role_closure AS D", (join: Knex.JoinClause) => {
-                        join.onIn("D.ancestor_id", children).andOn("D.realm_id", "=", knex.raw("?", [realm]));
-                    })
-                    .where("A.descendant_id", newParent)
-                    .andWhere("A.realm_id", realm);
-            });
+            await knex("access_control.role_closure")
+                .transacting(context)
+                .insert((builder: Knex.QueryBuilder) => {
+                    builder
+                        .select(
+                            knex.raw("?::uuid as realm_id", [realm]),
+                            "new_parent_paths.ancestor_id",
+                            "moved_subtree_paths.descendant_id",
+                            knex.raw("new_parent_paths.depth + moved_subtree_paths.depth + 1 as depth"),
+                        )
+                        .from("access_control.role_closure AS new_parent_paths")
+                        .join("access_control.role_closure AS moved_subtree_paths", (join: Knex.JoinClause) => {
+                            join.onIn("moved_subtree_paths.ancestor_id", children).andOn(
+                                "moved_subtree_paths.realm_id",
+                                "=",
+                                knex.raw("?::uuid", [realm]),
+                            );
+                        })
+                        .where("new_parent_paths.descendant_id", newParent)
+                        .andWhere("new_parent_paths.realm_id", realm);
+                });
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public async rebuildTransitivePathsOnCollapse({
-        transaction,
-        deletedRole,
-        newAncestor,
-        realm,
-    }: Repositories.RoleClosure.RebuildTransitivePathsOnCollapse): Promise<void> {
-        try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const knex = entityManager.getKnex();
-
-            await knex("access_control.role_closure").insert((builder: Knex.QueryBuilder) => {
-                builder
-                    .select(
-                        knex.raw("? as realm_id", [realm]),
-                        "A.ancestor_id",
-                        "D.descendant_id",
-                        knex.raw("A.depth + D.depth"),
-                    )
-                    .from("access_control.role_closure AS A")
-                    .join("access_control.role_closure AS D", (join) => {
-                        join.on(knex.raw("D.ancestor_id = ?", [deletedRole])).andOn(
-                            "D.realm_id",
-                            "=",
-                            knex.raw("?", [realm]),
-                        );
-                    })
-                    .where("A.descendant_id", newAncestor)
-                    .andWhere("A.realm_id", realm)
-                    .andWhere("D.descendant_id", "!=", deletedRole);
-            });
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async deleteTransitivePathsOnCollapse({
+    public async decreaseTransitiveDepth({
         transaction,
         realm,
         role,
-    }: Repositories.RoleClosure.DeleteTransitivePathsOnCollapse): Promise<void> {
+    }: Repositories.RoleClosure.DecreaseTransitiveDepth): Promise<void> {
         try {
-            const entityManager = transaction ?? this.writeManager.fork();
-            const knex = entityManager.getKnex();
+            const knex = transaction.getKnex();
+            const context = transaction.getTransactionContext()!;
 
-            await knex("access_control.role_closure AS RC")
-                .where("RC.realm_id", realm)
-                .join("access_control.role_closure AS A", (join: Knex.JoinClause) => {
-                    join.on("A.descendant_id", "=", knex.raw("?", [role]))
-                        .andOn("A.ancestor_id", "=", "RC.ancestor_id")
-                        .andOn("A.realm_id", "=", knex.raw("?", [realm]));
+            await knex("access_control.role_closure")
+                .transacting(context)
+                .where("realm_id", realm)
+                .whereExists((builder: Knex.QueryBuilder) => {
+                    builder
+                        .select(knex.raw("1"))
+                        .from("access_control.role_closure as path1")
+                        .join("access_control.role_closure as path2", (join: Knex.JoinClause) => {
+                            join.on("path1.descendant_id", "=", knex.raw("?::uuid", [role]))
+                                .andOn("path2.ancestor_id", "=", knex.raw("?::uuid", [role]))
+                                .andOn("path1.realm_id", "=", knex.raw("?::uuid", [realm]))
+                                .andOn("path2.realm_id", "=", knex.raw("?::uuid", [realm]));
+                        })
+                        .whereRaw("path1.ancestor_id = role_closure.ancestor_id")
+                        .whereRaw("path2.descendant_id = role_closure.descendant_id");
                 })
-                .join("access_control.role_closure AS D", (join: Knex.JoinClause) => {
-                    join.on("D.ancestor_id", "=", knex.raw("?", [role]))
-                        .andOn("D.descendant_id", "=", "RC.descendant_id")
-                        .andOn("D.realm_id", "=", knex.raw("?", [realm]));
-                })
-                .delete();
+                .update({
+                    depth: knex.raw("depth - 1"),
+                });
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

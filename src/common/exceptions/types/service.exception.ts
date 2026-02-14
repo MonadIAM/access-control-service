@@ -1,12 +1,12 @@
 import { HttpStatus } from "@nestjs/common";
 
-import { BaseException } from "./base.exception";
 import { ServiceErrorKind } from "../error-kinds";
+import { BaseException } from "./base.exception";
 
 export class ServiceException extends BaseException {
     private constructor(
         kind: Exception.ServiceErrorKind,
-        statusCode: HttpStatus,
+        statusCode: number,
         messageKey: string,
         params?: Record<string, unknown>,
         details?: Exception.ValidationDetail[],
