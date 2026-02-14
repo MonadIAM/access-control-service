@@ -81,14 +81,6 @@ declare global {
                     realm: string;
                 };
             };
-
-            type CollapseHierarchy = {
-                transaction: EntityManager;
-                input: {
-                    entity: RoleEntity;
-                    realm: string;
-                };
-            };
         }
     }
 }

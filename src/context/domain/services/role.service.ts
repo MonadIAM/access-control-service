@@ -70,25 +70,21 @@ export class RoleService implements Services.Role.Contract {
     }: Services.Role.Update): Promise<void> {
         const historyPatch = entity.changeMetadata({ reason, patch, actor });
 
-        if (historyPatch) {
-            const auditEntity = new AuditJournal({
-                actionType: AccessControlActionType.UPDATE,
-                entityType: this.entityType,
-                at: entity.updatedAt!,
-                patch: historyPatch,
-                entity: entity.id!,
-                realm: realm,
-                userAgent,
-                by: actor,
-                reason,
-                ip,
-            });
+        const auditEntity = new AuditJournal({
+            actionType: AccessControlActionType.UPDATE,
+            entityType: this.entityType,
+            at: entity.updatedAt!,
+            patch: historyPatch,
+            entity: entity.id!,
+            realm: realm,
+            userAgent,
+            by: actor,
+            reason,
+            ip,
+        });
 
-            transaction.persist(auditEntity);
-            await transaction.flush();
-        } else {
-            throw ServiceException.badRequest(`${this.dictionaryPath}.UPDATE_NO_PATCH`);
-        }
+        transaction.persist(auditEntity);
+        await transaction.flush();
     }
 
     public async purge({
