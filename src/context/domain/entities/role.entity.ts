@@ -4,9 +4,9 @@ import { RoleActorType, RoleProtoType } from "~context/enums";
 import { EntityException } from "~common/exceptions";
 
 import { RoleDelegationPolicy } from "./role-delegation-policy.entity";
-import { RolePermissionMatrix } from "./role-permission-matrix.entity";
+import { RolePermissionAssignment } from "./role-permission-assignment.entity";
 import { RoleConflictMember } from "./role-conflict-member.entity";
-import { AccountRoleMatrix } from "./account-role-matrix.entity";
+import { AccountRoleAssignment } from "./account-role-assignment.entity";
 import { Realm } from "./realm.entity";
 
 export class Role {
@@ -31,9 +31,9 @@ export class Role {
 
     public delegationPoliciesAsDelegator = new Collection<RoleDelegationPolicy>(this);
     public delegationPoliciesAsTarget = new Collection<RoleDelegationPolicy>(this);
+    public permissionAssignments = new Collection<RolePermissionAssignment>(this);
     public conflictMemberships = new Collection<RoleConflictMember>(this);
-    public permissionMatrix = new Collection<RolePermissionMatrix>(this);
-    public accountMatrix = new Collection<AccountRoleMatrix>(this);
+    public accountAssignment = new Collection<AccountRoleAssignment>(this);
 
     public constructor(props: Entities.Role.ConstructorProps) {
         this.lastActions = { create: { by: { id: props.actor } } };

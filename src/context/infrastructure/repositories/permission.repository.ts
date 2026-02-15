@@ -119,7 +119,7 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
                 const accountRolesSubquery = knex
                     .select("rc.ancestor_id")
                     .distinct()
-                    .from({ arm: "access_control.account_role_matrix" })
+                    .from({ arm: "access_control.account_role_assignment" })
                     .join({ rc: "access_control.role_closure" }, "arm.role_id", "rc.descendant_id")
                     .where("arm.account_id", account)
                     .andWhere("arm.realm_id", realm)
@@ -128,7 +128,7 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
                 const rolePermissions = knex
                     .select("rpm.permission_id")
                     .distinct()
-                    .from({ rpm: "access_control.role_permission_matrix" })
+                    .from({ rpm: "access_control.role_permission_assignment" })
                     .whereIn("rpm.role_id", accountRolesSubquery)
                     .andWhere("rpm.is_revoked", false);
 
@@ -233,7 +233,7 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
 
             const roleCheck = knex
                 .select(knex.raw("1"))
-                .from("access_control.role_permission_matrix")
+                .from("access_control.role_permission_assignment")
                 .whereIn("role_id", effectiveRoles)
                 .andWhere("permission_id", permission)
                 .andWhere("is_revoked", false);

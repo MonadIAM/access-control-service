@@ -39,7 +39,7 @@ export class RoleAdapter {
             where.isRevoked = { $eq: filters.isRevoked };
         }
         if (filters.permission) {
-            where.permissionMatrix = { permission: MikroAdapter.applyStringFilter(filters.permission) };
+            where.permissionAssignments = { permission: MikroAdapter.applyStringFilter(filters.permission) };
         }
 
         return where;

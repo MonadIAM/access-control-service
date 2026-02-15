@@ -2,7 +2,7 @@ import { Collection } from "@mikro-orm/core";
 
 import { EntityException } from "~common/exceptions";
 
-import { RolePermissionMatrix } from "./role-permission-matrix.entity";
+import { RolePermissionAssignment } from "./role-permission-assignment.entity";
 import { PermissionOverride } from "./permission-override.entity";
 import { Realm } from "./realm.entity";
 
@@ -25,8 +25,8 @@ export class Permission {
 
     public realm?: Realm;
 
+    public roleAssignments = new Collection<RolePermissionAssignment>(this);
     public accountOverrides = new Collection<PermissionOverride>(this);
-    public roleMatrix = new Collection<RolePermissionMatrix>(this);
 
     public constructor(props: Entities.Permission.ConstructorProps) {
         this.lastActions = { create: { by: { id: props.actor } } };

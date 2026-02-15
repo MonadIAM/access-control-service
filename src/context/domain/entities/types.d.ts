@@ -45,7 +45,7 @@ declare global {
             };
         }
 
-        namespace RolePermissionMatrix {
+        namespace RolePermissionAssignment {
             type Seed = {
                 actor: string;
                 isSystemManaged?: boolean;
@@ -199,7 +199,7 @@ declare global {
             type ConstructorProps = Seed;
         }
 
-        namespace AccountRoleMatrix {
+        namespace AccountRoleAssignment {
             type Seed = {
                 actor: string;
                 account: string;

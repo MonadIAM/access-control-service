@@ -7,7 +7,7 @@
     "CANNOT_PURGE_ACTIVE": "Нельзя безвозвратно удалить активный объект. Сначала отзовите его.",
     "CANNOT_PURGE_SYSTEM": "Системные записи не подлежат удалению."
   },
-  "role-permission-matrix": {
+  "role-permission-assignment": {
     "ALREADY_REVOKED": "Связь разрешения уже деактивирована.",
     "ALREADY_ACTIVE": "Связь разрешения уже активна.",
     "CANNOT_PURGE_ACTIVE": "Нельзя удалить активную связь из матрицы.",
@@ -56,7 +56,7 @@
     "ALREADY_ACTIVE": "Переопределение уже активно.",
     "CANNOT_PURGE_ACTIVE": "Нельзя удалить действующее переопределение."
   },
-  "account-role-matrix": {
+  "account-role-assignment": {
     "ALREADY_REVOKED": "Связь роли с аккаунтом уже отозвана.",
     "ALREADY_ACTIVE": "Связь роли с аккаунтом уже активна.",
     "CANNOT_PURGE_ACTIVE": "Нельзя удалить активную привязку роли.",

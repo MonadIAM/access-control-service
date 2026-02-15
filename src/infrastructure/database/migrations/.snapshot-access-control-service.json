@@ -992,11 +992,11 @@
           "mappedType": "integer"
         }
       },
-      "name": "account_role_matrix",
+      "name": "account_role_assignment",
       "schema": "access_control",
       "indexes": [
         {
-          "keyName": "account_role_matrix_realm_account_idx",
+          "keyName": "account_role_assignment_realm_account_idx",
           "columnNames": [
             "realm_id",
             "account_id"
@@ -1007,7 +1007,7 @@
           "unique": false
         },
         {
-          "keyName": "account_role_matrix_realm_role_idx",
+          "keyName": "account_role_assignment_realm_role_idx",
           "columnNames": [
             "realm_id",
             "role_id"
@@ -1018,7 +1018,7 @@
           "unique": false
         },
         {
-          "keyName": "account_role_matrix_realm_account_role_unique",
+          "keyName": "account_role_assignment_realm_account_role_unique",
           "columnNames": [
             "realm_id",
             "account_id",
@@ -1030,7 +1030,7 @@
           "unique": true
         },
         {
-          "keyName": "account_role_matrix_pkey",
+          "keyName": "account_role_assignment_pkey",
           "columnNames": [
             "id"
           ],
@@ -1042,12 +1042,12 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "account_role_matrix_role_id_foreign": {
-          "constraintName": "account_role_matrix_role_id_foreign",
+        "account_role_assignment_role_id_foreign": {
+          "constraintName": "account_role_assignment_role_id_foreign",
           "columnNames": [
             "role_id"
           ],
-          "localTableName": "access_control.account_role_matrix",
+          "localTableName": "access_control.account_role_assignment",
           "referencedColumnNames": [
             "id"
           ],
@@ -1055,12 +1055,12 @@
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
-        "account_role_matrix_realm_id_foreign": {
-          "constraintName": "account_role_matrix_realm_id_foreign",
+        "account_role_assignment_realm_id_foreign": {
+          "constraintName": "account_role_assignment_realm_id_foreign",
           "columnNames": [
             "realm_id"
           ],
-          "localTableName": "access_control.account_role_matrix",
+          "localTableName": "access_control.account_role_assignment",
           "referencedColumnNames": [
             "id"
           ],
@@ -1832,11 +1832,11 @@
           "mappedType": "integer"
         }
       },
-      "name": "role_permission_matrix",
+      "name": "role_permission_assignment",
       "schema": "access_control",
       "indexes": [
         {
-          "keyName": "role_permission_matrix_realm_permission_idx",
+          "keyName": "role_permission_assignment_realm_permission_idx",
           "columnNames": [
             "realm_id",
             "permission_id"
@@ -1847,7 +1847,7 @@
           "unique": false
         },
         {
-          "keyName": "role_permission_matrix_realm_role_idx",
+          "keyName": "role_permission_assignment_realm_role_idx",
           "columnNames": [
             "realm_id",
             "role_id"
@@ -1858,7 +1858,7 @@
           "unique": false
         },
         {
-          "keyName": "role_permission_matrix_role_permission_unique",
+          "keyName": "role_permission_assignment_role_permission_unique",
           "columnNames": [
             "role_id",
             "permission_id"
@@ -1869,7 +1869,7 @@
           "unique": true
         },
         {
-          "keyName": "role_permission_matrix_pkey",
+          "keyName": "role_permission_assignment_pkey",
           "columnNames": [
             "id"
           ],
@@ -1881,12 +1881,12 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "role_permission_matrix_role_id_foreign": {
-          "constraintName": "role_permission_matrix_role_id_foreign",
+        "role_permission_assignment_role_id_foreign": {
+          "constraintName": "role_permission_assignment_role_id_foreign",
           "columnNames": [
             "role_id"
           ],
-          "localTableName": "access_control.role_permission_matrix",
+          "localTableName": "access_control.role_permission_assignment",
           "referencedColumnNames": [
             "id"
           ],
@@ -1894,12 +1894,12 @@
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
-        "role_permission_matrix_realm_id_foreign": {
-          "constraintName": "role_permission_matrix_realm_id_foreign",
+        "role_permission_assignment_realm_id_foreign": {
+          "constraintName": "role_permission_assignment_realm_id_foreign",
           "columnNames": [
             "realm_id"
           ],
-          "localTableName": "access_control.role_permission_matrix",
+          "localTableName": "access_control.role_permission_assignment",
           "referencedColumnNames": [
             "id"
           ],
@@ -1907,12 +1907,12 @@
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
-        "role_permission_matrix_permission_id_foreign": {
-          "constraintName": "role_permission_matrix_permission_id_foreign",
+        "role_permission_assignment_permission_id_foreign": {
+          "constraintName": "role_permission_assignment_permission_id_foreign",
           "columnNames": [
             "permission_id"
           ],
-          "localTableName": "access_control.role_permission_matrix",
+          "localTableName": "access_control.role_permission_assignment",
           "referencedColumnNames": [
             "id"
           ],

@@ -1,6 +1,6 @@
 import { EntitySchema } from "@mikro-orm/core";
 
-import { RolePermissionMatrix, PermissionOverride, Permission, Realm } from "~context/domain/entities";
+import { RolePermissionAssignment, PermissionOverride, Permission, Realm } from "~context/domain/entities";
 
 export const PermissionSchema = new EntitySchema<Permission>({
     class: Permission,
@@ -47,9 +47,9 @@ export const PermissionSchema = new EntitySchema<Permission>({
             entity: () => PermissionOverride,
             mappedBy: "permission",
         },
-        roleMatrix: {
+        roleAssignments: {
             kind: "1:m",
-            entity: () => RolePermissionMatrix,
+            entity: () => RolePermissionAssignment,
             mappedBy: "permission",
         },
 

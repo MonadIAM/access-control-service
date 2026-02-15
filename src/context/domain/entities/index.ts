@@ -1,9 +1,9 @@
-export { RolePermissionMatrix } from "./role-permission-matrix.entity";
+export { RolePermissionAssignment } from "./role-permission-assignment.entity";
+export { AccountRoleAssignment } from "./account-role-assignment.entity";
 export { RoleDelegationPolicy } from "./role-delegation-policy.entity";
 export { RoleConflictMember } from "./role-conflict-member.entity";
 export { PermissionOverride } from "./permission-override.entity";
 export { RoleConflictGroup } from "./role-conflict-group.entity";
-export { AccountRoleMatrix } from "./account-role-matrix.entity";
 export { AuditJournal } from "./audit-journal.entity";
 export { RoleClosure } from "./role-closure.entity";
 export { Permission } from "./permission.entity";

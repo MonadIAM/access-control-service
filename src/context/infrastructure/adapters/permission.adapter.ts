@@ -26,7 +26,7 @@ export class PermissionAdapter {
             where.realm = MikroAdapter.applyStringFilter(filters.realm);
         }
         if (filters.role) {
-            where.roleMatrix = { role: MikroAdapter.applyStringFilter(filters.role) };
+            where.roleAssignments = { role: MikroAdapter.applyStringFilter(filters.role) };
         }
         if (filters.updatedAt) {
             where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);

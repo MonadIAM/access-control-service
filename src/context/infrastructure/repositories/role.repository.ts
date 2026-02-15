@@ -212,7 +212,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
                 .modify((builder) => {
                     builder.andWhere((sub) => {
                         if (type === "ACCOUNT") {
-                            const rolesByAccountSubquery = knex("access_control.account_role_matrix")
+                            const rolesByAccountSubquery = knex("access_control.account_role_assignment")
                                 .select("role_id")
                                 .where("account_id", id);
                             sub.whereIn("policy.delegator_id", rolesByAccountSubquery);
@@ -258,7 +258,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
                 knex
                     .from({ R: "access_control.role" })
                     .join({ RC: "access_control.role_closure" }, "R.id", "RC.ancestor_id")
-                    .join({ ARM: "access_control.account_role_matrix" }, "RC.descendant_id", "ARM.role_id")
+                    .join({ ARM: "access_control.account_role_assignment" }, "RC.descendant_id", "ARM.role_id")
                     .where("ARM.account_id", account)
                     .andWhere("ARM.realm_id", realm)
                     .andWhere("ARM.is_revoked", false);

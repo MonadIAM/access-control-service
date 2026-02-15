@@ -117,7 +117,7 @@ export class RoleConflictGroupRepository
 
             const query = knex
                 .select("arm.account_id")
-                .from("access_control.account_role_matrix as arm")
+                .from("access_control.account_role_assignment as arm")
                 .whereIn("arm.role_id", identifiers)
                 .groupBy("arm.account_id")
                 .having(knex.raw("count(distinct arm.role_id) > ?", [maxAllowed]))
@@ -138,7 +138,7 @@ export class RoleConflictGroupRepository
         const directAfterCte = knex.select(knex.raw("role_id::uuid")).from(
             knex
                 .select(knex.raw('"arm"."role_id"::uuid as "role_id"'))
-                .from({ arm: "access_control.account_role_matrix" })
+                .from({ arm: "access_control.account_role_assignment" })
                 .where({ "arm.realm_id": props.realm, "arm.account_id": props.account })
                 .union(
                     props.roles.map((role) => knex.select(knex.raw('?::uuid as "role_id"', [role]))),

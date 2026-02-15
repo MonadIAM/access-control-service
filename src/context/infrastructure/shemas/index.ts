@@ -1,9 +1,9 @@
-export { RolePermissionMatrixSchema } from "./role-permission-matrix.schema";
+export { RolePermissionAssignmentSchema } from "./role-permission-assignment.schema";
+export { AccountRoleAssignmentSchema } from "./account-role-assignment.schema";
 export { RoleDelegationPolicySchema } from "./role-delegation-policy.schema";
 export { RoleConflictMemberSchema } from "./role-conflict-member.schema";
 export { PermissionOverrideSchema } from "./permission-override.schema";
 export { RoleConflictGroupSchema } from "./role-conflict-group.schema";
-export { AccountRoleMatrixSchema } from "./account-role-matrix.schema";
 export { RoleClosureSchema } from "./role-closure.schema";
 export { PermissionSchema } from "./permission.schema";
 export { RealmSchema } from "./realm.schema";

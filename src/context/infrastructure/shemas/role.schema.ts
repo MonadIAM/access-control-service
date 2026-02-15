@@ -3,9 +3,9 @@ import { EntitySchema } from "@mikro-orm/core";
 import { RoleActorType, RoleProtoType } from "~context/enums";
 import {
     RoleDelegationPolicy,
-    RolePermissionMatrix,
+    RolePermissionAssignment,
     RoleConflictMember,
-    AccountRoleMatrix,
+    AccountRoleAssignment,
     Realm,
     Role,
 } from "~context/domain/entities";
@@ -63,14 +63,14 @@ export const RoleSchema = new EntitySchema<Role>({
             entity: () => RoleConflictMember,
             mappedBy: "role",
         },
-        permissionMatrix: {
+        permissionAssignments: {
             kind: "1:m",
-            entity: () => RolePermissionMatrix,
+            entity: () => RolePermissionAssignment,
             mappedBy: "role",
         },
-        accountMatrix: {
+        accountAssignment: {
             kind: "1:m",
-            entity: () => AccountRoleMatrix,
+            entity: () => AccountRoleAssignment,
             mappedBy: "role",
         },
 

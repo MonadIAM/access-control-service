@@ -1,8 +1,8 @@
-export { RolePermissionMatrixAdapter } from "./role-permission-matrix.adapter";
+export { RolePermissionAssignmentAdapter } from "./role-permission-assignment.adapter";
+export { AccountRoleAssignmentAdapter } from "./account-role-assignment.adapter";
 export { RoleDelegationPolicyAdapter } from "./role-delegation-policy.adapter";
 export { RoleConflictMemberAdapter } from "./role-conflict-member.adapter";
 export { PermissionOverrideAdapter } from "./permission-override.adapter";
-export { AccountRoleMatrixAdapter } from "./account-role-matrix.adapter";
 export { RoleConflictGroupAdapter } from "./role-conflict-group.adapter";
 export { AuditJournalAdapter } from "./audit-journal.adapter";
 export { PermissionAdapter } from "./permission.adapter";
