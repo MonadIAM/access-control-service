@@ -388,7 +388,8 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
+          "default": "null",
           "mappedType": "uuid"
         },
         "updated_at": {
@@ -448,6 +449,24 @@
       "schema": "access_control",
       "indexes": [
         {
+          "keyName": "permission_realm_code_unique",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE UNIQUE INDEX \"permission_realm_code_unique\" ON \"access_control\".\"permission\" (\"realm_id\", \"code\") WHERE \"realm_id\" IS NOT NULL"
+        },
+        {
+          "keyName": "permission_global_code_unique",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE UNIQUE INDEX \"permission_global_code_unique\" ON \"access_control\".\"permission\" (\"code\") WHERE \"realm_id\" IS NULL"
+        },
+        {
           "keyName": "permission_name_trgm_idx",
           "columnNames": [],
           "composite": false,
@@ -455,17 +474,6 @@
           "primary": false,
           "unique": false,
           "expression": "CREATE INDEX \"permission_name_trgm_idx\" ON \"access_control\".\"permission\" USING gin (\"name\" gin_trgm_ops)"
-        },
-        {
-          "keyName": "permission_realm_code_unique",
-          "columnNames": [
-            "realm_id",
-            "code"
-          ],
-          "composite": true,
-          "constraint": true,
-          "primary": false,
-          "unique": true
         },
         {
           "keyName": "permission_pkey",

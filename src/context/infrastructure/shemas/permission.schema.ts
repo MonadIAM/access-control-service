@@ -7,14 +7,17 @@ export const PermissionSchema = new EntitySchema<Permission>({
     tableName: "permission",
     schema: "access_control",
 
-    uniques: [
+    indexes: [
         {
             name: "permission_realm_code_unique",
-            properties: ["realm", "code"],
+            expression:
+                'CREATE UNIQUE INDEX "permission_realm_code_unique" ON "access_control"."permission" ("realm_id", "code") WHERE "realm_id" IS NOT NULL',
         },
-    ],
-
-    indexes: [
+        {
+            name: "permission_global_code_unique",
+            expression:
+                'CREATE UNIQUE INDEX "permission_global_code_unique" ON "access_control"."permission" ("code") WHERE "realm_id" IS NULL',
+        },
         {
             name: "permission_name_trgm_idx",
             expression:
@@ -32,7 +35,8 @@ export const PermissionSchema = new EntitySchema<Permission>({
 
         realm: {
             kind: "m:1",
-            nullable: false,
+            default: null,
+            nullable: true,
             entity: () => Realm,
             fieldName: "realm_id",
             deleteRule: "cascade",

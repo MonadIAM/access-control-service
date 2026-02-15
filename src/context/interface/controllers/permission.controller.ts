@@ -1,10 +1,24 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { I18nService } from "nestjs-i18n";
+import { I18nLang as Lang, I18nService } from "nestjs-i18n";
+import {
+    UseInterceptors,
+    Controller,
+    HttpStatus,
+    HttpCode,
+    Delete,
+    Inject,
+    Patch,
+    Query,
+    Body,
+    Post,
+    Get,
+} from "@nestjs/common";
 
 import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
+import { ErrorResponseBodyDTO, SuccessMessageDTO } from "~common/dto";
+import { PERMISSION_HANDLER } from "~context/application/handlers";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ErrorResponseBodyDTO } from "~common/dto";
+import { ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
 
 import {
@@ -15,7 +29,17 @@ import {
     GetPermissionsListQueryDTO,
     GetPermissionByIdQueryDTO,
     GetPermissionsListBodyDTO,
+    RestorePermissionQueryDTO,
+    RestorePermissionBodyDTO,
+    CreatePermissionQueryDTO,
+    RevokePermissionQueryDTO,
+    UpdatePermissionQueryDTO,
+    PurgePermissionQueryDTO,
+    RevokePermissionBodyDTO,
+    UpdatePermissionBodyDTO,
+    CreatePermissionBodyDTO,
     PermissionLookupListDTO,
+    PurgePermissionBodyDTO,
     PermissionListDTO,
     PermissionDTO,
 } from "../dto/permission";
@@ -32,6 +56,8 @@ export class PermissionController extends BaseController {
     public constructor(
         @Inject(PERMISSION_REPOSITORY)
         private readonly permissionRepository: Repositories.Permission.Contract,
+        @Inject(PERMISSION_HANDLER)
+        private readonly permissionHandler: Handlers.Permission.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -88,5 +114,84 @@ export class PermissionController extends BaseController {
         return this.permissionRepository
             .findEffectivePermissions({ where: { account, realm }, pagination, filters, sort })
             .then((data) => super.formatResponse({ DTO: PermissionListDTO, pagination, data }));
+    }
+
+    @Post("create")
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: "Creates a new permission" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public create(
+        @ExtractContext() context: RequestContext,
+        @Query() { realm }: CreatePermissionQueryDTO,
+        @Body() input: CreatePermissionBodyDTO,
+    ): Promise<SuccessMessageDTO> {
+        return this.permissionHandler
+            .create({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
+    }
+
+    @Patch("update")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Updates permission metadata" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public updateMetadata(
+        @ExtractContext() context: RequestContext,
+        @Query() { realm, id }: UpdatePermissionQueryDTO,
+        @Body() input: UpdatePermissionBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.permissionHandler
+            .update({ id, actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Patch("revoke")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Revokes a non-system permission/s" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public revoke(
+        @ExtractContext() context: RequestContext,
+        @Query() { realm }: RevokePermissionQueryDTO,
+        @Body() input: RevokePermissionBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.permissionHandler
+            .revoke({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Patch("restore")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Restores a non-system permission/s" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public restore(
+        @ExtractContext() context: RequestContext,
+        @Query() { realm }: RestorePermissionQueryDTO,
+        @Body() input: RestorePermissionBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.permissionHandler
+            .restore({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Delete("purge")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Permanently deletes a revoked non-system realm/s" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public purge(
+        @ExtractContext() context: RequestContext,
+        @Query() { realm }: PurgePermissionQueryDTO,
+        @Body() input: PurgePermissionBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.permissionHandler
+            .purge({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }
