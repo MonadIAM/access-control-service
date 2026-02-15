@@ -143,6 +143,10 @@ export class RoleHandler implements Handlers.Role.Contract {
                     transaction,
                 });
 
+                if (entities.length < identifiers.length) {
+                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                }
+
                 await this.roleService.revoke({
                     transaction,
                     entities,
@@ -176,6 +180,10 @@ export class RoleHandler implements Handlers.Role.Contract {
                     where: { id: { $in: identifiers }, realm },
                     transaction,
                 });
+
+                if (entities.length < identifiers.length) {
+                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                }
 
                 await this.roleService.restore({
                     transaction,

@@ -26,8 +26,8 @@ export const AuditJournalSchema = new EntitySchema<AuditJournal>({
     properties: {
         id: { type: "uuid", primary: true, defaultRaw: "gen_random_uuid()" },
 
+        realm: { type: "uuid", nullable: true, default: null },
         entity: { type: "uuid", nullable: false },
-        realm: { type: "uuid", nullable: false },
 
         by: { type: "uuid", nullable: false },
         at: { type: "timestamptz", length: 3, nullable: false },

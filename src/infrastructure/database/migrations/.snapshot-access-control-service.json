@@ -16,17 +16,18 @@
           "default": "gen_random_uuid()",
           "mappedType": "uuid"
         },
-        "entity": {
-          "name": "entity",
+        "realm": {
+          "name": "realm",
           "type": "uuid",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
+          "default": "null",
           "mappedType": "uuid"
         },
-        "realm": {
-          "name": "realm",
+        "entity": {
+          "name": "entity",
           "type": "uuid",
           "unsigned": false,
           "autoincrement": false,

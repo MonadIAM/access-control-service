@@ -1,10 +1,18 @@
-import { RepositoryErrorKind, DatabaseErrorKind, ServiceErrorKind, CommonErrorKind, EntityErrorKind } from "./error-kinds";
+import {
+    RepositoryErrorKind,
+    DatabaseErrorKind,
+    ServiceErrorKind,
+    HandlerErrorKind,
+    CommonErrorKind,
+    EntityErrorKind,
+} from "./error-kinds";
 
 declare global {
     namespace Exception {
         type RepositoryErrorKind = keyof typeof RepositoryErrorKind;
         type DatabaseErrorKind = keyof typeof DatabaseErrorKind;
         type ServiceErrorKind = keyof typeof ServiceErrorKind;
+        type HandlerErrorKind = keyof typeof HandlerErrorKind;
         type CommonErrorKind = keyof typeof CommonErrorKind;
         type EntityErrorKind = keyof typeof EntityErrorKind;
 

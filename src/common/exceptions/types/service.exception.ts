@@ -24,31 +24,10 @@ export class ServiceException extends BaseException {
         );
     }
 
-    public static badRequest(messageKey = "service.bad_request", params?: Record<string, unknown>): ServiceException {
-        return new ServiceException(ServiceErrorKind.BadRequest, HttpStatus.BAD_REQUEST, messageKey, params);
-    }
-
-    public static unauthorized(messageKey = "service.unauthorized", params?: Record<string, unknown>): ServiceException {
-        return new ServiceException(ServiceErrorKind.Unauthorized, HttpStatus.UNAUTHORIZED, messageKey, params);
-    }
-
-    public static forbidden(messageKey = "service.forbidden", params?: Record<string, unknown>): ServiceException {
-        return new ServiceException(ServiceErrorKind.Forbidden, HttpStatus.FORBIDDEN, messageKey, params);
-    }
-
-    public static notFound(messageKey = "service.not_found", params?: Record<string, unknown>): ServiceException {
-        return new ServiceException(ServiceErrorKind.NotFound, HttpStatus.NOT_FOUND, messageKey, params);
-    }
-
-    public static conflict(messageKey = "service.conflict", params?: Record<string, unknown>): ServiceException {
-        return new ServiceException(ServiceErrorKind.Conflict, HttpStatus.CONFLICT, messageKey, params);
-    }
-
-    public static unprocessable(messageKey = "service.unprocessable", params?: Record<string, unknown>): ServiceException {
-        return new ServiceException(ServiceErrorKind.Unprocessable, HttpStatus.UNPROCESSABLE_ENTITY, messageKey, params);
-    }
-
-    public static internal(messageKey = "service.internal_error", params?: Record<string, unknown>): ServiceException {
-        return new ServiceException(ServiceErrorKind.Internal, HttpStatus.INTERNAL_SERVER_ERROR, messageKey, params);
+    public static invariantViolation(
+        messageKey = "service.invariant_violation",
+        params?: Record<string, unknown>,
+    ): ServiceException {
+        return new ServiceException(ServiceErrorKind.InvariantViolation, HttpStatus.BAD_REQUEST, messageKey, params);
     }
 }

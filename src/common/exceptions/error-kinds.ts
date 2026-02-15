@@ -17,12 +17,17 @@ export const EntityErrorKind = {
     InvariantViolation: "InvariantViolation",
 } as const;
 
+export const ServiceErrorKind = {
+    InvariantViolation: "InvariantViolation",
+    Unprocessable: "Unprocessable",
+} as const;
+
 export const RepositoryErrorKind = {
     BadRequest: "BadRequest",
     ...DatabaseErrorKind,
 } as const;
 
-export const ServiceErrorKind = {
+export const HandlerErrorKind = {
     Unprocessable: "Unprocessable",
     Unauthorized: "Unauthorized",
     BadRequest: "BadRequest",

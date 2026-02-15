@@ -25,7 +25,7 @@ export class RoleService implements Services.Role.Contract {
         context: { userAgent, ip },
     }: Services.Role.Create): Promise<Role> {
         if (parent.protoType === RoleProtoType.ATOMIC) {
-            throw ServiceException.badRequest(`${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE`);
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE`);
         } else {
             const entity = new Role({
                 description: input.description,
@@ -141,7 +141,7 @@ export class RoleService implements Services.Role.Contract {
         const limit = this.configService.getOrThrow<number>("MAX_ROLE_SUBTREE_SIZE_FOR_PURGE");
 
         if (descendants.length > limit) {
-            throw ServiceException.badRequest(`${this.dictionaryPath}.SUBTREE_SIZE_LIMIT_EXCEEDED`, { limit });
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.SUBTREE_SIZE_LIMIT_EXCEEDED`, { limit });
         } else {
             for (const descendant of descendants) {
                 descendant.canPurge();
@@ -247,7 +247,7 @@ export class RoleService implements Services.Role.Contract {
 
             for (const child of children) {
                 if (!descendantsSet.has(child)) {
-                    throw ServiceException.badRequest(`${this.dictionaryPath}.CREATE_CHILD_NOT_DIRECT_DESCENDANT`);
+                    throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_CHILD_NOT_DIRECT_DESCENDANT`);
                 }
             }
 

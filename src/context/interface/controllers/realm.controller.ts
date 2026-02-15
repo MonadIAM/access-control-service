@@ -1,10 +1,24 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { I18nService } from "nestjs-i18n";
+import { I18nLang as Lang, I18nService } from "nestjs-i18n";
+import {
+    UseInterceptors,
+    Controller,
+    HttpStatus,
+    HttpCode,
+    Delete,
+    Inject,
+    Patch,
+    Query,
+    Body,
+    Post,
+    Get,
+} from "@nestjs/common";
 
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
+import { ErrorResponseBodyDTO, SuccessMessageDTO } from "~common/dto";
+import { REALM_HANDLER } from "~context/application/handlers";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ErrorResponseBodyDTO } from "~common/dto";
+import { ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
 
 import {
@@ -12,7 +26,13 @@ import {
     GetRealmsLookupListBodyDTO,
     GetRealmByIdQueryDTO,
     GetRealmsListBodyDTO,
+    UpdateRealmQueryDTO,
+    RestoreRealmBodyDTO,
     RealmLookupListDTO,
+    CreateRealmBodyDTO,
+    UpdateRealmBodyDTO,
+    RevokeRealmBodyDTO,
+    PurgeRealmBodyDTO,
     RealmListDTO,
     RealmDTO,
 } from "../dto/realm";
@@ -24,6 +44,8 @@ export class RealmController extends BaseController {
     public constructor(
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.Contract,
+        @Inject(REALM_HANDLER)
+        private readonly realmHandler: Handlers.Realm.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -63,5 +85,80 @@ export class RealmController extends BaseController {
         return this.realmRepository
             .getLookupList({ pagination, term })
             .then((data) => super.formatResponse({ DTO: RealmLookupListDTO, pagination, data }));
+    }
+
+    @Post("create")
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: "Creates a new realm" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public create(
+        @ExtractContext() context: RequestContext,
+        @Body() input: CreateRealmBodyDTO,
+    ): Promise<SuccessMessageDTO> {
+        return this.realmHandler
+            .create({ actor: "00000000-0000-4000-8000-000000000000", input, context })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
+    }
+
+    @Patch("update")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Updates realm metadata" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public updateMetadata(
+        @ExtractContext() context: RequestContext,
+        @Query() { id }: UpdateRealmQueryDTO,
+        @Body() input: UpdateRealmBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.realmHandler
+            .update({ id, actor: "00000000-0000-4000-8000-000000000000", input, context })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Patch("revoke")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Revokes a non-system realm/s" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public revoke(
+        @ExtractContext() context: RequestContext,
+        @Body() input: RevokeRealmBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.realmHandler
+            .revoke({ actor: "00000000-0000-4000-8000-000000000000", input, context })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Patch("restore")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Restores a non-system realm/s" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public restore(
+        @ExtractContext() context: RequestContext,
+        @Body() input: RestoreRealmBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.realmHandler
+            .restore({ actor: "00000000-0000-4000-8000-000000000000", input, context })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    }
+
+    @Delete("purge")
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: "Permanently deletes a revoked non-system realm/s" })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    public purge(
+        @ExtractContext() context: RequestContext,
+        @Body() input: PurgeRealmBodyDTO,
+        @Lang() lang: string,
+    ): Promise<SuccessMessageDTO> {
+        return this.realmHandler
+            .purge({ actor: "00000000-0000-4000-8000-000000000000", input, context })
+            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }
