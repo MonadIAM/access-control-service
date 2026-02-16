@@ -5,7 +5,9 @@ import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
 
 export class RolePermissionAssignment {
-    private readonly dictionaryPath = "entities.role-permission-assignment";
+    private get dictionaryPath(): string {
+        return "entities.role-permission-assignment";
+    }
 
     public id?: string;
     public createdAt?: Date;
@@ -34,15 +36,19 @@ export class RolePermissionAssignment {
         if (this.isRevoked) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_REVOKED`);
         } else {
+            const now = new Date();
             this.isRevoked = true;
-            this.lastActions.revoke = { at: new Date(), by: { id: actor }, reason };
+            this.lastActions.revoke = { at: now, by: { id: actor }, reason };
+            this.updatedAt = now;
         }
     }
 
     public restore({ actor, reason }: Entities.BaseMethodProps): void {
         if (this.isRevoked) {
+            const now = new Date();
             this.isRevoked = false;
-            this.lastActions.restore = { at: new Date(), by: { id: actor }, reason };
+            this.lastActions.restore = { at: now, by: { id: actor }, reason };
+            this.updatedAt = now;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVE`);
         }
@@ -53,6 +59,18 @@ export class RolePermissionAssignment {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_ACTIVE`);
         } else if (this.isSystemManaged) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_SYSTEM`);
+        }
+    }
+
+    public canAssign(): void {
+        if (this.role.isRevoked) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_TO_REVOKED_ROLE`);
+        } else if (this.permission.isRevoked) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_REVOKED_PERMISSION`);
+        } else if (this.role.isSystemManaged) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_TO_SYSTEM_ROLE`);
+        } else if (this.permission.isSystemManaged) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_SYSTEM_PERMISSION`);
         }
     }
 }

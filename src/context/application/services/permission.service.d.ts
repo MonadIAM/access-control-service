@@ -15,7 +15,7 @@ declare global {
 
             type Create = {
                 transaction: EntityManager;
-                input: Entities.Realm.Seed;
+                input: Entities.Permission.Seed;
                 context: RequestContext;
                 realm: RealmEntity;
             };
@@ -23,7 +23,7 @@ declare global {
             type Update = {
                 transaction: EntityManager;
                 input: {
-                    patch: Partial<Entities.Realm.MutableFields>;
+                    patch: Partial<Entities.Permission.MutableFields>;
                     reason: string;
                 };
                 context: RequestContext;

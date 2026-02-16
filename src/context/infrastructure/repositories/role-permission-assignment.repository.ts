@@ -1,6 +1,7 @@
 import { EntityManager, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { RolePermissionAssignmentAdapter } from "~context/infrastructure/adapters";
 import { RolePermissionAssignment } from "~context/domain/entities";
@@ -16,6 +17,7 @@ export class RolePermissionAssignmentRepository
     public constructor(
         @InjectEntityManager("read")
         private readonly readManager: EntityManager,
+        private readonly configService: ConfigService,
     ) {
         super();
     }
@@ -46,6 +48,18 @@ export class RolePermissionAssignmentRepository
         }
     }
 
+    public async find<P extends string = never, F extends string = "*">(
+        props: Repositories.RolePermissionAssignment.Find<P, F>,
+    ): Promise<Loaded<RolePermissionAssignment, P, F>[]> {
+        try {
+            const { transaction, options, where } = props;
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.find(RolePermissionAssignment, where, options);
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
     public async findMany<P extends string = never, F extends string = "*">(
         props: Repositories.RolePermissionAssignment.FindMany<P, F>,
     ): Promise<[Loaded<RolePermissionAssignment, P, F>[], number]> {
@@ -61,6 +75,30 @@ export class RolePermissionAssignmentRepository
                 const entityManager = this.readManager.fork();
                 return await entityManager.findAndCount(RolePermissionAssignment, where, opts);
             }
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async wouldExceedPermissionLimit({
+        transaction,
+        permissions,
+        role,
+    }: Repositories.RolePermissionAssignment.WouldExceedPermissionLimit): Promise<boolean> {
+        try {
+            const limit = this.configService.getOrThrow<number>("PERMISSION_LIMIT");
+            const entityManager = transaction ?? this.readManager.fork();
+            const knex = entityManager.getKnex();
+
+            const assignments = await knex("access_control.role_permission_assignment as assignment")
+                .join("access_control.permission as permission", "permission.id", "assignment.permission_id")
+                .where("assignment.role_id", role)
+                .select("assignment.permission_id", "assignment.is_revoked", "permission.is_system_managed");
+
+            const existingRoleIds = new Set(assignments.map((assignment) => assignment.permission_id));
+            const trulyNewCount = permissions.filter((id) => !existingRoleIds.has(id)).length;
+
+            return assignments.length + trulyNewCount > limit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
