@@ -130,39 +130,42 @@ export class RoleDelegationPolicyRepository
     }
 
     public async isDelegationAllowed({
-        delegatorRole,
         transaction,
-        targetRole,
+        roles,
+        realm,
+        actor,
     }: Repositories.RoleDelegationPolicy.IsDelegationAllowed): Promise<boolean> {
         try {
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
-            const query = knex("access_control.role_delegation_policy as rdp")
-                .join("access_control.role_closure as rc", "rdp.target_role_id", "rc.ancestor_id")
-                .whereIn("rdp.delegator_role_id", Array.isArray(delegatorRole) ? delegatorRole : [delegatorRole])
-                .andWhere("rc.descendant_id", targetRole)
+            const actorRolesCte = knex
+                .select("ara.role_id")
+                .from("access_control.account_role_assignment as ara")
+                .where("ara.realm_id", realm)
+                .andWhere("ara.account_id", actor)
+                .andWhere("ara.is_revoked", false);
+
+            const allowedTargetsCte = knex
+                .select("rc.descendant_id as role_id")
+                .from("access_control.role_delegation_policy as rdp")
+                .join("actor_roles as ar", "ar.role_id", "rdp.delegator_id")
+                .join("access_control.role_closure as rc", "rc.ancestor_id", "rdp.target_id")
+                .where("rdp.realm_id", realm)
                 .andWhere("rdp.is_revoked", false)
-                .andWhere((builder) => {
-                    builder
-                        .where((sub) => {
-                            sub.where("rdp.is_absolute", false).andWhere("rc.depth", 0);
-                        })
-                        .orWhere((sub) => {
-                            sub.where("rdp.is_absolute", true).andWhere((depthBuilder) => {
-                                depthBuilder
-                                    .whereNull("rdp.depth_limit")
-                                    .orWhere("rc.depth", "<=", knex.ref("rdp.depth_limit"));
-                            });
-                        });
-                })
-                .select(knex.raw("1"))
-                .limit(1);
+                .andWhereRaw("rc.depth <= rdp.depth_limit");
+
+            const query = knex
+                .with("actor_roles", actorRolesCte)
+                .with("allowed_targets", allowedTargetsCte)
+                .select(knex.raw("count(*)::int = ? as result", [roles.length]))
+                .from("allowed_targets as at")
+                .whereIn("at.role_id", roles);
 
             const { sql, bindings } = query.toSQL();
 
             const [result] = await entityManager.getConnection().execute(sql, [...bindings]);
-            return Boolean(result);
+            return result?.result === true;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

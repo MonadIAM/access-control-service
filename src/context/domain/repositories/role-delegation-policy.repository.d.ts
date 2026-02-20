@@ -61,8 +61,9 @@ declare global {
 
             type IsDelegationAllowed = {
                 transaction?: EntityManager;
-                delegatorRole: string | string[];
-                targetRole: string;
+                roles: string[];
+                realm: string;
+                actor: string;
             };
 
             type IsUpwardGrant = {

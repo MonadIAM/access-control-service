@@ -48,6 +48,18 @@ export class AccountRoleAssignmentRepository
         }
     }
 
+    public async find<P extends string = never, F extends string = "*">(
+        props: Repositories.AccountRoleAssignment.Find<P, F>,
+    ): Promise<Loaded<AccountRoleAssignment, P, F>[]> {
+        try {
+            const { transaction, options, where } = props;
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.find(AccountRoleAssignment, where, options);
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
     public async findMany<P extends string = never, F extends string = "*">(
         props: Repositories.AccountRoleAssignment.FindMany<P, F>,
     ): Promise<[Loaded<AccountRoleAssignment, P, F>[], number]> {
@@ -86,11 +98,7 @@ export class AccountRoleAssignmentRepository
             const existingRoleIds = new Set(assignments.map((assignment) => assignment.role_id));
             const trulyNewCount = roles.filter((id) => !existingRoleIds.has(id)).length;
 
-            if (assignments.length + trulyNewCount > limit) {
-                return false;
-            } else {
-                return true;
-            }
+            return assignments.length + trulyNewCount > limit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

@@ -1,9 +1,11 @@
 import { RolePermissionAssignmentService } from "./role-permission-assignment.service";
+import { AccountRoleAssignmentService } from "./account-role-assignment.service";
 import { PermissionService } from "./permission.service";
 import { RealmService } from "./realm.service";
 import { RoleService } from "./role.service";
 
 export const ROLE_PERMISSION_ASSIGNMENT_SERVICE = Symbol("Services.RolePermissionAssignment.Contract");
+export const ACCOUNT_ROLE_ASSIGNMENT_SERVICE = Symbol("Services.AccountRoleAssignment.Contract");
 export const PERMISSION_SERVICE = Symbol("Services.Permission.Contract");
 export const REALM_SERVICE = Symbol("Services.Realm.Contract");
 export const ROLE_SERVICE = Symbol("Services.Role.Contract");
@@ -12,6 +14,10 @@ export const SERVICES = [
     {
         provide: ROLE_PERMISSION_ASSIGNMENT_SERVICE,
         useClass: RolePermissionAssignmentService,
+    },
+    {
+        provide: ACCOUNT_ROLE_ASSIGNMENT_SERVICE,
+        useClass: AccountRoleAssignmentService,
     },
     {
         provide: PERMISSION_SERVICE,
