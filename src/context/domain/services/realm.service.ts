@@ -17,13 +17,12 @@ export class RealmService implements Services.Realm.Contract {
         });
 
         transaction.persist(entity);
-        await transaction.flush();
 
         const auditEntity = new AuditJournal({
             actionType: AccessControlActionType.CREATE,
             entityType: this.entityType,
-            at: entity.createdAt!,
-            entity: entity.id!,
+            at: entity.createdAt,
+            entity: entity.id,
             userAgent,
             by: actor,
             ip,
@@ -49,7 +48,7 @@ export class RealmService implements Services.Realm.Contract {
             entityType: this.entityType,
             at: entity.updatedAt!,
             patch: historyPatch,
-            entity: entity.id!,
+            entity: entity.id,
             userAgent,
             by: actor,
             reason,
@@ -75,7 +74,7 @@ export class RealmService implements Services.Realm.Contract {
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.DELETE,
                 entityType: this.entityType,
-                entity: entity.id!,
+                entity: entity.id,
                 at: new Date(),
                 userAgent,
                 by: actor,
@@ -102,7 +101,7 @@ export class RealmService implements Services.Realm.Contract {
                 actionType: AccessControlActionType.REVOKE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
-                entity: entity.id!,
+                entity: entity.id,
                 userAgent,
                 by: actor,
                 reason,
@@ -128,7 +127,7 @@ export class RealmService implements Services.Realm.Contract {
                 actionType: AccessControlActionType.RESTORE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
-                entity: entity.id!,
+                entity: entity.id,
                 userAgent,
                 by: actor,
                 reason,

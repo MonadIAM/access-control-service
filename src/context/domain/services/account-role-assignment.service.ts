@@ -35,7 +35,7 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
             this.roleDelegationPolicyRepository.isDelegationAllowed({
                 transaction,
                 roles: roleIds,
-                realm: realm.id!,
+                realm: realm.id,
                 actor,
             }),
             this.accountRoleAssignmentRepository.wouldExceedRoleLimit({
@@ -46,7 +46,7 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
             this.roleConflictGroupRepository.hasViolations({
                 transaction,
                 roles: roleIds,
-                realm: realm.id!,
+                realm: realm.id,
                 account,
             }),
         ]);
@@ -58,8 +58,6 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         } else if (hasSoDViolations) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.`);
         } else {
-            const entities: AccountRoleAssignment[] = [];
-
             for (const role of roles) {
                 const entity = new AccountRoleAssignment({
                     account,
@@ -69,18 +67,13 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
                 });
 
                 entity.canAssign();
-                entities.push(entity);
                 transaction.persist(entity);
-            }
 
-            await transaction.flush();
-
-            for (const entity of entities) {
                 const auditEntity = new AuditJournal({
                     actionType: AccessControlActionType.CREATE,
                     entityType: this.entityType,
-                    at: entity.createdAt!,
-                    entity: entity.id!,
+                    at: entity.createdAt,
+                    entity: entity.id,
                     userAgent,
                     by: actor,
                     ip,
@@ -108,7 +101,7 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.DELETE,
                 entityType: this.entityType,
-                entity: entity.id!,
+                entity: entity.id,
                 at: new Date(),
                 userAgent,
                 by: actor,
@@ -135,7 +128,7 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
                 actionType: AccessControlActionType.REVOKE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
-                entity: entity.id!,
+                entity: entity.id,
                 userAgent,
                 by: actor,
                 reason,
@@ -161,7 +154,7 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
                 actionType: AccessControlActionType.RESTORE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
-                entity: entity.id!,
+                entity: entity.id,
                 userAgent,
                 by: actor,
                 reason,

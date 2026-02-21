@@ -24,7 +24,7 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
     }: Services.RolePermissionAssignment.Create): Promise<void> {
         const limitExceeded = await this.rolePermissionAssignmentRepository.wouldExceedPermissionLimit({
             permissions: permissions.map(({ id }) => id!),
-            role: role.id!,
+            role: role.id,
             transaction,
         });
 
@@ -42,13 +42,12 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
                 entity.canAssign();
 
                 transaction.persist(entity);
-                await transaction.flush();
 
                 const auditEntity = new AuditJournal({
                     actionType: AccessControlActionType.CREATE,
                     entityType: this.entityType,
-                    at: entity.createdAt!,
-                    entity: entity.id!,
+                    at: entity.createdAt,
+                    entity: entity.id,
                     userAgent,
                     by: actor,
                     ip,
@@ -76,7 +75,7 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.DELETE,
                 entityType: this.entityType,
-                entity: entity.id!,
+                entity: entity.id,
                 at: new Date(),
                 userAgent,
                 by: actor,
@@ -103,7 +102,7 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
                 actionType: AccessControlActionType.REVOKE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
-                entity: entity.id!,
+                entity: entity.id,
                 userAgent,
                 by: actor,
                 reason,
@@ -129,7 +128,7 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
                 actionType: AccessControlActionType.RESTORE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
-                entity: entity.id!,
+                entity: entity.id,
                 userAgent,
                 by: actor,
                 reason,

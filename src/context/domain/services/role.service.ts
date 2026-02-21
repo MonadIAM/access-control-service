@@ -40,14 +40,14 @@ export class RoleService implements Services.Role.Contract {
             transaction.persist(entity);
             await transaction.flush();
 
-            await this.buildHierarchy({ input: { realm: realm.id!, children, parent, entity }, transaction });
+            await this.buildHierarchy({ input: { realm: realm.id, children, parent, entity }, transaction });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.CREATE,
                 entityType: this.entityType,
-                at: entity.createdAt!,
-                entity: entity.id!,
-                realm: realm.id!,
+                at: entity.createdAt,
+                entity: entity.id,
+                realm: realm.id,
                 userAgent,
                 by: actor,
                 ip,
@@ -75,7 +75,7 @@ export class RoleService implements Services.Role.Contract {
             entityType: this.entityType,
             at: entity.updatedAt!,
             patch: historyPatch,
-            entity: entity.id!,
+            entity: entity.id,
             realm: realm,
             userAgent,
             by: actor,
@@ -100,7 +100,7 @@ export class RoleService implements Services.Role.Contract {
         transaction.clear();
 
         await this.roleClosureRepository.decreaseTransitiveDepth({
-            role: entity.id!,
+            role: entity.id,
             realm: realm,
             transaction,
         });
@@ -110,7 +110,7 @@ export class RoleService implements Services.Role.Contract {
         const auditEntity = new AuditJournal({
             actionType: AccessControlActionType.DELETE,
             entityType: this.entityType,
-            entity: entity.id!,
+            entity: entity.id,
             at: new Date(),
             realm: realm,
             userAgent,
@@ -132,7 +132,7 @@ export class RoleService implements Services.Role.Contract {
         actor,
     }: Services.Role.PurgeSubtree): Promise<number> {
         const descendants: Role[] = await this.roleRepository.getDescendants({
-            ancestor: entity.id!,
+            ancestor: entity.id,
             transaction,
         });
 
@@ -151,7 +151,7 @@ export class RoleService implements Services.Role.Contract {
                 const auditEntity = new AuditJournal({
                     actionType: AccessControlActionType.DELETE,
                     entityType: this.entityType,
-                    entity: descendant.id!,
+                    entity: descendant.id,
                     at: new Date(),
                     realm: realm,
                     userAgent,
@@ -184,7 +184,7 @@ export class RoleService implements Services.Role.Contract {
                 actionType: AccessControlActionType.REVOKE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
-                entity: entity.id!,
+                entity: entity.id,
                 realm: realm,
                 userAgent,
                 by: actor,
@@ -212,7 +212,7 @@ export class RoleService implements Services.Role.Contract {
                 actionType: AccessControlActionType.RESTORE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
-                entity: entity.id!,
+                entity: entity.id,
                 realm: realm,
                 userAgent,
                 by: actor,
@@ -230,15 +230,15 @@ export class RoleService implements Services.Role.Contract {
         input: { children, parent, entity, realm },
     }: Services.Role.BuildHierarchy): Promise<void> {
         await this.roleClosureRepository.insertNewHierarchy({
-            descendant: entity.id!,
-            ancestor: parent.id!,
+            descendant: entity.id,
+            ancestor: parent.id,
             realm: realm,
             transaction,
         });
 
         if (children?.length) {
             const descendants: Role[] = await this.roleRepository.getDescendants({
-                ancestor: parent.id!,
+                ancestor: parent.id,
                 transaction,
                 depth: 1,
             });
@@ -252,8 +252,8 @@ export class RoleService implements Services.Role.Contract {
             }
 
             await this.roleClosureRepository.moveSubtrees({
-                newParent: entity.id!,
-                oldParent: parent.id!,
+                newParent: entity.id,
+                oldParent: parent.id,
                 children: children,
                 realm: realm,
                 transaction,
