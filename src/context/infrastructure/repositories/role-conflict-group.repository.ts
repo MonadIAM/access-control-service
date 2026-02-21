@@ -46,6 +46,18 @@ export class RoleConflictGroupRepository
         }
     }
 
+    public async find<P extends string = never, F extends string = "*">(
+        props: Repositories.RoleConflictGroup.Find<P, F>,
+    ): Promise<Loaded<RoleConflictGroup, P, F>[]> {
+        try {
+            const { transaction, options, where } = props;
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.find(RoleConflictGroup, where, options);
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
     public async findMany<P extends string = never, F extends string = "*">(
         props: Repositories.RoleConflictGroup.FindMany<P, F>,
     ): Promise<[Loaded<RoleConflictGroup, P, F>[], number]> {
