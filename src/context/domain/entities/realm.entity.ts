@@ -1,11 +1,15 @@
+import { randomUUID } from "node:crypto";
+
 import { EntityException } from "~common/exceptions";
 
 export class Realm {
-    private readonly dictionaryPath = "entities.realm";
+    private get dictionaryPath(): string {
+        return "entities.realm";
+    }
 
-    public id?: string;
+    public id: string;
+    public createdAt: Date;
     public updatedAt?: Date;
-    public createdAt?: Date;
     public version: number = 1;
 
     public code: string;
@@ -16,6 +20,9 @@ export class Realm {
     public isRevoked: boolean;
 
     public constructor(props: Entities.Realm.ConstructorProps) {
+        this.createdAt = new Date();
+        this.id = randomUUID();
+
         this.lastActions = { create: { by: { id: props.actor } } };
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;

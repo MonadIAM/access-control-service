@@ -1,4 +1,5 @@
 import { Collection } from "@mikro-orm/core";
+import { randomUUID } from "node:crypto";
 
 import { EntityException } from "~common/exceptions";
 
@@ -10,9 +11,9 @@ export class RoleConflictGroup {
         return "entities.role-conflict-group";
     }
 
-    public id?: string;
+    public id: string;
+    public createdAt: Date;
     public updatedAt?: Date;
-    public createdAt?: Date;
     public version: number = 1;
 
     public code: string;
@@ -28,6 +29,9 @@ export class RoleConflictGroup {
     public members = new Collection<RoleConflictMember>(this);
 
     public constructor(props: Entities.RoleConflictGroup.ConstructorProps) {
+        this.createdAt = new Date();
+        this.id = randomUUID();
+
         this.lastActions = { create: { by: { id: props.actor } } };
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;

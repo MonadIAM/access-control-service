@@ -1,10 +1,11 @@
 import { AnyEntity } from "@mikro-orm/postgresql";
+import { randomUUID } from "node:crypto";
 
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 
 export class AuditJournal {
-    public id?: string;
-    public createdAt?: Date;
+    public id: string;
+    public createdAt: Date;
 
     public actionType: AccessControlActionType;
     public entityType: AccessControlEntityType;
@@ -22,6 +23,9 @@ export class AuditJournal {
     public reason?: string;
 
     public constructor(props: Entities.AuditJournal.ConstructorProps) {
+        this.createdAt = new Date();
+        this.id = randomUUID();
+
         this.actionType = props.actionType;
         this.entityType = props.entityType;
 

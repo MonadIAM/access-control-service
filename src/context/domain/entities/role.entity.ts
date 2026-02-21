@@ -1,4 +1,5 @@
 import { Collection } from "@mikro-orm/core";
+import { randomUUID } from "node:crypto";
 
 import { RoleActorType, RoleProtoType } from "~context/enums";
 import { EntityException } from "~common/exceptions";
@@ -10,11 +11,13 @@ import { AccountRoleAssignment } from "./account-role-assignment.entity";
 import { Realm } from "./realm.entity";
 
 export class Role {
-    private readonly dictionaryPath = "entities.role";
+    private get dictionaryPath(): string {
+        return "entities.role";
+    }
 
-    public id?: string;
+    public id: string;
+    public createdAt: Date;
     public updatedAt?: Date;
-    public createdAt?: Date;
     public version: number = 1;
 
     public code: string;
@@ -36,6 +39,9 @@ export class Role {
     public accountAssignment = new Collection<AccountRoleAssignment>(this);
 
     public constructor(props: Entities.Role.ConstructorProps) {
+        this.createdAt = new Date();
+        this.id = randomUUID();
+
         this.lastActions = { create: { by: { id: props.actor } } };
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.nonDelegable = props.nonDelegable ?? false;

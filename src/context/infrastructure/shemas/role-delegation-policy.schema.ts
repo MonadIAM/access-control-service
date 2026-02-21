@@ -26,10 +26,10 @@ export const RoleDelegationPolicySchema = new EntitySchema<RoleDelegationPolicy>
     ],
 
     properties: {
-        id: { primary: true, type: "uuid", defaultRaw: "gen_random_uuid()" },
+        id: { primary: true, type: "uuid" },
 
-        isSystemManaged: { type: "boolean", default: false, nullable: false },
-        depthLimit: { type: "smallint", default: 0, nullable: false },
+        isSystemManaged: { type: "boolean", nullable: false },
+        depthLimit: { type: "smallint", nullable: false },
         description: { type: "text", nullable: true },
 
         realm: {
@@ -54,10 +54,10 @@ export const RoleDelegationPolicySchema = new EntitySchema<RoleDelegationPolicy>
             deleteRule: "cascade",
         },
 
-        updatedAt: { type: "timestamptz", length: 3, nullable: true, default: null, onUpdate: () => new Date() },
-        createdAt: { type: "timestamptz", length: 3, defaultRaw: "now()", nullable: false },
-        lastActions: { type: "jsonb", defaultRaw: "'{}'::jsonb", nullable: false },
-        isRevoked: { type: "boolean", default: false, nullable: false },
+        createdAt: { type: "timestamptz", length: 3, nullable: false },
+        updatedAt: { type: "timestamptz", length: 3, nullable: true },
+        lastActions: { type: "jsonb", nullable: false },
+        isRevoked: { type: "boolean", nullable: false },
         version: { type: "int", version: true },
     },
 });

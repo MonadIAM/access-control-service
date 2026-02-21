@@ -24,16 +24,16 @@ export const AuditJournalSchema = new EntitySchema<AuditJournal>({
     ],
 
     properties: {
-        id: { type: "uuid", primary: true, defaultRaw: "gen_random_uuid()" },
+        id: { primary: true, type: "uuid" },
 
-        realm: { type: "uuid", nullable: true, default: null },
+        realm: { type: "uuid", nullable: true },
         entity: { type: "uuid", nullable: false },
 
         by: { type: "uuid", nullable: false },
         at: { type: "timestamptz", length: 3, nullable: false },
 
-        reason: { type: "text", nullable: true, default: null },
-        patch: { type: "jsonb", nullable: true, default: null },
+        reason: { type: "text", nullable: true },
+        patch: { type: "jsonb", nullable: true },
 
         ip: { type: "text", nullable: true },
         userAgent: { type: "text", nullable: true },
@@ -41,6 +41,6 @@ export const AuditJournalSchema = new EntitySchema<AuditJournal>({
         actionType: { enum: true, items: () => AccessControlActionType },
         entityType: { enum: true, items: () => AccessControlEntityType },
 
-        createdAt: { type: "timestamptz", length: 3, defaultRaw: "now()", nullable: false },
+        createdAt: { type: "timestamptz", length: 3, nullable: false },
     },
 });

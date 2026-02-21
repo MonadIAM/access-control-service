@@ -1,4 +1,5 @@
 import { Collection } from "@mikro-orm/core";
+import { randomUUID } from "node:crypto";
 
 import { EntityException } from "~common/exceptions";
 
@@ -11,9 +12,9 @@ export class Permission {
         return "entities.permission";
     }
 
-    public id?: string;
+    public id: string;
+    public createdAt: Date;
     public updatedAt?: Date;
-    public createdAt?: Date;
     public version: number = 1;
 
     public code: string;
@@ -29,6 +30,9 @@ export class Permission {
     public accountOverrides = new Collection<PermissionOverride>(this);
 
     public constructor(props: Entities.Permission.ConstructorProps) {
+        this.createdAt = new Date();
+        this.id = randomUUID();
+
         this.lastActions = { create: { by: { id: props.actor } } };
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;

@@ -26,11 +26,11 @@ export const AccountRoleAssignmentSchema = new EntitySchema<AccountRoleAssignmen
     ],
 
     properties: {
-        id: { primary: true, type: "uuid", defaultRaw: "gen_random_uuid()" },
+        id: { primary: true, type: "uuid" },
 
         accountId: { type: "uuid", fieldName: "account_id", nullable: false },
 
-        isSystemManaged: { type: "boolean", default: false, nullable: false },
+        isSystemManaged: { type: "boolean", nullable: false },
 
         role: {
             kind: "m:1",
@@ -47,10 +47,10 @@ export const AccountRoleAssignmentSchema = new EntitySchema<AccountRoleAssignmen
             deleteRule: "cascade",
         },
 
-        updatedAt: { type: "timestamptz", length: 3, nullable: true, default: null, onUpdate: () => new Date() },
-        createdAt: { type: "timestamptz", length: 3, defaultRaw: "now()", nullable: false },
-        lastActions: { type: "jsonb", defaultRaw: "'{}'::jsonb", nullable: false },
-        isRevoked: { type: "boolean", default: false, nullable: false },
+        createdAt: { type: "timestamptz", length: 3, nullable: false },
+        updatedAt: { type: "timestamptz", length: 3, nullable: true },
+        lastActions: { type: "jsonb", nullable: false },
+        isRevoked: { type: "boolean", nullable: false },
         version: { type: "int", version: true },
     },
 });

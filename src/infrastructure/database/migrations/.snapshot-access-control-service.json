@@ -13,7 +13,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "gen_random_uuid()",
           "mappedType": "uuid"
         },
         "realm": {
@@ -23,7 +22,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "default": "null",
           "mappedType": "uuid"
         },
         "entity": {
@@ -61,7 +59,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "default": "null",
           "mappedType": "text"
         },
         "patch": {
@@ -71,7 +68,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "default": "null",
           "mappedType": "json"
         },
         "ip": {
@@ -136,7 +132,6 @@
           "primary": false,
           "nullable": false,
           "length": 3,
-          "default": "now()",
           "mappedType": "datetime"
         }
       },
@@ -199,7 +194,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "gen_random_uuid()",
           "mappedType": "uuid"
         },
         "is_system_managed": {
@@ -209,7 +203,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "code": {
@@ -241,17 +234,6 @@
           "nullable": true,
           "mappedType": "text"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "default": "null",
-          "mappedType": "datetime"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -260,7 +242,16 @@
           "primary": false,
           "nullable": false,
           "length": 3,
-          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
           "mappedType": "datetime"
         },
         "last_actions": {
@@ -270,7 +261,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "'{}'",
           "mappedType": "json"
         },
         "is_revoked": {
@@ -280,7 +270,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "version": {
@@ -340,7 +329,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "gen_random_uuid()",
           "mappedType": "uuid"
         },
         "is_system_managed": {
@@ -350,7 +338,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "code": {
@@ -389,19 +376,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "default": "null",
           "mappedType": "uuid"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "default": "null",
-          "mappedType": "datetime"
         },
         "created_at": {
           "name": "created_at",
@@ -411,7 +386,16 @@
           "primary": false,
           "nullable": false,
           "length": 3,
-          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
           "mappedType": "datetime"
         },
         "last_actions": {
@@ -421,7 +405,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "'{}'",
           "mappedType": "json"
         },
         "is_revoked": {
@@ -431,7 +414,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "version": {
@@ -513,7 +495,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "gen_random_uuid()",
           "mappedType": "uuid"
         },
         "account_id": {
@@ -556,17 +537,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "default": "null",
-          "mappedType": "datetime"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -575,7 +545,16 @@
           "primary": false,
           "nullable": false,
           "length": 3,
-          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
           "mappedType": "datetime"
         },
         "last_actions": {
@@ -585,7 +564,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "'{}'",
           "mappedType": "json"
         },
         "is_revoked": {
@@ -595,7 +573,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "version": {
@@ -697,7 +674,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "gen_random_uuid()",
           "mappedType": "uuid"
         },
         "actor_type": {
@@ -727,26 +703,6 @@
           ],
           "mappedType": "enum"
         },
-        "is_system_managed": {
-          "name": "is_system_managed",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "false",
-          "mappedType": "boolean"
-        },
-        "non_delegable": {
-          "name": "non_delegable",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "false",
-          "mappedType": "boolean"
-        },
         "code": {
           "name": "code",
           "type": "varchar(128)",
@@ -767,6 +723,24 @@
           "length": 255,
           "mappedType": "string"
         },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
+        "non_delegable": {
+          "name": "non_delegable",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
         "description": {
           "name": "description",
           "type": "text",
@@ -785,17 +759,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "default": "null",
-          "mappedType": "datetime"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -804,7 +767,16 @@
           "primary": false,
           "nullable": false,
           "length": 3,
-          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
           "mappedType": "datetime"
         },
         "last_actions": {
@@ -814,7 +786,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "'{}'",
           "mappedType": "json"
         },
         "is_revoked": {
@@ -824,7 +795,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "version": {
@@ -899,7 +869,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "gen_random_uuid()",
           "mappedType": "uuid"
         },
         "account_id": {
@@ -918,7 +887,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "role_id": {
@@ -939,17 +907,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "default": "null",
-          "mappedType": "datetime"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -958,7 +915,16 @@
           "primary": false,
           "nullable": false,
           "length": 3,
-          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
           "mappedType": "datetime"
         },
         "last_actions": {
@@ -968,7 +934,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "'{}'",
           "mappedType": "json"
         },
         "is_revoked": {
@@ -978,7 +943,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "version": {
@@ -1201,7 +1165,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "gen_random_uuid()",
           "mappedType": "uuid"
         },
         "is_system_managed": {
@@ -1211,18 +1174,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
-        },
-        "max_allowed": {
-          "name": "max_allowed",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "1",
-          "mappedType": "integer"
         },
         "code": {
           "name": "code",
@@ -1253,6 +1205,15 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "max_allowed": {
+          "name": "max_allowed",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
         "realm_id": {
           "name": "realm_id",
           "type": "uuid",
@@ -1262,17 +1223,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "default": "null",
-          "mappedType": "datetime"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -1281,7 +1231,16 @@
           "primary": false,
           "nullable": false,
           "length": 3,
-          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
           "mappedType": "datetime"
         },
         "last_actions": {
@@ -1291,7 +1250,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "'{}'",
           "mappedType": "json"
         },
         "is_revoked": {
@@ -1301,7 +1259,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "version": {
@@ -1367,7 +1324,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "gen_random_uuid()",
           "mappedType": "uuid"
         },
         "is_system_managed": {
@@ -1377,7 +1333,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "group_id": {
@@ -1398,17 +1353,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "default": "null",
-          "mappedType": "datetime"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -1417,7 +1361,16 @@
           "primary": false,
           "nullable": false,
           "length": 3,
-          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
           "mappedType": "datetime"
         },
         "last_actions": {
@@ -1427,7 +1380,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "'{}'",
           "mappedType": "json"
         },
         "is_revoked": {
@@ -1437,7 +1389,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "version": {
@@ -1526,7 +1477,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "gen_random_uuid()",
           "mappedType": "uuid"
         },
         "is_system_managed": {
@@ -1536,7 +1486,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "depth_limit": {
@@ -1546,7 +1495,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "0",
           "mappedType": "smallint"
         },
         "description": {
@@ -1585,17 +1533,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "default": "null",
-          "mappedType": "datetime"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -1604,7 +1541,16 @@
           "primary": false,
           "nullable": false,
           "length": 3,
-          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
           "mappedType": "datetime"
         },
         "last_actions": {
@@ -1614,7 +1560,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "'{}'",
           "mappedType": "json"
         },
         "is_revoked": {
@@ -1624,7 +1569,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "version": {
@@ -1739,7 +1683,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "gen_random_uuid()",
           "mappedType": "uuid"
         },
         "is_system_managed": {
@@ -1749,7 +1692,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "role_id": {
@@ -1779,17 +1721,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "default": "null",
-          "mappedType": "datetime"
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -1798,7 +1729,16 @@
           "primary": false,
           "nullable": false,
           "length": 3,
-          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
           "mappedType": "datetime"
         },
         "last_actions": {
@@ -1808,7 +1748,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "'{}'",
           "mappedType": "json"
         },
         "is_revoked": {
@@ -1818,7 +1757,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "false",
           "mappedType": "boolean"
         },
         "version": {

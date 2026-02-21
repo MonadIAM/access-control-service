@@ -1,14 +1,18 @@
+import { randomUUID } from "node:crypto";
+
 import { EntityException } from "~common/exceptions";
 
 import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
 
 export class AccountRoleAssignment {
-    private readonly dictionaryPath = "entities.account-role-assignment";
+    private get dictionaryPath(): string {
+        return "entities.account-role-assignment";
+    }
 
-    public id?: string;
+    public id: string;
+    public createdAt: Date;
     public updatedAt?: Date;
-    public createdAt?: Date;
     public version: number = 1;
 
     public accountId: string;
@@ -20,6 +24,9 @@ export class AccountRoleAssignment {
     public role: Role;
 
     public constructor(props: Entities.AccountRoleAssignment.ConstructorProps) {
+        this.createdAt = new Date();
+        this.id = randomUUID();
+
         this.lastActions = { create: { by: { id: props.actor } } };
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;

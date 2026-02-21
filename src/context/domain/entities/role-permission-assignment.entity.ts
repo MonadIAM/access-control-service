@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { EntityException } from "~common/exceptions";
 
 import { Permission } from "./permission.entity";
@@ -9,8 +11,8 @@ export class RolePermissionAssignment {
         return "entities.role-permission-assignment";
     }
 
-    public id?: string;
-    public createdAt?: Date;
+    public id: string;
+    public createdAt: Date;
     public updatedAt?: Date;
     public version: number = 1;
 
@@ -23,6 +25,9 @@ export class RolePermissionAssignment {
     public role: Role;
 
     public constructor(props: Entities.RolePermissionAssignment.ConstructorProps) {
+        this.createdAt = new Date();
+        this.id = randomUUID();
+
         this.lastActions = { create: { by: { id: props.actor } } };
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;
