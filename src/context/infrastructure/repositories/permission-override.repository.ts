@@ -46,6 +46,18 @@ export class PermissionOverrideRepository
         }
     }
 
+    public async find<P extends string = never, F extends string = "*">(
+        props: Repositories.PermissionOverride.Find<P, F>,
+    ): Promise<Loaded<PermissionOverride, P, F>[]> {
+        try {
+            const { transaction, options, where } = props;
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.find(PermissionOverride, where, options);
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
     public async findMany<P extends string = never, F extends string = "*">(
         props: Repositories.PermissionOverride.FindMany<P, F>,
     ): Promise<[Loaded<PermissionOverride, P, F>[], number]> {
