@@ -1,5 +1,5 @@
 import { CountryCode } from "libphonenumber-js/max";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import {
     ValidationOptions,
     ValidateNested,
@@ -149,7 +149,16 @@ export abstract class StandardValidationDecorators {
     }
 
     public static IsBoolean(options?: ValidationOptions, label?: string): PropertyDecorator {
-        return (target, key) => IsBoolean(this.wrap("IS_BOOLEAN", { property: key }, options, label))(target, key);
+        return (target, key) => {
+            Transform(({ value }) => {
+                if (typeof value === "boolean") {
+                    return value;
+                } else {
+                    return /^true|false$/.test(value) && value === "true";
+                }
+            })(target, key);
+            return IsBoolean(this.wrap("IS_BOOLEAN", { property: key }, options, label))(target, key);
+        };
     }
 
     public static IsDate(options?: ValidationOptions, label?: string): PropertyDecorator {

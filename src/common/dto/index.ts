@@ -5,5 +5,6 @@ export { BaseReadQueryDTO } from "./base-read-query.dto";
 export { OrdinalFilterDTO } from "./ordinal-filter.dto";
 export { BaseListDTO } from "./list-response-body.dto";
 export { StringFilterDTO } from "./string-filter.dto";
+export { EnvironmentVariablesDTO } from "./env.dto";
 export { LinkFilterDTO } from "./link-filter.dto";
 export { PaginationDTO } from "./pagination.dto";
