@@ -5,11 +5,11 @@ import { Validator } from "~common/validator";
 
 export class RevokePermissionBodyDTO {
     @Expose()
-    @Validator.IsArray()
+    @Validator.IsUniqueArray()
     @Validator.ArrayMinSize(1)
     @Validator.ArrayMaxSize(50)
-    @Validator.IsUUID("all", { each: true })
-    @ApiProperty({ required: true, type: String })
+    @Validator.IsUUID("4", { each: true })
+    @ApiProperty({ required: true, type: [String], format: "uuid" })
     public identifiers!: string[];
 
     @Expose()

@@ -5,16 +5,16 @@ import { Validator } from "~common/validator";
 
 export class GetViolationDetailsBodyDTO {
     @Expose()
+    @Validator.IsUniqueArray()
+    @Validator.ArrayMinSize(1)
+    @Validator.IsUUID("4", { each: true })
+    @ApiProperty({ required: true, type: [String], format: "uuid" })
+    public roles!: string[];
+
+    @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
     public account!: string;
-
-    @Expose()
-    @Validator.IsArray()
-    @Validator.ArrayMinSize(1)
-    @Validator.IsUUID("all", { each: true })
-    @ApiProperty({ required: true, type: [String], format: "uuid" })
-    public roles!: string[];
 }
 
 export class GetViolationDetailsQueryDTO {

@@ -42,8 +42,8 @@ export class CreateRoleBodyDTO {
     public parent!: string;
 
     @Expose()
-    @Validator.IsArray()
-    @Validator.IsUUID("all", { each: true })
+    @Validator.IsUniqueArray()
+    @Validator.IsUUID("4", { each: true })
     @ApiProperty({ required: true, type: [String], format: "uuid" })
     public children!: string[];
 }
