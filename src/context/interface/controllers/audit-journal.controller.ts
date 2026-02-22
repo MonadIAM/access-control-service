@@ -28,7 +28,7 @@ export class AuditJournalController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a audit-journal event by identifier" })
+    @ApiOperation({ summary: "Returns a audit journal event by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: AuditJournalDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(@Query() { event }: GetAuditJournalByIdQueryDTO): Promise<AuditJournalDTO> {
@@ -39,7 +39,7 @@ export class AuditJournalController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a paginated list of audit-journal events" })
+    @ApiOperation({ summary: "Returns a paginated list of audit journal events" })
     @ApiResponse({ status: HttpStatus.OK, type: AuditJournalListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(@Body() { pagination, filters, sort }: GetAuditJournalsListBodyDTO): Promise<AuditJournalListDTO> {

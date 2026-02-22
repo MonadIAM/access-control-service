@@ -34,7 +34,7 @@ export class RoleDelegationPolicyController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a role-delegation-policy by identifier" })
+    @ApiOperation({ summary: "Returns a role delegation policy by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDelegationPolicyDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(
@@ -47,7 +47,7 @@ export class RoleDelegationPolicyController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a paginated list of role-delegation-policies" })
+    @ApiOperation({ summary: "Returns a paginated list of role delegation policies" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDelegationPolicyListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(

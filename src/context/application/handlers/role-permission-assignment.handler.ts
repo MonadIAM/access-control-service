@@ -13,7 +13,7 @@ import {
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RolePermissionAssignmentHandler implements Handlers.RolePermissionAssignment.Contract {
-    private readonly dictionaryPath = "handlers.rolePermissionAssignment";
+    private readonly dictionaryPath = "handlers.role-permission-assignment";
     private readonly resource = "RolePermissionAssignment";
 
     public constructor(

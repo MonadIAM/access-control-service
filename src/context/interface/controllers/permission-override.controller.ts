@@ -58,7 +58,7 @@ export class PermissionOverrideController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a permission-override by identifier" })
+    @ApiOperation({ summary: "Returns a permission override by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionOverrideDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(@Query() { override, realm, view }: GetPermissionOverrideByIdQueryDTO): Promise<PermissionOverrideDTO> {
@@ -69,7 +69,7 @@ export class PermissionOverrideController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a paginated list of permission-overrides" })
+    @ApiOperation({ summary: "Returns a paginated list of permission overrides" })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionOverrideListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(
@@ -83,7 +83,7 @@ export class PermissionOverrideController extends BaseController {
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "Creates a new permission" })
+    @ApiOperation({ summary: "Creates a new permission override" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -103,7 +103,7 @@ export class PermissionOverrideController extends BaseController {
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Revokes a non-system permission-override/s" })
+    @ApiOperation({ summary: "Revokes a non-system permission override/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
@@ -119,7 +119,7 @@ export class PermissionOverrideController extends BaseController {
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Restores a non-system permission-override/s" })
+    @ApiOperation({ summary: "Restores a non-system permission override/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public restore(
@@ -135,7 +135,7 @@ export class PermissionOverrideController extends BaseController {
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system permission-override/s" })
+    @ApiOperation({ summary: "Permanently deletes a revoked non-system permission override/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(

@@ -13,7 +13,7 @@ import {
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Contract {
-    private readonly dictionaryPath = "handlers.roleConflictMember";
+    private readonly dictionaryPath = "handlers.role-conflict-member";
     private readonly resource = "RoleConflictMember";
 
     public constructor(

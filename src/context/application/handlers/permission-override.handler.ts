@@ -12,7 +12,7 @@ import {
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideHandler implements Handlers.PermissionOverride.Contract {
-    private readonly dictionaryPath = "handlers.permissionOverride";
+    private readonly dictionaryPath = "handlers.permission-override";
     private readonly resource = "PermissionOverride";
 
     public constructor(

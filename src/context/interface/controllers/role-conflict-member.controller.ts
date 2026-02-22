@@ -41,7 +41,7 @@ export class RoleConflictMemberController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a role-conflict-member by identifier" })
+    @ApiOperation({ summary: "Returns a role conflict member by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictMemberDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(@Query() { member, view }: GetRoleConflictMemberByIdQueryDTO): Promise<RoleConflictMemberDTO> {
@@ -52,7 +52,7 @@ export class RoleConflictMemberController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a paginated list of role-conflict-members" })
+    @ApiOperation({ summary: "Returns a paginated list of role conflict members" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictMemberListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(
@@ -66,7 +66,7 @@ export class RoleConflictMemberController extends BaseController {
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "Creates a new role-conflict-member assignment" })
+    @ApiOperation({ summary: "Creates a new role conflict member/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -86,7 +86,7 @@ export class RoleConflictMemberController extends BaseController {
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system role-conflict-member assignment/s" })
+    @ApiOperation({ summary: "Permanently deletes a revoked non-system role conflict member/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(

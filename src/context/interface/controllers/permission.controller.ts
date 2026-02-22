@@ -186,7 +186,7 @@ export class PermissionController extends BaseController {
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system realm/s" })
+    @ApiOperation({ summary: "Permanently deletes a revoked non-system permission/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(

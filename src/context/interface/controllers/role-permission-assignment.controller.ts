@@ -58,7 +58,7 @@ export class RolePermissionAssignmentController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a role-permission-assignment by identifier" })
+    @ApiOperation({ summary: "Returns a role-permission assignment by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RolePermissionAssignmentDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(
@@ -71,7 +71,7 @@ export class RolePermissionAssignmentController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a paginated list of role-permission-assignments" })
+    @ApiOperation({ summary: "Returns a paginated list of role-permission assignments" })
     @ApiResponse({ status: HttpStatus.OK, type: RolePermissionAssignmentListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(

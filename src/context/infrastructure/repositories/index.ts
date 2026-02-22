@@ -1,3 +1,5 @@
+import { Provider } from "@nestjs/common";
+
 import { RolePermissionAssignmentRepository } from "./role-permission-assignment.repository";
 import { AccountRoleAssignmentRepository } from "./account-role-assignment.repository";
 import { RoleDelegationPolicyRepository } from "./role-delegation-policy.repository";
@@ -22,7 +24,7 @@ export const PERMISSION_REPOSITORY = Symbol("Repositories.Permission.Contract");
 export const REALM_REPOSITORY = Symbol("Repositories.Realm.Contract");
 export const ROLE_REPOSITORY = Symbol("Repositories.Role.Contract");
 
-export const REPOSITORIES = [
+export const REPOSITORIES: Provider[] = [
     {
         provide: ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
         useClass: RolePermissionAssignmentRepository,

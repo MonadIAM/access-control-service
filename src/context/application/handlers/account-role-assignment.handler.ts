@@ -12,7 +12,7 @@ import {
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignment.Contract {
-    private readonly dictionaryPath = "handlers.accountRoleAssignment";
+    private readonly dictionaryPath = "handlers.account-role-assignment";
     private readonly resource = "AccountRoleAssignment";
 
     public constructor(

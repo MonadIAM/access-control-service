@@ -58,7 +58,7 @@ export class AccountRoleAssignmentController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a account-role-assignment by identifier" })
+    @ApiOperation({ summary: "Returns a account role assignment by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: AccountRoleAssignmentDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(
@@ -71,7 +71,7 @@ export class AccountRoleAssignmentController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a paginated list of account-role-assignments" })
+    @ApiOperation({ summary: "Returns a paginated list of account role assignments" })
     @ApiResponse({ status: HttpStatus.OK, type: AccountRoleAssignmentListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(
@@ -85,7 +85,7 @@ export class AccountRoleAssignmentController extends BaseController {
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "Creates a new account-role assignment" })
+    @ApiOperation({ summary: "Creates a new account role assignment" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -105,7 +105,7 @@ export class AccountRoleAssignmentController extends BaseController {
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Revokes a non-system account-role assignment/s" })
+    @ApiOperation({ summary: "Revokes a non-system account role assignment/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
@@ -121,7 +121,7 @@ export class AccountRoleAssignmentController extends BaseController {
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Restores a non-system account-role assignment/s" })
+    @ApiOperation({ summary: "Restores a non-system account role assignment/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public restore(
@@ -137,7 +137,7 @@ export class AccountRoleAssignmentController extends BaseController {
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system account-role assignment/s" })
+    @ApiOperation({ summary: "Permanently deletes a revoked non-system account role assignment/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(

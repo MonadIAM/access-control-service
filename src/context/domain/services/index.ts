@@ -1,3 +1,5 @@
+import { Provider } from "@nestjs/common";
+
 import { RolePermissionAssignmentService } from "./role-permission-assignment.service";
 import { AccountRoleAssignmentService } from "./account-role-assignment.service";
 import { RoleConflictMemberService } from "./role-conflict-member.service";
@@ -16,7 +18,7 @@ export const PERMISSION_SERVICE = Symbol("Services.Permission.Contract");
 export const REALM_SERVICE = Symbol("Services.Realm.Contract");
 export const ROLE_SERVICE = Symbol("Services.Role.Contract");
 
-export const SERVICES = [
+export const SERVICES: Provider[] = [
     {
         provide: ROLE_PERMISSION_ASSIGNMENT_SERVICE,
         useClass: RolePermissionAssignmentService,

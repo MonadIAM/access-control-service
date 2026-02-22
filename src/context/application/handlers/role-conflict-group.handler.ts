@@ -8,7 +8,7 @@ import { HandlerException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Contract {
-    private readonly dictionaryPath = "handlers.roleConflictGroup";
+    private readonly dictionaryPath = "handlers.role-conflict-group";
     private readonly resource = "RoleConflictGroup";
 
     public constructor(

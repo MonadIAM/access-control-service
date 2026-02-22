@@ -63,7 +63,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a role-conflict-group by identifier" })
+    @ApiOperation({ summary: "Returns a role conflict group by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(@Query() { group, realm, view }: GetRoleConflictGroupByIdQueryDTO): Promise<RoleConflictGroupDTO> {
@@ -74,7 +74,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a paginated list of role-conflict-groups" })
+    @ApiOperation({ summary: "Returns a paginated list of role conflict groups" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupPaginatedListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(
@@ -88,7 +88,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Post("violation-details")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Returns a list of SoD violation-details" })
+    @ApiOperation({ summary: "Returns a list of SoD violation details" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public findViolationDetails(
@@ -102,7 +102,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: "Creates a new role-conflict-group assignment" })
+    @ApiOperation({ summary: "Creates a new role conflict group" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -122,7 +122,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Patch("update")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Updates role-conflict-group metadata" })
+    @ApiOperation({ summary: "Updates role conflict group metadata" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public updateMetadata(
@@ -138,7 +138,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Revokes a non-system role-conflict-group assignment/s" })
+    @ApiOperation({ summary: "Revokes a non-system role conflict group/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
@@ -154,7 +154,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Restores a non-system role-conflict-group assignment/s" })
+    @ApiOperation({ summary: "Restores a non-system role conflict group/s" })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public restore(
@@ -170,7 +170,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system role-conflict-group assignment/s" })
+    @ApiOperation({ summary: "Permanently deletes a revoked non-system role conflict group/s" })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public purge(

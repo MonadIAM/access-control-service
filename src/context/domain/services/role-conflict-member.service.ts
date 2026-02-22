@@ -9,7 +9,7 @@ import { ServiceException } from "~common/exceptions";
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberService implements Services.RoleConflictMember.Contract {
     private readonly entityType = AccessControlEntityType.CONFLICT_MEMBER;
-    private readonly dictionaryPath = "services.roleConflictMember";
+    private readonly dictionaryPath = "services.role-conflict-member";
 
     public constructor(
         @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
