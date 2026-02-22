@@ -4,7 +4,7 @@ import { I18nService } from "nestjs-i18n";
 
 import { AUDIT_JOURNAL_REPOSITORY } from "~context/infrastructure/repositories";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ErrorResponseBodyDTO } from "~common/dto";
+import { EndpointExceptions } from "~common/decorators";
 import { BaseController } from "~common/abstract";
 
 import {
@@ -29,8 +29,8 @@ export class AuditJournalController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a audit-journal event by identifier" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: AuditJournalDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(@Query() { event }: GetAuditJournalByIdQueryDTO): Promise<AuditJournalDTO> {
         return this.auditJournalRepository
             .findUniqueOrThrow({ where: { id: event } })
@@ -40,8 +40,8 @@ export class AuditJournalController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of audit-journal events" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: AuditJournalListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(@Body() { pagination, filters, sort }: GetAuditJournalsListBodyDTO): Promise<AuditJournalListDTO> {
         return this.auditJournalRepository
             .findMany({ pagination, filters, sort })

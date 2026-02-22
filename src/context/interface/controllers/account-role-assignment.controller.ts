@@ -16,10 +16,10 @@ import {
 
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { ACCOUNT_ROLE_ASSIGNMENT_HANDLER } from "~context/application/handlers";
-import { ErrorResponseBodyDTO, SuccessMessageDTO } from "~common/dto";
+import { EndpointExceptions, ExtractContext } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
+import { SuccessMessageDTO } from "~common/dto";
 
 import {
     GetAccountRoleAssignmentsListQueryDTO,
@@ -59,8 +59,8 @@ export class AccountRoleAssignmentController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a account-role-assignment by identifier" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: AccountRoleAssignmentDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(
         @Query() { assignment, realm, view }: GetAccountRoleAssignmentByIdQueryDTO,
     ): Promise<AccountRoleAssignmentDTO> {
@@ -72,8 +72,8 @@ export class AccountRoleAssignmentController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of account-role-assignments" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: AccountRoleAssignmentListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(
         @Query() { realm, view }: GetAccountRoleAssignmentsListQueryDTO,
         @Body() { pagination, filters, sort }: GetAccountRoleAssignmentsListBodyDTO,
@@ -86,8 +86,13 @@ export class AccountRoleAssignmentController extends BaseController {
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: "Creates a new account-role assignment" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        HttpStatus.BAD_REQUEST,
+        HttpStatus.CONFLICT,
+    )
     public create(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreateAccountRoleAssignmentQueryDTO,
@@ -101,8 +106,8 @@ export class AccountRoleAssignmentController extends BaseController {
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Revokes a non-system account-role assignment/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokeAccountRoleAssignmentQueryDTO,
@@ -117,8 +122,8 @@ export class AccountRoleAssignmentController extends BaseController {
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Restores a non-system account-role assignment/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public restore(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RestoreAccountRoleAssignmentQueryDTO,
@@ -133,8 +138,8 @@ export class AccountRoleAssignmentController extends BaseController {
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system account-role assignment/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgeAccountRoleAssignmentQueryDTO,

@@ -15,11 +15,11 @@ import {
 } from "@nestjs/common";
 
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
-import { ErrorResponseBodyDTO, SuccessMessageDTO } from "~common/dto";
+import { EndpointExceptions, ExtractContext } from "~common/decorators";
 import { REALM_HANDLER } from "~context/application/handlers";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
+import { SuccessMessageDTO } from "~common/dto";
 
 import {
     GetRealmsLookupListQueryDTO,
@@ -54,8 +54,8 @@ export class RealmController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a realm by identifier" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RealmDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(@Query() { realm }: GetRealmByIdQueryDTO): Promise<RealmDTO> {
         return this.realmRepository
             .findUniqueOrThrow({ where: { id: realm } })
@@ -65,8 +65,8 @@ export class RealmController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of realms" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RealmListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(@Body() { pagination, filters, sort }: GetRealmsListBodyDTO): Promise<RealmListDTO> {
         return this.realmRepository
             .findMany({ pagination, filters, sort })
@@ -76,8 +76,8 @@ export class RealmController extends BaseController {
     @Post("list/lookup")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a lookup list of realms" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RealmLookupListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getLookupList(
         @Query() { term }: GetRealmsLookupListQueryDTO,
         @Body() { pagination }: GetRealmsLookupListBodyDTO,
@@ -90,8 +90,13 @@ export class RealmController extends BaseController {
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: "Creates a new realm" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        HttpStatus.BAD_REQUEST,
+        HttpStatus.CONFLICT,
+    )
     public create(
         @ExtractContext() context: RequestContext,
         @Body() input: CreateRealmBodyDTO,
@@ -104,8 +109,8 @@ export class RealmController extends BaseController {
     @Patch("update")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Updates realm metadata" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public updateMetadata(
         @ExtractContext() context: RequestContext,
         @Query() { id }: UpdateRealmQueryDTO,
@@ -120,8 +125,8 @@ export class RealmController extends BaseController {
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Revokes a non-system realm/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
         @ExtractContext() context: RequestContext,
         @Body() input: RevokeRealmBodyDTO,
@@ -135,8 +140,8 @@ export class RealmController extends BaseController {
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Restores a non-system realm/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public restore(
         @ExtractContext() context: RequestContext,
         @Body() input: RestoreRealmBodyDTO,
@@ -150,8 +155,8 @@ export class RealmController extends BaseController {
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system realm/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(
         @ExtractContext() context: RequestContext,
         @Body() input: PurgeRealmBodyDTO,

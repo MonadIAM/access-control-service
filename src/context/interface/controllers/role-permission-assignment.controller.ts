@@ -16,10 +16,10 @@ import {
 
 import { ROLE_PERMISSION_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_PERMISSION_ASSIGNMENT_HANDLER } from "~context/application/handlers";
-import { ErrorResponseBodyDTO, SuccessMessageDTO } from "~common/dto";
+import { EndpointExceptions, ExtractContext } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
+import { SuccessMessageDTO } from "~common/dto";
 
 import {
     GetRolePermissionAssignmentsListQueryDTO,
@@ -59,8 +59,8 @@ export class RolePermissionAssignmentController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a role-permission-assignment by identifier" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RolePermissionAssignmentDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(
         @Query() { assignment, realm, view }: GetRolePermissionAssignmentByIdQueryDTO,
     ): Promise<RolePermissionAssignmentDTO> {
@@ -72,8 +72,8 @@ export class RolePermissionAssignmentController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of role-permission-assignments" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RolePermissionAssignmentListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(
         @Query() { realm, view }: GetRolePermissionAssignmentsListQueryDTO,
         @Body() { pagination, filters, sort }: GetRolePermissionAssignmentsListBodyDTO,
@@ -86,8 +86,13 @@ export class RolePermissionAssignmentController extends BaseController {
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: "Creates a new role-permission assignment" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        HttpStatus.BAD_REQUEST,
+        HttpStatus.CONFLICT,
+    )
     public create(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreateRolePermissionAssignmentQueryDTO,
@@ -101,8 +106,8 @@ export class RolePermissionAssignmentController extends BaseController {
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Revokes a non-system role-permission assignment/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokeRolePermissionAssignmentQueryDTO,
@@ -117,8 +122,8 @@ export class RolePermissionAssignmentController extends BaseController {
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Restores a non-system role-permission assignment/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public restore(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RestoreRolePermissionAssignmentQueryDTO,
@@ -133,8 +138,8 @@ export class RolePermissionAssignmentController extends BaseController {
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role-permission assignment/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgeRolePermissionAssignmentQueryDTO,

@@ -15,11 +15,11 @@ import {
 } from "@nestjs/common";
 
 import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
-import { ErrorResponseBodyDTO, SuccessMessageDTO } from "~common/dto";
+import { EndpointExceptions, ExtractContext } from "~common/decorators";
 import { PERMISSION_HANDLER } from "~context/application/handlers";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
+import { SuccessMessageDTO } from "~common/dto";
 
 import {
     GetEffectivePermissionsListQueryDTO,
@@ -66,8 +66,8 @@ export class PermissionController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a permission by identifier" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(@Query() { realm, permission, view }: GetPermissionByIdQueryDTO): Promise<PermissionDTO> {
         return this.permissionRepository
             .findUniqueOrThrow({ options: { populate: this.populate[view] }, where: { id: permission, realm } })
@@ -77,8 +77,8 @@ export class PermissionController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of permissions" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(
         @Query() { realm, view }: GetPermissionsListQueryDTO,
         @Body() { pagination, filters, sort }: GetPermissionsListBodyDTO,
@@ -91,8 +91,8 @@ export class PermissionController extends BaseController {
     @Post("list/lookup")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a lookup list of permissions" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionLookupListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getLookupList(
         @Query() { realm, term }: GetPermissionsLookupListQueryDTO,
         @Body() { pagination }: GetPermissionsLookupListBodyDTO,
@@ -105,8 +105,8 @@ export class PermissionController extends BaseController {
     @Post("list/effective")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of effective permissions for the account" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getEffectiveList(
         @Query() { account, realm }: GetEffectivePermissionsListQueryDTO,
         @Body() { pagination, filters, sort }: GetEffectivePermissionsListBodyDTO,
@@ -119,8 +119,13 @@ export class PermissionController extends BaseController {
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: "Creates a new permission" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        HttpStatus.BAD_REQUEST,
+        HttpStatus.CONFLICT,
+    )
     public create(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreatePermissionQueryDTO,
@@ -134,8 +139,8 @@ export class PermissionController extends BaseController {
     @Patch("update")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Updates permission metadata" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public updateMetadata(
         @ExtractContext() context: RequestContext,
         @Query() { realm, id }: UpdatePermissionQueryDTO,
@@ -150,8 +155,8 @@ export class PermissionController extends BaseController {
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Revokes a non-system permission/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokePermissionQueryDTO,
@@ -166,8 +171,8 @@ export class PermissionController extends BaseController {
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Restores a non-system permission/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public restore(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RestorePermissionQueryDTO,
@@ -182,8 +187,8 @@ export class PermissionController extends BaseController {
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system realm/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgePermissionQueryDTO,

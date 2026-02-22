@@ -2,11 +2,11 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Delete, Inject, Quer
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 
-import { BaseReadQueryDTO, ErrorResponseBodyDTO, SuccessMessageDTO } from "~common/dto";
 import { ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_CONFLICT_MEMBER_HANDLER } from "~context/application/handlers";
+import { EndpointExceptions, ExtractContext } from "~common/decorators";
+import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
 
 import {
@@ -42,8 +42,8 @@ export class RoleConflictMemberController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a role-conflict-member by identifier" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictMemberDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(@Query() { member, view }: GetRoleConflictMemberByIdQueryDTO): Promise<RoleConflictMemberDTO> {
         return this.roleConflictMemberRepository
             .findUniqueOrThrow({ options: { populate: this.populate[view] }, where: { id: member } })
@@ -53,8 +53,8 @@ export class RoleConflictMemberController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of role-conflict-members" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictMemberListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(
         @Query() { view }: BaseReadQueryDTO,
         @Body() { pagination, filters, sort }: GetRoleConflictMembersListBodyDTO,
@@ -67,8 +67,13 @@ export class RoleConflictMemberController extends BaseController {
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: "Creates a new role-conflict-member assignment" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        HttpStatus.BAD_REQUEST,
+        HttpStatus.CONFLICT,
+    )
     public create(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreateRoleConflictMemberQueryDTO,
@@ -82,8 +87,8 @@ export class RoleConflictMemberController extends BaseController {
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role-conflict-member assignment/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgeRoleConflictMemberQueryDTO,

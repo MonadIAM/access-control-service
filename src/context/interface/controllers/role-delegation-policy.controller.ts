@@ -4,7 +4,7 @@ import { I18nService } from "nestjs-i18n";
 
 import { ROLE_DELEGATION_POLICY_REPOSITORY } from "~context/infrastructure/repositories";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ErrorResponseBodyDTO } from "~common/dto";
+import { EndpointExceptions } from "~common/decorators";
 import { BaseController } from "~common/abstract";
 
 import {
@@ -35,8 +35,8 @@ export class RoleDelegationPolicyController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a role-delegation-policy by identifier" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDelegationPolicyDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(
         @Query() { policy, realm, view }: GetRoleDelegationPolicyByIdQueryDTO,
     ): Promise<RoleDelegationPolicyDTO> {
@@ -48,8 +48,8 @@ export class RoleDelegationPolicyController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of role-delegation-policies" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDelegationPolicyListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(
         @Query() { realm, view }: GetRoleDelegationPoliciesListQueryDTO,
         @Body() { pagination, filters, sort }: GetRoleDelegationPoliciesListBodyDTO,

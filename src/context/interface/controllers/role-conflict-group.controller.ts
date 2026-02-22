@@ -16,10 +16,10 @@ import {
 
 import { ROLE_CONFLICT_GROUP_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_CONFLICT_GROUP_HANDLER } from "~context/application/handlers";
-import { ErrorResponseBodyDTO, SuccessMessageDTO } from "~common/dto";
+import { EndpointExceptions, ExtractContext } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ExtractContext } from "~common/decorators";
 import { BaseController } from "~common/abstract";
+import { SuccessMessageDTO } from "~common/dto";
 
 import {
     RoleConflictGroupPaginatedListDTO,
@@ -64,8 +64,8 @@ export class RoleConflictGroupController extends BaseController {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a role-conflict-group by identifier" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(@Query() { group, realm, view }: GetRoleConflictGroupByIdQueryDTO): Promise<RoleConflictGroupDTO> {
         return this.roleConflictGroupRepository
             .findUniqueOrThrow({ options: { populate: this.populate[view] }, where: { id: group, realm } })
@@ -75,8 +75,8 @@ export class RoleConflictGroupController extends BaseController {
     @Post("list")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a paginated list of role-conflict-groups" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupPaginatedListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(
         @Query() { realm, view }: GetRoleConflictGroupsListQueryDTO,
         @Body() { pagination, filters, sort }: GetRoleConflictGroupsListBodyDTO,
@@ -89,8 +89,8 @@ export class RoleConflictGroupController extends BaseController {
     @Post("violation-details")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Returns a list of SoD violation-details" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupListDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public findViolationDetails(
         @Query() { realm }: GetViolationDetailsQueryDTO,
         @Body() { account, roles }: GetViolationDetailsBodyDTO,
@@ -103,8 +103,13 @@ export class RoleConflictGroupController extends BaseController {
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: "Creates a new role-conflict-group assignment" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        HttpStatus.BAD_REQUEST,
+        HttpStatus.CONFLICT,
+    )
     public create(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreateRoleConflictGroupQueryDTO,
@@ -118,8 +123,8 @@ export class RoleConflictGroupController extends BaseController {
     @Patch("update")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Updates role-conflict-group metadata" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public updateMetadata(
         @ExtractContext() context: RequestContext,
         @Query() { realm, id }: UpdateRoleConflictGroupQueryDTO,
@@ -134,8 +139,8 @@ export class RoleConflictGroupController extends BaseController {
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Revokes a non-system role-conflict-group assignment/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokeRoleConflictGroupQueryDTO,
@@ -150,7 +155,7 @@ export class RoleConflictGroupController extends BaseController {
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Restores a non-system role-conflict-group assignment/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public restore(
         @ExtractContext() context: RequestContext,
@@ -166,7 +171,7 @@ export class RoleConflictGroupController extends BaseController {
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role-conflict-group assignment/s" })
-    @ApiResponse({ status: HttpStatus.BAD_REQUEST, type: ErrorResponseBodyDTO })
+    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public purge(
         @ExtractContext() context: RequestContext,
