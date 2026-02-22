@@ -1,22 +1,26 @@
 import { Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
+import { RoleConflictGroup, RoleConflictMember, AuditJournal } from "~context/domain/entities";
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
-import { RoleConflictGroup, AuditJournal } from "~context/domain/entities";
+import { ServiceException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupService implements Services.RoleConflictGroup.Contract {
     private readonly entityType = AccessControlEntityType.CONFLICT_GROUP;
+    private readonly dictionaryPath = "services.roleConflictGroup";
 
-    public constructor() {}
+    public constructor(private readonly configService: ConfigService) {}
 
     public async create({
         transaction,
         context: { userAgent, ip },
+        input: { members, ...input },
         realm,
         actor,
-        input,
     }: Services.RoleConflictGroup.Create): Promise<void> {
-        const entity = new RoleConflictGroup({
+        const limit = this.configService.getOrThrow<number>("MAX_CONFLECT_MEMBERS_COUNT");
+        const group = new RoleConflictGroup({
             description: input.description,
             maxAllowed: input.maxAllowed,
             code: input.code,
@@ -25,22 +29,49 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
             actor,
         });
 
-        transaction.persist(entity);
+        if (members.length > limit) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.`);
+        } else {
+            for (const role of members) {
+                const member = new RoleConflictMember({
+                    group,
+                    actor,
+                    role,
+                });
 
-        const auditEntity = new AuditJournal({
-            actionType: AccessControlActionType.CREATE,
-            entityType: this.entityType,
-            at: entity.createdAt,
-            entity: entity.id,
-            realm: realm.id,
-            userAgent,
-            by: actor,
-            ip,
-        });
+                transaction.persist(member);
 
-        transaction.persist(auditEntity);
+                const auditMember = new AuditJournal({
+                    entityType: AccessControlEntityType.CONFLICT_MEMBER,
+                    actionType: AccessControlActionType.CREATE,
+                    at: member.createdAt,
+                    entity: member.id,
+                    realm: realm.id,
+                    userAgent,
+                    by: actor,
+                    ip,
+                });
 
-        await transaction.flush();
+                transaction.persist(auditMember);
+            }
+
+            transaction.persist(group);
+
+            const auditGroup = new AuditJournal({
+                actionType: AccessControlActionType.CREATE,
+                entityType: this.entityType,
+                at: group.createdAt,
+                entity: group.id,
+                realm: realm.id,
+                userAgent,
+                by: actor,
+                ip,
+            });
+
+            transaction.persist(auditGroup);
+
+            await transaction.flush();
+        }
     }
 
     public async update({

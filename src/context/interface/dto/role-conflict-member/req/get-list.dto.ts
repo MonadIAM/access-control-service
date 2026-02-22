@@ -2,8 +2,8 @@ import { IsNotEmptyObject, ValidateIf } from "class-validator";
 import { Expose, Type } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 
+import { BaseReadQueryDTO, PaginationDTO } from "~common/dto";
 import { Validator } from "~common/validator";
-import { PaginationDTO } from "~common/dto";
 
 import { RoleConflictMembersFiltersDTO } from "../utils/filters.dto";
 import { RoleConflictMembersSortDTO } from "../utils/sort.dto";
@@ -32,4 +32,11 @@ export class GetRoleConflictMembersListBodyDTO {
     @Type(() => RoleConflictMembersSortDTO)
     @ApiProperty({ required: true, type: RoleConflictMembersSortDTO })
     public sort!: RoleConflictMembersSortDTO;
+}
+
+export class GetRoleConflictMembersListQueryDTO extends BaseReadQueryDTO {
+    @Expose()
+    @Validator.IsUUID()
+    @ApiProperty({ required: true, type: String, format: "uuid" })
+    public realm!: string;
 }

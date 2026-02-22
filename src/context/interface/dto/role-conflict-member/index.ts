@@ -1,4 +1,6 @@
-export { GetRoleConflictMembersListBodyDTO } from "./req/get-list.dto";
+export { GetRoleConflictMembersListQueryDTO, GetRoleConflictMembersListBodyDTO } from "./req/get-list.dto";
+export { CreateRoleConflictMemberQueryDTO, CreateRoleConflictMemberBodyDTO } from "./req/create.dto";
+export { PurgeRoleConflictMemberQueryDTO, PurgeRoleConflictMemberBodyDTO } from "./req/purge.dto";
 export { GetRoleConflictMemberByIdQueryDTO } from "./req/get-by-id.dto";
 
 export { RoleConflictMemberListDTO } from "./res/list.dto";

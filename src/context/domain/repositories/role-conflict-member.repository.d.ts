@@ -18,6 +18,10 @@ declare global {
                     props: FindUniqueOrThrow<P, F>,
                 ) => Promise<Loaded<Entity, P, F>>;
 
+                find: <P extends string = never, F extends string = "*">(
+                    props: Find<P, F>,
+                ) => Promise<Loaded<Entity, P, F>[]>;
+
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
@@ -30,6 +34,12 @@ declare global {
             };
 
             type FindUniqueOrThrow<P extends string, F extends string> = {
+                transaction?: EntityManager;
+                options?: FindOptions<Entity, P, F>;
+                where: FilterQuery<Entity>;
+            };
+
+            type Find<P extends string, F extends string> = {
                 transaction?: EntityManager;
                 options?: FindOptions<Entity, P, F>;
                 where: FilterQuery<Entity>;

@@ -57,9 +57,7 @@ export class RoleConflictMember {
     }
 
     public canPurge(): void {
-        if (!this.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_ACTIVE`);
-        } else if (this.isSystemManaged) {
+        if (this.isSystemManaged) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_SYSTEM`);
         }
     }
