@@ -26,7 +26,7 @@ declare namespace Handlers {
             actor: string;
             realm: string;
             input: {
-                patch: Partial<Entities.Role.MutableFields>;
+                patch: Partial<Entities.RoleConflictGroup.MutableFields>;
                 reason: string;
             };
             context: RequestContext;

@@ -95,4 +95,14 @@ export class RoleDelegationPolicy {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_SYSTEM`);
         }
     }
+
+    public canCreate(): void {
+        if (this.target.isRevoked) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
+        } else if (this.target.isSystemManaged) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
+        } else if (this.delegator.isRevoked) {
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.`);
+        }
+    }
 }

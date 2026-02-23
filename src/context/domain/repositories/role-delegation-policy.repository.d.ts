@@ -18,13 +18,16 @@ declare global {
                     props: FindUniqueOrThrow<P, F>,
                 ) => Promise<Loaded<Entity, P, F>>;
 
+                find: <P extends string = never, F extends string = "*">(
+                    props: Find<P, F>,
+                ) => Promise<Loaded<Entity, P, F>[]>;
+
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
 
                 existsTransitivePath: (props: ExistsTransitivePath) => Promise<boolean>;
                 isDelegationAllowed: (props: IsDelegationAllowed) => Promise<boolean>;
-                isUpwardGrant: (props: IsUpwardGrant) => Promise<boolean>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -34,6 +37,12 @@ declare global {
             };
 
             type FindUniqueOrThrow<P extends string, F extends string> = {
+                transaction?: EntityManager;
+                options?: FindOptions<Entity, P, F>;
+                where: FilterQuery<Entity>;
+            };
+
+            type Find<P extends string, F extends string> = {
                 transaction?: EntityManager;
                 options?: FindOptions<Entity, P, F>;
                 where: FilterQuery<Entity>;
@@ -64,12 +73,6 @@ declare global {
                 roles: string[];
                 realm: string;
                 actor: string;
-            };
-
-            type IsUpwardGrant = {
-                transaction?: EntityManager;
-                delegatorRole: string[];
-                targetRole: string;
             };
 
             type Filters = {

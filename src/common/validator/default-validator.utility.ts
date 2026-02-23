@@ -30,6 +30,7 @@ import {
     Max,
 } from "class-validator";
 
+import { NotEqualTo } from "./algorithms/not-equal-to.validator";
 import { IsOrdinal } from "./algorithms/is-ordinal.validator";
 
 export abstract class StandardValidationDecorators {
@@ -191,5 +192,10 @@ export abstract class StandardValidationDecorators {
 
     public static IsOrdinal(options?: ValidationOptions, label?: string): PropertyDecorator {
         return (target, key) => IsOrdinal(this.wrap("IS_ORDINAL", { property: key }, options, label))(target, String(key));
+    }
+
+    public static NotEqualTo(property: string, options?: ValidationOptions, label?: string): PropertyDecorator {
+        return (target, key) =>
+            NotEqualTo(property, this.wrap("NOT_EQUAL_TO", { property: key }, options, label))(target, String(key));
     }
 }

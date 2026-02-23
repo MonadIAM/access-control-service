@@ -1,4 +1,4 @@
-import { EntityManager, Loaded } from "@mikro-orm/postgresql";
+import { EntityManager, Knex, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
@@ -46,6 +46,18 @@ export class RoleDelegationPolicyRepository
         }
     }
 
+    public async find<P extends string = never, F extends string = "*">(
+        props: Repositories.RoleDelegationPolicy.Find<P, F>,
+    ): Promise<Loaded<RoleDelegationPolicy, P, F>[]> {
+        try {
+            const { transaction, options, where } = props;
+            const entityManager = transaction ?? this.readManager.fork();
+            return await entityManager.find(RoleDelegationPolicy, where, options);
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
     public async findMany<P extends string = never, F extends string = "*">(
         props: Repositories.RoleDelegationPolicy.FindMany<P, F>,
     ): Promise<[Loaded<RoleDelegationPolicy, P, F>[], number]> {
@@ -77,41 +89,24 @@ export class RoleDelegationPolicyRepository
             const targetIds = Array.isArray(to) ? to : [to];
 
             const query = knex
-                .withRecursive("transitive_power", (cte) => {
-                    cte.select("rc_target.descendant_id as reachable_role_id")
+                .withRecursive("transitive_power", (cte: Knex.QueryBuilder) => {
+                    cte.select("rc.descendant_id as reachable_role_id")
                         .from("access_control.role_delegation_policy as rdp")
-                        .join(
-                            "access_control.role_closure as rc_grantor",
-                            "rdp.delegator_role_id",
-                            "rc_grantor.ancestor_id",
-                        )
-                        .join("access_control.role_closure as rc_target", "rdp.target_role_id", "rc_target.ancestor_id")
-                        .where("rc_grantor.descendant_id", from)
+                        .join("access_control.role_closure as rc", "rc.ancestor_id", "rdp.target_id")
+                        .whereRaw("rc.depth <= rdp.depth_limit")
+                        .andWhere("rdp.delegator_id", from)
                         .andWhere("rdp.is_revoked", false)
-                        .andWhere((builder) => {
-                            builder.where("rdp.is_absolute", false).orWhere("rc_target.depth", 0);
-                        })
                         .distinct();
 
-                    cte.union((union) => {
+                    cte.union((union: Knex.QueryBuilder) => {
                         union
-                            .select("rc_target_next.descendant_id")
-                            .from("access_control.role_delegation_policy as rdp_next")
-                            .join(
-                                "access_control.role_closure as rc_grantor_next",
-                                "rdp_next.delegator_role_id",
-                                "rc_grantor_next.ancestor_id",
-                            )
-                            .join("transitive_power as tp", "rc_grantor_next.descendant_id", "tp.reachable_role_id")
-                            .join(
-                                "access_control.role_closure as rc_target_next",
-                                "rdp_next.target_role_id",
-                                "rc_target_next.ancestor_id",
-                            )
-                            .where("rdp_next.is_revoked", false)
-                            .andWhere((builder) => {
-                                builder.where("rdp_next.is_absolute", true).orWhere("rc_target_next.depth", 0);
-                            });
+                            .select("rc.descendant_id as reachable_role_id")
+                            .from("access_control.role_delegation_policy as rdp")
+                            .join("transitive_power as tp", "rdp.delegator_id", "tp.reachable_role_id")
+                            .join("access_control.role_closure as rc", "rc.ancestor_id", "rdp.target_id")
+                            .whereRaw("rc.depth <= rdp.depth_limit")
+                            .andWhere("rdp.is_revoked", false)
+                            .distinct();
                     });
                 })
                 .select(knex.raw("1"))
@@ -166,31 +161,6 @@ export class RoleDelegationPolicyRepository
 
             const [result] = await entityManager.getConnection().execute(sql, [...bindings]);
             return result?.result === true;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async isUpwardGrant({
-        delegatorRole,
-        transaction,
-        targetRole,
-    }: Repositories.RoleDelegationPolicy.IsUpwardGrant): Promise<boolean> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
-
-            const query = knex("access_control.role_closure")
-                .where("ancestor_id", targetRole)
-                .whereIn("descendant_id", delegatorRole)
-                .andWhere("depth", ">", 0)
-                .select(knex.raw("1"))
-                .limit(1);
-
-            const { sql, bindings } = query.toSQL();
-
-            const [result] = await entityManager.getConnection().execute(sql, [...bindings]);
-            return Boolean(result);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

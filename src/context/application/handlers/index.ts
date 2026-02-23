@@ -2,6 +2,7 @@ import { Provider } from "@nestjs/common";
 
 import { RolePermissionAssignmentHandler } from "./role-permission-assignment.handler";
 import { AccountRoleAssignmentHandler } from "./account-role-assignment.handler";
+import { RoleDelegationPolicyHandler } from "./role-delegation-policy.handler";
 import { RoleConflictMemberHandler } from "./role-conflict-member.handler";
 import { PermissionOverrideHandler } from "./permission-override.handler";
 import { RoleConflictGroupHandler } from "./role-conflict-group.handler";
@@ -11,6 +12,7 @@ import { RoleHandler } from "./role.handler";
 
 export const ROLE_PERMISSION_ASSIGNMENT_HANDLER = Symbol("Handlers.RolePermissionAssignment.Contract");
 export const ACCOUNT_ROLE_ASSIGNMENT_HANDLER = Symbol("Handlers.AccountRoleAssignment.Contract");
+export const ROLE_DELEGATION_POLICY_HANDLER = Symbol("Handlers.RoleDelegationPolicy.Contract");
 export const ROLE_CONFLICT_MEMBER_HANDLER = Symbol("Handlers.RoleConflictMember.Contract");
 export const PERMISSION_OVERRIDE_HANDLER = Symbol("Handlers.PermissionOverride.Contract");
 export const ROLE_CONFLICT_GROUP_HANDLER = Symbol("Handlers.RoleConflictGroup.Contract");
@@ -26,6 +28,10 @@ export const HANDLERS: Provider[] = [
     {
         provide: ACCOUNT_ROLE_ASSIGNMENT_HANDLER,
         useClass: AccountRoleAssignmentHandler,
+    },
+    {
+        provide: ROLE_DELEGATION_POLICY_HANDLER,
+        useClass: RoleDelegationPolicyHandler,
     },
     {
         provide: ROLE_CONFLICT_MEMBER_HANDLER,
