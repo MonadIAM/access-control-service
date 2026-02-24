@@ -16,7 +16,7 @@ declare global {
             type Create = {
                 transaction: EntityManager;
                 context: RequestContext;
-                input: Entities.Realm.Seed;
+                input: Entities.Realm.ConstructorProps;
             };
 
             type Update = {

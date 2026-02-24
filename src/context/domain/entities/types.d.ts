@@ -24,7 +24,7 @@ declare global {
         namespace Role {
             type MutableFields = Pick<RoleEntity, "name" | "description">;
 
-            type Seed = {
+            type ConstructorProps = {
                 actor: string;
                 code: string;
                 name: string;
@@ -34,9 +34,6 @@ declare global {
                 isSystemManaged?: boolean;
                 nonDelegable?: boolean;
                 isRevoked?: boolean;
-            };
-
-            type ConstructorProps = Seed & {
                 realm: RealmEntity;
             };
 
@@ -46,13 +43,10 @@ declare global {
         }
 
         namespace RolePermissionAssignment {
-            type Seed = {
+            type ConstructorProps = {
                 actor: string;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
-            };
-
-            type ConstructorProps = Seed & {
                 permission: PermissionEntity;
                 realm: RealmEntity;
                 role: RoleEntity;
@@ -62,15 +56,12 @@ declare global {
         namespace RoleDelegationPolicy {
             type MutableFields = Pick<RoleDelegationPolicyEntity, "depthLimit" | "description">;
 
-            type Seed = {
+            type ConstructorProps = {
                 actor: string;
                 description?: string;
                 depthLimit?: number;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
-            };
-
-            type ConstructorProps = Seed & {
                 delegator: RoleEntity;
                 target: RoleEntity;
                 realm: RealmEntity;
@@ -82,13 +73,10 @@ declare global {
         }
 
         namespace RoleConflictMember {
-            type Seed = {
+            type ConstructorProps = {
                 actor: string;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
-            };
-
-            type ConstructorProps = Seed & {
                 group: RoleConflictGroupEntity;
                 role: RoleEntity;
             };
@@ -97,7 +85,7 @@ declare global {
         namespace RoleConflictGroup {
             type MutableFields = Pick<RoleConflictGroupEntity, "name" | "description" | "maxAllowed">;
 
-            type Seed = {
+            type ConstructorProps = {
                 actor: string;
                 code: string;
                 name: string;
@@ -105,9 +93,6 @@ declare global {
                 description?: string;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
-            };
-
-            type ConstructorProps = Seed & {
                 realm: RealmEntity;
             };
 
@@ -117,11 +102,8 @@ declare global {
         }
 
         namespace RoleClosure {
-            type Seed = {
+            type ConstructorProps = {
                 depth: number;
-            };
-
-            type ConstructorProps = Seed & {
                 descendant: RoleEntity;
                 ancestor: RoleEntity;
                 realm: RealmEntity;
@@ -131,7 +113,7 @@ declare global {
         namespace Realm {
             type MutableFields = Pick<PermissionEntity, "name" | "description">;
 
-            type Seed = {
+            type ConstructorProps = {
                 actor: string;
                 code: string;
                 name: string;
@@ -139,8 +121,6 @@ declare global {
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
             };
-
-            type ConstructorProps = Seed;
 
             type ChangeDataProps = BaseMethodProps & {
                 patch: Partial<MutableFields>;
@@ -150,16 +130,13 @@ declare global {
         namespace Permission {
             type MutableFields = Pick<PermissionEntity, "name" | "description">;
 
-            type Seed = {
+            type ConstructorProps = {
                 actor: string;
                 code: string;
                 name: string;
                 description?: string;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
-            };
-
-            type ConstructorProps = Seed & {
                 realm: RealmEntity;
             };
 
@@ -169,21 +146,18 @@ declare global {
         }
 
         namespace PermissionOverride {
-            type Seed = {
+            type ConstructorProps = {
                 actor: string;
                 account: string;
                 effect: PermissionOverrideEffect;
                 isRevoked?: boolean;
-            };
-
-            type ConstructorProps = Seed & {
                 permission: PermissionEntity;
                 realm: RealmEntity;
             };
         }
 
         namespace AuditJournal {
-            type Seed = {
+            type ConstructorProps = {
                 realm?: string;
                 entity: string;
                 actionType: AccessControlActionType;
@@ -195,19 +169,14 @@ declare global {
                 patch?: DeltaAudit.Patch<AnyEntity>;
                 reason?: string;
             };
-
-            type ConstructorProps = Seed;
         }
 
         namespace AccountRoleAssignment {
-            type Seed = {
+            type ConstructorProps = {
                 actor: string;
                 account: string;
                 isSystemManaged?: boolean;
                 isRevoked?: boolean;
-            };
-
-            type ConstructorProps = Seed & {
                 realm: RealmEntity;
                 role: RoleEntity;
             };

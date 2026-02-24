@@ -1,6 +1,6 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Realm as RealmEntity, Role as RoleEntity } from "~context/domain/entities";
+import { Role as RoleEntity } from "~context/domain/entities";
 
 declare global {
     namespace Services {
@@ -17,10 +17,9 @@ declare global {
             type Create = {
                 transaction: EntityManager;
                 context: RequestContext;
-                input: Entities.Role.Seed & {
+                input: Entities.Role.ConstructorProps & {
                     children?: string[];
                     parent: RoleEntity;
-                    realm: RealmEntity;
                 };
             };
 

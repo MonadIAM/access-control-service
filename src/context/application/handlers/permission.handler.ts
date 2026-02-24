@@ -32,8 +32,7 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 });
 
                 await this.permissionService.create({
-                    input: { ...input, actor },
-                    realm: realmEntity,
+                    input: { ...input, actor, realm: realmEntity },
                     transaction,
                     context,
                 });

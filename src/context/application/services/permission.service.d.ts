@@ -1,6 +1,6 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Permission as PermissionEntity, Realm as RealmEntity } from "~context/domain/entities";
+import { Permission as PermissionEntity } from "~context/domain/entities";
 
 declare global {
     namespace Services {
@@ -15,9 +15,8 @@ declare global {
 
             type Create = {
                 transaction: EntityManager;
-                input: Entities.Permission.Seed;
+                input: Entities.Permission.ConstructorProps;
                 context: RequestContext;
-                realm: RealmEntity;
             };
 
             type Update = {

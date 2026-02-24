@@ -61,6 +61,11 @@ const config: Options<PostgreSqlDriver> = {
         },
     },
 
+    seeder: {
+        path: "./src/infrastructure/database/seeders",
+        defaultSeeder: "SystemSeeder",
+    },
+
     pool: {
         min: 1,
         max: Number.isFinite(poolMax) && poolMax > 0 ? poolMax : 2,

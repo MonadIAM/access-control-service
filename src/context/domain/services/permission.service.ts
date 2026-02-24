@@ -9,8 +9,7 @@ export class PermissionService implements Services.Permission.Contract {
     public async create({
         transaction,
         context: { userAgent, ip },
-        input: { actor, ...input },
-        realm,
+        input: { realm, actor, ...input },
     }: Services.Permission.Create): Promise<Permission> {
         const entity = new Permission({
             ...input,
