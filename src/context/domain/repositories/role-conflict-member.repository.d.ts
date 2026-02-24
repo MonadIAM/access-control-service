@@ -58,6 +58,8 @@ declare global {
                       filters: Filters;
                       sort: Sort;
                       options?: FindOptions<Entity, P, F>;
+                      group: string;
+                      realm: string;
                   };
 
             type WouldExceedMemberLimit = {

@@ -5,11 +5,12 @@ import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 import { ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_CONFLICT_MEMBER_HANDLER } from "~context/application/handlers";
 import { EndpointExceptions, ExtractContext } from "~common/decorators";
-import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
+import { SuccessMessageDTO } from "~common/dto";
 
 import {
+    GetRoleConflictMembersListQueryDTO,
     GetRoleConflictMembersListBodyDTO,
     GetRoleConflictMemberByIdQueryDTO,
     CreateRoleConflictMemberQueryDTO,
@@ -44,9 +45,14 @@ export class RoleConflictMemberController extends BaseController {
     @ApiOperation({ summary: "Returns a role conflict member by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictMemberDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
-    public getById(@Query() { member, view }: GetRoleConflictMemberByIdQueryDTO): Promise<RoleConflictMemberDTO> {
+    public getById(
+        @Query() { member, group, realm, view }: GetRoleConflictMemberByIdQueryDTO,
+    ): Promise<RoleConflictMemberDTO> {
         return this.roleConflictMemberRepository
-            .findUniqueOrThrow({ options: { populate: this.populate[view] }, where: { id: member } })
+            .findUniqueOrThrow({
+                options: { populate: this.populate[view] },
+                where: { id: member, group: { id: group, realm } },
+            })
             .then((data) => super.formatResponse({ DTO: RoleConflictMemberDTO, data }));
     }
 
@@ -56,11 +62,11 @@ export class RoleConflictMemberController extends BaseController {
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictMemberListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getList(
-        @Query() { view }: BaseReadQueryDTO,
+        @Query() { group, realm, view }: GetRoleConflictMembersListQueryDTO,
         @Body() { pagination, filters, sort }: GetRoleConflictMembersListBodyDTO,
     ): Promise<RoleConflictMemberListDTO> {
         return this.roleConflictMemberRepository
-            .findMany({ options: { populate: this.populate[view] }, pagination, filters, sort })
+            .findMany({ options: { populate: this.populate[view] }, pagination, filters, sort, group, realm })
             .then((data) => super.formatResponse({ DTO: RoleConflictMemberListDTO, pagination, data }));
     }
 

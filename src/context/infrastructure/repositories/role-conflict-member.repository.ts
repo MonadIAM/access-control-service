@@ -69,9 +69,9 @@ export class RoleConflictMemberRepository
                 const entityManager = transaction ?? this.readManager.fork();
                 return await entityManager.findAndCount(RoleConflictMember, where, options);
             } else {
-                const { pagination, filters, sort, options } = props;
+                const { pagination, filters, sort, options, group, realm } = props;
                 const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
-                const where = super.buildWhereORM(filters);
+                const where = super.buildWhereORM(filters, { group: { id: group, realm } });
                 const entityManager = this.readManager.fork();
                 return await entityManager.findAndCount(RoleConflictMember, where, opts);
             }

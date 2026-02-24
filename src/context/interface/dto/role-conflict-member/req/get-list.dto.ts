@@ -38,5 +38,10 @@ export class GetRoleConflictMembersListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
+    public group!: string;
+
+    @Expose()
+    @Validator.IsUUID()
+    @ApiProperty({ required: true, type: String, format: "uuid" })
     public realm!: string;
 }
