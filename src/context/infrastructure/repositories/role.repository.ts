@@ -99,7 +99,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         try {
             const { populate, pagination, filters, descendant } = props;
             const ancestorPopulate = populate.map((key) => `ancestor.${key}` as const);
-            const where = super.buildWhereORM(filters);
+            const where = super.buildWhereORM(filters, { realm: props.realm });
             const entityManager = this.readManager.fork();
             return await entityManager
                 .findAndCount(
@@ -147,7 +147,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         try {
             const { populate, pagination, filters, ancestor } = props;
             const descendantPopulate = populate.map((key) => `descendant.${key}` as const);
-            const where = super.buildWhereORM(filters);
+            const where = super.buildWhereORM(filters, { realm: props.realm });
             const entityManager = this.readManager.fork();
             return await entityManager
                 .findAndCount(

@@ -30,4 +30,9 @@ export class GetRoleDescendantsListQueryDTO extends BaseReadQueryDTO {
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
     public ancestor!: string;
+
+    @Expose()
+    @Validator.IsUUID()
+    @ApiProperty({ required: true, type: String, format: "uuid" })
+    public realm!: string;
 }

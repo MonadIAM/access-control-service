@@ -152,10 +152,10 @@ export abstract class StandardValidationDecorators {
     public static IsBoolean(options?: ValidationOptions, label?: string): PropertyDecorator {
         return (target, key) => {
             Transform(({ value }) => {
-                if (typeof value === "boolean") {
-                    return value;
-                } else {
+                if (typeof value === "string") {
                     return /^true|false$/.test(value) && value === "true";
+                } else {
+                    return value;
                 }
             })(target, key);
             return IsBoolean(this.wrap("IS_BOOLEAN", { property: key }, options, label))(target, key);

@@ -88,6 +88,7 @@ declare global {
                 descendant: string;
                 pagination: Pagination;
                 filters: Filters;
+                realm: string;
             };
 
             type GetDescendants = {
@@ -103,6 +104,7 @@ declare global {
                 ancestor: string;
                 pagination: Pagination;
                 filters: Filters;
+                realm: string;
             };
 
             type GetLookupList = {

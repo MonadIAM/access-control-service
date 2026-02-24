@@ -119,7 +119,7 @@ export class RoleController extends BaseController {
     @ApiResponse({ status: HttpStatus.OK, type: RoleHierarchyListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getAncestorsList(
-        @Query() { descendant, view }: GetRoleAncestorsListQueryDTO,
+        @Query() { descendant, realm, view }: GetRoleAncestorsListQueryDTO,
         @Body() { pagination, filters }: GetRoleAncestorsListBodyDTO,
     ): Promise<RoleHierarchyListDTO> {
         return this.roleRepository
@@ -128,6 +128,7 @@ export class RoleController extends BaseController {
                 descendant,
                 pagination,
                 filters,
+                realm,
             })
             .then((data) => super.formatResponse({ DTO: RoleHierarchyListDTO, pagination, data }));
     }
@@ -138,7 +139,7 @@ export class RoleController extends BaseController {
     @ApiResponse({ status: HttpStatus.OK, type: RoleHierarchyListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
     public getDescendantsList(
-        @Query() { ancestor, view }: GetRoleDescendantsListQueryDTO,
+        @Query() { ancestor, realm, view }: GetRoleDescendantsListQueryDTO,
         @Body() { pagination, filters }: GetRoleDescendantsListBodyDTO,
     ): Promise<RoleHierarchyListDTO> {
         return this.roleRepository
@@ -147,6 +148,7 @@ export class RoleController extends BaseController {
                 ancestor,
                 pagination,
                 filters,
+                realm,
             })
             .then((data) => super.formatResponse({ DTO: RoleHierarchyListDTO, pagination, data }));
     }
