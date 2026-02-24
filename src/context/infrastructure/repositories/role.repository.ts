@@ -1,6 +1,7 @@
 import { EntityDictionary, EntityManager, FilterQuery, Knex, Loaded, QueryOrder, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { RoleAdapter } from "~context/infrastructure/adapters";
 import { Role, RoleClosure } from "~context/domain/entities";
@@ -14,6 +15,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
     public constructor(
         @InjectEntityManager("read")
         private readonly readManager: EntityManager,
+        private readonly configService: ConfigService,
     ) {
         super();
     }
@@ -321,6 +323,24 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
                 nodes: result?.nodes ?? [],
                 edges: result?.edges ?? [],
             };
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async wouldExceedRoleLimit({
+        transaction,
+        realm,
+        count,
+    }: Repositories.Role.WouldExceedRoleLimit): Promise<boolean> {
+        try {
+            const limit = this.configService.getOrThrow<number>("ROLE_PER_REALM_LIMIT");
+            const entityManager = transaction ?? this.readManager.fork();
+            const knex = entityManager.getKnex();
+
+            const [{ total }] = await knex("access_control.role").where("realm_id", realm).count("id as total");
+
+            return Number(total) + count > limit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

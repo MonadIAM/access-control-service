@@ -180,8 +180,11 @@ export class EnvironmentVariablesDTO {
     public MAX_CONFLECT_MEMBERS_COUNT!: number;
 
     @Validator.IsPositiveInt()
-    public PERMISSION_LIMIT!: number;
+    public PERMISSION_PER_ROLE_LIMIT!: number;
 
     @Validator.IsPositiveInt()
-    public ROLE_LIMIT!: number;
+    public ROLE_PER_ACCOUNT_LIMIT!: number;
+
+    @Validator.IsPositiveInt()
+    public ROLE_PER_REALM_LIMIT!: number;
 }

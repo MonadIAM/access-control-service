@@ -41,6 +41,8 @@ declare global {
                 findEffectiveRoles: (props: FindEffectiveRoles) => Promise<[Entity[], number]>;
 
                 getHierarchyGraph: (props: GetHierarchyGraph) => Promise<Graph.Data>;
+
+                wouldExceedRoleLimit: (props: WouldExceedRoleLimit) => Promise<boolean>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -137,6 +139,12 @@ declare global {
             type GetHierarchyGraph = {
                 transaction?: EntityManager;
                 realm: string;
+            };
+
+            type WouldExceedRoleLimit = {
+                transaction?: EntityManager;
+                realm: string;
+                count: number;
             };
 
             type Filters = {

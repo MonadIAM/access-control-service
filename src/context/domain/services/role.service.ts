@@ -27,36 +27,46 @@ export class RoleService implements Services.Role.Contract {
         if (parent.protoType === RoleProtoType.ATOMIC) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE`);
         } else {
-            const entity = new Role({
-                description: input.description,
-                actorType: input.actorType,
-                protoType: input.protoType,
-                code: input.code,
-                name: input.name,
-                realm,
-                actor,
-            });
-
-            transaction.persist(entity);
-            await transaction.flush();
-
-            await this.buildHierarchy({ input: { realm: realm.id, children, parent, entity }, transaction });
-
-            const auditEntity = new AuditJournal({
-                actionType: AccessControlActionType.CREATE,
-                entityType: this.entityType,
-                at: entity.createdAt,
-                entity: entity.id,
+            const isRoleLimitExceeded = await this.roleRepository.wouldExceedRoleLimit({
+                transaction,
                 realm: realm.id,
-                userAgent,
-                by: actor,
-                ip,
+                count: 1,
             });
 
-            transaction.persist(auditEntity);
-            await transaction.flush();
+            if (isRoleLimitExceeded) {
+                throw ServiceException.invariantViolation(`${this.dictionaryPath}.REALM_ROLE_LIMIT_EXCEEDED`);
+            } else {
+                const entity = new Role({
+                    description: input.description,
+                    actorType: input.actorType,
+                    protoType: input.protoType,
+                    code: input.code,
+                    name: input.name,
+                    realm,
+                    actor,
+                });
 
-            return entity;
+                transaction.persist(entity);
+                await transaction.flush();
+
+                await this.buildHierarchy({ input: { realm: realm.id, children, parent, entity }, transaction });
+
+                const auditEntity = new AuditJournal({
+                    actionType: AccessControlActionType.CREATE,
+                    entityType: this.entityType,
+                    at: entity.createdAt,
+                    entity: entity.id,
+                    realm: realm.id,
+                    userAgent,
+                    by: actor,
+                    ip,
+                });
+
+                transaction.persist(auditEntity);
+                await transaction.flush();
+
+                return entity;
+            }
         }
     }
 

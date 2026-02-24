@@ -84,7 +84,8 @@ declare namespace NodeJS {
 
         MAX_ROLE_SUBTREE_SIZE_FOR_PURGE: `${number}`;
         MAX_CONFLECT_MEMBERS_COUNT: `${number}`;
-        PERMISSION_LIMIT: `${number}`;
-        ROLE_LIMIT: `${number}`;
+        PERMISSION_PER_ROLE_LIMIT: `${number}`;
+        ROLE_PER_ACCOUNT_LIMIT: `${number}`;
+        ROLE_PER_REALM_LIMIT: `${number}`;
     }
 }

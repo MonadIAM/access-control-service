@@ -86,7 +86,7 @@ export class AccountRoleAssignmentRepository
         roles,
     }: Repositories.AccountRoleAssignment.WouldExceedRoleLimit): Promise<boolean> {
         try {
-            const limit = this.configService.getOrThrow<number>("ROLE_LIMIT");
+            const limit = this.configService.getOrThrow<number>("ROLE_PER_ACCOUNT_LIMIT");
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
