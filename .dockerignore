@@ -1,4 +1,4 @@
-# Зависимости и артефакты
+# Dependencies and build artifacts
 node_modules
 dist
 build
@@ -7,25 +7,25 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Переменные окружения и секреты
+# Environment variables and secrets
 .env
 .env.local
 .env.*.local
 *.pem
 *.key
 
-# Данные контейнеров (чтобы не копировать гигабайты логов при сборке)
+# Container data (avoid copying gigabytes of logs during build)
 zookeeper_data/
 zookeeper_log/
 kafka_data/
 *.db
 
-# Метаданные Git
+# Git metadata
 .git
 .gitignore
 .gitattributes
 
-# Конфигурации IDE и системные файлы
+# IDE configs and system files
 .vscode
 .idea
 .history
@@ -33,7 +33,7 @@ kafka_data/
 .DS_Store
 Thumbs.db
 
-# Документация и скрипты управления
+# Documentation and management scripts
 README.md
 Makefile
 scripts/

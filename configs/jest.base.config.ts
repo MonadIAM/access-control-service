@@ -1,45 +1,45 @@
 import type { Config } from "@jest/types";
 
 const config: Config.InitialOptions = {
-    // Готовая конфигурация
+    // Base configuration
     preset: "ts-jest",
 
-    // Среда выполнения
+    // Test execution environment
     testEnvironment: "node",
 
-    // Какие расширения файлов обрабатывать
+    // File extensions to process
     moduleFileExtensions: ["ts", "js", "json"],
 
-    // Прекратить тестирование после первого сбоя
+    // Stop testing after the first failure
     bail: true,
 
-    // Сбрасывать моки между тестами
+    // Reset mocks between tests
     clearMocks: true,
 
-    // Детектить "подвисшие" асинхронные операции
+    // Detect lingering async operations
     detectOpenHandles: true,
 
-    // Принудительно завершать процесс после тестов
+    // Force process exit after tests complete
     forceExit: true,
 
-    // Подробный вывод
+    // Verbose output
     verbose: true,
 
-    // Передача глобальных переменных
+    // TypeScript transformation
     transform: {
         "^.+\\.ts$": ["ts-jest", { tsconfig: "tsconfig.json" }],
     },
 
-    // Корневые папки для тестов
+    // Root directories for tests
     roots: ["<rootDir>/src"],
 
-    // Перенаправление путей
+    // Path aliases mapping
     moduleNameMapper: {
         "^~example$": "<rootDir>/src/example",
         "^~example/(.*)$": "<rootDir>/src/example/$1",
     },
 
-    // Скрипты выполняемые до среды теста
+    // Scripts to run before the test environment
     setupFiles: ["reflect-metadata"],
 };
 

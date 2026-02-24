@@ -1,50 +1,49 @@
 {
   "compilerOptions": {
-    "composite": false,                           // Включает поддержку составных проектов (projectReferences): требует declaration, declarationMap
-    "target": "ES2021",                           // Версия JavaScript, в которую будет скомпилирован TypeScript
-    "module": "commonjs",                         // Система модулей, используемая в проекте
-    "esModuleInterop": true,                      // Разрешает использование CommonJS модулей с синтаксисом ES6 (например, import вместо require)
-    "resolveJsonModule": true,                    // Разрешает импорт JSON файлов как модулей
-    "allowSyntheticDefaultImports": true,         // Позволяет использовать синтетические default импорты (import webpack from "webpack" вместо import * as webpack from "webpack")
+    "composite": false,                           // Enables composite project support (projectReferences): requires declaration, declarationMap
+    "target": "ES2021",                           // JavaScript version to compile TypeScript into
+    "module": "commonjs",                         // Module system used in the project
+    "esModuleInterop": true,                      // Allows using CommonJS modules with ES6 syntax (e.g., import instead of require)
+    "resolveJsonModule": true,                    // Allows importing JSON files as modules
+    "allowSyntheticDefaultImports": true,         // Allows synthetic default imports (import webpack from "webpack" instead of import * as webpack from "webpack")
 
-    "allowJs": false,                             // Запрещает использование JavaScript файлов в проекте
-    "sourceMap": false,                           // Генерирует файлы-карты исходного кода (.map) для отладки
-    "declaration": true,                          // Генерирует файлы декларации типов (.d.ts)
-    "declarationMap": false,                      // Генерирует файлы-карты для файлов-деклараций (.map) для отладки
-    "removeComments": true,                       // Удаляет все комментарии из скомпилированного кода
+    "allowJs": false,                             // Disallows JavaScript files in the project
+    "sourceMap": false,                           // Generates source map files (.map) for debugging
+    "declaration": true,                          // Generates type declaration files (.d.ts)
+    "declarationMap": false,                      // Generates source maps for declaration files (.map) for debugging
+    "removeComments": true,                       // Removes all comments from compiled output
 
-    "experimentalDecorators": true,               // Включает поддержку экспериментальных декораторов
-    "emitDecoratorMetadata": true,                // Включает генерацию метаданных для декораторов
-    "useDefineForClassFields": true,              // Использует новый стандарт ECMAScript для полей класса
+    "experimentalDecorators": true,               // Enables experimental decorators support
+    "emitDecoratorMetadata": true,                // Enables metadata generation for decorators
+    "useDefineForClassFields": true,              // Uses the new ECMAScript standard for class fields
 
-    "noImplicitReturns": true,                    // Требует явное возвращение значений из всех веток функции
-    "allowUnreachableCode": false,                // Запрещает код, который не может быть выполнен
-    "noImplicitOverride": true,                   // Запрещает неявные переопределения методов (используй override)
-    "noUnusedLocals": true,                       // Запрещает неиспользуемые локальные переменные
-    "noUnusedParameters": true,                   // Запрещает неиспользуемые параметры функции
-    "noFallthroughCasesInSwitch": true,           // Требует указание явного перехода или завершения в конструкции switch
+    "noImplicitReturns": true,                    // Requires explicit return values from all function branches
+    "allowUnreachableCode": false,                // Disallows unreachable code
+    "noImplicitOverride": true,                   // Disallows implicit method overrides (use override keyword)
+    "noUnusedLocals": true,                       // Disallows unused local variables
+    "noUnusedParameters": true,                   // Disallows unused function parameters
+    "noFallthroughCasesInSwitch": true,           // Requires explicit break or return in switch cases
 
-    "skipLibCheck": false,                        // Включает проверку типов в файлах деклараций (.d.ts)
-    "forceConsistentCasingInFileNames": true,     // Требует согласованного регистра в именах файлов
+    "skipLibCheck": false,                        // Enables type checking in declaration files (.d.ts)
+    "forceConsistentCasingInFileNames": true,     // Requires consistent casing in file names
 
-    "moduleResolution": "node",                   // Использует разрешение модулей в стиле Node.js
-    "isolatedModules": true,                      // Обрабатывает каждый файл как модуль (не влияет на файлы деклараций)
-    "incremental": true,                          // Включает инкрементальную компиляцию для оптимизации времени компиляции
+    "moduleResolution": "node",                   // Uses Node.js-style module resolution
+    "isolatedModules": true,                      // Treats each file as a separate module (does not affect declaration files)
+    "incremental": true,                          // Enables incremental compilation to optimize build time
 
-    "exactOptionalPropertyTypes": false,          // Не требует точного соответствия типам опциональных свойств
-    "noPropertyAccessFromIndexSignature": false,  // Разрешает доступ к свойствам через индексные сигнатуры
+    "exactOptionalPropertyTypes": false,          // Does not require exact type matching for optional properties
+    "noPropertyAccessFromIndexSignature": false,  // Allows property access through index signatures
 
     "strict": true,
-    /* Включает режим строгой типизации:
-      1. alwaysStrict - Всегда включает строгий режим в файлах
-      2. strictNullChecks - Проверка на null и undefined в union и опциональных типах
-      3. strictFunctionTypes - Проверка типов функций
-      4. strictPropertyInitialization - Проверка инициализации свойств классов
-      5. strictBindCallApply - Проверка методов функций bind, call и apply
-      6. noImplicitAny - Запрещает неявное использование типа any
-      7. noImplicitThis - Проверка типа this вне классов и объектов
-      8. useUnknownInCatchVariables - Использование типа unknown для переменных в блоке catch
+    /* Enables strict type-checking mode:
+      1. alwaysStrict - Always enables strict mode in files
+      2. strictNullChecks - Checks for null and undefined in union and optional types
+      3. strictFunctionTypes - Enables strict function type checking
+      4. strictPropertyInitialization - Checks class property initialization
+      5. strictBindCallApply - Checks bind, call, and apply function methods
+      6. noImplicitAny - Disallows implicit use of the any type
+      7. noImplicitThis - Checks this type outside classes and objects
+      8. useUnknownInCatchVariables - Uses unknown type for catch block variables
     */
   }
 }
-

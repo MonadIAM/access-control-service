@@ -5,7 +5,6 @@ PGDATA="/var/lib/postgresql/data"
 
 echo "Starting replica initialization..."
 
-# Проверяем, инициализирована ли уже реплика
 if [ -s "$PGDATA/PG_VERSION" ]; then
     echo "Replica already initialized, starting PostgreSQL..."
     exec gosu postgres postgres -c hot_standby=on
@@ -19,10 +18,8 @@ done
 
 echo "Primary server is ready, creating base backup..."
 
-# Очищаем директорию данных
 rm -rf "$PGDATA"/*
 
-# Создаём базовый бэкап с primary сервера
 PGPASSWORD="$POSTGRESQL_REPLICATION_PASSWORD" pg_basebackup \
     -h "$POSTGRESQL_WRITE_HOST" \
     -p "$POSTGRESQL_WRITE_PORT" \
@@ -34,11 +31,9 @@ PGPASSWORD="$POSTGRESQL_REPLICATION_PASSWORD" pg_basebackup \
     -R \
     -S "$POSTGRESQL_REPLICATION_SLOT"
 
-# Настраиваем владельца и права доступа
 chown -R postgres:postgres "$PGDATA"
 chmod 700 "$PGDATA"
 
-# Создаём standby.signal для режима hot standby
 touch "$PGDATA/standby.signal"
 chown postgres:postgres "$PGDATA/standby.signal"
 

@@ -2,30 +2,30 @@ import globals from "globals";
 import tslint from "typescript-eslint";
 
 const warnRules = {
-    "@typescript-eslint/no-explicit-any": ["warn"],              // Предупреждать при использовании типа any вместо конкретного типа
-    "@typescript-eslint/prefer-optional-chain": ["warn"],        // Рекомендует вместо цепочек с && писать a?.b?.c
-    "@typescript-eslint/prefer-nullish-coalescing": ["warn"],    // Рекомендует вместо x !== null && x !== undefined ? x : default писать x ?? default
-    "@typescript-eslint/explicit-function-return-type": ["warn", // Рекомендует явно указывать возвращаемый тип функции, но разрешает в выражениях и при дженериках
+    "@typescript-eslint/no-explicit-any": ["warn"],              // Warn when using any instead of a specific type
+    "@typescript-eslint/prefer-optional-chain": ["warn"],        // Suggest using a?.b?.c instead of chaining with &&
+    "@typescript-eslint/prefer-nullish-coalescing": ["warn"],    // Suggest using x ?? default instead of x !== null && x !== undefined ? x : default
+    "@typescript-eslint/explicit-function-return-type": ["warn", // Suggest explicit function return types, but allow in expressions and typed function expressions
         { allowExpressions: true, allowTypedFunctionExpressions: true }
     ],
 };
 
 const enabledRules = {
-    // Запретить объявлять функции внутри циклов (избегаем захвата неправильной переменной)
+    // Disallow function declarations inside loops (avoid capturing wrong variable)
     "@typescript-eslint/no-loop-func": ["error"],
-    // Запретить все директивы подавления // @ts-…
+    // Disallow all suppression directives // @ts-…
     "@typescript-eslint/ban-ts-comment": ["error"],
-    // Запретить использовать промисы в местах, где ожидаются void-функции
+    // Disallow using promises where void functions are expected
     "@typescript-eslint/no-misused-promises": ["error"],
-    // Предпочитать T[] вместо Array<T>
+    // Prefer T[] over Array<T>
     "@typescript-eslint/array-type": ["error", { default: "array" }],
-    // Принуждает в интерфейсах писать методы как свойства с функцией, не как сигнатуры
+    // Enforce methods in interfaces as function properties, not method signatures
     "@typescript-eslint/method-signature-style": ["error", "property"],
-    // Запретить использовать переменные/классы до объявления, но функции можно
+    // Disallow using variables/classes before declaration, but allow functions
     "@typescript-eslint/no-use-before-define": ["error", { functions: false }],
-    // Требовать явно указывать public/private/protected для полей и методов
+    // Require explicit public/private/protected for class fields and methods
     "@typescript-eslint/explicit-member-accessibility": ["error", { accessibility: "explicit" }],
-    // Запретить неиспользуемые переменные, но позволять имена, начинающиеся с _
+    // Disallow unused variables, but allow names starting with _
     "@typescript-eslint/no-unused-vars": ["error", {
         argsIgnorePattern: "^_",
         varsIgnorePattern: "^_",
@@ -34,12 +34,12 @@ const enabledRules = {
 };
 
 const disabledRules = {
-    "@typescript-eslint/no-extraneous-class": "off",   // Разрешить пустые классы без статических членов (нужны для DI)
-    "@typescript-eslint/no-non-null-assertion": "off", // Разрешить non nullable утверждения foo!
+    "@typescript-eslint/no-extraneous-class": "off",   // Allow empty classes without static members (needed for DI)
+    "@typescript-eslint/no-non-null-assertion": "off", // Allow non-null assertions foo!
 };
 
 /**
- * Документация по правилам для этого конфига {@link [тут](https://typescript-eslint.io/getting-started/)}
+ * Rule documentation for this config {@link [here](https://typescript-eslint.io/getting-started/)}
  */
 const tsConfig = [
     {

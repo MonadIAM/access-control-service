@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.6
 
-# --- Stage 1: Сборка ---
+# --- Stage 1: Build ---
 ARG BASE_IMAGE
 FROM ${BASE_IMAGE} AS builder
 

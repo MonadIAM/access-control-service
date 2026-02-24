@@ -33,13 +33,13 @@ const prettierConfig = [
             "prettier/prettier": [
                 "error",
                 {
-                    bracketSameLine: true, // Держать закрывающую скобку JSX/HTML на той же строке
-                    arrowParens: "always", // Всегда оборачивать параметры стрелочных функций в ()
-                    trailingComma: "all",  // Ставить запятую на последнем элементе везде, где возможно
-                    printWidth: 124,       // Переносить строки длиннее 124 символов
-                    endOfLine: "lf",       // Принудительно использовать LF (Unix-переход строки)
-                    tabWidth: 4,           // Отступ = 4 пробела
-                    semi: true,            // Всегда вставлять точку с запятой
+                    bracketSameLine: true, // Keep JSX/HTML closing bracket on the same line
+                    arrowParens: "always", // Always wrap arrow function parameters in ()
+                    trailingComma: "all",  // Add trailing comma wherever possible
+                    printWidth: 124,       // Wrap lines longer than 124 characters
+                    endOfLine: "lf",       // Enforce LF (Unix line endings)
+                    tabWidth: 4,           // Indent with 4 spaces
+                    semi: true,            // Always insert semicolons
                 }
             ],
         },

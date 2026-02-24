@@ -1,7 +1,7 @@
 title = "project gitleaks config"
 
 [extend]
-useDefault = true # Используется стандартный встроенный конфиг gitleaks в качестве основы.
+useDefault = true # Uses the standard built-in gitleaks config as a base.
 
 
 
@@ -29,8 +29,8 @@ tags = [
     "token",
 ]
 
-    # Локальный allowlist для КОНКРЕТНОГО правила internal-service-token.
-    # Игнорирует фейковые/примерные токены в тестах/доках.
+    # Local allowlist for THIS SPECIFIC rule: internal-service-token.
+    # Ignores fake/example tokens in tests and docs.
     [[rules.allowlists]]
     description = "Allow fake internal tokens in tests and docs"
 
@@ -63,8 +63,8 @@ tags = [
 
 
 
-# Глобальный allowlist - применяется ко ВСЕМ правилам, кроме тех,
-# где явно ограничили через targetRules в [[allowlists]].
+# Global allowlist — applies to ALL rules, except those
+# explicitly scoped via targetRules in [[allowlists]].
 [[allowlists]]
 description = "global allowlist"
 
@@ -88,8 +88,8 @@ stopwords = [
 
 
 
-# [[allowlists]] — новый механизм (v8.25+), позволяет один allowlist
-# повесить на несколько правил через targetRules.
+# [[allowlists]] — newer mechanism (v8.25+), allows a single allowlist
+# to be applied to multiple rules via targetRules.
 [[allowlists]]
 description = "Shared allowlist for noisy test fixtures"
 

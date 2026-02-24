@@ -40,17 +40,17 @@ const config: Options<PostgreSqlDriver> = {
     extensions: [Migrator],
 
     /**
-     * Миграции выполняются только через write-конфигурацию.
-     * Для read-конфига секция migrations оставлена, чтобы Options были валидными,
-     * но выполнять миграции этим подключением запрещено на уровне приложения.
+     * Migrations are only executed via the write configuration.
+     * The migrations section is kept in the read config to keep Options valid,
+     * but running migrations through that connection is forbidden at the application level.
      */
     migrations: {
         path: path.join(process.cwd(), "dist/src/infrastructure/database/migrations"),
         pathTs: path.join(process.cwd(), "src/infrastructure/database/migrations"),
         tableName: "mikro_orm_migrations",
         glob: "!(*.d).{js,ts}",
-        transactional: true, // Запуск каждой миграции внутри транзакции. (позволяет автоматически откатить в случае провала части миграции)
-        allOrNothing: true, // Гарантирует атомарность всей пачки миграций. (падение одной = откат всех)
+        transactional: true, // Run each migration inside a transaction (allows automatic rollback on partial failure)
+        allOrNothing: true,  // Ensures atomicity of the entire migration batch (one failure = rollback all)
         fileName: (timestamp: string, name?: string) => {
             const prefix = timestamp.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, "$1.$2.$3T$4-$5-$6");
             if (name) {

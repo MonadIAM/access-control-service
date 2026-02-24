@@ -1,68 +1,68 @@
 const warnRules = {
-    "no-console": "warn",               // Предупреждать при использовании console.* (console.log, console.error и т.д.)
-    "no-useless-computed-key": "warn",  // Предупреждать если можно использовать key вместо ["key"] в объектах
+    "no-console": "warn",               // Warn on console.* usage (console.log, console.error, etc.)
+    "no-useless-computed-key": "warn",  // Warn when key can be used instead of ["key"] in objects
 };
 
 const enabledRules = {
-    "curly": "error",                   // Всегда использовать фигурные скобки в блоках if/else/for и т.д.
-    "no-var": "error",                  // Запретить объявление переменных через var, только let/const
-    "no-eval": "error",                 // Запретить использование eval()
-    "no-alert": "error",                // Запретить alert(), confirm(), prompt()
-    "no-proto": "error",                // Запретить доступ через __proto__
-    "no-caller": "error",               // Запретить arguments.caller и arguments.callee
-    "no-bitwise": "error",              // Запретить побитовые операторы
-    "no-new-func": "error",             // Запретить конструктор Function (тоже eval-подобный)
-    "prefer-const": "error",            // Переменные, которые не переназначаются, объявлять через const
-    "no-lonely-if": "error",            // Избегать одиночных if внутри else — использовать else if
-    "no-label-var": "error",            // Не использовать одинаковые имена меток и переменных
-    "require-await": "error",           // Запретить async-функции без await внутри
-    "accessor-pairs": "error",          // При наличии геттера должен быть и сеттер (и наоборот)
-    "no-lone-blocks": "error",          // Запретить лишние блоки { … } вне конструкций
-    "prefer-template": "error",         // Предпочитать шаблонные строки (`…${}…`) вместо конкатенации
-    "no-multi-assign": "error",         // Запретить множественное присваивание: a = b = c
-    "no-octal-escape": "error",         // Запретить escape-последовательности вида \0xx
-    "no-await-in-loop": "error",        // Запретить await внутри циклов (во избежание последовательного выполнения)
-    "no-empty-pattern": "error",        // Запретить пустые деструктуризации: const {} = obj
-    "consistent-return": "error",       // Все ветки функции должны либо возвращать значение, либо не возвращать
-    "no-param-reassign": "error",       // Не переназначать параметры функций
-    "no-useless-return": "error",       // Запретить лишние return;, который ничего не возвращает
-    "eqeqeq": ["error", "always"],      // Всегда использовать === и !== вместо == и !=
-    "prefer-rest-params": "error",      // Предпочитать ...rest вместо arguments
-    "no-unneeded-ternary": "error",     // Удалять тернар, если можно обойтись без него
-    "no-negated-condition": "error",    // Избегать отрицания в условии, инвертировать ветки вместо этого
-    "no-duplicate-imports": "error",    // Запретить дублирующиеся import из одного модуля
-    "prefer-arrow-callback": "error",   // Предпочитать стрелочные функции в колбэках
-    "prefer-numeric-literals": "error", // Запретить 0x и 0o, использовать префиксы 0b/0o или литералы десятичные
-    // Использовать x += y вместо x = x + y
+    "curly": "error",                   // Always use curly braces in if/else/for blocks, etc.
+    "no-var": "error",                  // Disallow var declarations, use let/const only
+    "no-eval": "error",                 // Disallow eval()
+    "no-alert": "error",                // Disallow alert(), confirm(), prompt()
+    "no-proto": "error",                // Disallow __proto__ access
+    "no-caller": "error",               // Disallow arguments.caller and arguments.callee
+    "no-bitwise": "error",              // Disallow bitwise operators
+    "no-new-func": "error",             // Disallow Function constructor (eval-like)
+    "prefer-const": "error",            // Use const for variables that are never reassigned
+    "no-lonely-if": "error",            // Avoid standalone if inside else — use else if instead
+    "no-label-var": "error",            // Disallow labels sharing names with variables
+    "require-await": "error",           // Disallow async functions without await
+    "accessor-pairs": "error",          // Require getter when setter is defined (and vice versa)
+    "no-lone-blocks": "error",          // Disallow unnecessary blocks { … } outside control structures
+    "prefer-template": "error",         // Prefer template literals (`…${}…`) over concatenation
+    "no-multi-assign": "error",         // Disallow chained assignment: a = b = c
+    "no-octal-escape": "error",         // Disallow octal escape sequences like \0xx
+    "no-await-in-loop": "error",        // Disallow await inside loops (to avoid sequential execution)
+    "no-empty-pattern": "error",        // Disallow empty destructuring: const {} = obj
+    "consistent-return": "error",       // All function branches must either return a value or not
+    "no-param-reassign": "error",       // Disallow reassigning function parameters
+    "no-useless-return": "error",       // Disallow redundant return statements that return nothing
+    "eqeqeq": ["error", "always"],      // Always use === and !== instead of == and !=
+    "prefer-rest-params": "error",      // Prefer ...rest over arguments
+    "no-unneeded-ternary": "error",     // Remove ternary when it can be simplified
+    "no-negated-condition": "error",    // Avoid negated conditions, invert the branches instead
+    "no-duplicate-imports": "error",    // Disallow duplicate imports from the same module
+    "prefer-arrow-callback": "error",   // Prefer arrow functions in callbacks
+    "prefer-numeric-literals": "error", // Disallow 0x and 0o, use 0b/0o prefixes or decimal literals
+    // Use x += y instead of x = x + y
     "operator-assignment": ["error", "always"],
-    // Всегда двойные кавычки, но позволять избегать экранирования
+    // Always use double quotes, but allow escaping avoidance
     "quotes": ["error", "double", { avoidEscape: true }],
-    // По возможности предпочтительнее деструктуризация объектов в рамках одной переменной
+    // Prefer object destructuring for single variable access where possible
     "prefer-destructuring": ["error", { object: true, array: false }],
     "max-len": [
         "error",
         {
-            "code": 124,                    // Максимальная длина строки — 124 символа
-            "ignoreUrls": true,             // Игнорировать URL в проверке длины
-            "ignoreStrings": true,          // Игнорировать строковые литералы
-            "ignoreRegExpLiterals": true,   // Игнорировать регулярные выражения
-            "ignoreTemplateLiterals": true, // Игнорировать шаблонные строки
-            "ignoreComments": true,         // Игнорировать комментарии
+            "code": 124,                    // Maximum line length — 124 characters
+            "ignoreUrls": true,             // Ignore URLs in length check
+            "ignoreStrings": true,          // Ignore string literals
+            "ignoreRegExpLiterals": true,   // Ignore regular expressions
+            "ignoreTemplateLiterals": true, // Ignore template literals
+            "ignoreComments": true,         // Ignore comments
         }
     ],
 };
 
 const disabledRules = {
-    "no-use-before-define": "off", // Разрешить использование функций/классов до их объявления
-    "no-case-declarations": "off", // Разрешить объявления переменных внутри case без блока
-    "no-implicit-coercion": "off", // Разрешить короткие преобразования типов (+, !!, ~ и т.д.)
-    "no-new-wrappers": "off",      // Разрешить new String(), new Number(), new Boolean()
-    "no-fallthrough": "off",       // Разрешить "провал" case без break
-    "no-dupe-keys": "off",         // Отключено, но TS уже не позволяет дублировать ключи в литералах
+    "no-use-before-define": "off", // Allow using functions/classes before their declaration
+    "no-case-declarations": "off", // Allow variable declarations inside case without a block
+    "no-implicit-coercion": "off", // Allow shorthand type conversions (+, !!, ~, etc.)
+    "no-new-wrappers": "off",      // Allow new String(), new Number(), new Boolean()
+    "no-fallthrough": "off",       // Allow case fallthrough without break
+    "no-dupe-keys": "off",         // Disabled, but TS already prevents duplicate keys in literals
 };
 
 /**
- * Документация по правилам для этого конфига {@link [тут](https://eslint.org/docs/latest/)}
+ * Rule documentation for this config {@link [here](https://eslint.org/docs/latest/)}
  */
 const jsConfig = [
     {

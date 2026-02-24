@@ -5,7 +5,7 @@ import common from "./configs/jest.base.config";
 const config: Config.InitialOptions = {
     ...common,
 
-    // Паттерны поиска тестов
+    // Test file matching patterns
     testMatch: ["**/?*.unit.spec.ts"],
 
     collectCoverageFrom: [

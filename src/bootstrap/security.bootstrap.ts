@@ -7,9 +7,9 @@ export abstract class BootstrapSecurity {
     private constructor() {}
 
     /**
-     * Точка входа регистрации security-политик.
+     * Entry point for registering security policies.
      *
-     * @param application Экземпляр Nest Fastify-приложения.
+     * @param application Nest Fastify application instance.
      */
     public static async registerSecurityPlugins(application: NestFastifyApplication): Promise<void> {
         this.enforceAllowedOrigins(application);
@@ -20,10 +20,10 @@ export abstract class BootstrapSecurity {
     }
 
     /**
-     * Устанавливает CORS (Cross-origin resource sharing) заголовки с проверкой ALLOWED_ORIGINS.
-     * @note Это разрешает кросс-доменные запросы только от доверенных источников. (no-origin только в dev режиме)
+     * Sets up CORS (Cross-Origin Resource Sharing) headers with ALLOWED_ORIGINS validation.
+     * @note Allows cross-origin requests only from trusted sources. (no-origin allowed only in dev mode)
      *
-     * @param application Экземпляр Nest Fastify-приложения. {@link NestFastifyApplication}
+     * @param application Nest Fastify application instance. {@link NestFastifyApplication}
      *
      * @see CORS [Cross-Origin Resource Sharing](https://developer.mozilla.org/docs/Web/HTTP/CORS)
      */
@@ -66,12 +66,12 @@ export abstract class BootstrapSecurity {
     }
 
     /**
-     * Регистрация fastify-cors.
+     * Registers fastify-cors.
      *
-     * @note Этот метод зависит от предварительной фильтрации в {@link enforceAllowedOrigins}.
-     * Либеральная настройка (callback(null, true)) допустима только потому, что невалидные запросы отсекаются на этапе onRequest.
+     * @note This method depends on prior filtering in {@link enforceAllowedOrigins}.
+     * The permissive setup (callback(null, true)) is acceptable only because invalid requests are rejected at the onRequest stage.
      *
-     * @param application Экземпляр Nest Fastify-приложения. {@link NestFastifyApplication}
+     * @param application Nest Fastify application instance. {@link NestFastifyApplication}
      */
     private static async configureCrossOriginResourceSharing(application: NestFastifyApplication): Promise<void> {
         await application.register(fastifyCors, {
@@ -81,9 +81,9 @@ export abstract class BootstrapSecurity {
     }
 
     /**
-     * Устанавливает CSP, HSTS, COEP, COOP, CORP, nosniff заголовки.
+     * Sets up CSP, HSTS, COEP, COOP, CORP, and nosniff headers.
      *
-     * @param application Экземпляр Nest Fastify-приложения. {@link NestFastifyApplication}
+     * @param application Nest Fastify application instance. {@link NestFastifyApplication}
      *
      * @see CSP [Content Security Policy](https://developer.mozilla.org/docs/Web/HTTP/Guides/CSP)
      * @see HSTS [Strict Transport Security](https://developer.mozilla.org/docs/Web/HTTP/Reference/Headers/Strict-Transport-Security)
@@ -116,11 +116,11 @@ export abstract class BootstrapSecurity {
     }
 
     /**
-     * Убирает заголовок Server.
+     * Removes the Server header.
      *
-     * @note Это снижает раскрытие информации о серверном ПО.
+     * @note Reduces server software information disclosure.
      *
-     * @param application Экземпляр Nest Fastify-приложения. {@link NestFastifyApplication}
+     * @param application Nest Fastify application instance. {@link NestFastifyApplication}
      *
      * @see OWASP [Secure Headers Project](https://owasp.org/www-project-secure-headers/#server)
      */
@@ -136,11 +136,11 @@ export abstract class BootstrapSecurity {
     }
 
     /**
-     * Блокирует HTTP методы TRACE и TRACK.
+     * Blocks TRACE and TRACK HTTP methods.
      *
-     * @note Это предотвращает XST (Cross-Site Tracing) атаки.
+     * @note Prevents XST (Cross-Site Tracing) attacks.
      *
-     * @param application Экземпляр Nest Fastify-приложения. {@link NestFastifyApplication}
+     * @param application Nest Fastify application instance. {@link NestFastifyApplication}
      *
      * @see XST [Cross-Site Tracing](https://owasp.org/www-community/attacks/Cross_Site_Tracing)
      */

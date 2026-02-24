@@ -3,7 +3,6 @@ set -e
 
 echo "Configuring PostgreSQL primary for replication..."
 
-# Создаём пользователя для репликации
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     DO \$\$
     BEGIN
@@ -13,7 +12,6 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     END \$\$;
 EOSQL
 
-# Создаём слот репликации
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     SELECT pg_create_physical_replication_slot('${POSTGRESQL_REPLICATION_SLOT}')
     WHERE NOT EXISTS (
@@ -21,7 +19,6 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     );
 EOSQL
 
-# Добавляем правило репликации в pg_hba.conf если его ещё нет
 if ! grep -q "host.*replication.*${POSTGRESQL_REPLICATION_USER}" "$PGDATA/pg_hba.conf"; then
     echo "host    replication     ${POSTGRESQL_REPLICATION_USER}     all                 md5" >> "$PGDATA/pg_hba.conf"
     echo "Replication rule added to pg_hba.conf"

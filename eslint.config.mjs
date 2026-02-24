@@ -41,18 +41,18 @@ export default [
                 "error",
                 {
                     groups: [
-                        ["builtin", "external"],        // сначала встроенные и внешние пакеты (node и git modules)
-                        ["internal"],                   // затем внутренние модули (path aliases)
-                        ["parent", "sibling", "index"], // потом родительские, соседние и index (отновительные пути)
+                        ["builtin", "external"],        // built-in and external packages (node and git modules)
+                        ["internal"],                   // internal modules (path aliases)
+                        ["parent", "sibling", "index"], // parent, sibling, and index (relative paths)
                     ],
                     pathGroups: [
                         {
-                            pattern: "~*{/**,}",    // алиасы вида ~alias/... и ~alias
+                            pattern: "~*{/**,}",        // aliases like ~alias/... and ~alias
                             group: "internal",
                             position: "before"
                         },
                     ],
-                    "newlines-between": "always" // пустая строка между каждой группой
+                    "newlines-between": "always"        // blank line between each group
                 }
             ]
         }

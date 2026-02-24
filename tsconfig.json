@@ -1,9 +1,9 @@
 {
-  "extends": "./configs/tsconfig.base.json",  // Корневой конфиг, лучше воздержаться от редактирования!
+  "extends": "./configs/tsconfig.base.json",  // Root config, better to avoid editing!
   "compilerOptions": {
-    "rootDir": ".",                           // Корневая директория исходного кода
-    "baseUrl": ".",                           // Базовая директория для разрешения относительных путей
-    "outDir": "./dist",                       // Директория для скомпилированных файлов
+    "rootDir": ".",                           // Root directory of the source code
+    "baseUrl": ".",                           // Base directory for resolving relative paths
+    "outDir": "./dist",                       // Output directory for compiled files
     "paths": {
       "~infrastructure": ["src/infrastructure"],
       "~infrastructure/*": ["src/infrastructure/*"],
