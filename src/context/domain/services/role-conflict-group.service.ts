@@ -20,18 +20,18 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
         actor,
     }: Services.RoleConflictGroup.Create): Promise<void> {
         const limit = this.configService.getOrThrow<number>("MAX_CONFLECT_MEMBERS_COUNT");
-        const group = new RoleConflictGroup({
-            description: input.description,
-            maxAllowed: input.maxAllowed,
-            code: input.code,
-            name: input.name,
-            realm,
-            actor,
-        });
-
         if (members.length > limit) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.`);
         } else {
+            const group = new RoleConflictGroup({
+                description: input.description,
+                maxAllowed: input.maxAllowed,
+                code: input.code,
+                name: input.name,
+                realm,
+                actor,
+            });
+
             for (const role of members) {
                 const member = new RoleConflictMember({
                     group,

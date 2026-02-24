@@ -1,5 +1,4 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 
 import { ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/infrastructure/repositories";
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
@@ -14,7 +13,6 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
     public constructor(
         @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
         private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.Contract,
-        private readonly configService: ConfigService,
     ) {}
 
     public async create({
@@ -24,11 +22,14 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
         realm,
         actor,
     }: Services.RoleConflictMember.Create): Promise<void> {
-        const members = await this.roleConflictMemberRepository.find({ where: { id: group.id }, transaction });
-        const limit = this.configService.getOrThrow<number>("MAX_CONFLECT_MEMBERS_COUNT");
+        const isMemberLimitExceeded = await this.roleConflictMemberRepository.wouldExceedMemberLimit({
+            transaction,
+            group: group.id,
+            count: roles.length,
+        });
 
-        if (members.length + roles.length > limit) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.`);
+        if (isMemberLimitExceeded) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED`);
         } else {
             for (const role of roles) {
                 const entity = new RoleConflictMember({

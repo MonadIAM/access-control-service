@@ -1,6 +1,7 @@
 import { EntityManager, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { RoleConflictMemberAdapter } from "~context/infrastructure/adapters";
 import { RoleConflictMember } from "~context/domain/entities";
@@ -16,6 +17,7 @@ export class RoleConflictMemberRepository
     public constructor(
         @InjectEntityManager("read")
         private readonly readManager: EntityManager,
+        private readonly configService: ConfigService,
     ) {
         super();
     }
@@ -73,6 +75,26 @@ export class RoleConflictMemberRepository
                 const entityManager = this.readManager.fork();
                 return await entityManager.findAndCount(RoleConflictMember, where, opts);
             }
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async wouldExceedMemberLimit({
+        transaction,
+        group,
+        count,
+    }: Repositories.RoleConflictMember.WouldExceedMemberLimit): Promise<boolean> {
+        try {
+            const limit = this.configService.getOrThrow<number>("MAX_CONFLECT_MEMBERS_COUNT");
+            const entityManager = transaction ?? this.readManager.fork();
+            const knex = entityManager.getKnex();
+
+            const [{ total }] = await knex("access_control.role_conflict_member")
+                .where("group_id", group)
+                .count("id as total");
+
+            return Number(total) + count > limit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

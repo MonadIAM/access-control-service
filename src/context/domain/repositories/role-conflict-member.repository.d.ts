@@ -25,6 +25,8 @@ declare global {
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
+
+                wouldExceedMemberLimit: (props: WouldExceedMemberLimit) => Promise<boolean>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -57,6 +59,12 @@ declare global {
                       sort: Sort;
                       options?: FindOptions<Entity, P, F>;
                   };
+
+            type WouldExceedMemberLimit = {
+                transaction?: EntityManager;
+                group: string;
+                count: number;
+            };
 
             type Filters = {
                 id?: StringFilterDTO;
