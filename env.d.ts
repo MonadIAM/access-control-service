@@ -6,6 +6,7 @@ declare namespace NodeJS {
 
         SERVICE_NAME: string;
         NODE_ENV: "development" | "production" | "test";
+        API_VERSION: `${number}`;
 
         APP_BASE_IMAGE: string;
         APP_HOST: string;

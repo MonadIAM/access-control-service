@@ -21,9 +21,12 @@ async function bootstrap(): Promise<void> {
 
     const application = await NestFactory.create<NestFastifyApplication>(MainModule, fastifyAdapter, { bufferLogs: true });
     application.useLogger(application.get(Logger));
-    application.setGlobalPrefix("api");
 
     const configService = application.get(ConfigService);
+
+    const version: number = configService.getOrThrow<number>("API_VERSION");
+
+    application.setGlobalPrefix(`api/v${version}`);
 
     BootstrapPipes.applyGlobalPipes(application);
     BootstrapSwagger.registerSwagger(application);

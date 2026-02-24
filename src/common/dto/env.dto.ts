@@ -12,6 +12,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsEnum(NodeEnv)
     public NODE_ENV!: NodeEnv;
 
+    @Validator.IsPositiveInt()
+    public API_VERSION!: number;
+
     @Validator.IsString()
     public APP_BASE_IMAGE!: string;
 
