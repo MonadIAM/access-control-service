@@ -13,6 +13,8 @@
       "~bootstrap/*": ["src/bootstrap/*"],
       "~context": ["src/context"],
       "~context/*": ["src/context/*"],
+      "~common": ["src/common"],
+      "~common/*": ["src/common/*"],
     },
   },
   "include": [
