@@ -2,12 +2,13 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Delete, Inject, Quer
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 
+import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_CONFLICT_MEMBER_HANDLER } from "~context/application/handlers";
-import { EndpointExceptions, ExtractContext } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
+import { PermissionCode } from "~context/enums";
 
 import {
     GetRoleConflictMembersListQueryDTO,
@@ -42,6 +43,7 @@ export class RoleConflictMemberController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_MEMBER_READ)
     @ApiOperation({ summary: "Returns a role conflict member by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictMemberDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
@@ -58,6 +60,7 @@ export class RoleConflictMemberController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_MEMBER_READ)
     @ApiOperation({ summary: "Returns a paginated list of role conflict members" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictMemberListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -72,6 +75,7 @@ export class RoleConflictMemberController extends BaseController {
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_MEMBER_CREATE)
     @ApiOperation({ summary: "Creates a new role conflict member/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(
@@ -81,28 +85,31 @@ export class RoleConflictMemberController extends BaseController {
         HttpStatus.CONFLICT,
     )
     public create(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreateRoleConflictMemberQueryDTO,
         @Body() input: CreateRoleConflictMemberBodyDTO,
     ): Promise<SuccessMessageDTO> {
         return this.roleConflictMemberHandler
-            .create({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_MEMBER_PURGE)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role conflict member/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgeRoleConflictMemberQueryDTO,
         @Body() input: PurgeRoleConflictMemberBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleConflictMemberHandler
-            .purge({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .purge({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }

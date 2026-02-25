@@ -35,3 +35,8 @@ export const HandlerErrorKind = {
     Conflict: "Conflict",
     ...DatabaseErrorKind,
 } as const;
+
+export const GuardErrorKind = {
+    Unauthorized: "Unauthorized",
+    Forbidden: "Forbidden",
+} as const;

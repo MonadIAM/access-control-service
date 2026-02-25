@@ -2,7 +2,7 @@
 import { RoleActorType, RoleProtoType } from "~context/enums";
 
 const SYSTEM_ACTOR = "00000000-0000-4000-8000-000000000000";
-const SYSTEM_REALM = "00000001-0000-4000-8000-000000000001";
+const SYSTEM_REALM = "00000001-0000-4000-8000-100000000001";
 const CREATED_AT   = new Date("2026-01-01T00:00:00.000Z");
 
 const entry = (
@@ -30,7 +30,7 @@ const entry = (
 
 export const Roles = [
     entry(
-        "00000002-0000-4000-8000-000000000001",
+        "00000002-0000-4000-8000-100000000001",
         "system.root",
         "System",
         "Role not available to users",
@@ -38,13 +38,13 @@ export const Roles = [
         true,
     ),
     entry(
-        "00000002-0000-4000-8000-000000000002",
+        "00000002-0000-4000-8000-100000000002",
         "system.user",
         "User",
         "Basic role for all users",
     ),
     entry(
-        "00000002-0000-4000-8000-000000000003",
+        "00000002-0000-4000-8000-100000000003",
         "system.administrator",
         "Administrator",
         "The role that grants maximum privileges within the entire system",
@@ -52,7 +52,7 @@ export const Roles = [
         true,
     ),
     entry(
-        "00000002-0000-4000-8000-000000000004",
+        "00000002-0000-4000-8000-100000000004",
         "system.subscriber",
         "Subscriber",
         "Paid access role, allows creating and managing realms for service integration",

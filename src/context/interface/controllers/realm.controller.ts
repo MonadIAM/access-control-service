@@ -14,12 +14,13 @@ import {
     Get,
 } from "@nestjs/common";
 
+import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
-import { EndpointExceptions, ExtractContext } from "~common/decorators";
 import { REALM_HANDLER } from "~context/application/handlers";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
+import { PermissionCode } from "~context/enums";
 
 import {
     GetRealmsLookupListQueryDTO,
@@ -53,6 +54,7 @@ export class RealmController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.REALM_READ)
     @ApiOperation({ summary: "Returns a realm by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RealmDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
@@ -64,6 +66,7 @@ export class RealmController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.REALM_READ)
     @ApiOperation({ summary: "Returns a paginated list of realms" })
     @ApiResponse({ status: HttpStatus.OK, type: RealmListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -75,6 +78,7 @@ export class RealmController extends BaseController {
 
     @Post("list/lookup")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.REALM_READ)
     @ApiOperation({ summary: "Returns a lookup list of realms" })
     @ApiResponse({ status: HttpStatus.OK, type: RealmLookupListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -89,6 +93,7 @@ export class RealmController extends BaseController {
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @RequirePermission(PermissionCode.REALM_CREATE)
     @ApiOperation({ summary: "Creates a new realm" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(
@@ -98,72 +103,81 @@ export class RealmController extends BaseController {
         HttpStatus.CONFLICT,
     )
     public create(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: CreateRealmBodyDTO,
     ): Promise<SuccessMessageDTO> {
         return this.realmHandler
-            .create({ actor: "00000000-0000-4000-8000-000000000000", input, context })
+            .create({ actor, context, input })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
     }
 
     @Patch("update")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.REALM_UPDATE)
     @ApiOperation({ summary: "Updates realm metadata" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public updateMetadata(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { id }: UpdateRealmQueryDTO,
         @Body() input: UpdateRealmBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.realmHandler
-            .update({ id, actor: "00000000-0000-4000-8000-000000000000", input, context })
+            .update({ actor, context, input, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.REALM_REVOKE)
     @ApiOperation({ summary: "Revokes a non-system realm/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: RevokeRealmBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.realmHandler
-            .revoke({ actor: "00000000-0000-4000-8000-000000000000", input, context })
+            .revoke({ actor, context, input })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.REALM_RESTORE)
     @ApiOperation({ summary: "Restores a non-system realm/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public restore(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: RestoreRealmBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.realmHandler
-            .restore({ actor: "00000000-0000-4000-8000-000000000000", input, context })
+            .restore({ actor, context, input })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.REALM_PURGE)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system realm/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: PurgeRealmBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.realmHandler
-            .purge({ actor: "00000000-0000-4000-8000-000000000000", input, context })
+            .purge({ actor, context, input })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }

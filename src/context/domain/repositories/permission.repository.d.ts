@@ -1,6 +1,7 @@
 import { EntityManager, FilterQuery, FindOptions, Loaded, QueryOrder } from "@mikro-orm/postgresql";
 
 import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
+import { AssignmentScope } from "~context/enums";
 
 import { Permission as PermissionEntity } from "../entities";
 
@@ -30,7 +31,9 @@ declare global {
 
                 findEffectivePermissions: (props: FindEffectivePermissions) => Promise<[Entity[], number]>;
 
-                accountHasPermission: (props: AccountHasPermission) => Promise<boolean>;
+                collectEffectivePermissions: (
+                    props: CollectEffectivePermissions.Props,
+                ) => Promise<CollectEffectivePermissions.Result>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -81,12 +84,16 @@ declare global {
                 sort: Sort;
             };
 
-            type AccountHasPermission = {
-                permission: string;
-                account: string;
-                realm: string;
-                roles: string[];
-            };
+            namespace CollectEffectivePermissions {
+                type Props = {
+                    account: string;
+                };
+                type Result = {
+                    scope: AssignmentScope;
+                    permission: string;
+                    realm: string;
+                }[];
+            }
 
             type Filters = {
                 id?: StringFilterDTO;

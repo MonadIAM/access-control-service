@@ -197,64 +197,71 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
         }
     }
 
-    public async accountHasPermission({
-        permission,
-        account,
-        realm,
-        roles,
-    }: Repositories.Permission.AccountHasPermission): Promise<boolean> {
+    public async collectEffectivePermissions(
+        props: Repositories.Permission.CollectEffectivePermissions.Props,
+    ): Promise<Repositories.Permission.CollectEffectivePermissions.Result> {
         try {
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
 
-            const effectiveRoles = knex
-                .select("RC.ancestor_id as role_id")
+            const expandedRoles = knex
+                .select("arm.realm_id", "rc.ancestor_id as role_id")
                 .distinct()
-                .from({ RC: "access_control.role_closure" })
-                .whereIn("RC.descendant_id", roles.length > 0 ? roles : [null]);
+                .from({ arm: "access_control.account_role_assignment" })
+                .join({ rc: "access_control.role_closure" }, "arm.role_id", "rc.descendant_id")
+                .where("arm.account_id", props.account)
+                .andWhere("arm.is_revoked", false);
 
-            const denyCheck = knex
-                .select(knex.raw("1"))
-                .from("access_control.permission_override")
-                .where("account_id", account)
-                .andWhere("permission_id", permission)
-                .andWhere("realm_id", realm)
-                .andWhere("effect", PermissionOverrideEffect.DENY)
-                .andWhere("is_revoked", false);
+            const rolePermissions = knex
+                .select("er.realm_id", "rpa.permission_id", "rpa.scope")
+                .distinct()
+                .from(knex.raw("? as er", [expandedRoles]))
+                .join({ rpa: "access_control.role_permission_assignment" }, "rpa.role_id", "er.role_id")
+                .andWhere("rpa.is_revoked", false);
 
-            const allowCheck = knex
-                .select(knex.raw("1"))
-                .from("access_control.permission_override")
-                .where("account_id", account)
-                .andWhere("permission_id", permission)
-                .andWhere("realm_id", realm)
-                .andWhere("effect", PermissionOverrideEffect.ALLOW)
-                .andWhere("is_revoked", false);
+            const deniedPermissions = knex
+                .select("po.realm_id", "po.permission_id")
+                .from({ po: "access_control.permission_override" })
+                .where("po.account_id", props.account)
+                .andWhere("po.effect", PermissionOverrideEffect.DENY)
+                .andWhere("po.is_revoked", false);
 
-            const roleCheck = knex
-                .select(knex.raw("1"))
-                .from("access_control.role_permission_assignment")
-                .whereIn("role_id", effectiveRoles)
-                .andWhere("permission_id", permission)
-                .andWhere("is_revoked", false);
+            const allowedOverrides = knex
+                .select("po.realm_id", "po.permission_id", knex.raw("'REALM' as scope"))
+                .from({ po: "access_control.permission_override" })
+                .where("po.account_id", props.account)
+                .andWhere("po.effect", PermissionOverrideEffect.ALLOW)
+                .andWhere("po.is_revoked", false);
 
-            const result = await knex
-                .select(
-                    knex.raw(`EXISTS (${denyCheck}) as has_deny`),
-                    knex.raw(`EXISTS (${allowCheck}) as has_allow`),
-                    knex.raw(`EXISTS (${roleCheck}) as has_role_access`),
-                )
-                .first<{ [K in "has_deny" | "has_allow" | "has_role_access"]: boolean }>();
+            const basePermissions = knex
+                .select("rp.realm_id", "rp.permission_id", "rp.scope")
+                .from(knex.raw("? as rp", [rolePermissions]))
+                .whereNotExists(
+                    knex
+                        .select(1)
+                        .from(knex.raw("? as dp", [deniedPermissions]))
+                        .whereRaw("dp.permission_id = rp.permission_id AND dp.realm_id = rp.realm_id"),
+                );
 
-            if (!result) {
-                return false;
-            } else if (result.has_deny) {
-                return false;
-            } else if (result.has_allow) {
-                return true;
-            } else {
-                return result.has_role_access;
-            }
+            const combined = knex
+                .select("bp.realm_id", "bp.permission_id", "bp.scope")
+                .from(knex.raw("? as bp", [basePermissions]))
+                .union(
+                    [
+                        knex
+                            .select("ao.realm_id", "ao.permission_id", "ao.scope")
+                            .from(knex.raw("? as ao", [allowedOverrides])),
+                    ],
+                    true,
+                );
+
+            const results = await knex
+                .select("eff.realm_id as realm", "p.code as permission", "eff.scope")
+                .from(knex.raw("? as eff", [combined]))
+                .join({ p: "access_control.permission" }, "p.id", "eff.permission_id")
+                .distinct();
+
+            return results;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

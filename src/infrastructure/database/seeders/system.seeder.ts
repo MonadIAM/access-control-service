@@ -1,7 +1,14 @@
 import { EntityManager } from "@mikro-orm/core";
 import { Seeder } from "@mikro-orm/seeder";
 
-import { RolePermissionAssignments, RoleClosures, Permissions, Realms, Roles } from "../datasets/system";
+import {
+    RolePermissionAssignments,
+    AccountRoleAssignments,
+    RoleClosures,
+    Permissions,
+    Realms,
+    Roles,
+} from "../datasets/system";
 
 export class SystemSeeder extends Seeder {
     public async run(entityManager: EntityManager): Promise<void> {
@@ -25,5 +32,6 @@ export class SystemSeeder extends Seeder {
         await entityManager.insertMany("access_control.role", Roles);
         await entityManager.insertMany("access_control.role_closure", RoleClosures);
         await entityManager.insertMany("access_control.role_permission_assignment", RolePermissionAssignments);
+        await entityManager.insertMany("access_control.account_role_assignment", AccountRoleAssignments);
     }
 }

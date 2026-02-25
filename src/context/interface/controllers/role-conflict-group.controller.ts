@@ -14,12 +14,13 @@ import {
     Get,
 } from "@nestjs/common";
 
+import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { ROLE_CONFLICT_GROUP_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_CONFLICT_GROUP_HANDLER } from "~context/application/handlers";
-import { EndpointExceptions, ExtractContext } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
+import { PermissionCode } from "~context/enums";
 
 import {
     RoleConflictGroupPaginatedListDTO,
@@ -63,6 +64,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_GROUP_READ)
     @ApiOperation({ summary: "Returns a role conflict group by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
@@ -74,6 +76,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_GROUP_READ)
     @ApiOperation({ summary: "Returns a paginated list of role conflict groups" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupPaginatedListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -88,6 +91,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Post("violation-details")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_GROUP_CREATE)
     @ApiOperation({ summary: "Returns a list of SoD violation details" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictGroupListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -102,6 +106,7 @@ export class RoleConflictGroupController extends BaseController {
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_GROUP_CREATE)
     @ApiOperation({ summary: "Creates a new role conflict group" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(
@@ -111,76 +116,85 @@ export class RoleConflictGroupController extends BaseController {
         HttpStatus.CONFLICT,
     )
     public create(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreateRoleConflictGroupQueryDTO,
         @Body() input: CreateRoleConflictGroupBodyDTO,
     ): Promise<SuccessMessageDTO> {
         return this.roleConflictGroupHandler
-            .create({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
     }
 
     @Patch("update")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_GROUP_UPDATE)
     @ApiOperation({ summary: "Updates role conflict group metadata" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public updateMetadata(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm, id }: UpdateRoleConflictGroupQueryDTO,
         @Body() input: UpdateRoleConflictGroupBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleConflictGroupHandler
-            .update({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000", id })
+            .update({ actor, context, input, realm, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_GROUP_REVOKE)
     @ApiOperation({ summary: "Revokes a non-system role conflict group/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokeRoleConflictGroupQueryDTO,
         @Body() input: RevokeRoleConflictGroupBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleConflictGroupHandler
-            .revoke({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .revoke({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_GROUP_RESTORE)
     @ApiOperation({ summary: "Restores a non-system role conflict group/s" })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public restore(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RestoreRoleConflictGroupQueryDTO,
         @Body() input: RestoreRoleConflictGroupBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleConflictGroupHandler
-            .restore({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .restore({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_CONFLICT_GROUP_PURGE)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role conflict group/s" })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public purge(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgeRoleConflictGroupQueryDTO,
         @Body() input: PurgeRoleConflictGroupBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleConflictGroupHandler
-            .purge({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .purge({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }

@@ -1694,6 +1694,19 @@
           "nullable": false,
           "mappedType": "boolean"
         },
+        "scope": {
+          "name": "scope",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "REALM",
+            "GLOBAL"
+          ],
+          "mappedType": "enum"
+        },
         "role_id": {
           "name": "role_id",
           "type": "uuid",
@@ -1791,6 +1804,16 @@
             "role_id"
           ],
           "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "role_permission_assignment_scope_idx",
+          "columnNames": [
+            "scope"
+          ],
+          "composite": false,
           "constraint": false,
           "primary": false,
           "unique": false

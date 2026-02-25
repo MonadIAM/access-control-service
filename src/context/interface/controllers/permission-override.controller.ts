@@ -14,12 +14,13 @@ import {
     Get,
 } from "@nestjs/common";
 
+import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/infrastructure/repositories";
 import { PERMISSION_OVERRIDE_HANDLER } from "~context/application/handlers";
-import { EndpointExceptions, ExtractContext } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
+import { PermissionCode } from "~context/enums";
 
 import {
     GetPermissionOverridesListQueryDTO,
@@ -58,6 +59,7 @@ export class PermissionOverrideController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_READ)
     @ApiOperation({ summary: "Returns a permission override by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionOverrideDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
@@ -69,6 +71,7 @@ export class PermissionOverrideController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_READ)
     @ApiOperation({ summary: "Returns a paginated list of permission overrides" })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionOverrideListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -83,6 +86,7 @@ export class PermissionOverrideController extends BaseController {
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_CREATE)
     @ApiOperation({ summary: "Creates a new permission override" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(
@@ -92,60 +96,67 @@ export class PermissionOverrideController extends BaseController {
         HttpStatus.CONFLICT,
     )
     public create(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreatePermissionOverrideQueryDTO,
         @Body() input: CreatePermissionOverrideBodyDTO,
     ): Promise<SuccessMessageDTO> {
         return this.permissionOverrideHandler
-            .create({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
     }
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_REVOKE)
     @ApiOperation({ summary: "Revokes a non-system permission override/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokePermissionOverrideQueryDTO,
         @Body() input: RevokePermissionOverrideBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.permissionOverrideHandler
-            .revoke({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .revoke({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_RESTORE)
     @ApiOperation({ summary: "Restores a non-system permission override/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public restore(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RestorePermissionOverrideQueryDTO,
         @Body() input: RestorePermissionOverrideBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.permissionOverrideHandler
-            .restore({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .restore({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_PURGE)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system permission override/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgePermissionOverrideQueryDTO,
         @Body() input: PurgePermissionOverrideBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.permissionOverrideHandler
-            .purge({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .purge({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }

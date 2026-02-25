@@ -1,6 +1,7 @@
 import { EntitySchema } from "@mikro-orm/core";
 
 import { RolePermissionAssignment, Permission, Role, Realm } from "~context/domain/entities";
+import { AssignmentScope } from "~context/enums";
 
 export const RolePermissionAssignmentSchema = new EntitySchema<RolePermissionAssignment>({
     class: RolePermissionAssignment,
@@ -23,12 +24,17 @@ export const RolePermissionAssignmentSchema = new EntitySchema<RolePermissionAss
             name: "role_permission_assignment_realm_role_idx",
             properties: ["realm", "role"],
         },
+        {
+            name: "role_permission_assignment_scope_idx",
+            properties: ["scope"],
+        },
     ],
 
     properties: {
         id: { primary: true, type: "uuid" },
 
         isSystemManaged: { type: "boolean", nullable: false },
+        scope: { enum: true, items: () => AssignmentScope, nullable: false },
 
         role: {
             kind: "m:1",

@@ -14,12 +14,13 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { EndpointExceptions, ExtractContext } from "~common/decorators";
+import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { ROLE_HANDLER } from "~context/application/handlers";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
+import { PermissionCode } from "~context/enums";
 
 import {
     GetRoleDescendantsListQueryDTO,
@@ -76,6 +77,7 @@ export class RoleController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_READ)
     @ApiOperation({ summary: "Returns a role by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
@@ -87,6 +89,7 @@ export class RoleController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_READ)
     @ApiOperation({ summary: "Returns a paginated list of roles" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -101,6 +104,7 @@ export class RoleController extends BaseController {
 
     @Post("list/lookup")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_READ)
     @ApiOperation({ summary: "Returns a lookup list of roles" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleLookupListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -115,6 +119,7 @@ export class RoleController extends BaseController {
 
     @Post("list/ancestors")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_READ)
     @ApiOperation({ summary: "Returns a paginated list of ancestor roles of the specified role, including itself" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleHierarchyListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -135,6 +140,7 @@ export class RoleController extends BaseController {
 
     @HttpCode(HttpStatus.OK)
     @Post("list/descendants")
+    @RequirePermission(PermissionCode.ROLE_READ)
     @ApiOperation({ summary: "Returns a paginated list of descendant roles of the specified role, including itself" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleHierarchyListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -155,6 +161,7 @@ export class RoleController extends BaseController {
 
     @Post("list/delegable")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_READ)
     @ApiOperation({ summary: "Returns a paginated list of delegable roles for the specified role/account" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -169,6 +176,7 @@ export class RoleController extends BaseController {
 
     @Post("list/effective")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_READ)
     @ApiOperation({ summary: "Returns a paginated list of effective roles for the account" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -183,6 +191,7 @@ export class RoleController extends BaseController {
 
     @Get("hierarchy-graph")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_READ)
     @ApiOperation({ summary: "Returns the role hierarchy graph (nodes and edges)" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleHierarchyGraphDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -194,6 +203,7 @@ export class RoleController extends BaseController {
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @RequirePermission(PermissionCode.ROLE_CREATE)
     @ApiOperation({ summary: "Creates a new role" })
     @ApiResponse({ status: HttpStatus.CREATED, type: SuccessMessageDTO })
     @EndpointExceptions(
@@ -203,93 +213,104 @@ export class RoleController extends BaseController {
         HttpStatus.CONFLICT,
     )
     public create(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreateRoleQueryDTO,
         @Body() input: CreateRoleBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleHandler
-            .create({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000" })
+            .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Patch("update")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_UPDATE)
     @ApiOperation({ summary: "Updates role metadata" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public updateMetadata(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm, id }: UpdateRoleQueryDTO,
         @Body() input: UpdateRoleBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleHandler
-            .update({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000", id })
+            .update({ actor, context, input, realm, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_REVOKE)
     @ApiOperation({ summary: "Revokes a non-system role" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokeRoleQueryDTO,
         @Body() input: RevokeRoleBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleHandler
-            .revoke({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000" })
+            .revoke({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_RESTORE)
     @ApiOperation({ summary: "Restores a non-system role" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public restore(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RestoreRoleQueryDTO,
         @Body() input: RestoreRoleBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleHandler
-            .restore({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000" })
+            .restore({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_PURGE)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purge(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm, id }: PurgeRoleQueryDTO,
         @Body() input: PurgeRoleBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleHandler
-            .purge({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000", id })
+            .purge({ actor, context, input, realm, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @HttpCode(HttpStatus.OK)
     @Delete("purge-subtree")
+    @RequirePermission(PermissionCode.ROLE_PURGE_SUBTREE)
     @ApiOperation({ summary: "Permanently deletes a role and its entire subtree" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public purgeSubtree(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm, id }: PurgeRoleSubtreeQueryDTO,
         @Body() input: PurgeRoleSubtreeBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleHandler
-            .purgeSubtree({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000", id })
+            .purgeSubtree({ actor, context, input, realm, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }

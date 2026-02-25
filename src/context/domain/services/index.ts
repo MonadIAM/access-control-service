@@ -20,7 +20,7 @@ export const PERMISSION_SERVICE = Symbol("Services.Permission.Contract");
 export const REALM_SERVICE = Symbol("Services.Realm.Contract");
 export const ROLE_SERVICE = Symbol("Services.Role.Contract");
 
-export const SERVICES: Provider[] = [
+export const DOMAIN_SERVICES: Provider[] = [
     {
         provide: ROLE_PERMISSION_ASSIGNMENT_SERVICE,
         useClass: RolePermissionAssignmentService,

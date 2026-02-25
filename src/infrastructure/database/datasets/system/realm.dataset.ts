@@ -4,7 +4,7 @@ const CREATED_AT   = new Date("2026-01-01T00:00:00.000Z");
 
 export const Realms = [
     {
-        id: "00000001-0000-4000-8000-000000000001",
+        id: "00000001-0000-4000-8000-100000000001",
         code: "system",
         name: "System",
         description: "Root system realm for all platform-level entities",

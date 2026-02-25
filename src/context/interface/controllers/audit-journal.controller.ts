@@ -3,9 +3,10 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { I18nService } from "nestjs-i18n";
 
 import { AUDIT_JOURNAL_REPOSITORY } from "~context/infrastructure/repositories";
+import { EndpointExceptions, RequirePermission } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { EndpointExceptions } from "~common/decorators";
 import { BaseController } from "~common/abstract";
+import { PermissionCode } from "~context/enums";
 
 import {
     GetAuditJournalsListBodyDTO,
@@ -28,6 +29,7 @@ export class AuditJournalController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.AUDIT_JOURNAL_READ)
     @ApiOperation({ summary: "Returns a audit journal event by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: AuditJournalDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
@@ -39,6 +41,7 @@ export class AuditJournalController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.AUDIT_JOURNAL_READ)
     @ApiOperation({ summary: "Returns a paginated list of audit journal events" })
     @ApiResponse({ status: HttpStatus.OK, type: AuditJournalListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)

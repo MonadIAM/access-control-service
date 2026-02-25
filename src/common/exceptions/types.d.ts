@@ -5,6 +5,7 @@ import {
     HandlerErrorKind,
     CommonErrorKind,
     EntityErrorKind,
+    GuardErrorKind,
 } from "./error-kinds";
 
 declare global {
@@ -15,6 +16,7 @@ declare global {
         type HandlerErrorKind = keyof typeof HandlerErrorKind;
         type CommonErrorKind = keyof typeof CommonErrorKind;
         type EntityErrorKind = keyof typeof EntityErrorKind;
+        type GuardErrorKind = keyof typeof GuardErrorKind;
 
         type ResponseBody = {
             /* eslint-disable prettier/prettier */

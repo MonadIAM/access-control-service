@@ -1,43 +1,65 @@
-type Pagination = {
-    currentPage: number;
-    elementsPerPage: number;
-};
+import type { FastifyRequest, RouteGenericInterface } from "fastify";
 
-declare namespace DeltaAudit {
-    type Actor = {
-        id: string;
+declare global {
+    type Pagination = {
+        currentPage: number;
+        elementsPerPage: number;
     };
 
-    type FieldPatch<T, K extends keyof T> = {
-        old: Optional<T[K]>;
-        new: T[K];
+    type RequestContext = {
+        userAgent: string;
+        ip: string;
     };
 
-    type Patch<T> = {
-        [K in keyof T]?: FieldPatch<T, K>;
+    type MessageResult = {
+        message: string;
+        params?: Record<string, unknown>;
     };
 
-    type BaseAction = {
-        by: Actor;
-        at: Date;
-        reason: string;
+    type Req<T extends RouteGenericInterface = RouteGenericInterface> = FastifyRequest<T> & {
+        actorContext: ActorContext;
     };
 
-    type UpdateAction<T> = BaseAction & {
-        patch: Patch<T>;
+    type ActorContext = {
+        account: string;
     };
 
-    type CreateAction = Omit<BaseAction, "at" | "reason">;
+    namespace DeltaAudit {
+        type Actor = {
+            id: string;
+        };
 
-    type BaseSnapshot = {
-        create: CreateAction;
-        restore?: BaseAction;
-        revoke?: BaseAction;
-    };
+        type FieldPatch<T, K extends keyof T> = {
+            old: Optional<T[K]>;
+            new: T[K];
+        };
 
-    type LastActionsSnapshot<T = never> = [T] extends [never]
-        ? BaseSnapshot
-        : BaseSnapshot & {
-              update?: UpdateAction<T>;
-          };
+        type Patch<T> = {
+            [K in keyof T]?: FieldPatch<T, K>;
+        };
+
+        type BaseAction = {
+            by: Actor;
+            at: Date;
+            reason: string;
+        };
+
+        type UpdateAction<T> = BaseAction & {
+            patch: Patch<T>;
+        };
+
+        type CreateAction = Omit<BaseAction, "at" | "reason">;
+
+        type BaseSnapshot = {
+            create: CreateAction;
+            restore?: BaseAction;
+            revoke?: BaseAction;
+        };
+
+        type LastActionsSnapshot<T = never> = [T] extends [never]
+            ? BaseSnapshot
+            : BaseSnapshot & {
+                  update?: UpdateAction<T>;
+              };
+    }
 }

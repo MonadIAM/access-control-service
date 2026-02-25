@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { EntityException } from "~common/exceptions";
+import { AssignmentScope } from "~context/enums";
 
 import { Permission } from "./permission.entity";
 import { Realm } from "./realm.entity";
@@ -16,6 +17,7 @@ export class RolePermissionAssignment {
     public updatedAt?: Date;
     public version: number = 1;
 
+    public scope: AssignmentScope;
     public lastActions: DeltaAudit.LastActionsSnapshot;
     public isSystemManaged: boolean;
     public isRevoked: boolean;
@@ -25,6 +27,7 @@ export class RolePermissionAssignment {
     public role: Role;
 
     public constructor(props: Entities.RolePermissionAssignment.ConstructorProps) {
+        this.scope = AssignmentScope.REALM;
         this.createdAt = new Date();
         this.id = randomUUID();
 

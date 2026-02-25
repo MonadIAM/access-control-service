@@ -14,12 +14,13 @@ import {
     Get,
 } from "@nestjs/common";
 
+import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { ROLE_DELEGATION_POLICY_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_DELEGATION_POLICY_HANDLER } from "~context/application/handlers";
-import { EndpointExceptions, ExtractContext } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
+import { PermissionCode } from "~context/enums";
 
 import {
     GetRoleDelegationPoliciesListQueryDTO,
@@ -60,6 +61,7 @@ export class RoleDelegationPolicyController extends BaseController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_DELEGATION_POLICY_READ)
     @ApiOperation({ summary: "Returns a role delegation policy by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDelegationPolicyDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
@@ -73,6 +75,7 @@ export class RoleDelegationPolicyController extends BaseController {
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_DELEGATION_POLICY_READ)
     @ApiOperation({ summary: "Returns a paginated list of role delegation policies" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleDelegationPolicyListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
@@ -87,6 +90,7 @@ export class RoleDelegationPolicyController extends BaseController {
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @RequirePermission(PermissionCode.ROLE_DELEGATION_POLICY_CREATE)
     @ApiOperation({ summary: "Creates a new role delegation policy" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(
@@ -96,77 +100,86 @@ export class RoleDelegationPolicyController extends BaseController {
         HttpStatus.CONFLICT,
     )
     public create(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreateRoleDelegationPolicyQueryDTO,
         @Body() input: CreateRoleDelegationPolicyBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleDelegationPolicyHandler
-            .create({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Patch("update")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_DELEGATION_POLICY_UPDATE)
     @ApiOperation({ summary: "Updates role delegation policy data" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public updateMetadata(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm, id }: UpdateRoleDelegationPolicyQueryDTO,
         @Body() input: UpdateRoleDelegationPolicyBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleDelegationPolicyHandler
-            .update({ input, context, realm, actor: "00000000-0000-4000-8000-000000000000", id })
+            .update({ actor, context, input, realm, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_DELEGATION_POLICY_REVOKE)
     @ApiOperation({ summary: "Revokes a non-system role delegation policies" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     public revoke(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokeRoleDelegationPolicyQueryDTO,
         @Body() input: RevokeRoleDelegationPolicyBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleDelegationPolicyHandler
-            .revoke({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .revoke({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_DELEGATION_POLICY_RESTORE)
     @ApiOperation({ summary: "Restores a non-system role delegation policies" })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public restore(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RestoreRoleDelegationPolicyQueryDTO,
         @Body() input: RestoreRoleDelegationPolicyBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleDelegationPolicyHandler
-            .restore({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .restore({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @RequirePermission(PermissionCode.ROLE_DELEGATION_POLICY_PURGE)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role delegation policies" })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
     public purge(
+        @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgeRoleDelegationPolicyQueryDTO,
         @Body() input: PurgeRoleDelegationPolicyBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
         return this.roleDelegationPolicyHandler
-            .purge({ actor: "00000000-0000-4000-8000-000000000000", input, context, realm })
+            .purge({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
 }
