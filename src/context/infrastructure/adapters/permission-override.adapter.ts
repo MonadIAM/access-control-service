@@ -15,7 +15,7 @@ export class PermissionOverrideAdapter {
             where.id = MikroAdapter.applyStringFilter(filters.id);
         }
         if (filters.account) {
-            where.accountId = MikroAdapter.applyStringFilter(filters.account);
+            where.account = MikroAdapter.applyStringFilter(filters.account);
         }
         if (filters.effect) {
             where.effect = MikroAdapter.applyStringFilter<PermissionOverrideEffect>(filters.effect);

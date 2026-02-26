@@ -9,22 +9,21 @@ export const RoleClosureSchema = new EntitySchema<RoleClosure>({
 
     indexes: [
         {
-            name: "role_closure_realm_ancestor_idx",
-            properties: ["realm", "ancestor"],
+            name: "role_closure_ancestor_depth_idx",
+            properties: ["ancestor", "depth"],
         },
         {
-            name: "role_closure_realm_descendant_idx",
-            properties: ["realm", "descendant"],
+            name: "role_closure_descendant_depth_idx",
+            properties: ["descendant", "depth"],
         },
     ],
 
     properties: {
-        depth: { type: "int", nullable: false },
+        depth: { type: "int" },
 
         realm: {
             kind: "m:1",
             primary: true,
-            nullable: false,
             entity: () => Realm,
             fieldName: "realm_id",
             deleteRule: "cascade",
@@ -32,7 +31,6 @@ export const RoleClosureSchema = new EntitySchema<RoleClosure>({
         ancestor: {
             kind: "m:1",
             primary: true,
-            nullable: false,
             entity: () => Role,
             fieldName: "ancestor_id",
             deleteRule: "cascade",
@@ -40,7 +38,6 @@ export const RoleClosureSchema = new EntitySchema<RoleClosure>({
         descendant: {
             kind: "m:1",
             primary: true,
-            nullable: false,
             entity: () => Role,
             fieldName: "descendant_id",
             deleteRule: "cascade",

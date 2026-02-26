@@ -11,47 +11,45 @@ export const PermissionOverrideSchema = new EntitySchema<PermissionOverride>({
     uniques: [
         {
             name: "permission_override_realm_account_permission_unique",
-            properties: ["realm", "accountId", "permission"],
+            properties: ["realm", "account", "permission"],
         },
     ],
 
     indexes: [
         {
-            name: "permission_override_realm_account_idx",
-            properties: ["realm", "accountId"],
+            name: "permission_override_account_idx",
+            properties: ["account"],
         },
         {
-            name: "permission_override_realm_permission_idx",
-            properties: ["realm", "permission"],
+            name: "permission_override_permission_idx",
+            properties: ["permission"],
         },
     ],
 
     properties: {
         id: { primary: true, type: "uuid" },
 
-        accountId: { type: "uuid", fieldName: "account_id", nullable: false },
+        account: { type: "uuid", fieldName: "account" },
 
-        effect: { enum: true, items: () => PermissionOverrideEffect, nullable: false },
+        effect: { enum: true, items: () => PermissionOverrideEffect },
 
         permission: {
             kind: "m:1",
-            nullable: false,
             entity: () => Permission,
             fieldName: "permission_id",
             deleteRule: "cascade",
         },
         realm: {
             kind: "m:1",
-            nullable: false,
             entity: () => Realm,
             fieldName: "realm_id",
             deleteRule: "cascade",
         },
 
-        createdAt: { type: "timestamptz", length: 3, nullable: false },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
-        lastActions: { type: "jsonb", nullable: false },
-        isRevoked: { type: "boolean", nullable: false },
+        createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
+        lastActions: { type: "jsonb" },
+        isRevoked: { type: "boolean" },
     },
 });

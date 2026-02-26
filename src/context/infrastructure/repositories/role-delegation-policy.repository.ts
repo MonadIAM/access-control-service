@@ -138,7 +138,7 @@ export class RoleDelegationPolicyRepository
                 .select("ara.role_id")
                 .from("access_control.account_role_assignment as ara")
                 .where("ara.realm_id", realm)
-                .andWhere("ara.account_id", actor)
+                .andWhere("ara.account", actor)
                 .andWhere("ara.is_revoked", false);
 
             const allowedTargetsCte = knex

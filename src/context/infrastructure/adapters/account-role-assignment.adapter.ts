@@ -14,7 +14,7 @@ export class AccountRoleAssignmentAdapter {
             where.id = MikroAdapter.applyStringFilter(filters.id);
         }
         if (filters.account) {
-            where.accountId = MikroAdapter.applyStringFilter(filters.account);
+            where.account = MikroAdapter.applyStringFilter(filters.account);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };

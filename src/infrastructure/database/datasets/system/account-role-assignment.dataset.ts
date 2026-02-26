@@ -5,8 +5,8 @@ const CREATED_AT   = new Date("2026-01-01T00:00:00.000Z");
 
 const entry = (id: string, role: string, account: string) => ({
     id,
+    account,
     role_id: role,
-    account_id: account,
     realm_id: SYSTEM_REALM,
     is_system_managed: true,
     is_revoked: false,

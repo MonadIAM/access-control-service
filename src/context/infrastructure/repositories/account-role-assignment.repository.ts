@@ -93,7 +93,7 @@ export class AccountRoleAssignmentRepository
 
             const assignments = await knex("access_control.account_role_assignment as assignment")
                 .join("access_control.role as role", "role.id", "assignment.role_id")
-                .where("assignment.account_id", account)
+                .where("assignment.account", account)
                 .select("assignment.role_id", "assignment.is_revoked", "role.is_system_managed");
 
             const existingRoleIds = new Set(assignments.map((assignment) => assignment.role_id));

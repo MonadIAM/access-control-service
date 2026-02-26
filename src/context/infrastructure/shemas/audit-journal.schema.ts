@@ -27,10 +27,10 @@ export const AuditJournalSchema = new EntitySchema<AuditJournal>({
         id: { primary: true, type: "uuid" },
 
         realm: { type: "uuid", nullable: true },
-        entity: { type: "uuid", nullable: false },
+        entity: { type: "uuid" },
 
-        by: { type: "uuid", nullable: false },
-        at: { type: "timestamptz", length: 3, nullable: false },
+        by: { type: "uuid" },
+        at: { type: "timestamptz", length: 3 },
 
         reason: { type: "text", nullable: true },
         patch: { type: "jsonb", nullable: true },
@@ -41,6 +41,6 @@ export const AuditJournalSchema = new EntitySchema<AuditJournal>({
         actionType: { enum: true, items: () => AccessControlActionType },
         entityType: { enum: true, items: () => AccessControlEntityType },
 
-        createdAt: { type: "timestamptz", length: 3, nullable: false },
+        createdAt: { type: "timestamptz", length: 3 },
     },
 });

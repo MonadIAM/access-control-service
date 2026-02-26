@@ -121,7 +121,7 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
                     .distinct()
                     .from({ arm: "access_control.account_role_assignment" })
                     .join({ rc: "access_control.role_closure" }, "arm.role_id", "rc.descendant_id")
-                    .where("arm.account_id", account)
+                    .where("arm.account", account)
                     .andWhere("arm.realm_id", realm)
                     .andWhere("arm.is_revoked", false);
 
@@ -135,7 +135,7 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
                 const deniedPermissions = knex
                     .select("po.permission_id")
                     .from({ po: "access_control.permission_override" })
-                    .where("po.account_id", account)
+                    .where("po.account", account)
                     .andWhere("po.realm_id", realm)
                     .andWhere("po.effect", PermissionOverrideEffect.DENY)
                     .andWhere("po.is_revoked", false);
@@ -143,7 +143,7 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
                 const allowedOverrides = knex
                     .select("po.permission_id")
                     .from({ po: "access_control.permission_override" })
-                    .where("po.account_id", account)
+                    .where("po.account", account)
                     .andWhere("po.realm_id", realm)
                     .andWhere("po.effect", PermissionOverrideEffect.ALLOW)
                     .andWhere("po.is_revoked", false);
@@ -209,7 +209,7 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
                 .distinct()
                 .from({ arm: "access_control.account_role_assignment" })
                 .join({ rc: "access_control.role_closure" }, "arm.role_id", "rc.descendant_id")
-                .where("arm.account_id", props.account)
+                .where("arm.account", props.account)
                 .andWhere("arm.is_revoked", false);
 
             const rolePermissions = knex
@@ -222,14 +222,14 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
             const deniedPermissions = knex
                 .select("po.realm_id", "po.permission_id")
                 .from({ po: "access_control.permission_override" })
-                .where("po.account_id", props.account)
+                .where("po.account", props.account)
                 .andWhere("po.effect", PermissionOverrideEffect.DENY)
                 .andWhere("po.is_revoked", false);
 
             const allowedOverrides = knex
                 .select("po.realm_id", "po.permission_id", knex.raw("'REALM' as scope"))
                 .from({ po: "access_control.permission_override" })
-                .where("po.account_id", props.account)
+                .where("po.account", props.account)
                 .andWhere("po.effect", PermissionOverrideEffect.ALLOW)
                 .andWhere("po.is_revoked", false);
 
@@ -275,7 +275,7 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
         const knex = entityManager.getKnex();
 
         const viaRoles = knex
-            .select("ara.account_id")
+            .select("ara.account")
             .distinct()
             .from({ rpa: "access_control.role_permission_assignment" })
             .join({ rc: "access_control.role_closure" }, "rpa.role_id", "rc.ancestor_id")
@@ -285,7 +285,7 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
             .andWhere("ara.is_revoked", false);
 
         const viaOverrides = knex
-            .select("po.account_id")
+            .select("po.account")
             .distinct()
             .from({ po: "access_control.permission_override" })
             .whereIn("po.permission_id", permissions)
@@ -293,6 +293,6 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
 
         const results = await viaRoles.union([viaOverrides]);
 
-        return results.map(({ account_id }) => account_id);
+        return results.map(({ account }) => account);
     }
 }

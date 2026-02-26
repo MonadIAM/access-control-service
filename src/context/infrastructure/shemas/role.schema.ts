@@ -32,17 +32,16 @@ export const RoleSchema = new EntitySchema<Role>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        actorType: { enum: true, items: () => RoleActorType, nullable: false },
-        protoType: { enum: true, items: () => RoleProtoType, nullable: false },
-        code: { type: "string", length: 128, nullable: false },
-        name: { type: "string", length: 255, nullable: false },
-        isSystemManaged: { type: "boolean", nullable: false },
-        nonDelegable: { type: "boolean", nullable: false },
+        code: { type: "string", length: 128 },
+        name: { type: "string", length: 255 },
         description: { type: "text", nullable: true },
+        actorType: { enum: true, items: () => RoleActorType },
+        protoType: { enum: true, items: () => RoleProtoType },
+        isSystemManaged: { type: "boolean" },
+        nonDelegable: { type: "boolean" },
 
         realm: {
             kind: "m:1",
-            nullable: false,
             entity: () => Realm,
             fieldName: "realm_id",
             deleteRule: "cascade",
@@ -74,10 +73,10 @@ export const RoleSchema = new EntitySchema<Role>({
             mappedBy: "role",
         },
 
-        createdAt: { type: "timestamptz", length: 3, nullable: false },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
-        lastActions: { type: "jsonb", nullable: false },
-        isRevoked: { type: "boolean", nullable: false },
+        createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
+        lastActions: { type: "jsonb" },
+        isRevoked: { type: "boolean" },
     },
 });

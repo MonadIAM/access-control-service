@@ -10,47 +10,45 @@ export const AccountRoleAssignmentSchema = new EntitySchema<AccountRoleAssignmen
     uniques: [
         {
             name: "account_role_assignment_realm_account_role_unique",
-            properties: ["realm", "accountId", "role"],
+            properties: ["realm", "account", "role"],
         },
     ],
 
     indexes: [
         {
-            name: "account_role_assignment_realm_account_idx",
-            properties: ["realm", "accountId"],
+            name: "account_role_assignment_account_idx",
+            properties: ["account"],
         },
         {
-            name: "account_role_assignment_realm_role_idx",
-            properties: ["realm", "role"],
+            name: "account_role_assignment_role_idx",
+            properties: ["role"],
         },
     ],
 
     properties: {
         id: { primary: true, type: "uuid" },
 
-        accountId: { type: "uuid", fieldName: "account_id", nullable: false },
+        account: { type: "uuid", fieldName: "account" },
 
-        isSystemManaged: { type: "boolean", nullable: false },
+        isSystemManaged: { type: "boolean" },
 
         role: {
             kind: "m:1",
-            nullable: false,
             entity: () => Role,
             fieldName: "role_id",
             deleteRule: "cascade",
         },
         realm: {
             kind: "m:1",
-            nullable: false,
             entity: () => Realm,
             fieldName: "realm_id",
             deleteRule: "cascade",
         },
 
-        createdAt: { type: "timestamptz", length: 3, nullable: false },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
-        lastActions: { type: "jsonb", nullable: false },
-        isRevoked: { type: "boolean", nullable: false },
+        createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
+        lastActions: { type: "jsonb" },
+        isRevoked: { type: "boolean" },
     },
 });

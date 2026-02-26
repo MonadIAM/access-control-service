@@ -17,7 +17,7 @@ export class PermissionOverrideDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public accountId!: string;
+    public account!: string;
 
     @Expose()
     @Validator.IsEnum(PermissionOverrideEffect)

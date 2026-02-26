@@ -17,15 +17,14 @@ export const RoleConflictGroupSchema = new EntitySchema<RoleConflictGroup>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        isSystemManaged: { type: "boolean", nullable: false },
-        code: { type: "string", length: 128, nullable: false },
-        name: { type: "string", length: 255, nullable: false },
+        code: { type: "string", length: 128 },
+        name: { type: "string", length: 255 },
         description: { type: "text", nullable: true },
-        maxAllowed: { type: "int", nullable: false },
+        isSystemManaged: { type: "boolean" },
+        maxAllowed: { type: "int" },
 
         realm: {
             kind: "m:1",
-            nullable: false,
             entity: () => Realm,
             fieldName: "realm_id",
             deleteRule: "cascade",
@@ -37,10 +36,10 @@ export const RoleConflictGroupSchema = new EntitySchema<RoleConflictGroup>({
             mappedBy: "group",
         },
 
-        createdAt: { type: "timestamptz", length: 3, nullable: false },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
-        lastActions: { type: "jsonb", nullable: false },
-        isRevoked: { type: "boolean", nullable: false },
+        createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
+        lastActions: { type: "jsonb" },
+        isRevoked: { type: "boolean" },
     },
 });

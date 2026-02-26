@@ -24,15 +24,15 @@ export const RealmSchema = new EntitySchema<Realm>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        isSystemManaged: { type: "boolean", nullable: false },
-        code: { type: "string", length: 128, nullable: false },
-        name: { type: "string", length: 255, nullable: false },
+        code: { type: "string", length: 128 },
+        name: { type: "string", length: 255 },
         description: { type: "text", nullable: true },
+        isSystemManaged: { type: "boolean" },
 
-        createdAt: { type: "timestamptz", length: 3, nullable: false },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
-        lastActions: { type: "jsonb", nullable: false },
-        isRevoked: { type: "boolean", nullable: false },
+        createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
+        lastActions: { type: "jsonb" },
+        isRevoked: { type: "boolean" },
     },
 });

@@ -26,27 +26,25 @@ export const RoleConflictMemberSchema = new EntitySchema<RoleConflictMember>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        isSystemManaged: { type: "boolean", nullable: false },
+        isSystemManaged: { type: "boolean" },
 
         group: {
             kind: "m:1",
-            nullable: false,
             entity: () => RoleConflictGroup,
             fieldName: "group_id",
             deleteRule: "cascade",
         },
         role: {
             kind: "m:1",
-            nullable: false,
             entity: () => Role,
             fieldName: "role_id",
             deleteRule: "cascade",
         },
 
-        createdAt: { type: "timestamptz", length: 3, nullable: false },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
-        lastActions: { type: "jsonb", nullable: false },
-        isRevoked: { type: "boolean", nullable: false },
+        createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
+        lastActions: { type: "jsonb" },
+        isRevoked: { type: "boolean" },
     },
 });

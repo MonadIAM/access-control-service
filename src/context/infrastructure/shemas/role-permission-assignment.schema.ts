@@ -17,51 +17,44 @@ export const RolePermissionAssignmentSchema = new EntitySchema<RolePermissionAss
 
     indexes: [
         {
-            name: "role_permission_assignment_realm_permission_idx",
-            properties: ["realm", "permission"],
+            name: "role_permission_assignment_permission_idx",
+            properties: ["permission"],
         },
         {
-            name: "role_permission_assignment_realm_role_idx",
-            properties: ["realm", "role"],
-        },
-        {
-            name: "role_permission_assignment_scope_idx",
-            properties: ["scope"],
+            name: "role_permission_assignment_realm_idx",
+            properties: ["realm"],
         },
     ],
 
     properties: {
         id: { primary: true, type: "uuid" },
 
-        isSystemManaged: { type: "boolean", nullable: false },
-        scope: { enum: true, items: () => AssignmentScope, nullable: false },
+        scope: { enum: true, items: () => AssignmentScope },
+        isSystemManaged: { type: "boolean" },
 
         role: {
             kind: "m:1",
-            nullable: false,
             entity: () => Role,
             fieldName: "role_id",
             deleteRule: "cascade",
         },
         realm: {
             kind: "m:1",
-            nullable: false,
             entity: () => Realm,
             fieldName: "realm_id",
             deleteRule: "cascade",
         },
         permission: {
             kind: "m:1",
-            nullable: false,
             entity: () => Permission,
             fieldName: "permission_id",
             deleteRule: "cascade",
         },
 
-        createdAt: { type: "timestamptz", length: 3, nullable: false },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
-        lastActions: { type: "jsonb", nullable: false },
-        isRevoked: { type: "boolean", nullable: false },
+        createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
+        lastActions: { type: "jsonb" },
+        isRevoked: { type: "boolean" },
     },
 });

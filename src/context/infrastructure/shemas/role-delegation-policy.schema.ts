@@ -16,48 +16,45 @@ export const RoleDelegationPolicySchema = new EntitySchema<RoleDelegationPolicy>
 
     indexes: [
         {
-            name: "role_delegation_policy_realm_delegator_idx",
-            properties: ["realm", "delegator"],
+            name: "role_delegation_policy_delegator_idx",
+            properties: ["delegator"],
         },
         {
-            name: "role_delegation_policy_realm_target_idx",
-            properties: ["realm", "target"],
+            name: "role_delegation_policy_target_idx",
+            properties: ["target"],
         },
     ],
 
     properties: {
         id: { primary: true, type: "uuid" },
 
-        isSystemManaged: { type: "boolean", nullable: false },
-        depthLimit: { type: "smallint", nullable: false },
         description: { type: "text", nullable: true },
+        isSystemManaged: { type: "boolean" },
+        depthLimit: { type: "smallint" },
 
         realm: {
             kind: "m:1",
-            nullable: false,
             entity: () => Realm,
             fieldName: "realm_id",
             deleteRule: "cascade",
         },
         delegator: {
             kind: "m:1",
-            nullable: false,
             entity: () => Role,
             fieldName: "delegator_id",
             deleteRule: "cascade",
         },
         target: {
             kind: "m:1",
-            nullable: false,
             entity: () => Role,
             fieldName: "target_id",
             deleteRule: "cascade",
         },
 
-        createdAt: { type: "timestamptz", length: 3, nullable: false },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
-        lastActions: { type: "jsonb", nullable: false },
-        isRevoked: { type: "boolean", nullable: false },
+        createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
+        lastActions: { type: "jsonb" },
+        isRevoked: { type: "boolean" },
     },
 });

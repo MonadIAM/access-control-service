@@ -196,15 +196,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "is_system_managed": {
-          "name": "is_system_managed",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
-        },
         "code": {
           "name": "code",
           "type": "varchar(128)",
@@ -234,15 +225,14 @@
           "nullable": true,
           "mappedType": "text"
         },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamptz(3)",
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 3,
-          "mappedType": "datetime"
+          "mappedType": "boolean"
         },
         "updated_at": {
           "name": "updated_at",
@@ -253,6 +243,26 @@
           "nullable": true,
           "length": 3,
           "mappedType": "datetime"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 3,
+          "mappedType": "datetime"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
         },
         "last_actions": {
           "name": "last_actions",
@@ -271,16 +281,6 @@
           "primary": false,
           "nullable": false,
           "mappedType": "boolean"
-        },
-        "version": {
-          "name": "version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "1",
-          "mappedType": "integer"
         }
       },
       "name": "realm",
@@ -331,15 +331,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "is_system_managed": {
-          "name": "is_system_managed",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
-        },
         "code": {
           "name": "code",
           "type": "varchar(128)",
@@ -369,14 +360,33 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
         "realm_id": {
           "name": "realm_id",
           "type": "uuid",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
+          "nullable": false,
           "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
         },
         "created_at": {
           "name": "created_at",
@@ -388,15 +398,15 @@
           "length": 3,
           "mappedType": "datetime"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
+        "version": {
+          "name": "version",
+          "type": "int",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
         },
         "last_actions": {
           "name": "last_actions",
@@ -415,39 +425,11 @@
           "primary": false,
           "nullable": false,
           "mappedType": "boolean"
-        },
-        "version": {
-          "name": "version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "1",
-          "mappedType": "integer"
         }
       },
       "name": "permission",
       "schema": "access_control",
       "indexes": [
-        {
-          "keyName": "permission_realm_code_unique",
-          "columnNames": [],
-          "composite": false,
-          "constraint": false,
-          "primary": false,
-          "unique": false,
-          "expression": "CREATE UNIQUE INDEX \"permission_realm_code_unique\" ON \"access_control\".\"permission\" (\"realm_id\", \"code\") WHERE \"realm_id\" IS NOT NULL"
-        },
-        {
-          "keyName": "permission_global_code_unique",
-          "columnNames": [],
-          "composite": false,
-          "constraint": false,
-          "primary": false,
-          "unique": false,
-          "expression": "CREATE UNIQUE INDEX \"permission_global_code_unique\" ON \"access_control\".\"permission\" (\"code\") WHERE \"realm_id\" IS NULL"
-        },
         {
           "keyName": "permission_name_trgm_idx",
           "columnNames": [],
@@ -456,6 +438,17 @@
           "primary": false,
           "unique": false,
           "expression": "CREATE INDEX \"permission_name_trgm_idx\" ON \"access_control\".\"permission\" USING gin (\"name\" gin_trgm_ops)"
+        },
+        {
+          "keyName": "permission_realm_code_unique",
+          "columnNames": [
+            "realm_id",
+            "code"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
         },
         {
           "keyName": "permission_pkey",
@@ -497,8 +490,8 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "account_id": {
-          "name": "account_id",
+        "account": {
+          "name": "account",
           "type": "uuid",
           "unsigned": false,
           "autoincrement": false,
@@ -537,6 +530,16 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -547,15 +550,15 @@
           "length": 3,
           "mappedType": "datetime"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
+        "version": {
+          "name": "version",
+          "type": "int",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
         },
         "last_actions": {
           "name": "last_actions",
@@ -574,39 +577,27 @@
           "primary": false,
           "nullable": false,
           "mappedType": "boolean"
-        },
-        "version": {
-          "name": "version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "1",
-          "mappedType": "integer"
         }
       },
       "name": "permission_override",
       "schema": "access_control",
       "indexes": [
         {
-          "keyName": "permission_override_realm_account_idx",
+          "keyName": "permission_override_account_idx",
           "columnNames": [
-            "realm_id",
-            "account_id"
+            "account"
           ],
-          "composite": true,
+          "composite": false,
           "constraint": false,
           "primary": false,
           "unique": false
         },
         {
-          "keyName": "permission_override_realm_permission_idx",
+          "keyName": "permission_override_permission_idx",
           "columnNames": [
-            "realm_id",
             "permission_id"
           ],
-          "composite": true,
+          "composite": false,
           "constraint": false,
           "primary": false,
           "unique": false
@@ -615,7 +606,7 @@
           "keyName": "permission_override_realm_account_permission_unique",
           "columnNames": [
             "realm_id",
-            "account_id",
+            "account",
             "permission_id"
           ],
           "composite": true,
@@ -676,6 +667,35 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "code": {
+          "name": "code",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 128,
+          "mappedType": "string"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
         "actor_type": {
           "name": "actor_type",
           "type": "text",
@@ -703,26 +723,6 @@
           ],
           "mappedType": "enum"
         },
-        "code": {
-          "name": "code",
-          "type": "varchar(128)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 128,
-          "mappedType": "string"
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(255)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 255,
-          "mappedType": "string"
-        },
         "is_system_managed": {
           "name": "is_system_managed",
           "type": "boolean",
@@ -741,15 +741,6 @@
           "nullable": false,
           "mappedType": "boolean"
         },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "text"
-        },
         "realm_id": {
           "name": "realm_id",
           "type": "uuid",
@@ -758,6 +749,16 @@
           "primary": false,
           "nullable": false,
           "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
         },
         "created_at": {
           "name": "created_at",
@@ -769,15 +770,15 @@
           "length": 3,
           "mappedType": "datetime"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
+        "version": {
+          "name": "version",
+          "type": "int",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
         },
         "last_actions": {
           "name": "last_actions",
@@ -796,16 +797,6 @@
           "primary": false,
           "nullable": false,
           "mappedType": "boolean"
-        },
-        "version": {
-          "name": "version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "1",
-          "mappedType": "integer"
         }
       },
       "name": "role",
@@ -871,8 +862,8 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "account_id": {
-          "name": "account_id",
+        "account": {
+          "name": "account",
           "type": "uuid",
           "unsigned": false,
           "autoincrement": false,
@@ -907,6 +898,16 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -917,15 +918,15 @@
           "length": 3,
           "mappedType": "datetime"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
+        "version": {
+          "name": "version",
+          "type": "int",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
         },
         "last_actions": {
           "name": "last_actions",
@@ -944,39 +945,27 @@
           "primary": false,
           "nullable": false,
           "mappedType": "boolean"
-        },
-        "version": {
-          "name": "version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "1",
-          "mappedType": "integer"
         }
       },
       "name": "account_role_assignment",
       "schema": "access_control",
       "indexes": [
         {
-          "keyName": "account_role_assignment_realm_account_idx",
+          "keyName": "account_role_assignment_account_idx",
           "columnNames": [
-            "realm_id",
-            "account_id"
+            "account"
           ],
-          "composite": true,
+          "composite": false,
           "constraint": false,
           "primary": false,
           "unique": false
         },
         {
-          "keyName": "account_role_assignment_realm_role_idx",
+          "keyName": "account_role_assignment_role_idx",
           "columnNames": [
-            "realm_id",
             "role_id"
           ],
-          "composite": true,
+          "composite": false,
           "constraint": false,
           "primary": false,
           "unique": false
@@ -985,7 +974,7 @@
           "keyName": "account_role_assignment_realm_account_role_unique",
           "columnNames": [
             "realm_id",
-            "account_id",
+            "account",
             "role_id"
           ],
           "composite": true,
@@ -1078,10 +1067,10 @@
       "schema": "access_control",
       "indexes": [
         {
-          "keyName": "role_closure_realm_ancestor_idx",
+          "keyName": "role_closure_ancestor_depth_idx",
           "columnNames": [
-            "realm_id",
-            "ancestor_id"
+            "ancestor_id",
+            "depth"
           ],
           "composite": true,
           "constraint": false,
@@ -1089,10 +1078,10 @@
           "unique": false
         },
         {
-          "keyName": "role_closure_realm_descendant_idx",
+          "keyName": "role_closure_descendant_depth_idx",
           "columnNames": [
-            "realm_id",
-            "descendant_id"
+            "descendant_id",
+            "depth"
           ],
           "composite": true,
           "constraint": false,
@@ -1167,15 +1156,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "is_system_managed": {
-          "name": "is_system_managed",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
-        },
         "code": {
           "name": "code",
           "type": "varchar(128)",
@@ -1205,6 +1185,15 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
         "max_allowed": {
           "name": "max_allowed",
           "type": "int",
@@ -1223,6 +1212,16 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -1233,15 +1232,15 @@
           "length": 3,
           "mappedType": "datetime"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
+        "version": {
+          "name": "version",
+          "type": "int",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
         },
         "last_actions": {
           "name": "last_actions",
@@ -1260,16 +1259,6 @@
           "primary": false,
           "nullable": false,
           "mappedType": "boolean"
-        },
-        "version": {
-          "name": "version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "1",
-          "mappedType": "integer"
         }
       },
       "name": "role_conflict_group",
@@ -1353,6 +1342,16 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -1363,15 +1362,15 @@
           "length": 3,
           "mappedType": "datetime"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
+        "version": {
+          "name": "version",
+          "type": "int",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
         },
         "last_actions": {
           "name": "last_actions",
@@ -1390,16 +1389,6 @@
           "primary": false,
           "nullable": false,
           "mappedType": "boolean"
-        },
-        "version": {
-          "name": "version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "1",
-          "mappedType": "integer"
         }
       },
       "name": "role_conflict_member",
@@ -1479,6 +1468,15 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
         "is_system_managed": {
           "name": "is_system_managed",
           "type": "boolean",
@@ -1496,15 +1494,6 @@
           "primary": false,
           "nullable": false,
           "mappedType": "smallint"
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "text"
         },
         "realm_id": {
           "name": "realm_id",
@@ -1533,6 +1522,16 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -1543,15 +1542,15 @@
           "length": 3,
           "mappedType": "datetime"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
+        "version": {
+          "name": "version",
+          "type": "int",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
         },
         "last_actions": {
           "name": "last_actions",
@@ -1570,39 +1569,27 @@
           "primary": false,
           "nullable": false,
           "mappedType": "boolean"
-        },
-        "version": {
-          "name": "version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "1",
-          "mappedType": "integer"
         }
       },
       "name": "role_delegation_policy",
       "schema": "access_control",
       "indexes": [
         {
-          "keyName": "role_delegation_policy_realm_delegator_idx",
+          "keyName": "role_delegation_policy_delegator_idx",
           "columnNames": [
-            "realm_id",
             "delegator_id"
           ],
-          "composite": true,
+          "composite": false,
           "constraint": false,
           "primary": false,
           "unique": false
         },
         {
-          "keyName": "role_delegation_policy_realm_target_idx",
+          "keyName": "role_delegation_policy_target_idx",
           "columnNames": [
-            "realm_id",
             "target_id"
           ],
-          "composite": true,
+          "composite": false,
           "constraint": false,
           "primary": false,
           "unique": false
@@ -1685,15 +1672,6 @@
           "nullable": false,
           "mappedType": "uuid"
         },
-        "is_system_managed": {
-          "name": "is_system_managed",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
-        },
         "scope": {
           "name": "scope",
           "type": "text",
@@ -1706,6 +1684,15 @@
             "GLOBAL"
           ],
           "mappedType": "enum"
+        },
+        "is_system_managed": {
+          "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
         },
         "role_id": {
           "name": "role_id",
@@ -1734,6 +1721,16 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamptz(3)",
@@ -1744,15 +1741,15 @@
           "length": 3,
           "mappedType": "datetime"
         },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamptz(3)",
+        "version": {
+          "name": "version",
+          "type": "int",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
         },
         "last_actions": {
           "name": "last_actions",
@@ -1771,47 +1768,25 @@
           "primary": false,
           "nullable": false,
           "mappedType": "boolean"
-        },
-        "version": {
-          "name": "version",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "default": "1",
-          "mappedType": "integer"
         }
       },
       "name": "role_permission_assignment",
       "schema": "access_control",
       "indexes": [
         {
-          "keyName": "role_permission_assignment_realm_permission_idx",
+          "keyName": "role_permission_assignment_permission_idx",
           "columnNames": [
-            "realm_id",
             "permission_id"
           ],
-          "composite": true,
+          "composite": false,
           "constraint": false,
           "primary": false,
           "unique": false
         },
         {
-          "keyName": "role_permission_assignment_realm_role_idx",
+          "keyName": "role_permission_assignment_realm_idx",
           "columnNames": [
-            "realm_id",
-            "role_id"
-          ],
-          "composite": true,
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
-          "keyName": "role_permission_assignment_scope_idx",
-          "columnNames": [
-            "scope"
+            "realm_id"
           ],
           "composite": false,
           "constraint": false,

@@ -140,7 +140,7 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                 return entities;
             });
 
-            await this.permissionCacheService.invalidate({ accounts: entities.map(({ accountId }) => accountId) });
+            await this.permissionCacheService.invalidate({ accounts: entities.map(({ account }) => account) });
 
             if (entities.length > 1) {
                 return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -182,7 +182,7 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                 return entities;
             });
 
-            await this.permissionCacheService.invalidate({ accounts: entities.map(({ accountId }) => accountId) });
+            await this.permissionCacheService.invalidate({ accounts: entities.map(({ account }) => account) });
 
             if (entities.length > 1) {
                 return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };

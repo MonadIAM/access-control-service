@@ -16,7 +16,7 @@ export class PermissionOverride {
     public updatedAt?: Date;
     public version: number = 1;
 
-    public accountId: string;
+    public account: string;
     public effect: PermissionOverrideEffect;
     public lastActions: DeltaAudit.LastActionsSnapshot;
     public isRevoked: boolean;
@@ -31,7 +31,7 @@ export class PermissionOverride {
         this.lastActions = { create: { by: { id: props.actor } } };
         this.isRevoked = props.isRevoked ?? false;
 
-        this.accountId = props.account;
+        this.account = props.account;
         this.effect = props.effect;
 
         this.permission = props.permission;

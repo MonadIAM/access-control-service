@@ -128,10 +128,10 @@ export class RoleConflictGroupRepository
             const knex = entityManager.getKnex();
 
             const query = knex
-                .select("arm.account_id")
+                .select("arm.account")
                 .from("access_control.account_role_assignment as arm")
                 .whereIn("arm.role_id", identifiers)
-                .groupBy("arm.account_id")
+                .groupBy("arm.account")
                 .having(knex.raw("count(distinct arm.role_id) > ?", [maxAllowed]))
                 .limit(1);
 
@@ -151,7 +151,7 @@ export class RoleConflictGroupRepository
             knex
                 .select(knex.raw('"arm"."role_id"::uuid as "role_id"'))
                 .from({ arm: "access_control.account_role_assignment" })
-                .where({ "arm.realm_id": props.realm, "arm.account_id": props.account })
+                .where({ "arm.realm_id": props.realm, "arm.account": props.account })
                 .union(
                     props.roles.map((role) => knex.select(knex.raw('?::uuid as "role_id"', [role]))),
                     true,

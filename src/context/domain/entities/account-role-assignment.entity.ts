@@ -15,7 +15,7 @@ export class AccountRoleAssignment {
     public updatedAt?: Date;
     public version: number = 1;
 
-    public accountId: string;
+    public account: string;
     public lastActions: DeltaAudit.LastActionsSnapshot;
     public isSystemManaged: boolean;
     public isRevoked: boolean;
@@ -31,7 +31,7 @@ export class AccountRoleAssignment {
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;
 
-        this.accountId = props.account;
+        this.account = props.account;
 
         this.realm = props.realm;
         this.role = props.role;

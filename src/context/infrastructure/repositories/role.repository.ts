@@ -218,7 +218,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
                         if (type === "ACCOUNT") {
                             const rolesByAccountSubquery = knex("access_control.account_role_assignment")
                                 .select("role_id")
-                                .where("account_id", id);
+                                .where("account", id);
                             sub.whereIn("policy.delegator_id", rolesByAccountSubquery);
                         } else {
                             sub.where("policy.delegator_id", id);
@@ -263,7 +263,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
                     .from({ R: "access_control.role" })
                     .join({ RC: "access_control.role_closure" }, "R.id", "RC.ancestor_id")
                     .join({ ARM: "access_control.account_role_assignment" }, "RC.descendant_id", "ARM.role_id")
-                    .where("ARM.account_id", account)
+                    .where("ARM.account", account)
                     .andWhere("ARM.realm_id", realm)
                     .andWhere("ARM.is_revoked", false);
 
@@ -335,14 +335,14 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         const knex = entityManager.getKnex();
 
         const results = await knex
-            .select("ara.account_id")
+            .select("ara.account")
             .distinct()
             .from({ rc: "access_control.role_closure" })
             .join({ ara: "access_control.account_role_assignment" }, "ara.role_id", "rc.descendant_id")
             .whereIn("rc.ancestor_id", roles)
             .andWhere("ara.is_revoked", false);
 
-        return results.map(({ account_id }) => account_id);
+        return results.map(({ account }) => account);
     }
 
     public async wouldExceedRoleLimit({
