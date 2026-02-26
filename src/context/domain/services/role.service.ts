@@ -10,6 +10,7 @@ import { ServiceException } from "~common/exceptions";
 export class RoleService implements Services.Role.Contract {
     private readonly entityType = AccessControlEntityType.ROLE;
     private readonly dictionaryPath = "services.role";
+    private readonly purgeSubtreeSizeLimit: number;
 
     public constructor(
         @Inject(ROLE_CLOSURE_REPOSITORY)
@@ -17,7 +18,9 @@ export class RoleService implements Services.Role.Contract {
         @Inject(ROLE_REPOSITORY)
         private readonly roleRepository: Repositories.Role.Contract,
         private readonly configService: ConfigService,
-    ) {}
+    ) {
+        this.purgeSubtreeSizeLimit = this.configService.getOrThrow<number>("MAX_ROLE_SUBTREE_SIZE_FOR_PURGE");
+    }
 
     public async create({
         transaction,
@@ -148,10 +151,10 @@ export class RoleService implements Services.Role.Contract {
 
         transaction.clear();
 
-        const limit = this.configService.getOrThrow<number>("MAX_ROLE_SUBTREE_SIZE_FOR_PURGE");
-
-        if (descendants.length > limit) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.SUBTREE_SIZE_LIMIT_EXCEEDED`, { limit });
+        if (descendants.length > this.purgeSubtreeSizeLimit) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.SUBTREE_SIZE_LIMIT_EXCEEDED`, {
+                limit: this.purgeSubtreeSizeLimit,
+            });
         } else {
             for (const descendant of descendants) {
                 descendant.canPurge();

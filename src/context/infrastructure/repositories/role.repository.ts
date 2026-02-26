@@ -11,6 +11,7 @@ import { MikroAdapter } from "~infrastructure/database";
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleRepository extends RoleAdapter implements Repositories.Role.Contract {
     private readonly resource = "Role";
+    private readonly roleLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
@@ -18,6 +19,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         private readonly configService: ConfigService,
     ) {
         super();
+        this.roleLimit = this.configService.getOrThrow<number>("ROLE_PER_REALM_LIMIT");
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({
@@ -334,13 +336,12 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         count,
     }: Repositories.Role.WouldExceedRoleLimit): Promise<boolean> {
         try {
-            const limit = this.configService.getOrThrow<number>("ROLE_PER_REALM_LIMIT");
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
             const [{ total }] = await knex("access_control.role").where("realm_id", realm).count("id as total");
 
-            return Number(total) + count > limit;
+            return Number(total) + count > this.roleLimit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

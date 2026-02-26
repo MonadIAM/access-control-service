@@ -13,6 +13,7 @@ declare namespace NodeJS {
         APP_PORT: `${number}`;
         THROTTLE_LIMIT: `${number}`;
         THROTTLE_TTL: `${number}`;
+        JWT_SECRET: string;
 
         // ---------------------------------------------------------------------------
         // PostgreSQL - common
@@ -22,8 +23,8 @@ declare namespace NodeJS {
         POSTGRESQL_PORT: `${number}`;
         POSTGRESQL_REPLICA_PORT: `${number}`;
         POSTGRESQL_USER: string;
-        POSTGRESQL_PASS: string;
         POSTGRESQL_NAME: string;
+        POSTGRESQL_PASSWORD: string;
         POSTGRESQL_SSL: "true" | "false";
         POSTGRESQL_SSL_REJECT_UNAUTHORIZED: "true" | "false";
         POSTGRESQL_POOL_IDLE_MS: `${number}`;
@@ -84,7 +85,7 @@ declare namespace NodeJS {
         // ---------------------------------------------------------------------------
 
         MAX_ROLE_SUBTREE_SIZE_FOR_PURGE: `${number}`;
-        MAX_CONFLECT_MEMBERS_COUNT: `${number}`;
+        MAX_CONFLICT_MEMBERS_COUNT: `${number}`;
         PERMISSION_PER_ROLE_LIMIT: `${number}`;
         ROLE_PER_ACCOUNT_LIMIT: `${number}`;
         ROLE_PER_REALM_LIMIT: `${number}`;

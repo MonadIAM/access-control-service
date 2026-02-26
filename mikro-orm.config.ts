@@ -29,7 +29,7 @@ const config: Options<PostgreSqlDriver> = {
     host: "127.0.0.1",
     port: port,
     user: process.env.POSTGRESQL_USER,
-    password: process.env.POSTGRESQL_PASS,
+    password: process.env.POSTGRESQL_PASSWORD,
     dbName: process.env.POSTGRESQL_NAME,
 
     debug: process.env.POSTGRESQL_LOGGING === "true" || process.env.NODE_ENV === "development",
@@ -54,7 +54,7 @@ const config: Options<PostgreSqlDriver> = {
         fileName: (timestamp: string, name?: string) => {
             const prefix = timestamp.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, "$1.$2.$3T$4-$5-$6");
             if (name) {
-                return `${prefix}__${name}`;
+                return `${prefix}__${name.replace(/-\s/g, "_")}`;
             } else {
                 return `${prefix}`;
             }

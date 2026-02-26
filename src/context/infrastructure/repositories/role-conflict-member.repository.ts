@@ -13,6 +13,7 @@ export class RoleConflictMemberRepository
     implements Repositories.RoleConflictMember.Contract
 {
     private readonly resource = "RoleConflictMember";
+    private readonly membersLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
@@ -20,6 +21,7 @@ export class RoleConflictMemberRepository
         private readonly configService: ConfigService,
     ) {
         super();
+        this.membersLimit = this.configService.getOrThrow<number>("MAX_CONFLICT_MEMBERS_COUNT");
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({
@@ -86,7 +88,6 @@ export class RoleConflictMemberRepository
         count,
     }: Repositories.RoleConflictMember.WouldExceedMemberLimit): Promise<boolean> {
         try {
-            const limit = this.configService.getOrThrow<number>("MAX_CONFLECT_MEMBERS_COUNT");
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
@@ -94,7 +95,7 @@ export class RoleConflictMemberRepository
                 .where("group_id", group)
                 .count("id as total");
 
-            return Number(total) + count > limit;
+            return Number(total) + count > this.membersLimit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

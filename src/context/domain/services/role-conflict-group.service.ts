@@ -9,8 +9,11 @@ import { ServiceException } from "~common/exceptions";
 export class RoleConflictGroupService implements Services.RoleConflictGroup.Contract {
     private readonly entityType = AccessControlEntityType.CONFLICT_GROUP;
     private readonly dictionaryPath = "services.role-conflict-group";
+    private readonly membersLimit: number;
 
-    public constructor(private readonly configService: ConfigService) {}
+    public constructor(private readonly configService: ConfigService) {
+        this.membersLimit = this.configService.getOrThrow<number>("MAX_CONFLICT_MEMBERS_COUNT");
+    }
 
     public async create({
         transaction,
@@ -19,8 +22,7 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
         realm,
         actor,
     }: Services.RoleConflictGroup.Create): Promise<void> {
-        const limit = this.configService.getOrThrow<number>("MAX_CONFLECT_MEMBERS_COUNT");
-        if (members.length > limit) {
+        if (members.length > this.membersLimit) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.`);
         } else {
             const group = new RoleConflictGroup({

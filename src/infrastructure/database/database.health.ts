@@ -6,22 +6,25 @@ import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class DatabaseHealthIndicator {
+    private readonly isEnabledCQRS: boolean;
+
     public constructor(
-        @InjectEntityManager("write") private readonly writeEntityManager: EntityManager,
-        @InjectEntityManager("read") private readonly readEntityManager: EntityManager,
+        @InjectEntityManager("write")
+        private readonly writeEntityManager: EntityManager,
+        @InjectEntityManager("read")
+        private readonly readEntityManager: EntityManager,
         private readonly healthIndicatorService: HealthIndicatorService,
         private readonly configService: ConfigService,
-    ) {}
+    ) {
+        this.isEnabledCQRS = this.configService.getOrThrow<string>("POSTGRESQL_CQRS_ENABLED") === "true";
+    }
 
     public async isHealthy<T extends string>(key: T): Promise<HealthIndicatorResult<T>> {
         const indicator = this.healthIndicatorService.check(key);
-
-        const cqrsEnabled = this.configService.getOrThrow<string>("POSTGRESQL_CQRS_ENABLED") === "true";
-
         try {
             await this.assertConnection(this.writeEntityManager);
 
-            if (cqrsEnabled) {
+            if (this.isEnabledCQRS) {
                 await this.assertConnection(this.readEntityManager);
             }
 

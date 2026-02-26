@@ -20,8 +20,8 @@ export abstract class MikroOrmConfig {
             host: host,
             port: port,
             user: config.getOrThrow<string>("POSTGRESQL_USER"),
-            password: config.getOrThrow<string>("POSTGRESQL_PASS"),
             dbName: config.getOrThrow<string>("POSTGRESQL_NAME"),
+            password: config.getOrThrow<string>("POSTGRESQL_PASSWORD"),
             debug: config.getOrThrow<string>("POSTGRESQL_LOGGING") === "true",
 
             entities: [path.join(process.cwd(), "dist/**/*.schema.js")],

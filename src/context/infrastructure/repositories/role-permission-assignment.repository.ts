@@ -13,6 +13,7 @@ export class RolePermissionAssignmentRepository
     implements Repositories.RolePermissionAssignment.Contract
 {
     private readonly resource = "RolePermissionAssignment";
+    private readonly permissionLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
@@ -20,6 +21,7 @@ export class RolePermissionAssignmentRepository
         private readonly configService: ConfigService,
     ) {
         super();
+        this.permissionLimit = this.configService.getOrThrow<number>("PERMISSION_PER_ROLE_LIMIT");
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({
@@ -86,7 +88,6 @@ export class RolePermissionAssignmentRepository
         role,
     }: Repositories.RolePermissionAssignment.WouldExceedPermissionLimit): Promise<boolean> {
         try {
-            const limit = this.configService.getOrThrow<number>("PERMISSION_PER_ROLE_LIMIT");
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
@@ -98,7 +99,7 @@ export class RolePermissionAssignmentRepository
             const existingRoleIds = new Set(assignments.map((assignment) => assignment.permission_id));
             const trulyNewCount = permissions.filter((id) => !existingRoleIds.has(id)).length;
 
-            return assignments.length + trulyNewCount > limit;
+            return assignments.length + trulyNewCount > this.permissionLimit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

@@ -13,6 +13,7 @@ export class AccountRoleAssignmentRepository
     implements Repositories.AccountRoleAssignment.Contract
 {
     private readonly resource = "AccountRoleAssignment";
+    private readonly accountRoleLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
@@ -20,6 +21,7 @@ export class AccountRoleAssignmentRepository
         private readonly configService: ConfigService,
     ) {
         super();
+        this.accountRoleLimit = this.configService.getOrThrow<number>("ROLE_PER_ACCOUNT_LIMIT");
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({
@@ -86,7 +88,6 @@ export class AccountRoleAssignmentRepository
         roles,
     }: Repositories.AccountRoleAssignment.WouldExceedRoleLimit): Promise<boolean> {
         try {
-            const limit = this.configService.getOrThrow<number>("ROLE_PER_ACCOUNT_LIMIT");
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
@@ -98,7 +99,7 @@ export class AccountRoleAssignmentRepository
             const existingRoleIds = new Set(assignments.map((assignment) => assignment.role_id));
             const trulyNewCount = roles.filter((id) => !existingRoleIds.has(id)).length;
 
-            return assignments.length + trulyNewCount > limit;
+            return assignments.length + trulyNewCount > this.accountRoleLimit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

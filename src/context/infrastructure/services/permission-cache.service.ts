@@ -7,6 +7,7 @@ import { AssignmentScope } from "~context/enums";
 
 @Injectable()
 export class PermissionCacheService implements Services.PermissionCache.Contract {
+    private readonly cacheTTL: number;
     private readonly global = "*";
 
     private key(account: string, realm: string): string {
@@ -20,7 +21,9 @@ export class PermissionCacheService implements Services.PermissionCache.Contract
     public constructor(
         @Inject(REDIS_CACHE_CLIENT) private readonly redis: Redis,
         private readonly configService: ConfigService,
-    ) {}
+    ) {
+        this.cacheTTL = this.configService.getOrThrow<number>("PERMISSION_CACHE_TTL");
+    }
 
     public async has({ permission, account, realm }: Services.PermissionCache.Has): Promise<boolean> {
         const pipeline = this.redis.pipeline();
@@ -41,7 +44,6 @@ export class PermissionCacheService implements Services.PermissionCache.Contract
     }
 
     public async populate({ account, rows }: Services.PermissionCache.Populate): Promise<void> {
-        const TTL = this.configService.getOrThrow<number>("PERMISSION_CACHE_TTL");
         const pipeline = this.redis.pipeline();
         const keys = new Set<string>();
 
@@ -53,10 +55,10 @@ export class PermissionCacheService implements Services.PermissionCache.Contract
         }
 
         const marker = this.markerKey(account);
-        pipeline.set(marker, "1", "EX", TTL);
+        pipeline.set(marker, "1", "EX", this.cacheTTL);
 
         for (const key of keys) {
-            pipeline.expire(key, TTL);
+            pipeline.expire(key, this.cacheTTL);
         }
 
         await pipeline.exec();

@@ -31,6 +31,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     public THROTTLE_TTL!: number;
 
+    @Validator.IsString()
+    public JWT_SECRET!: string;
+
     // ---------------------------------------------------------------------------
     // PostgreSQL - common
     // ---------------------------------------------------------------------------
@@ -50,7 +53,7 @@ export class EnvironmentVariablesDTO {
     public POSTGRESQL_USER!: string;
 
     @Validator.IsString()
-    public POSTGRESQL_PASS!: string;
+    public POSTGRESQL_PASSWORD!: string;
 
     @Validator.IsString()
     public POSTGRESQL_NAME!: string;
@@ -180,7 +183,7 @@ export class EnvironmentVariablesDTO {
     public MAX_ROLE_SUBTREE_SIZE_FOR_PURGE!: number;
 
     @Validator.IsPositiveInt()
-    public MAX_CONFLECT_MEMBERS_COUNT!: number;
+    public MAX_CONFLICT_MEMBERS_COUNT!: number;
 
     @Validator.IsPositiveInt()
     public PERMISSION_PER_ROLE_LIMIT!: number;
