@@ -330,6 +330,21 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         }
     }
 
+    public async findAccountsByRoles({ transaction, roles }: Repositories.Role.FindAccountsByRoles): Promise<string[]> {
+        const entityManager = transaction ?? this.readManager.fork();
+        const knex = entityManager.getKnex();
+
+        const results = await knex
+            .select("ara.account_id")
+            .distinct()
+            .from({ rc: "access_control.role_closure" })
+            .join({ ara: "access_control.account_role_assignment" }, "ara.role_id", "rc.descendant_id")
+            .whereIn("rc.ancestor_id", roles)
+            .andWhere("ara.is_revoked", false);
+
+        return results.map(({ account_id }) => account_id);
+    }
+
     public async wouldExceedRoleLimit({
         transaction,
         realm,

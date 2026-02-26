@@ -42,6 +42,8 @@ declare global {
 
                 getHierarchyGraph: (props: GetHierarchyGraph) => Promise<Graph.Data>;
 
+                findAccountsByRoles: (props: FindAccountsByRoles) => Promise<string[]>;
+
                 wouldExceedRoleLimit: (props: WouldExceedRoleLimit) => Promise<boolean>;
             }
 
@@ -139,6 +141,11 @@ declare global {
             type GetHierarchyGraph = {
                 transaction?: EntityManager;
                 realm: string;
+            };
+
+            type FindAccountsByRoles = {
+                transaction?: EntityManager;
+                roles: string[];
             };
 
             type WouldExceedRoleLimit = {

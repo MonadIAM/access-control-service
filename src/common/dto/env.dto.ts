@@ -193,4 +193,11 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsPositiveInt()
     public ROLE_PER_REALM_LIMIT!: number;
+
+    // ---------------------------------------------------------------------------
+    // BullMQ
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsPositiveInt()
+    public PERMISSION_CACHE_INVALIDATION_CHUNK_SIZE!: number;
 }

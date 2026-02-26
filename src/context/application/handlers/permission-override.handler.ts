@@ -2,6 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/postgresql";
 
+import { PERMISSION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
 import { HandlerException } from "~common/exceptions";
 import {
@@ -22,6 +23,8 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
         private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
         @Inject(PERMISSION_OVERRIDE_SERVICE)
         private readonly permissionOverrideService: Services.PermissionOverride.Contract,
+        @Inject(PERMISSION_CACHE_SERVICE)
+        private readonly permissionCacheService: Services.PermissionCache.Contract,
         @Inject(PERMISSION_REPOSITORY)
         private readonly permissionRepository: Repositories.Permission.Contract,
         @Inject(REALM_REPOSITORY)
@@ -36,7 +39,7 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
     }: Handlers.PermissionOverride.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
+            await writeManager.transactional(async (transaction) => {
                 const [realmEntity, permissionEntity] = await Promise.all([
                     this.realmRepository.findUniqueOrThrow({
                         where: { id: realm },
@@ -59,9 +62,11 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                     context,
                     actor,
                 });
-
-                return { message: `${this.dictionaryPath}.CREATED` };
             });
+
+            await this.permissionCacheService.invalidate({ accounts: [account] });
+
+            return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
             throw HandlerException.fromOrmError(error, this.resource);
         }
@@ -82,7 +87,7 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                 }
 
                 await this.permissionOverrideService.purge({
@@ -113,14 +118,14 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
     }: Handlers.PermissionOverride.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
+            const entities = await writeManager.transactional(async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
                     where: { id: { $in: identifiers } },
                     transaction,
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                 }
 
                 await this.permissionOverrideService.revoke({
@@ -132,12 +137,16 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                     realm,
                 });
 
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
-                } else {
-                    return { message: `${this.dictionaryPath}.REVOKED` };
-                }
+                return entities;
             });
+
+            await this.permissionCacheService.invalidate({ accounts: entities.map(({ accountId }) => accountId) });
+
+            if (entities.length > 1) {
+                return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+            } else {
+                return { message: `${this.dictionaryPath}.REVOKED` };
+            }
         } catch (error) {
             throw HandlerException.fromOrmError(error, this.resource);
         }
@@ -151,14 +160,14 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
     }: Handlers.PermissionOverride.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
+            const entities = await writeManager.transactional(async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
                     where: { id: { $in: identifiers } },
                     transaction,
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                 }
 
                 await this.permissionOverrideService.restore({
@@ -170,12 +179,16 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                     realm,
                 });
 
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
-                } else {
-                    return { message: `${this.dictionaryPath}.RESTORED` };
-                }
+                return entities;
             });
+
+            await this.permissionCacheService.invalidate({ accounts: entities.map(({ accountId }) => accountId) });
+
+            if (entities.length > 1) {
+                return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+            } else {
+                return { message: `${this.dictionaryPath}.RESTORED` };
+            }
         } catch (error) {
             throw HandlerException.fromOrmError(error, this.resource);
         }

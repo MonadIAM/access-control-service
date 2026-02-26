@@ -29,7 +29,7 @@ declare namespace Services {
         };
 
         type Invalidate = {
-            account: string;
+            accounts: string[];
         };
     }
 }

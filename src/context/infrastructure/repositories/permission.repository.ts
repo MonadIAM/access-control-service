@@ -266,4 +266,33 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
+
+    public async findAccountsByPermissions({
+        transaction,
+        permissions,
+    }: Repositories.Permission.FindAccountsByPermissions): Promise<string[]> {
+        const entityManager = transaction ?? this.readManager.fork();
+        const knex = entityManager.getKnex();
+
+        const viaRoles = knex
+            .select("ara.account_id")
+            .distinct()
+            .from({ rpa: "access_control.role_permission_assignment" })
+            .join({ rc: "access_control.role_closure" }, "rpa.role_id", "rc.ancestor_id")
+            .join({ ara: "access_control.account_role_assignment" }, "ara.role_id", "rc.descendant_id")
+            .whereIn("rpa.permission_id", permissions)
+            .andWhere("rpa.is_revoked", false)
+            .andWhere("ara.is_revoked", false);
+
+        const viaOverrides = knex
+            .select("po.account_id")
+            .distinct()
+            .from({ po: "access_control.permission_override" })
+            .whereIn("po.permission_id", permissions)
+            .andWhere("po.is_revoked", false);
+
+        const results = await viaRoles.union([viaOverrides]);
+
+        return results.map(({ account_id }) => account_id);
+    }
 }

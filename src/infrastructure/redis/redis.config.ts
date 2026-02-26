@@ -26,7 +26,6 @@ export class RedisConfig {
             ...this.getBaseOptions(config),
             db: config.getOrThrow<number>("REDIS_DB_CACHE"),
             maxRetriesPerRequest: 20,
-            keyPrefix: "cache:",
         };
     }
 
@@ -35,7 +34,6 @@ export class RedisConfig {
             ...this.getBaseOptions(config),
             db: config.getOrThrow<number>("REDIS_DB_LIMITER") ?? 1,
             maxRetriesPerRequest: 5,
-            keyPrefix: "limit:",
         };
     }
 

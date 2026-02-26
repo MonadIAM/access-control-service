@@ -8,14 +8,15 @@ import { AssignmentScope } from "~context/enums";
 @Injectable()
 export class PermissionCacheService implements Services.PermissionCache.Contract {
     private readonly cacheTTL: number;
+    private readonly namespace = "cache";
     private readonly global = "*";
 
     private key(account: string, realm: string): string {
-        return `permissions:${account}:${realm}`;
+        return `${this.namespace}:permissions:${account}:${realm}`;
     }
 
     private markerKey(account: string): string {
-        return `permissions:${account}:__loaded`;
+        return `${this.namespace}:permissions:${account}:__loaded`;
     }
 
     public constructor(
@@ -64,13 +65,25 @@ export class PermissionCacheService implements Services.PermissionCache.Contract
         await pipeline.exec();
     }
 
-    public async invalidate({ account }: Services.PermissionCache.Invalidate): Promise<void> {
-        const prefix = this.redis.options.keyPrefix ?? "";
-        const fullKeys = await this.redis.keys(`permissions:${account}:*`);
-        const keys = fullKeys.map((key) => (key.startsWith(prefix) ? key.slice(prefix.length) : key));
+    public async invalidate({ accounts }: Services.PermissionCache.Invalidate): Promise<void> {
+        const deletePipeline = this.redis.pipeline();
 
-        if (keys.length) {
-            await this.redis.del(...keys);
+        for (const account of accounts) {
+            const pattern = `${this.namespace}:permissions:${account}:*`;
+            let cursor = "0";
+
+            do {
+                // eslint-disable-next-line no-await-in-loop
+                const [nextCursor, keys] = await this.redis.scan(cursor, "MATCH", pattern, "COUNT", 500);
+
+                cursor = nextCursor;
+
+                if (keys.length > 0) {
+                    deletePipeline.unlink(...keys);
+                }
+            } while (cursor !== "0");
         }
+
+        await deletePipeline.exec();
     }
 }

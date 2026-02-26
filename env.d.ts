@@ -89,5 +89,11 @@ declare namespace NodeJS {
         PERMISSION_PER_ROLE_LIMIT: `${number}`;
         ROLE_PER_ACCOUNT_LIMIT: `${number}`;
         ROLE_PER_REALM_LIMIT: `${number}`;
+
+        // ---------------------------------------------------------------------------
+        // BullMQ
+        // ---------------------------------------------------------------------------
+
+        PERMISSION_CACHE_INVALIDATION_CHUNK_SIZE: `${number}`;
     }
 }

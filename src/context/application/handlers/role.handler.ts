@@ -3,6 +3,7 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/postgresql";
 
 import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
+import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
 import { ROLE_SERVICE } from "~context/domain/services";
 import { HandlerException } from "~common/exceptions";
 
@@ -13,6 +14,8 @@ export class RoleHandler implements Handlers.Role.Contract {
     public constructor(
         @InjectEntityManager("write")
         private readonly writeManager: EntityManager,
+        @Inject(PERMISSION_CACHE_INVALIDATION_QUEUE)
+        private readonly permissionCacheInvalidationQueue: Queues.PermissionInvalidation.Contract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(ROLE_REPOSITORY)
@@ -137,7 +140,7 @@ export class RoleHandler implements Handlers.Role.Contract {
     }: Handlers.Role.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
+            const { entities, affected } = await writeManager.transactional(async (transaction) => {
                 const entities = await this.roleRepository.find({
                     where: { id: { $in: identifiers }, realm },
                     transaction,
@@ -156,12 +159,20 @@ export class RoleHandler implements Handlers.Role.Contract {
                     actor,
                 });
 
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
-                } else {
-                    return { message: `${this.dictionaryPath}.REVOKED` };
-                }
+                const affected = await this.roleRepository.findAccountsByRoles({
+                    roles: entities.map(({ id }) => id),
+                });
+
+                return { entities, affected };
             });
+
+            await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+
+            if (entities.length > 1) {
+                return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+            } else {
+                return { message: `${this.dictionaryPath}.REVOKED` };
+            }
         } catch (error) {
             throw HandlerException.fromOrmError(error);
         }
@@ -175,7 +186,7 @@ export class RoleHandler implements Handlers.Role.Contract {
     }: Handlers.Role.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
+            const { entities, affected } = await writeManager.transactional(async (transaction) => {
                 const entities = await this.roleRepository.find({
                     where: { id: { $in: identifiers }, realm },
                     transaction,
@@ -194,12 +205,20 @@ export class RoleHandler implements Handlers.Role.Contract {
                     actor,
                 });
 
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
-                } else {
-                    return { message: `${this.dictionaryPath}.RESTORED` };
-                }
+                const affected = await this.roleRepository.findAccountsByRoles({
+                    roles: entities.map(({ id }) => id),
+                });
+
+                return { entities, affected };
             });
+
+            await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+
+            if (entities.length > 1) {
+                return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+            } else {
+                return { message: `${this.dictionaryPath}.RESTORED` };
+            }
         } catch (error) {
             throw HandlerException.fromOrmError(error);
         }

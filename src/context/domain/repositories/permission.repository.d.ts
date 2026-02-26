@@ -34,6 +34,8 @@ declare global {
                 collectEffectivePermissions: (
                     props: CollectEffectivePermissions.Props,
                 ) => Promise<CollectEffectivePermissions.Result>;
+
+                findAccountsByPermissions: (props: FindAccountsByPermissions) => Promise<string[]>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -94,6 +96,11 @@ declare global {
                     realm: string;
                 }[];
             }
+
+            type FindAccountsByPermissions = {
+                transaction?: EntityManager;
+                permissions: string[];
+            };
 
             type Filters = {
                 id?: StringFilterDTO;

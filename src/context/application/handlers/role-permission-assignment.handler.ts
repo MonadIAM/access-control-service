@@ -2,6 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/postgresql";
 
+import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { HandlerException } from "~common/exceptions";
 import {
@@ -23,6 +24,8 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
         private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.Contract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_SERVICE)
         private readonly rolePermissionAssignmentService: Services.RolePermissionAssignment.Contract,
+        @Inject(PERMISSION_CACHE_INVALIDATION_QUEUE)
+        private readonly permissionCacheInvalidationQueue: Queues.PermissionInvalidation.Contract,
         @Inject(PERMISSION_REPOSITORY)
         private readonly permissionRepository: Repositories.Permission.Contract,
         @Inject(REALM_REPOSITORY)
@@ -39,7 +42,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
     }: Handlers.RolePermissionAssignment.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
+            const { affected } = await writeManager.transactional(async (transaction) => {
                 const [realmEntity, roleEntity, permissionEntities] = await Promise.all([
                     this.realmRepository.findUniqueOrThrow({
                         where: { id: realm },
@@ -70,8 +73,14 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                     actor,
                 });
 
-                return { message: `${this.dictionaryPath}.CREATED` };
+                const affected = await this.roleRepository.findAccountsByRoles({ roles: [roleEntity.id] });
+
+                return { affected };
             });
+
+            await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+
+            return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
             throw HandlerException.fromOrmError(error, this.resource);
         }
@@ -123,7 +132,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
     }: Handlers.RolePermissionAssignment.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
+            const { entities, affected } = await writeManager.transactional(async (transaction) => {
                 const entities = await this.rolePermissionAssignmentRepository.find({
                     where: { id: { $in: identifiers } },
                     transaction,
@@ -142,12 +151,20 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                     realm,
                 });
 
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
-                } else {
-                    return { message: `${this.dictionaryPath}.REVOKED` };
-                }
+                const affected = await this.roleRepository.findAccountsByRoles({
+                    roles: entities.map(({ role: { id } }) => id),
+                });
+
+                return { entities, affected };
             });
+
+            await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+
+            if (entities.length > 1) {
+                return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+            } else {
+                return { message: `${this.dictionaryPath}.REVOKED` };
+            }
         } catch (error) {
             throw HandlerException.fromOrmError(error, this.resource);
         }
@@ -161,7 +178,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
     }: Handlers.RolePermissionAssignment.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
+            const { entities, affected } = await writeManager.transactional(async (transaction) => {
                 const entities = await this.rolePermissionAssignmentRepository.find({
                     where: { id: { $in: identifiers } },
                     transaction,
@@ -180,12 +197,20 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                     realm,
                 });
 
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
-                } else {
-                    return { message: `${this.dictionaryPath}.RESTORED` };
-                }
+                const affected = await this.roleRepository.findAccountsByRoles({
+                    roles: entities.map(({ role: { id } }) => id),
+                });
+
+                return { entities, affected };
             });
+
+            await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+
+            if (entities.length > 1) {
+                return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+            } else {
+                return { message: `${this.dictionaryPath}.RESTORED` };
+            }
         } catch (error) {
             throw HandlerException.fromOrmError(error, this.resource);
         }
