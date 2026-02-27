@@ -1,144 +1,144 @@
 version: "3.9"
 
 x-base: &base
-    restart: on-failure
+  restart: on-failure
 
 name: ${SERVICE_NAME}
 
 services:
-    postgresql-primary:
-        <<: *base
-        image: ${POSTGRESQL_IMAGE:?}
-        container_name: ${SERVICE_NAME}-postgres-primary
-        environment:
-            POSTGRES_DB: ${POSTGRESQL_NAME}
-            POSTGRES_USER: ${POSTGRESQL_USER}
-            POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
-            POSTGRESQL_REPLICATION_USER: ${POSTGRESQL_REPLICATION_USER}
-            POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRESQL_REPLICATION_PASSWORD}
-            POSTGRESQL_REPLICATION_SLOT: ${POSTGRESQL_REPLICATION_SLOT}
-        ports:
-            - "${POSTGRESQL_PORT}:5432"
-        volumes:
-            - postgres_WRITE_data:/var/lib/postgresql/data
-            - ./docker/postgres/setup-replication.sh:/docker-entrypoint-initdb.d/99-setup-replication.sh:ro
-        command: >
-            postgres
-            -c wal_level=replica
-            -c max_wal_senders=10
-            -c max_replication_slots=10
-            -c hot_standby=on
-        networks:
-            - internal
-        healthcheck:
-            test: ["CMD-SHELL", "pg_isready -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p 5432"]
-            interval: 10s
-            timeout: 5s
-            retries: 10
-            start_period: 10s
+  postgresql-primary:
+    <<: *base
+    image: ${POSTGRESQL_IMAGE:?}
+    container_name: ${SERVICE_NAME}-postgres-primary
+    environment:
+      POSTGRES_DB: ${POSTGRESQL_NAME}
+      POSTGRES_USER: ${POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
+      POSTGRESQL_REPLICATION_USER: ${POSTGRESQL_REPLICATION_USER}
+      POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRESQL_REPLICATION_PASSWORD}
+      POSTGRESQL_REPLICATION_SLOT: ${POSTGRESQL_REPLICATION_SLOT}
+    ports:
+      - "${POSTGRESQL_PORT}:5432"
+    volumes:
+      - postgres_WRITE_data:/var/lib/postgresql/data
+      - ./docker/postgres/setup-replication.sh:/docker-entrypoint-initdb.d/99-setup-replication.sh:ro
+    command: >
+      postgres
+      -c wal_level=replica
+      -c max_wal_senders=10
+      -c max_replication_slots=10
+      -c hot_standby=on
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p 5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
-    postgresql-replica:
-        <<: *base
-        image: ${POSTGRESQL_IMAGE:?}
-        container_name: ${SERVICE_NAME}-postgres-replica
-        environment:
-            POSTGRES_DB: ${POSTGRESQL_NAME}
-            POSTGRES_USER: ${POSTGRESQL_USER}
-            POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
-            POSTGRESQL_REPLICATION_USER: ${POSTGRESQL_REPLICATION_USER}
-            POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRESQL_REPLICATION_PASSWORD}
-            POSTGRESQL_REPLICATION_SLOT: ${POSTGRESQL_REPLICATION_SLOT}
-            POSTGRESQL_WRITE_HOST: postgresql-primary
-            POSTGRESQL_WRITE_PORT: "5432"
-        ports:
-            - "${POSTGRESQL_REPLICA_PORT:-5433}:5432"
-        depends_on:
-            postgresql-primary:
-                condition: service_healthy
-        volumes:
-            - postgres_replica_data:/var/lib/postgresql/data
-            - ./docker/postgres/replica-entrypoint.sh:/usr/local/bin/replica-entrypoint.sh:ro
-        command: ["bash", "/usr/local/bin/replica-entrypoint.sh"]
-        networks:
-            - internal
-        healthcheck:
-            test:
-                [
-                    "CMD-SHELL",
-                    "pg_isready -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p 5432 && PGPASSWORD=${POSTGRESQL_PASSWORD} psql -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p 5432 -tAc \"SELECT pg_is_in_recovery()\" | grep -q t",
-                ]
-            interval: 10s
-            timeout: 5s
-            retries: 10
-            start_period: 20s
+  postgresql-replica:
+    <<: *base
+    image: ${POSTGRESQL_IMAGE:?}
+    container_name: ${SERVICE_NAME}-postgres-replica
+    environment:
+      POSTGRES_DB: ${POSTGRESQL_NAME}
+      POSTGRES_USER: ${POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
+      POSTGRESQL_REPLICATION_USER: ${POSTGRESQL_REPLICATION_USER}
+      POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRESQL_REPLICATION_PASSWORD}
+      POSTGRESQL_REPLICATION_SLOT: ${POSTGRESQL_REPLICATION_SLOT}
+      POSTGRESQL_WRITE_HOST: postgresql-primary
+      POSTGRESQL_WRITE_PORT: "5432"
+    ports:
+      - "${POSTGRESQL_REPLICA_PORT:-5433}:5432"
+    depends_on:
+      postgresql-primary:
+        condition: service_healthy
+    volumes:
+      - postgres_replica_data:/var/lib/postgresql/data
+      - ./docker/postgres/replica-entrypoint.sh:/usr/local/bin/replica-entrypoint.sh:ro
+    command: ["bash", "/usr/local/bin/replica-entrypoint.sh"]
+    networks:
+      - internal
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p 5432 && PGPASSWORD=${POSTGRESQL_PASSWORD} psql -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p 5432 -tAc \"SELECT pg_is_in_recovery()\" | grep -q t",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
-    redis:
-        <<: *base
-        image: ${REDIS_IMAGE:?}
-        container_name: ${SERVICE_NAME}-redis
-        ports:
-            - "${REDIS_PORT}:6379"
-        command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
-        volumes:
-            - redis_data:/data
-        networks:
-            - internal
+  redis:
+    <<: *base
+    image: ${REDIS_IMAGE:?}
+    container_name: ${SERVICE_NAME}-redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
 
-    service:
-        <<: *base
-        build:
-            context: .
-            args:
-                BASE_IMAGE: ${APP_BASE_IMAGE:?}
-        image: ${SERVICE_NAME}:latest
-        container_name: ${SERVICE_NAME}-app
-        env_file:
-            - .env
-        ports:
-            - "${APP_PORT}:${APP_PORT}"
-        depends_on:
-            postgresql-primary:
-                condition: service_healthy
-            postgresql-replica:
-                condition: service_healthy
-            redis:
-                condition: service_started
-        volumes:
-            - uploads_data:/app/uploads
-        networks:
-            internal:
-            kafka_net:
-            monitoring-shared:
-                aliases:
-                    - access-control-service
-        stop_grace_period: 1s
-        logging:
-            driver: loki
-            options:
-                loki-url: "http://host.docker.internal:3100/loki/api/v1/push"
-                loki-external-labels: "job=access-control-service,container_name={{.Name}}"
-                loki-batch-size: "100"
-                loki-retries: "3"
-                loki-timeout: "1s"
-        healthcheck:
-            test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${APP_PORT}/api/health"]
-            interval: 30s
-            timeout: 10s
-            retries: 3
-            start_period: 20s
+  service:
+    <<: *base
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${APP_BASE_IMAGE:?}
+    image: ${SERVICE_NAME}:latest
+    container_name: ${SERVICE_NAME}-app
+    env_file:
+      - .env
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    depends_on:
+      postgresql-primary:
+        condition: service_healthy
+      postgresql-replica:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      internal:
+      kafka_net:
+      monitoring-shared:
+        aliases:
+          - access-control-service
+    stop_grace_period: 1s
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://host.docker.internal:3100/loki/api/v1/push"
+        loki-external-labels: "job=access-control-service,container_name={{.Name}}"
+        loki-batch-size: "100"
+        loki-retries: "3"
+        loki-timeout: "1s"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${APP_PORT}/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
 volumes:
-    postgres_WRITE_data: {}
-    postgres_replica_data: {}
-    redis_data: {}
-    uploads_data: {}
+  postgres_WRITE_data: {}
+  postgres_replica_data: {}
+  redis_data: {}
+  uploads_data: {}
 
 networks:
-    internal:
-        driver: bridge
-    kafka_net:
-        external: true
-        name: ${DOCKER_NETWORK_NAME:-kafka-net}
-    monitoring-shared:
-        external: true
-        name: monitoring-network
+  internal:
+    driver: bridge
+  kafka_net:
+    external: true
+    name: ${DOCKER_NETWORK_NAME:-kafka-net}
+  monitoring-shared:
+    external: true
+    name: monitoring-network
