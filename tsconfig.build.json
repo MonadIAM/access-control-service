@@ -22,6 +22,12 @@
     "src/**/*",
   ],
   "exclude": [
+    "src/infrastructure/database/migrations/*",
+    "src/infrastructure/database/datasets/*",
+    "src/infrastructure/database/seeders/*",
+    "mikro-orm.config.ts",
+    "jest.unit.config.ts",
+    "jest.e2e.config.ts",
     "src/**/*.spec.ts",
     "node_modules",
     "configs",
