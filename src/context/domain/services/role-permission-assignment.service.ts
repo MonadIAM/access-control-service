@@ -29,7 +29,7 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
         });
 
         if (limitExceeded) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.`);
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.ROLE_PERMISSION_LIMIT_EXCEEDED`);
         } else {
             for await (const permission of permissions) {
                 const entity = new RolePermissionAssignment({

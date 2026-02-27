@@ -55,6 +55,10 @@ export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Co
                     }),
                 ]);
 
+                if (roleEntities.length < roles.length) {
+                    throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                }
+
                 await this.roleConflictMemberService.create({
                     input: {
                         roles: roleEntities,
@@ -88,7 +92,7 @@ export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Co
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.MEMBERS_NOT_FOUND`);
                 }
 
                 await this.roleConflictMemberService.purge({

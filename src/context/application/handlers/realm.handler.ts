@@ -70,7 +70,7 @@ export class RealmHandler implements Handlers.Realm.Contract {
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 }
 
                 await this.realmService.purge({
@@ -102,7 +102,7 @@ export class RealmHandler implements Handlers.Realm.Contract {
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 }
 
                 await this.realmService.revoke({
@@ -138,7 +138,7 @@ export class RealmHandler implements Handlers.Realm.Contract {
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 }
 
                 await this.realmService.restore({

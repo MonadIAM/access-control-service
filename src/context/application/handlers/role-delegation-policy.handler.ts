@@ -45,7 +45,13 @@ export class RoleDelegationPolicyHandler implements Handlers.RoleDelegationPolic
                 ]);
 
                 if (roleEntities.length < 2) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    if (roleEntities[0].id === delegator) {
+                        throw HandlerException.notFound(`${this.dictionaryPath}.TARGET_ROLE_NOT_FOUND`);
+                    } else if (roleEntities[0].id === target) {
+                        throw HandlerException.notFound(`${this.dictionaryPath}.DELEGATOR_ROLE_NOT_FOUND`);
+                    } else {
+                        throw HandlerException.notFound(`${this.dictionaryPath}.BOTH_ROLES_NOT_FOUND`);
+                    }
                 } else {
                     const [delegatorEntity, targetEntity] =
                         roleEntities[0].id === delegator ? roleEntities : roleEntities.reverse();
@@ -117,7 +123,7 @@ export class RoleDelegationPolicyHandler implements Handlers.RoleDelegationPolic
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 }
 
                 await this.roleDelegationPolicyService.purge({
@@ -155,7 +161,7 @@ export class RoleDelegationPolicyHandler implements Handlers.RoleDelegationPolic
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 }
 
                 await this.roleDelegationPolicyService.revoke({
@@ -193,7 +199,7 @@ export class RoleDelegationPolicyHandler implements Handlers.RoleDelegationPolic
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 }
 
                 await this.roleDelegationPolicyService.restore({

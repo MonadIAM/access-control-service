@@ -69,9 +69,9 @@ export class AccountRoleAssignment {
 
     public canAssign(): void {
         if (this.role.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_TO_REVOKED_ROLE`);
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_REVOKED_ROLE`);
         } else if (this.role.isSystemManaged) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_TO_SYSTEM_ROLE`);
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_SYSTEM_ROLE`);
         }
     }
 }

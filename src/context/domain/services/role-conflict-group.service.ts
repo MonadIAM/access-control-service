@@ -23,7 +23,7 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
         actor,
     }: Services.RoleConflictGroup.Create): Promise<void> {
         if (members.length > this.membersLimit) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.`);
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED`);
         } else {
             const group = new RoleConflictGroup({
                 description: input.description,

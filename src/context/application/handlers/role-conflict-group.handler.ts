@@ -44,6 +44,10 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
                     }),
                 ]);
 
+                if (roleEntities.length < members.length) {
+                    throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                }
+
                 await this.roleConflictGroupService.create({
                     input: {
                         members: roleEntities,
@@ -102,7 +106,7 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                 }
 
                 await this.roleConflictGroupService.purge({
@@ -140,7 +144,7 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                 }
 
                 await this.roleConflictGroupService.revoke({
@@ -178,7 +182,7 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                 }
 
                 await this.roleConflictGroupService.restore({

@@ -1,0 +1,9 @@
+{
+  "permission": {
+    "INSUFFICIENT_PERMISSIONS": "Insufficient permissions to perform this operation."
+  },
+  "auth": {
+    "INVALID_TOKEN": "The authentication token is invalid or expired.",
+    "TOKEN_MISSING": "An authentication token is required."
+  }
+}

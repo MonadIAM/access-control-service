@@ -23,7 +23,6 @@ export const ServiceErrorKind = {
 } as const;
 
 export const RepositoryErrorKind = {
-    BadRequest: "BadRequest",
     ...DatabaseErrorKind,
 } as const;
 

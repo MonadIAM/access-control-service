@@ -1,9 +1,25 @@
 {
-  "bad_request": "Bad request. Please check your input data",
-  "unauthorized": "Authorization is required to perform this action",
-  "forbidden": "You do not have permission to access this resource",
-  "not_found": "The requested information could not be found",
-  "conflict": "A data conflict occurred. The record may have been updated elsewhere",
-  "unprocessable": "Could not process the request due to business rule violations",
-  "internal_error": "Internal server error. We are working on a fix"
+  "role": {
+    "CREATE_PARENT_NO_INHERITANCE": "The specified parent role does not allow inheritance.",
+    "REALM_ROLE_LIMIT_EXCEEDED": "The allowed role limit for the realm has been exceeded.",
+    "SUBTREE_SIZE_LIMIT_EXCEEDED": "Deletion is not allowed: the subtree size exceeds the configured limit.",
+    "CREATE_CHILD_NOT_DIRECT_DESCENDANT": "Only the current direct descendants of the parent role can be specified as children."
+  },
+  "role-permission-assignment": {
+    "ROLE_PERMISSION_LIMIT_EXCEEDED": "The allowed permission limit for the role has been exceeded."
+  },
+  "role-delegation-policy": {
+    "EXISTS_TRANSITIVE_PATH": "Creating this policy would introduce a transitive delegation cycle."
+  },
+  "role-conflict-member": {
+    "MEMBER_LIMIT_EXCEEDED": "The allowed member limit for the conflict group has been exceeded."
+  },
+  "role-conflict-group": {
+    "MEMBER_LIMIT_EXCEEDED": "The allowed role limit for the conflict group has been exceeded."
+  },
+  "account-role-assignment": {
+    "DELEGATION_NOT_ALLOWED": "Insufficient privileges to assign this role.",
+    "ACCOUNT_ROLE_LIMIT_EXCEEDED": "The allowed role limit for the account has been exceeded.",
+    "HAS_SoD_VIOLATIONS": "The assignment violates one or more segregation of duties policies."
+  }
 }

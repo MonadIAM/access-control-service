@@ -35,16 +35,16 @@ export abstract class BaseException extends Error {
         }
 
         if (error instanceof NotFoundError) {
-            return Reflect.construct(this, [DatabaseErrorKind.NotFound, HttpStatus.NOT_FOUND, "db.not_found", params]);
+            return Reflect.construct(this, [DatabaseErrorKind.NotFound, HttpStatus.NOT_FOUND, "db.NOT_FOUND", params]);
         }
         if (error instanceof DeadlockException) {
-            return Reflect.construct(this, [DatabaseErrorKind.Deadlock, HttpStatus.CONFLICT, "db.deadlock", params]);
+            return Reflect.construct(this, [DatabaseErrorKind.Deadlock, HttpStatus.CONFLICT, "db.DEADLOCK", params]);
         }
         if (error instanceof ConnectionException) {
             return Reflect.construct(this, [
                 DatabaseErrorKind.ConnectionError,
                 HttpStatus.SERVICE_UNAVAILABLE,
-                "db.connection_lost",
+                "db.CONNECTION_LOST",
                 params,
             ]);
         }
@@ -52,7 +52,7 @@ export abstract class BaseException extends Error {
             return Reflect.construct(this, [
                 DatabaseErrorKind.NotNullViolation,
                 HttpStatus.BAD_REQUEST,
-                "db.not_null_violation",
+                "db.NOT_NULL_VIOLATION",
                 params,
             ]);
         }
@@ -60,7 +60,7 @@ export abstract class BaseException extends Error {
             return Reflect.construct(this, [
                 DatabaseErrorKind.UniqueViolation,
                 HttpStatus.CONFLICT,
-                "db.unique_violation",
+                "db.UNIQUE_VIOLATION",
                 params,
             ]);
         }
@@ -68,7 +68,7 @@ export abstract class BaseException extends Error {
             return Reflect.construct(this, [
                 DatabaseErrorKind.ForeignKeyViolation,
                 HttpStatus.CONFLICT,
-                "db.fk_violation",
+                "db.FK_VIOLATION",
                 params,
             ]);
         }
@@ -76,7 +76,7 @@ export abstract class BaseException extends Error {
             return Reflect.construct(this, [
                 DatabaseErrorKind.Timeout,
                 HttpStatus.REQUEST_TIMEOUT,
-                "db.lock_timeout",
+                "db.LOCK_TIMEOUT",
                 params,
             ]);
         }
@@ -84,7 +84,7 @@ export abstract class BaseException extends Error {
             return Reflect.construct(this, [
                 DatabaseErrorKind.Internal,
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "db.internal_driver_error",
+                "db.INTERNAL_DRIVER_ERROR",
                 {
                     ...params,
                     code: error.code,

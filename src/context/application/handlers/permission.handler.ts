@@ -87,7 +87,7 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
                 await this.permissionService.purge({
@@ -125,7 +125,7 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
                 await this.permissionService.revoke({
@@ -171,7 +171,7 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
                 await this.permissionService.restore({

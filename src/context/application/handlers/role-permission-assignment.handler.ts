@@ -59,7 +59,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                 ]);
 
                 if (permissionEntities.length < permissions.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
                 await this.rolePermissionAssignmentService.create({
@@ -101,7 +101,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
                 await this.rolePermissionAssignmentService.purge({
@@ -139,7 +139,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
                 await this.rolePermissionAssignmentService.revoke({
@@ -185,7 +185,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
                 await this.rolePermissionAssignmentService.restore({

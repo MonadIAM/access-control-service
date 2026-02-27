@@ -28,8 +28,6 @@ export class PermissionCacheInvalidationProcessor extends WorkerHost {
         const { accounts, offset = 0 } = job.data;
         const chunk = accounts.slice(offset, offset + this.chunkSize);
 
-        console.log(accounts);
-
         if (chunk.length) {
             try {
                 await this.permissionCacheService.invalidate({ accounts: chunk });

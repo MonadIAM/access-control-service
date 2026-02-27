@@ -29,7 +29,7 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
         });
 
         if (existsTransitivePath) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.`);
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.EXISTS_TRANSITIVE_PATH`);
         } else {
             const policy = new RoleDelegationPolicy({
                 delegator: input.delegator,

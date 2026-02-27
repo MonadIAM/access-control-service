@@ -34,28 +34,6 @@ export class RoleConflictMember {
         this.role = props.role;
     }
 
-    public revoke({ actor, reason }: Entities.BaseMethodProps): void {
-        if (this.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_REVOKED`);
-        } else {
-            const now = new Date();
-            this.isRevoked = true;
-            this.lastActions.revoke = { at: now, by: { id: actor }, reason };
-            this.updatedAt = now;
-        }
-    }
-
-    public restore({ actor, reason }: Entities.BaseMethodProps): void {
-        if (this.isRevoked) {
-            const now = new Date();
-            this.isRevoked = false;
-            this.lastActions.restore = { at: now, by: { id: actor }, reason };
-            this.updatedAt = now;
-        } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVE`);
-        }
-    }
-
     public canPurge(): void {
         if (this.isSystemManaged) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_SYSTEM`);

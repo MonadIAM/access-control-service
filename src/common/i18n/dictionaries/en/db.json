@@ -1,10 +1,10 @@
 {
-  "not_found": "{resource} not found",
-  "unique_violation": "{resource} with this data already exists",
-  "fk_violation": "Cannot perform operation: foreign key constraint failed on {resource}",
-  "not_null_violation": "A required field in {resource} cannot be null",
-  "deadlock": "Database deadlock detected. Please try again later",
-  "lock_timeout": "Database lock wait timeout exceeded",
-  "connection_lost": "Database connection lost",
-  "internal_driver_error": "Internal database driver error (Code: {code})"
+  "NOT_FOUND": "{resource} does not exist.",
+  "UNIQUE_VIOLATION": "{resource} with the specified data already exists.",
+  "FK_VIOLATION": "A foreign key constraint was violated for related resource {resource}.",
+  "NOT_NULL_VIOLATION": "A required field of {resource} is missing.",
+  "DEADLOCK": "Concurrent access conflict detected. Please retry the operation later.",
+  "LOCK_TIMEOUT": "Database lock wait timeout exceeded.",
+  "CONNECTION_LOST": "The connection to the database was lost.",
+  "INTERNAL_DRIVER_ERROR": "Internal database driver error (code: {code})."
 }

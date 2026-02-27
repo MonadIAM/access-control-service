@@ -147,7 +147,7 @@ export class RoleHandler implements Handlers.Role.Contract {
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 }
 
                 await this.roleService.revoke({
@@ -193,7 +193,7 @@ export class RoleHandler implements Handlers.Role.Contract {
                 });
 
                 if (entities.length < identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.`);
+                    throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 }
 
                 await this.roleService.restore({

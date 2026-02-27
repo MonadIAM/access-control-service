@@ -52,11 +52,11 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         ]);
 
         if (!isDelegationAllowed) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.`);
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.DELEGATION_NOT_ALLOWED`);
         } else if (limitExceeded) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.`);
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.ACCOUNT_ROLE_LIMIT_EXCEEDED`);
         } else if (hasSoDViolations) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.`);
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.HAS_SoD_VIOLATIONS`);
         } else {
             for (const role of roles) {
                 const entity = new AccountRoleAssignment({
