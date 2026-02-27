@@ -16,6 +16,7 @@ const SWAGGER_TAGS: Record<string, string> = {
     RoleConflictGroup: "SoD Engine: Defines sets of mutually exclusive roles to prevent administrative toxic combinations.",
     RoleConflictMember: "Configures specific roles belonging to a defined Separation of Duties (SoD) group.",
     AuditJournal: "Centralized security log for tracking RBAC changes, SoD violations, and DAC overrides.",
+    Health: "Service observability probes exposing liveness status and infrastructure readiness across dependent subsystems.",
 };
 
 export abstract class BootstrapSwagger {
