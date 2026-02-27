@@ -47,41 +47,33 @@ docker exec -it access-control-service-postgres-replica psql -U lambdius -d acce
 ----
 
 <details>
-<summary><strong>Infrastructure Commands</strong></summary>
+<summary><strong>Project Commands</strong></summary>
 
-| Command                                          | Makefile cmd    | Description                                            |
-|:-------------------------------------------------|:----------------|:-------------------------------------------------------|
-| `[ -f .env.example ] && cp -f .env.example .env` | `make env`      | Generate `.env` from example (if file doesn't exist).  |
-| `docker-compose up -d`                           | `make up`       | Start all services in detached mode.                   |
-| `docker-compose stop`                            | `make stop`     | Stop containers without removing them.                 |
-| `docker-compose down`                            | `make down`     | Stop and remove containers and networks.               |
-| `docker-compose down && docker-compose up -d`    | `make restart`  | Restart the entire infrastructure.                     |
-| `docker-compose down -v`                         | `make clean`    | Remove containers along with volumes (wipes DB data).  |
-| `docker-compose build`                           | `make build`    | Build application Docker images.                       |
-| `docker-compose logs -f service`                 | `make logs`     | Stream logs from the main service.                     |
-| `docker-compose logs -f`                         | `make logs-all` | Stream combined logs from all services.                |
-| `docker-compose ps`                              | `make ps`       | Show status of running containers.                     |
-| `docker system prune -f`                         | `make prune`    | Global cleanup of unused Docker resources.             |
-
-</details>
-
-----
-
-<details>
-<summary><strong>Development Commands</strong></summary>
-
-| Command                                       | Description                                                    |
-|:----------------------------------------------|:---------------------------------------------------------------|
-| `npm run lint`                                | Run ESLint code checks.                                        |
-| `npm run lint:fix`                            | Auto-fix formatting and log changed files.                     |
-| `npm run build`                               | Compile the project into `dist`.                               |
-| `npm run start`                               | Run the compiled application.                                  |
-| `npm run start:dev`                           | Start in development mode with hot-reload *(watch mode)*.      |
-| `npm run start:prod`                          | Start from `dist/index.js` *(production mode)*.                |
-| `npx mikro-orm migration:create`              | Generate a new migration based on entity changes.              |
-| `npx mikro-orm migration:up`                  | Apply all pending migrations to the database.                  |
-| `npx mikro-orm seeder:run`                    | Run the default seeder (`SystemSeeder`).                       |
-| `npx mikro-orm seeder:run --class=DemoSeeder` | Run a specific seeder by class name.                           |
+| Command                                          | Makefile            | Description                                           |
+|:-------------------------------------------------|:--------------------|:------------------------------------------------------|
+| **Infrastructure**                               |                     |                                                       |
+| `[ -f .env.example ] && cp -f .env.example .env` | `make env`          | Generate `.env` from example (if file exists).        |
+| `docker-compose up -d`                           | `make up`           | Start all services in detached mode.                  |
+| `docker-compose stop`                            | `make stop`         | Stop containers without removing them.                |
+| `docker-compose down`                            | `make down`         | Stop and remove containers and networks.              |
+| `docker-compose down && docker-compose up -d`    | `make restart`      | Restart the entire infrastructure.                    |
+| `docker-compose build`                           | `make build`        | Build application Docker images.                      |
+| `docker-compose logs -f service`                 | `make logs`         | Stream logs from the main service.                    |
+| `docker-compose logs -f`                         | `make logs-all`     | Stream combined logs from all services.               |
+| `docker-compose ps`                              | `make ps`           | Show status of running containers.                    |
+| `docker-compose down -v`                         | `make clean`        | Remove containers along with volumes (wipes DB data). |
+| `docker system prune -f`                         | `make prune`        | Global cleanup of unused Docker resources.            |
+| **Development**                                  |                     |                                                       |
+| `npm run start:dev`                              | `make dev`          | Start in development mode with hot-reload.            |
+| `npm run start:prod`                             | `make prod`         | Start from `dist/index.js` (production mode).         |
+| `npm run build`                                  | `make build-app`    | Compile the project into `dist`.                      |
+| `npm run lint`                                   | `make lint`         | Run ESLint code checks.                               |
+| `npm run lint:fix`                               | `make lint-fix`     | Auto-fix formatting and log changed files.            |
+| **Database**                                     |                     |                                                       |
+| `npx mikro-orm migration:create`                 | `make migration`    | Generate a new migration based on entity changes.     |
+| `npx mikro-orm migration:up`                     | `make migrate`      | Apply all pending migrations to the database.         |
+| `npx mikro-orm seeder:run`                       | `make seed`         | Run the default seeder (`SystemSeeder`).              |
+| `npx mikro-orm seeder:run --class=DemoSeeder`    | `make seed-demo`    | Run a specific seeder by class name.                  |
 
 </details>
 

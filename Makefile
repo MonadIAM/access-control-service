@@ -1,3 +1,4 @@
+# Infrastructure
 env:
 	[ -f .env.example ] && cp -f .env.example .env || echo '.env.example not found'
 up:
@@ -19,3 +20,25 @@ clean:
 	docker-compose down -v
 prune:
 	docker system prune -f
+
+# Development
+dev:
+	npm run start:dev
+prod:
+	npm run start:prod
+build-app:
+	npm run build
+lint:
+	npm run lint
+lint-fix:
+	npm run lint:fix
+
+# Database
+migrate:
+	npx mikro-orm migration:up
+migration:
+	npx mikro-orm migration:create
+seed:
+	npx mikro-orm seeder:run
+seed-demo:
+	npx mikro-orm seeder:run --class=DemoSeeder
