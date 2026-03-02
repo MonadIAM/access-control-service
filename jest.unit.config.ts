@@ -6,16 +6,16 @@ const config: Config.InitialOptions = {
     ...common,
 
     // Test file matching patterns
-    testMatch: ["**/?*.unit.spec.ts"],
+    testMatch: ["**/?*.spec.ts"],
 
     collectCoverageFrom: [
-        "<rootDir>/src/common/**/*.ts",
+        "<rootDir>/src/context/domain/entities/**/*.ts",
+        "!src/**/*.schema.ts",
+        "!**/*.unit.spec.ts",
         "!src/**/*.dto.ts",
         "!src/**/index.ts",
         "!src/**/*.d.ts",
         "!src/main.ts",
-        "!**/*.unit.spec.ts",
-        "!**/*.e2e.spec.ts",
     ],
 
     coverageThreshold: {

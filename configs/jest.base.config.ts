@@ -35,12 +35,20 @@ const config: Config.InitialOptions = {
 
     // Path aliases mapping
     moduleNameMapper: {
-        "^~example$": "<rootDir>/src/example",
-        "^~example/(.*)$": "<rootDir>/src/example/$1",
+        "^~infrastructure$": "<rootDir>/src/infrastructure",
+        "^~infrastructure/(.*)$": "<rootDir>/src/infrastructure/$1",
+        "^~observability$": "<rootDir>/src/observability",
+        "^~observability/(.*)$": "<rootDir>/src/observability/$1",
+        "^~bootstrap$": "<rootDir>/src/bootstrap",
+        "^~bootstrap/(.*)$": "<rootDir>/src/bootstrap/$1",
+        "^~context$": "<rootDir>/src/context",
+        "^~context/(.*)$": "<rootDir>/src/context/$1",
+        "^~common$": "<rootDir>/src/common",
+        "^~common/(.*)$": "<rootDir>/src/common/$1",
     },
 
     // Scripts to run before the test environment
-    setupFiles: ["reflect-metadata"],
+    setupFiles: ["reflect-metadata", "<rootDir>/src/extensions.ts"],
 };
 
 export default config;

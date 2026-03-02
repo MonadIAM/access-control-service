@@ -1,3 +1,5 @@
+.PHONY: coverage
+
 # Infrastructure
 env:
 	[ -f .env.example ] && cp -f .env.example .env || echo '.env.example not found'
@@ -42,3 +44,9 @@ seed:
 	npx mikro-orm seeder:run
 seed-demo:
 	npx mikro-orm seeder:run --class=DemoSeeder
+
+# Test
+test:
+	npx jest --config ./jest.unit.config.ts
+coverage:
+	npx jest --config ./jest.unit.config.ts --coverage

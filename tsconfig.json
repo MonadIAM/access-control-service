@@ -20,7 +20,6 @@
   "include": [
     "./mikro-orm.config.ts",
     "./jest.unit.config.ts",
-    "./jest.e2e.config.ts",
     "./env.d.ts",
     "src/**/*",
   ],

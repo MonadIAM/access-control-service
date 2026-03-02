@@ -24,7 +24,7 @@ export class Permission {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public realm?: Realm;
+    public realm: Realm;
 
     public roleAssignments = new Collection<RolePermissionAssignment>(this);
     public accountOverrides = new Collection<PermissionOverride>(this);

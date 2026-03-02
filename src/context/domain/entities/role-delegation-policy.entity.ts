@@ -98,11 +98,11 @@ export class RoleDelegationPolicy {
 
     public canCreate(): void {
         if (this.target.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_DLEGATE_REVOKED_TARGET`);
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_DELEGATE_REVOKED_TARGET`);
         } else if (this.target.isSystemManaged) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_DLEGATE_SYSTEM_TARGET`);
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_DELEGATE_SYSTEM_TARGET`);
         } else if (this.delegator.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.REVOKED_ROLE_CANNOT_DLEGATE_ROLES`);
+            throw EntityException.invariantViolation(`${this.dictionaryPath}.REVOKED_ROLE_CANNOT_DELEGATE_ROLES`);
         }
     }
 }
