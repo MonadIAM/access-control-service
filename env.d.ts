@@ -22,6 +22,7 @@ declare namespace NodeJS {
         POSTGRESQL_IMAGE: string;
         POSTGRESQL_PORT: `${number}`;
         POSTGRESQL_REPLICA_PORT: `${number}`;
+        POSTGRESQL_CONTAINER_PORT: `${number}`;
         POSTGRESQL_USER: string;
         POSTGRESQL_NAME: string;
         POSTGRESQL_PASSWORD: string;
@@ -66,10 +67,17 @@ declare namespace NodeJS {
         REDIS_IMAGE: string;
         REDIS_HOST: string;
         REDIS_PORT: `${number}`;
+        REDIS_CONTAINER_PORT: `${number}`;
         REDIS_PASSWORD: string;
         REDIS_DB_CACHE: `${number}`;
         REDIS_DB_LIMITER: `${number}`;
         REDIS_DB_QUEUE: `${number}`;
+
+        // ---------------------------------------------------------------------------
+        // Redis - services
+        // ---------------------------------------------------------------------------
+
+        PERMISSION_CACHE_TTL: `${number}`;
 
         // ---------------------------------------------------------------------------
         // Kafka

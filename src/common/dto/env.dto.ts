@@ -49,6 +49,10 @@ export class EnvironmentVariablesDTO {
     @Validator.Max(65535)
     public POSTGRESQL_REPLICA_PORT!: number;
 
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    public POSTGRESQL_CONTAINER_PORT!: number;
+
     @Validator.IsString()
     public POSTGRESQL_USER!: string;
 
@@ -143,6 +147,10 @@ export class EnvironmentVariablesDTO {
     @Validator.Max(65535)
     public REDIS_PORT!: number;
 
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    public REDIS_CONTAINER_PORT!: number;
+
     @Validator.IsString()
     public REDIS_PASSWORD!: string;
 
@@ -157,6 +165,13 @@ export class EnvironmentVariablesDTO {
     @Validator.IsInt()
     @Validator.Min(0)
     public REDIS_DB_QUEUE!: number;
+
+    // ---------------------------------------------------------------------------
+    // Redis - services
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsPositiveInt()
+    public PERMISSION_CACHE_TTL!: number;
 
     // ---------------------------------------------------------------------------
     // Kafka
