@@ -24,12 +24,6 @@ prune:
 	docker system prune -f
 
 # Development
-dev:
-	npm run start:dev
-prod:
-	npm run start:prod
-build-app:
-	npm run build
 lint:
 	npm run lint
 lint-fix:
@@ -39,7 +33,7 @@ lint-fix:
 migrate:
 	npx mikro-orm migration:up
 migration:
-	npx mikro-orm migration:create
+	npx mikro-orm migration:create --name=$(name)
 seed:
 	npx mikro-orm seeder:run
 seed-demo:
