@@ -2,7 +2,7 @@
   "name": "access-control-service",
   "description": "",
   "author": "Daniil Egorov (https://github.com/Lambdius)",
-  "license": "UNLICENSED",
+  "license": "SEE LICENSE IN LICENSE",
   "private": true,
   "version": "0.0.1",
   "main": "dist/index.js",
