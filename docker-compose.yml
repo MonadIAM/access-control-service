@@ -8,20 +8,14 @@ name: ${SERVICE_NAME}
 services:
   postgresql-primary:
     <<: *base
-    image: ${POSTGRESQL_IMAGE:?}
+    image: ${POSTGRES_IMAGE:?}
     container_name: ${SERVICE_NAME}-postgres-primary
-    environment:
-      POSTGRES_DB: ${POSTGRESQL_NAME}
-      POSTGRES_USER: ${POSTGRESQL_USER}
-      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
-      POSTGRESQL_REPLICATION_USER: ${POSTGRESQL_REPLICATION_USER}
-      POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRESQL_REPLICATION_PASSWORD}
-      POSTGRESQL_REPLICATION_SLOT: ${POSTGRESQL_REPLICATION_SLOT}
-      POSTGRESQL_CONTAINER_PORT: ${POSTGRESQL_CONTAINER_PORT}
+    env_file:
+      - .env
     ports:
-      - "${POSTGRESQL_PORT}:${POSTGRESQL_CONTAINER_PORT}"
+      - "${POSTGRES_PORT}:${POSTGRES_CONTAINER_PORT}"
     volumes:
-      - postgres_WRITE_data:/var/lib/postgresql/data
+      - postgres_primary_data:/var/lib/postgresql/data
       - ./docker/postgres/setup-replication.sh:/docker-entrypoint-initdb.d/99-setup-replication.sh:ro
     command: >
       postgres
@@ -35,7 +29,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p ${POSTGRESQL_CONTAINER_PORT}",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h 127.0.0.1 -p ${POSTGRES_CONTAINER_PORT}",
         ]
       interval: 10s
       timeout: 5s
@@ -44,20 +38,15 @@ services:
 
   postgresql-replica:
     <<: *base
-    image: ${POSTGRESQL_IMAGE:?}
+    image: ${POSTGRES_IMAGE:?}
     container_name: ${SERVICE_NAME}-postgres-replica
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: ${POSTGRESQL_NAME}
-      POSTGRES_USER: ${POSTGRESQL_USER}
-      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
-      POSTGRESQL_REPLICATION_USER: ${POSTGRESQL_REPLICATION_USER}
-      POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRESQL_REPLICATION_PASSWORD}
-      POSTGRESQL_REPLICATION_SLOT: ${POSTGRESQL_REPLICATION_SLOT}
-      POSTGRESQL_WRITE_HOST: ${POSTGRESQL_WRITE_HOST}
-      POSTGRESQL_WRITE_PORT: ${POSTGRESQL_WRITE_PORT}
-      POSTGRESQL_CONTAINER_PORT: ${POSTGRESQL_CONTAINER_PORT}
+      POSTGRES_PRIMARY_HOST: postgresql-primary
+      POSTGRES_PRIMARY_PORT: ${POSTGRES_CONTAINER_PORT}
     ports:
-      - "${POSTGRESQL_REPLICA_PORT}:${POSTGRESQL_CONTAINER_PORT}"
+      - "${POSTGRES_REPLICA_PORT}:${POSTGRES_CONTAINER_PORT}"
     depends_on:
       postgresql-primary:
         condition: service_healthy
@@ -71,7 +60,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p ${POSTGRESQL_CONTAINER_PORT} && PGPASSWORD=${POSTGRESQL_PASSWORD} psql -U ${POSTGRESQL_USER} -d ${POSTGRESQL_NAME} -h 127.0.0.1 -p ${POSTGRESQL_CONTAINER_PORT} -tAc \"SELECT pg_is_in_recovery()\" | grep -q t",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h 127.0.0.1 -p ${POSTGRES_CONTAINER_PORT} && PGPASSWORD=${POSTGRES_PASSWORD} psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h 127.0.0.1 -p ${POSTGRES_CONTAINER_PORT} -tAc \"SELECT pg_is_in_recovery()\" | grep -q t",
         ]
       interval: 10s
       timeout: 5s
@@ -100,6 +89,15 @@ services:
     container_name: ${SERVICE_NAME}-app
     env_file:
       - .env
+    environment:
+      POSTGRES_HOST: postgresql-primary
+      POSTGRES_WRITE_HOST: postgresql-primary
+      POSTGRES_READ_HOST: postgresql-replica
+      REDIS_HOST: redis
+      POSTGRES_WRITE_PORT: ${POSTGRES_CONTAINER_PORT}
+      POSTGRES_READ_PORT: ${POSTGRES_CONTAINER_PORT}
+      POSTGRES_PORT: ${POSTGRES_CONTAINER_PORT}
+      REDIS_PORT: ${REDIS_CONTAINER_PORT}
     ports:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
@@ -134,7 +132,7 @@ services:
       start_period: 20s
 
 volumes:
-  postgres_WRITE_data: {}
+  postgres_primary_data: {}
   postgres_replica_data: {}
   redis_data: {}
   uploads_data: {}

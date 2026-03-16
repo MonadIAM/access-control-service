@@ -19,53 +19,53 @@ declare namespace NodeJS {
         // PostgreSQL - common
         // ---------------------------------------------------------------------------
 
-        POSTGRESQL_IMAGE: string;
-        POSTGRESQL_PORT: `${number}`;
-        POSTGRESQL_REPLICA_PORT: `${number}`;
-        POSTGRESQL_CONTAINER_PORT: `${number}`;
-        POSTGRESQL_USER: string;
-        POSTGRESQL_NAME: string;
-        POSTGRESQL_PASSWORD: string;
-        POSTGRESQL_SSL: "true" | "false";
-        POSTGRESQL_SSL_REJECT_UNAUTHORIZED: "true" | "false";
-        POSTGRESQL_POOL_IDLE_MS: `${number}`;
-        POSTGRESQL_POOL_MAX: `${number}`;
-        POSTGRESQL_LOGGING: "true" | "false";
-        POSTGRESQL_CQRS_ENABLED: "true" | "false";
-        POSTGRESQL_HOST: string;
+        POSTGRES_IMAGE: string;
+        POSTGRES_PORT: `${number}`;
+        POSTGRES_REPLICA_PORT: `${number}`;
+        POSTGRES_CONTAINER_PORT: `${number}`;
+        POSTGRES_USER: string;
+        POSTGRES_DB: string;
+        POSTGRES_PASSWORD: string;
+        POSTGRES_SSL: "true" | "false";
+        POSTGRES_SSL_REJECT_UNAUTHORIZED: "true" | "false";
+        POSTGRES_POOL_IDLE_MS: `${number}`;
+        POSTGRES_POOL_MAX: `${number}`;
+        POSTGRES_LOGGING: "true" | "false";
+        POSTGRES_CQRS_ENABLED: "true" | "false";
 
         // ---------------------------------------------------------------------------
-        // PostgreSQL - write-side
+        // PostgreSQL - write-side (host/port set by docker-compose, not in .env)
         // ---------------------------------------------------------------------------
 
-        POSTGRESQL_WRITE_HOST: string;
-        POSTGRESQL_WRITE_PORT: `${number}`;
-        POSTGRESQL_WRITE_POOL_MAX: `${number}`;
-        POSTGRESQL_WRITE_POOL_IDLE_MS: `${number}`;
+        POSTGRES_HOST?: string;
+        POSTGRES_WRITE_HOST?: string;
+        POSTGRES_WRITE_PORT?: `${number}`;
+        POSTGRES_WRITE_POOL_MAX: `${number}`;
+        POSTGRES_WRITE_POOL_IDLE_MS: `${number}`;
 
         // ---------------------------------------------------------------------------
-        // PostgreSQL - read-side
+        // PostgreSQL - read-side (host/port set by docker-compose, not in .env)
         // ---------------------------------------------------------------------------
 
-        POSTGRESQL_READ_HOST: string;
-        POSTGRESQL_READ_PORT: `${number}`;
-        POSTGRESQL_READ_POOL_MAX: `${number}`;
-        POSTGRESQL_READ_POOL_IDLE_MS: `${number}`;
+        POSTGRES_READ_HOST?: string;
+        POSTGRES_READ_PORT?: `${number}`;
+        POSTGRES_READ_POOL_MAX: `${number}`;
+        POSTGRES_READ_POOL_IDLE_MS: `${number}`;
 
         // ---------------------------------------------------------------------------
         // PostgreSQL - replication
         // ---------------------------------------------------------------------------
 
-        POSTGRESQL_REPLICATION_USER: string;
-        POSTGRESQL_REPLICATION_PASSWORD: string;
-        POSTGRESQL_REPLICATION_SLOT: string;
+        POSTGRES_REPLICATION_USER: string;
+        POSTGRES_REPLICATION_PASSWORD: string;
+        POSTGRES_REPLICATION_SLOT: string;
 
         // ---------------------------------------------------------------------------
         // Redis
         // ---------------------------------------------------------------------------
 
         REDIS_IMAGE: string;
-        REDIS_HOST: string;
+        REDIS_HOST?: string;
         REDIS_PORT: `${number}`;
         REDIS_CONTAINER_PORT: `${number}`;
         REDIS_PASSWORD: string;

@@ -16,7 +16,7 @@ export class DatabaseHealthIndicator {
         private readonly healthIndicatorService: HealthIndicatorService,
         private readonly configService: ConfigService,
     ) {
-        this.isEnabledCQRS = this.configService.getOrThrow<string>("POSTGRESQL_CQRS_ENABLED") === "true";
+        this.isEnabledCQRS = this.configService.getOrThrow<string>("POSTGRES_CQRS_ENABLED") === "true";
     }
 
     public async isHealthy<T extends string>(key: T): Promise<HealthIndicatorResult<T>> {

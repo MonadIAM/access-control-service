@@ -11,7 +11,7 @@ if [ -s "$PGDATA/PG_VERSION" ]; then
 fi
 
 echo "Waiting for primary server to be ready..."
-until PGPASSWORD="$POSTGRESQL_REPLICATION_PASSWORD" pg_isready -h "$POSTGRESQL_WRITE_HOST" -p "$POSTGRESQL_WRITE_PORT" -U "$POSTGRESQL_REPLICATION_USER"; do
+until PGPASSWORD="$POSTGRES_REPLICATION_PASSWORD" pg_isready -h "$POSTGRES_PRIMARY_HOST" -p "$POSTGRES_PRIMARY_PORT" -U "$POSTGRES_REPLICATION_USER"; do
     echo "Primary server is not ready yet, waiting..."
     sleep 2
 done
@@ -20,16 +20,16 @@ echo "Primary server is ready, creating base backup..."
 
 rm -rf "$PGDATA"/*
 
-PGPASSWORD="$POSTGRESQL_REPLICATION_PASSWORD" pg_basebackup \
-    -h "$POSTGRESQL_WRITE_HOST" \
-    -p "$POSTGRESQL_WRITE_PORT" \
-    -U "$POSTGRESQL_REPLICATION_USER" \
+PGPASSWORD="$POSTGRES_REPLICATION_PASSWORD" pg_basebackup \
+    -h "$POSTGRES_PRIMARY_HOST" \
+    -p "$POSTGRES_PRIMARY_PORT" \
+    -U "$POSTGRES_REPLICATION_USER" \
     -D "$PGDATA" \
     -Fp \
     -Xs \
     -P \
     -R \
-    -S "$POSTGRESQL_REPLICATION_SLOT"
+    -S "$POSTGRES_REPLICATION_SLOT"
 
 chown -R postgres:postgres "$PGDATA"
 chmod 700 "$PGDATA"

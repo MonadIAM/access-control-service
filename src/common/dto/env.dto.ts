@@ -39,99 +39,104 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public POSTGRESQL_IMAGE!: string;
+    public POSTGRES_IMAGE!: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public POSTGRESQL_PORT!: number;
+    public POSTGRES_PORT!: number;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public POSTGRESQL_REPLICA_PORT!: number;
+    public POSTGRES_REPLICA_PORT!: number;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public POSTGRESQL_CONTAINER_PORT!: number;
+    public POSTGRES_CONTAINER_PORT!: number;
 
     @Validator.IsString()
-    public POSTGRESQL_USER!: string;
+    public POSTGRES_USER!: string;
 
     @Validator.IsString()
-    public POSTGRESQL_PASSWORD!: string;
+    public POSTGRES_PASSWORD!: string;
 
     @Validator.IsString()
-    public POSTGRESQL_NAME!: string;
+    public POSTGRES_DB!: string;
 
     @Validator.IsBoolean()
-    public POSTGRESQL_SSL!: boolean;
+    public POSTGRES_SSL!: boolean;
 
     @Validator.IsBoolean()
-    public POSTGRESQL_SSL_REJECT_UNAUTHORIZED!: boolean;
+    public POSTGRES_SSL_REJECT_UNAUTHORIZED!: boolean;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public POSTGRESQL_POOL_IDLE_MS!: number;
+    public POSTGRES_POOL_IDLE_MS!: number;
 
     @Validator.IsPositiveInt()
-    public POSTGRESQL_POOL_MAX!: number;
+    public POSTGRES_POOL_MAX!: number;
 
     @Validator.IsBoolean()
-    public POSTGRESQL_LOGGING!: boolean;
+    public POSTGRES_LOGGING!: boolean;
 
     @Validator.IsBoolean()
-    public POSTGRESQL_CQRS_ENABLED!: boolean;
-
-    @Validator.IsString()
-    public POSTGRESQL_HOST!: string;
+    public POSTGRES_CQRS_ENABLED!: boolean;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - write-side
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public POSTGRESQL_WRITE_HOST!: string;
+    @Validator.IsOptional()
+    public POSTGRES_HOST?: string;
+
+    @Validator.IsString()
+    @Validator.IsOptional()
+    public POSTGRES_WRITE_HOST?: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public POSTGRESQL_WRITE_PORT!: number;
+    @Validator.IsOptional()
+    public POSTGRES_WRITE_PORT?: number;
 
     @Validator.IsPositiveInt()
-    public POSTGRESQL_WRITE_POOL_MAX!: number;
+    public POSTGRES_WRITE_POOL_MAX!: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public POSTGRESQL_WRITE_POOL_IDLE_MS!: number;
+    public POSTGRES_WRITE_POOL_IDLE_MS!: number;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - read-side
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public POSTGRESQL_READ_HOST!: string;
+    @Validator.IsOptional()
+    public POSTGRES_READ_HOST?: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public POSTGRESQL_READ_PORT!: number;
+    @Validator.IsOptional()
+    public POSTGRES_READ_PORT?: number;
 
     @Validator.IsPositiveInt()
-    public POSTGRESQL_READ_POOL_MAX!: number;
+    public POSTGRES_READ_POOL_MAX!: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public POSTGRESQL_READ_POOL_IDLE_MS!: number;
+    public POSTGRES_READ_POOL_IDLE_MS!: number;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - replication
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public POSTGRESQL_REPLICATION_USER!: string;
+    public POSTGRES_REPLICATION_USER!: string;
 
     @Validator.IsString()
-    public POSTGRESQL_REPLICATION_PASSWORD!: string;
+    public POSTGRES_REPLICATION_PASSWORD!: string;
 
     @Validator.IsString()
-    public POSTGRESQL_REPLICATION_SLOT!: string;
+    public POSTGRES_REPLICATION_SLOT!: string;
 
     // ---------------------------------------------------------------------------
     // Redis
@@ -141,7 +146,8 @@ export class EnvironmentVariablesDTO {
     public REDIS_IMAGE!: string;
 
     @Validator.IsString()
-    public REDIS_HOST!: string;
+    @Validator.IsOptional()
+    public REDIS_HOST?: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)

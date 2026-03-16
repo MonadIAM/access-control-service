@@ -6,33 +6,33 @@ import path from "path";
 
 dotenv.config();
 
-const sslEnabled: boolean = process.env.POSTGRESQL_SSL === "true";
-const rejectUnauthorized: boolean = process.env.POSTGRESQL_SSL_REJECT_UNAUTHORIZED === "true";
+const sslEnabled: boolean = process.env.POSTGRES_SSL === "true";
+const rejectUnauthorized: boolean = process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED === "true";
 
-const cqrsEnabled: boolean = process.env.POSTGRESQL_CQRS_ENABLED === "true";
+const cqrsEnabled: boolean = process.env.POSTGRES_CQRS_ENABLED === "true";
 
-const port: number = Number(cqrsEnabled ? process.env.POSTGRESQL_WRITE_PORT : process.env.POSTGRESQL_PORT);
+const host: string = process.env.POSTGRES_WRITE_HOST ?? process.env.POSTGRES_HOST ?? "127.0.0.1";
+const isLocal: boolean = host === "127.0.0.1" || host === "localhost";
 
-const poolMax: number = Number(
-    cqrsEnabled ? process.env.POSTGRESQL_WRITE_POOL_MAX ?? process.env.POSTGRESQL_POOL_MAX : process.env.POSTGRESQL_POOL_MAX,
-);
+const port: number = Number(isLocal ? process.env.POSTGRES_PORT : process.env.POSTGRES_WRITE_PORT);
+const poolMax: number = Number(cqrsEnabled ? process.env.POSTGRES_WRITE_POOL_MAX : process.env.POSTGRES_POOL_MAX);
 
 const poolIdleTimeoutMillis: Optional<number> = cqrsEnabled
-    ? Number(process.env.POSTGRESQL_WRITE_POOL_IDLE_MS ?? process.env.POSTGRESQL_POOL_IDLE_MS)
-    : process.env.POSTGRESQL_POOL_IDLE_MS
-      ? Number(process.env.POSTGRESQL_POOL_IDLE_MS)
+    ? Number(process.env.POSTGRES_WRITE_POOL_IDLE_MS ?? process.env.POSTGRES_POOL_IDLE_MS)
+    : process.env.POSTGRES_POOL_IDLE_MS
+      ? Number(process.env.POSTGRES_POOL_IDLE_MS)
       : undefined;
 
 const config: Options<PostgreSqlDriver> = {
     driver: PostgreSqlDriver,
 
-    host: "127.0.0.1",
-    port: port,
-    user: process.env.POSTGRESQL_USER,
-    password: process.env.POSTGRESQL_PASSWORD,
-    dbName: process.env.POSTGRESQL_NAME,
+    host,
+    port,
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+    dbName: process.env.POSTGRES_DB,
 
-    debug: process.env.POSTGRESQL_LOGGING === "true" || process.env.NODE_ENV === "development",
+    debug: process.env.POSTGRES_LOGGING === "true" || process.env.NODE_ENV === "development",
 
     entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
     entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],
@@ -54,7 +54,7 @@ const config: Options<PostgreSqlDriver> = {
         fileName: (timestamp: string, name?: string) => {
             const prefix = timestamp.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, "$1.$2.$3T$4-$5-$6");
             if (name) {
-                return `${prefix}__${name.replace(/-\s/g, "_")}`;
+                return `${prefix}__${name}`;
             } else {
                 return `${prefix}`;
             }

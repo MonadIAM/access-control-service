@@ -24,7 +24,7 @@ import { MikroOrmConfig } from "./database.config";
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: (config: ConfigService) => {
-                const cqrsEnabled = config.getOrThrow<string>("POSTGRESQL_CQRS_ENABLED") === "true";
+                const cqrsEnabled = config.getOrThrow<string>("POSTGRES_CQRS_ENABLED") === "true";
                 if (cqrsEnabled) {
                     return {
                         ...MikroOrmConfig.buildOptions(config, "read"),
