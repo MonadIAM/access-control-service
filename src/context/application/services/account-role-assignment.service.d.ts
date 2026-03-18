@@ -11,9 +11,9 @@ declare global {
         namespace AccountRoleAssignment {
             interface Contract {
                 create: (props: Create) => Promise<void>;
-                purge: (props: Purge) => Promise<void>;
-                revoke: (props: Revoke) => Promise<void>;
-                restore: (props: Restore) => Promise<void>;
+                restore: (props: Restore) => void;
+                revoke: (props: Revoke) => void;
+                purge: (props: Purge) => void;
             }
 
             type Create = {
@@ -28,28 +28,34 @@ declare global {
             };
 
             type Purge = {
-                entities: AccountRoleAssignmentEntity[];
                 transaction: EntityManager;
                 context: RequestContext;
-                reason: string;
+                input: {
+                    entities: AccountRoleAssignmentEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
 
             type Revoke = {
-                entities: AccountRoleAssignmentEntity[];
                 transaction: EntityManager;
                 context: RequestContext;
-                reason: string;
+                input: {
+                    entities: AccountRoleAssignmentEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
 
             type Restore = {
-                entities: AccountRoleAssignmentEntity[];
                 transaction: EntityManager;
                 context: RequestContext;
-                reason: string;
+                input: {
+                    entities: AccountRoleAssignmentEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };

@@ -24,12 +24,7 @@ export class RoleDelegationPolicyHandler implements Handlers.RoleDelegationPolic
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create({
-        input: { delegator, target, description, depthLimit },
-        context,
-        actor,
-        realm,
-    }: Handlers.RoleDelegationPolicy.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Handlers.RoleDelegationPolicy.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -39,35 +34,37 @@ export class RoleDelegationPolicyHandler implements Handlers.RoleDelegationPolic
                         transaction,
                     }),
                     this.roleRepository.find({
-                        where: { id: { $in: [delegator, target] } },
+                        where: { id: { $in: [input.delegator, input.target] } },
                         transaction,
                     }),
                 ]);
 
                 if (roleEntities.length < 2) {
-                    if (roleEntities[0].id === delegator) {
+                    if (roleEntities[0].id === input.delegator) {
                         throw HandlerException.notFound(`${this.dictionaryPath}.TARGET_ROLE_NOT_FOUND`);
-                    } else if (roleEntities[0].id === target) {
+                    } else if (roleEntities[0].id === input.target) {
                         throw HandlerException.notFound(`${this.dictionaryPath}.DELEGATOR_ROLE_NOT_FOUND`);
                     } else {
                         throw HandlerException.notFound(`${this.dictionaryPath}.BOTH_ROLES_NOT_FOUND`);
                     }
                 } else {
                     const [delegatorEntity, targetEntity] =
-                        roleEntities[0].id === delegator ? roleEntities : roleEntities.reverse();
+                        roleEntities[0].id === input.delegator ? roleEntities : roleEntities.reverse();
 
                     await this.roleDelegationPolicyService.create({
                         input: {
+                            description: input.description,
+                            depthLimit: input.depthLimit,
                             delegator: delegatorEntity,
                             target: targetEntity,
-                            description,
-                            depthLimit,
                         },
                         realm: realmEntity,
                         transaction,
                         context,
                         actor,
                     });
+
+                    await transaction.flush();
 
                     return { message: `${this.dictionaryPath}.CREATED` };
                 }
@@ -78,8 +75,8 @@ export class RoleDelegationPolicyHandler implements Handlers.RoleDelegationPolic
     }
 
     public async update({
-        input,
         context,
+        input,
         realm,
         actor,
         id,
@@ -92,14 +89,15 @@ export class RoleDelegationPolicyHandler implements Handlers.RoleDelegationPolic
                     transaction,
                 });
 
-                await this.roleDelegationPolicyService.update({
+                this.roleDelegationPolicyService.update({
+                    input: { ...input, entity },
                     transaction,
                     context,
-                    entity,
                     realm,
-                    input,
                     actor,
                 });
+
+                await transaction.flush();
 
                 return { message: `${this.dictionaryPath}.UPDATED` };
             });
@@ -108,32 +106,28 @@ export class RoleDelegationPolicyHandler implements Handlers.RoleDelegationPolic
         }
     }
 
-    public async purge({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.RoleDelegationPolicy.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Handlers.RoleDelegationPolicy.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 }
 
-                await this.roleDelegationPolicyService.purge({
+                this.roleDelegationPolicyService.purge({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -146,32 +140,28 @@ export class RoleDelegationPolicyHandler implements Handlers.RoleDelegationPolic
         }
     }
 
-    public async revoke({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.RoleDelegationPolicy.Revoke): Promise<MessageResult> {
+    public async revoke({ context, input, realm, actor }: Handlers.RoleDelegationPolicy.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 }
 
-                await this.roleDelegationPolicyService.revoke({
+                this.roleDelegationPolicyService.revoke({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -184,32 +174,28 @@ export class RoleDelegationPolicyHandler implements Handlers.RoleDelegationPolic
         }
     }
 
-    public async restore({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.RoleDelegationPolicy.Restore): Promise<MessageResult> {
+    public async restore({ context, input, realm, actor }: Handlers.RoleDelegationPolicy.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 }
 
-                await this.roleDelegationPolicyService.restore({
+                this.roleDelegationPolicyService.restore({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };

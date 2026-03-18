@@ -24,15 +24,17 @@ export class RoleService implements Services.Role.Contract {
 
     public async create({
         transaction,
-        input: { parent, children, actor, realm, ...input },
         context: { userAgent, ip },
+        input,
+        realm,
+        actor,
     }: Services.Role.Create): Promise<Role> {
-        if (parent.protoType === RoleProtoType.ATOMIC) {
+        if (input.parent.protoType === RoleProtoType.ATOMIC) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE`);
         } else {
             const isRoleLimitExceeded = await this.roleRepository.wouldExceedRoleLimit({
-                transaction,
                 realm: realm.id,
+                transaction,
                 count: 1,
             });
 
@@ -50,9 +52,16 @@ export class RoleService implements Services.Role.Contract {
                 });
 
                 transaction.persist(entity);
-                await transaction.flush();
 
-                await this.buildHierarchy({ input: { realm: realm.id, children, parent, entity }, transaction });
+                await this.buildHierarchy({
+                    transaction,
+                    input: {
+                        children: input.children,
+                        parent: input.parent,
+                        realm: realm.id,
+                        entity,
+                    },
+                });
 
                 const auditEntity = new AuditJournal({
                     actionType: AccessControlActionType.CREATE,
@@ -66,86 +75,74 @@ export class RoleService implements Services.Role.Contract {
                 });
 
                 transaction.persist(auditEntity);
-                await transaction.flush();
 
                 return entity;
             }
         }
     }
 
-    public async update({
-        transaction,
-        input: { patch, reason },
-        context: { userAgent, ip },
-        entity,
-        realm,
-        actor,
-    }: Services.Role.Update): Promise<void> {
-        const historyPatch = entity.changeMetadata({ reason, patch, actor });
+    public update({ transaction, context: { userAgent, ip }, input, realm, actor }: Services.Role.Update): void {
+        const historyPatch = input.entity.changeMetadata({ ...input, actor });
 
         const auditEntity = new AuditJournal({
             actionType: AccessControlActionType.UPDATE,
             entityType: this.entityType,
-            at: entity.updatedAt!,
+            at: input.entity.updatedAt!,
+            entity: input.entity.id,
+            reason: input.reason,
             patch: historyPatch,
-            entity: entity.id,
-            realm: realm,
             userAgent,
             by: actor,
-            reason,
+            realm,
             ip,
         });
 
         transaction.persist(auditEntity);
-        await transaction.flush();
     }
 
     public async purge({
         transaction,
         context: { userAgent, ip },
-        entity,
-        reason,
+        input,
         realm,
         actor,
     }: Services.Role.Purge): Promise<void> {
-        entity.canPurge();
+        input.entity.canPurge();
 
         transaction.clear();
 
         await this.roleClosureRepository.decreaseTransitiveDepth({
-            role: entity.id,
-            realm: realm,
+            role: input.entity.id,
             transaction,
+            realm,
         });
 
-        transaction.remove(entity);
+        transaction.remove(input.entity);
 
         const auditEntity = new AuditJournal({
             actionType: AccessControlActionType.DELETE,
             entityType: this.entityType,
-            entity: entity.id,
+            entity: input.entity.id,
+            reason: input.reason,
             at: new Date(),
-            realm: realm,
             userAgent,
             by: actor,
-            reason,
+            realm,
             ip,
         });
 
         transaction.persist(auditEntity);
-        await transaction.flush();
     }
 
     public async purgeSubtree({
         transaction,
         context: { userAgent, ip },
-        entity,
-        reason,
+        input,
         realm,
         actor,
     }: Services.Role.PurgeSubtree): Promise<number> {
         const descendants: Role[] = await this.roleRepository.getDescendants({
-            ancestor: entity.id,
+            ancestor: input.entity.id,
             transaction,
         });
 
@@ -165,77 +162,59 @@ export class RoleService implements Services.Role.Contract {
                     actionType: AccessControlActionType.DELETE,
                     entityType: this.entityType,
                     entity: descendant.id,
+                    reason: input.reason,
                     at: new Date(),
-                    realm: realm,
                     userAgent,
                     by: actor,
-                    reason,
+                    realm,
                     ip,
                 });
 
                 transaction.persist(auditEntity);
             }
 
-            await transaction.flush();
-
             return descendants.length;
         }
     }
 
-    public async revoke({
-        transaction,
-        context: { userAgent, ip },
-        entities,
-        reason,
-        realm,
-        actor,
-    }: Services.Role.Revoke): Promise<void> {
-        for (const entity of entities) {
-            entity.revoke({ reason, actor });
+    public revoke({ transaction, context: { userAgent, ip }, input, realm, actor }: Services.Role.Revoke): void {
+        for (const entity of input.entities) {
+            entity.revoke({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.REVOKE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
-                realm: realm,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async restore({
-        transaction,
-        context: { userAgent, ip },
-        entities,
-        reason,
-        realm,
-        actor,
-    }: Services.Role.Restore): Promise<void> {
-        for (const entity of entities) {
-            entity.restore({ reason, actor });
+    public restore({ transaction, context: { userAgent, ip }, input, realm, actor }: Services.Role.Restore): void {
+        for (const entity of input.entities) {
+            entity.restore({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.RESTORE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
-                realm: realm,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
     private async buildHierarchy({

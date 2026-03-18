@@ -12,45 +12,51 @@ declare global {
         namespace RolePermissionAssignment {
             interface Contract {
                 create: (props: Create) => Promise<void>;
-                purge: (props: Purge) => Promise<void>;
-                revoke: (props: Revoke) => Promise<void>;
-                restore: (props: Restore) => Promise<void>;
+                restore: (props: Restore) => void;
+                revoke: (props: Revoke) => void;
+                purge: (props: Purge) => void;
             }
 
             type Create = {
                 transaction: EntityManager;
+                context: RequestContext;
                 input: {
                     permissions: PermissionEntity[];
                     role: RoleEntity;
                 };
-                context: RequestContext;
                 realm: RealmEntity;
                 actor: string;
             };
 
             type Purge = {
-                entities: RolePermissionAssignmentEntity[];
                 transaction: EntityManager;
                 context: RequestContext;
-                reason: string;
+                input: {
+                    entities: RolePermissionAssignmentEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
 
             type Revoke = {
-                entities: RolePermissionAssignmentEntity[];
                 transaction: EntityManager;
                 context: RequestContext;
-                reason: string;
+                input: {
+                    entities: RolePermissionAssignmentEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
 
             type Restore = {
-                entities: RolePermissionAssignmentEntity[];
                 transaction: EntityManager;
                 context: RequestContext;
-                reason: string;
+                input: {
+                    entities: RolePermissionAssignmentEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };

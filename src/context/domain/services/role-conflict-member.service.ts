@@ -18,22 +18,22 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
     public async create({
         transaction,
         context: { userAgent, ip },
-        input: { roles, group },
+        input,
         realm,
         actor,
     }: Services.RoleConflictMember.Create): Promise<void> {
         const isMemberLimitExceeded = await this.roleConflictMemberRepository.wouldExceedMemberLimit({
+            count: input.roles.length,
+            group: input.group.id,
             transaction,
-            group: group.id,
-            count: roles.length,
         });
 
         if (isMemberLimitExceeded) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED`);
         } else {
-            for (const role of roles) {
+            for (const role of input.roles) {
                 const entity = new RoleConflictMember({
-                    group,
+                    group: input.group,
                     actor,
                     role,
                 });
@@ -53,35 +53,35 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
 
                 transaction.persist(auditEntity);
             }
-            await transaction.flush();
         }
     }
 
-    public async purge({
+    public purge({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.RoleConflictMember.Purge): Promise<void> {
+    }: Services.RoleConflictMember.Purge): void {
         transaction.clear();
-        for (const entity of entities) {
+        for (const entity of input.entities) {
             entity.canPurge();
+
             transaction.remove(entity);
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.DELETE,
                 entityType: this.entityType,
+                reason: input.reason,
                 entity: entity.id,
                 at: new Date(),
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 }

@@ -25,7 +25,7 @@ export class PermissionHandler implements Handlers.Permission.Contract {
         private readonly realmRepository: Repositories.Realm.Contract,
     ) {}
 
-    public async create({ context, input, actor, realm }: Handlers.Permission.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Handlers.Permission.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -34,11 +34,15 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                     transaction,
                 });
 
-                await this.permissionService.create({
-                    input: { ...input, actor, realm: realmEntity },
+                this.permissionService.create({
+                    realm: realmEntity,
                     transaction,
                     context,
+                    input,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 return { message: `${this.dictionaryPath}.CREATED` };
             });
@@ -47,7 +51,7 @@ export class PermissionHandler implements Handlers.Permission.Contract {
         }
     }
 
-    public async update({ context, input, actor, realm, id }: Handlers.Permission.Update): Promise<MessageResult> {
+    public async update({ context, input, realm, actor, id }: Handlers.Permission.Update): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -56,14 +60,15 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                     transaction,
                 });
 
-                await this.permissionService.update({
+                this.permissionService.update({
+                    input: { ...input, entity },
                     transaction,
                     context,
-                    entity,
-                    input,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 return { message: `${this.dictionaryPath}.UPDATED` };
             });
@@ -72,32 +77,28 @@ export class PermissionHandler implements Handlers.Permission.Contract {
         }
     }
 
-    public async purge({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.Permission.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Handlers.Permission.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.permissionRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
-                await this.permissionService.purge({
+                this.permissionService.purge({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -110,32 +111,28 @@ export class PermissionHandler implements Handlers.Permission.Contract {
         }
     }
 
-    public async revoke({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.Permission.Revoke): Promise<MessageResult> {
+    public async revoke({ context, input, realm, actor }: Handlers.Permission.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const { entities, affected } = await writeManager.transactional(async (transaction) => {
                 const entities = await this.permissionRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
-                await this.permissionService.revoke({
+                this.permissionService.revoke({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 const affected = await this.permissionRepository.findAccountsByPermissions({
                     permissions: entities.map(({ id }) => id),
@@ -156,32 +153,28 @@ export class PermissionHandler implements Handlers.Permission.Contract {
         }
     }
 
-    public async restore({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.Permission.Restore): Promise<MessageResult> {
+    public async restore({ context, input, realm, actor }: Handlers.Permission.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const { entities, affected } = await writeManager.transactional(async (transaction) => {
                 const entities = await this.permissionRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
-                await this.permissionService.restore({
+                this.permissionService.restore({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 const affected = await this.permissionRepository.findAccountsByPermissions({
                     permissions: entities.map(({ id }) => id),

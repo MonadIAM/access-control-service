@@ -24,12 +24,7 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create({
-        input: { members, ...input },
-        context,
-        actor,
-        realm,
-    }: Handlers.RoleConflictGroup.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Handlers.RoleConflictGroup.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -39,25 +34,24 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
                         transaction,
                     }),
                     this.roleRepository.find({
-                        where: { id: { $in: members } },
+                        where: { id: { $in: input.members } },
                         transaction,
                     }),
                 ]);
 
-                if (roleEntities.length < members.length) {
+                if (roleEntities.length < input.members.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 }
 
-                await this.roleConflictGroupService.create({
-                    input: {
-                        members: roleEntities,
-                        ...input,
-                    },
+                this.roleConflictGroupService.create({
+                    input: { ...input, members: roleEntities },
                     realm: realmEntity,
                     transaction,
                     context,
                     actor,
                 });
+
+                await transaction.flush();
 
                 return { message: `${this.dictionaryPath}.CREATED` };
             });
@@ -66,7 +60,7 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
         }
     }
 
-    public async update({ input, context, realm, actor, id }: Handlers.RoleConflictGroup.Update): Promise<MessageResult> {
+    public async update({ context, input, realm, actor, id }: Handlers.RoleConflictGroup.Update): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -75,14 +69,15 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
                     transaction,
                 });
 
-                await this.roleConflictGroupService.update({
+                this.roleConflictGroupService.update({
+                    input: { ...input, entity },
                     transaction,
                     context,
-                    entity,
                     realm,
-                    input,
                     actor,
                 });
+
+                await transaction.flush();
 
                 return { message: `${this.dictionaryPath}.UPDATED` };
             });
@@ -91,32 +86,28 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
         }
     }
 
-    public async purge({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.RoleConflictGroup.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Handlers.RoleConflictGroup.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.roleConflictGroupRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                 }
 
-                await this.roleConflictGroupService.purge({
+                this.roleConflictGroupService.purge({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -129,32 +120,28 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
         }
     }
 
-    public async revoke({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.RoleConflictGroup.Revoke): Promise<MessageResult> {
+    public async revoke({ context, input, realm, actor }: Handlers.RoleConflictGroup.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.roleConflictGroupRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                 }
 
-                await this.roleConflictGroupService.revoke({
+                this.roleConflictGroupService.revoke({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -167,32 +154,28 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
         }
     }
 
-    public async restore({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.RoleConflictGroup.Restore): Promise<MessageResult> {
+    public async restore({ context, input, realm, actor }: Handlers.RoleConflictGroup.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.roleConflictGroupRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                 }
 
-                await this.roleConflictGroupService.restore({
+                this.roleConflictGroupService.restore({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };

@@ -2,19 +2,22 @@ import { Injectable, Scope } from "@nestjs/common";
 
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { AuditJournal, Permission } from "~context/domain/entities";
+
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionService implements Services.Permission.Contract {
     private readonly entityType = AccessControlEntityType.REALM;
 
-    public async create({
+    public create({
         transaction,
         context: { userAgent, ip },
-        input: { realm, actor, ...input },
-    }: Services.Permission.Create): Promise<Permission> {
+        input,
+        realm,
+        actor,
+    }: Services.Permission.Create): Permission {
         const entity = new Permission({
             ...input,
-            actor,
             realm,
+            actor,
         });
 
         transaction.persist(entity);
@@ -24,119 +27,96 @@ export class PermissionService implements Services.Permission.Contract {
             entityType: this.entityType,
             at: entity.createdAt,
             entity: entity.id,
-            userAgent,
+            realm: realm.id,
             by: actor,
+            userAgent,
             ip,
         });
 
         transaction.persist(auditEntity);
-        await transaction.flush();
 
         return entity;
     }
 
-    public async update({
-        transaction,
-        input: { patch, reason },
-        context: { userAgent, ip },
-        entity,
-        actor,
-    }: Services.Permission.Update): Promise<void> {
-        const historyPatch = entity.changeMetadata({ reason, patch, actor });
+    public update({ transaction, context: { userAgent, ip }, input, realm, actor }: Services.Permission.Update): void {
+        const historyPatch = input.entity.changeMetadata({ ...input, actor });
 
         const auditEntity = new AuditJournal({
             actionType: AccessControlActionType.UPDATE,
             entityType: this.entityType,
-            at: entity.updatedAt!,
+            at: input.entity.updatedAt!,
+            entity: input.entity.id,
+            reason: input.reason,
             patch: historyPatch,
-            entity: entity.id,
             userAgent,
             by: actor,
-            reason,
+            realm,
             ip,
         });
 
         transaction.persist(auditEntity);
-        await transaction.flush();
     }
 
-    public async purge({
-        transaction,
-        context: { userAgent, ip },
-        entities,
-        reason,
-        actor,
-    }: Services.Permission.Purge): Promise<void> {
+    public purge({ transaction, context: { userAgent, ip }, input, realm, actor }: Services.Permission.Purge): void {
         transaction.clear();
-        for (const entity of entities) {
+        for (const entity of input.entities) {
             entity.canPurge();
+
             transaction.remove(entity);
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.DELETE,
                 entityType: this.entityType,
+                reason: input.reason,
                 entity: entity.id,
                 at: new Date(),
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async revoke({
-        transaction,
-        context: { userAgent, ip },
-        entities,
-        reason,
-        actor,
-    }: Services.Permission.Revoke): Promise<void> {
-        for (const entity of entities) {
-            entity.revoke({ reason, actor });
+    public revoke({ transaction, context: { userAgent, ip }, input, realm, actor }: Services.Permission.Revoke): void {
+        for (const entity of input.entities) {
+            entity.revoke({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.REVOKE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async restore({
-        transaction,
-        context: { userAgent, ip },
-        entities,
-        reason,
-        actor,
-    }: Services.Permission.Restore): Promise<void> {
-        for (const entity of entities) {
-            entity.restore({ reason, actor });
+    public restore({ transaction, context: { userAgent, ip }, input, realm, actor }: Services.Permission.Restore): void {
+        for (const entity of input.entities) {
+            entity.restore({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.RESTORE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 }

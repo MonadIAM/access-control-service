@@ -23,11 +23,14 @@ export class RealmHandler implements Handlers.Realm.Contract {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
-                await this.realmService.create({
-                    input: { ...input, actor },
+                this.realmService.create({
                     transaction,
                     context,
+                    input,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 return { message: `${this.dictionaryPath}.CREATED` };
             });
@@ -45,13 +48,14 @@ export class RealmHandler implements Handlers.Realm.Contract {
                     transaction,
                 });
 
-                await this.realmService.update({
+                this.realmService.update({
+                    input: { ...input, entity },
                     transaction,
                     context,
-                    entity,
-                    input,
                     actor,
                 });
+
+                await transaction.flush();
 
                 return { message: `${this.dictionaryPath}.UPDATED` };
             });
@@ -60,26 +64,27 @@ export class RealmHandler implements Handlers.Realm.Contract {
         }
     }
 
-    public async purge({ input: { identifiers, reason }, context, actor }: Handlers.Realm.Purge): Promise<MessageResult> {
+    public async purge({ context, input, actor }: Handlers.Realm.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.realmRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 }
 
-                await this.realmService.purge({
+                this.realmService.purge({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
                     actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -92,26 +97,27 @@ export class RealmHandler implements Handlers.Realm.Contract {
         }
     }
 
-    public async revoke({ input: { identifiers, reason }, context, actor }: Handlers.Realm.Revoke): Promise<MessageResult> {
+    public async revoke({ context, input, actor }: Handlers.Realm.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.realmRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 }
 
-                await this.realmService.revoke({
+                this.realmService.revoke({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
                     actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -124,30 +130,27 @@ export class RealmHandler implements Handlers.Realm.Contract {
         }
     }
 
-    public async restore({
-        input: { identifiers, reason },
-        context,
-        actor,
-    }: Handlers.Realm.Restore): Promise<MessageResult> {
+    public async restore({ context, input, actor }: Handlers.Realm.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.realmRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 }
 
-                await this.realmService.restore({
+                this.realmService.restore({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
                     actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };

@@ -25,29 +25,29 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
 
     public async create({
         transaction,
-        input: { account, roles },
         context: { userAgent, ip },
+        input,
         realm,
         actor,
     }: Services.AccountRoleAssignment.Create): Promise<void> {
-        const roleIds = roles.map(({ id }) => id!);
+        const roleIds = input.roles.map(({ id }) => id!);
         const [isDelegationAllowed, limitExceeded, hasSoDViolations] = await Promise.all([
             this.roleDelegationPolicyRepository.isDelegationAllowed({
-                transaction,
-                roles: roleIds,
                 realm: realm.id,
+                roles: roleIds,
+                transaction,
                 actor,
             }),
             this.accountRoleAssignmentRepository.wouldExceedRoleLimit({
-                transaction,
+                account: input.account,
                 roles: roleIds,
-                account,
+                transaction,
             }),
             this.roleConflictGroupRepository.hasViolations({
-                transaction,
-                roles: roleIds,
+                account: input.account,
                 realm: realm.id,
-                account,
+                roles: roleIds,
+                transaction,
             }),
         ]);
 
@@ -58,15 +58,16 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         } else if (hasSoDViolations) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.HAS_SoD_VIOLATIONS`);
         } else {
-            for (const role of roles) {
+            for (const role of input.roles) {
                 const entity = new AccountRoleAssignment({
-                    account,
+                    account: input.account,
                     actor,
                     realm,
                     role,
                 });
 
                 entity.canAssign();
+
                 transaction.persist(entity);
 
                 const auditEntity = new AuditJournal({
@@ -81,88 +82,87 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
 
                 transaction.persist(auditEntity);
             }
-
-            await transaction.flush();
         }
     }
 
-    public async purge({
+    public purge({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.AccountRoleAssignment.Purge): Promise<void> {
+    }: Services.AccountRoleAssignment.Purge): void {
         transaction.clear();
-        for (const entity of entities) {
+        for (const entity of input.entities) {
             entity.canPurge();
+
             transaction.remove(entity);
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.DELETE,
                 entityType: this.entityType,
+                reason: input.reason,
                 entity: entity.id,
                 at: new Date(),
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async revoke({
+    public revoke({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.AccountRoleAssignment.Revoke): Promise<void> {
-        for (const entity of entities) {
-            entity.revoke({ reason, actor });
+    }: Services.AccountRoleAssignment.Revoke): void {
+        for (const entity of input.entities) {
+            entity.revoke({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.REVOKE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async restore({
+    public restore({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.AccountRoleAssignment.Restore): Promise<void> {
-        for (const entity of entities) {
-            entity.restore({ reason, actor });
+    }: Services.AccountRoleAssignment.Restore): void {
+        for (const entity of input.entities) {
+            entity.restore({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.RESTORE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 }

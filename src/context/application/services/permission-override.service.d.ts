@@ -11,10 +11,10 @@ declare global {
     namespace Services {
         namespace PermissionOverride {
             interface Contract {
-                create: (props: Create) => Promise<void>;
-                purge: (props: Purge) => Promise<void>;
-                revoke: (props: Revoke) => Promise<void>;
-                restore: (props: Restore) => Promise<void>;
+                restore: (props: Restore) => void;
+                revoke: (props: Revoke) => void;
+                create: (props: Create) => void;
+                purge: (props: Purge) => void;
             }
 
             type Create = {
@@ -32,8 +32,10 @@ declare global {
             type Purge = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entities: PermissionOverrideEntity[];
-                reason: string;
+                input: {
+                    entities: PermissionOverrideEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
@@ -41,8 +43,10 @@ declare global {
             type Revoke = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entities: PermissionOverrideEntity[];
-                reason: string;
+                input: {
+                    entities: PermissionOverrideEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
@@ -50,8 +54,10 @@ declare global {
             type Restore = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entities: PermissionOverrideEntity[];
-                reason: string;
+                input: {
+                    entities: PermissionOverrideEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };

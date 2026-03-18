@@ -10,15 +10,16 @@ declare global {
     namespace Services {
         namespace RoleConflictGroup {
             interface Contract {
-                create: (props: Create) => Promise<void>;
-                update: (props: Update) => Promise<void>;
-                purge: (props: Purge) => Promise<void>;
-                revoke: (props: Revoke) => Promise<void>;
-                restore: (props: Restore) => Promise<void>;
+                restore: (props: Restore) => void;
+                revoke: (props: Revoke) => void;
+                create: (props: Create) => void;
+                update: (props: Update) => void;
+                purge: (props: Purge) => void;
             }
 
             type Create = {
                 transaction: EntityManager;
+                context: RequestContext;
                 input: {
                     members: RoleEntity[];
                     description: string;
@@ -26,46 +27,51 @@ declare global {
                     code: string;
                     name: string;
                 };
-                context: RequestContext;
                 realm: RealmEntity;
                 actor: string;
             };
 
             type Update = {
                 transaction: EntityManager;
+                context: RequestContext;
                 input: {
                     patch: Partial<Entities.RoleConflictGroup.MutableFields>;
+                    entity: RoleConflictGroupEntity;
                     reason: string;
                 };
-                context: RequestContext;
-                entity: RoleConflictGroupEntity;
                 realm: string;
                 actor: string;
             };
 
             type Purge = {
-                entities: RoleConflictGroupEntity[];
                 transaction: EntityManager;
                 context: RequestContext;
-                reason: string;
+                input: {
+                    entities: RoleConflictGroupEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
 
             type Revoke = {
-                entities: RoleConflictGroupEntity[];
                 transaction: EntityManager;
                 context: RequestContext;
-                reason: string;
+                input: {
+                    entities: RoleConflictGroupEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
 
             type Restore = {
-                entities: RoleConflictGroupEntity[];
                 transaction: EntityManager;
                 context: RequestContext;
-                reason: string;
+                input: {
+                    entities: RoleConflictGroupEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };

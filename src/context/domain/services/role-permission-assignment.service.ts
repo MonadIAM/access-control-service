@@ -17,26 +17,26 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
 
     public async create({
         transaction,
-        input: { permissions, role },
         context: { userAgent, ip },
         realm,
+        input,
         actor,
     }: Services.RolePermissionAssignment.Create): Promise<void> {
         const limitExceeded = await this.rolePermissionAssignmentRepository.wouldExceedPermissionLimit({
-            permissions: permissions.map(({ id }) => id!),
-            role: role.id,
+            permissions: input.permissions.map(({ id }) => id!),
+            role: input.role.id,
             transaction,
         });
 
         if (limitExceeded) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.ROLE_PERMISSION_LIMIT_EXCEEDED`);
         } else {
-            for await (const permission of permissions) {
+            for (const permission of input.permissions) {
                 const entity = new RolePermissionAssignment({
+                    role: input.role,
                     permission,
                     actor,
                     realm,
-                    role,
                 });
 
                 entity.canAssign();
@@ -48,6 +48,7 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
                     entityType: this.entityType,
                     at: entity.createdAt,
                     entity: entity.id,
+                    realm: realm.id,
                     userAgent,
                     by: actor,
                     ip,
@@ -55,88 +56,87 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
 
                 transaction.persist(auditEntity);
             }
-
-            await transaction.flush();
         }
     }
 
-    public async purge({
+    public purge({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.RolePermissionAssignment.Purge): Promise<void> {
+    }: Services.RolePermissionAssignment.Purge): void {
         transaction.clear();
-        for (const entity of entities) {
+        for (const entity of input.entities) {
             entity.canPurge();
+
             transaction.remove(entity);
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.DELETE,
                 entityType: this.entityType,
+                reason: input.reason,
                 entity: entity.id,
                 at: new Date(),
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async revoke({
+    public revoke({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.RolePermissionAssignment.Revoke): Promise<void> {
-        for (const entity of entities) {
-            entity.revoke({ reason, actor });
+    }: Services.RolePermissionAssignment.Revoke): void {
+        for (const entity of input.entities) {
+            entity.revoke({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.REVOKE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async restore({
+    public restore({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.RolePermissionAssignment.Restore): Promise<void> {
-        for (const entity of entities) {
-            entity.restore({ reason, actor });
+    }: Services.RolePermissionAssignment.Restore): void {
+        for (const entity of input.entities) {
+            entity.restore({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.RESTORE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 }

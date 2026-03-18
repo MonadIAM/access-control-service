@@ -2,17 +2,18 @@ import { Injectable, Scope } from "@nestjs/common";
 
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { AuditJournal, PermissionOverride } from "~context/domain/entities";
+
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideService implements Services.PermissionOverride.Contract {
     private readonly entityType = AccessControlEntityType.PERMISSION_OVERRIDE;
 
-    public async create({
+    public create({
         transaction,
         context: { userAgent, ip },
+        input,
         realm,
         actor,
-        input,
-    }: Services.PermissionOverride.Create): Promise<void> {
+    }: Services.PermissionOverride.Create): void {
         const entity = new PermissionOverride({
             ...input,
             actor,
@@ -32,86 +33,86 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
         });
 
         transaction.persist(auditEntity);
-        await transaction.flush();
     }
 
-    public async purge({
+    public purge({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.PermissionOverride.Purge): Promise<void> {
+    }: Services.PermissionOverride.Purge): void {
         transaction.clear();
-        for (const entity of entities) {
+        for (const entity of input.entities) {
             entity.canPurge();
+
             transaction.remove(entity);
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.DELETE,
                 entityType: this.entityType,
+                reason: input.reason,
                 entity: entity.id,
                 at: new Date(),
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async revoke({
+    public revoke({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.PermissionOverride.Revoke): Promise<void> {
-        for (const entity of entities) {
-            entity.revoke({ reason, actor });
+    }: Services.PermissionOverride.Revoke): void {
+        for (const entity of input.entities) {
+            entity.revoke({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.REVOKE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async restore({
+    public restore({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.PermissionOverride.Restore): Promise<void> {
-        for (const entity of entities) {
-            entity.restore({ reason, actor });
+    }: Services.PermissionOverride.Restore): void {
+        for (const entity of input.entities) {
+            entity.restore({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.RESTORE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 }

@@ -31,12 +31,7 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
         private readonly realmRepository: Repositories.Realm.Contract,
     ) {}
 
-    public async create({
-        input: { effect, permission, account },
-        context,
-        actor,
-        realm,
-    }: Handlers.PermissionOverride.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Handlers.PermissionOverride.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
@@ -46,25 +41,27 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                         transaction,
                     }),
                     this.permissionRepository.findUniqueOrThrow({
-                        where: { id: permission },
+                        where: { id: input.permission },
                         transaction,
                     }),
                 ]);
 
-                await this.permissionOverrideService.create({
+                this.permissionOverrideService.create({
                     input: {
                         permission: permissionEntity,
-                        account,
-                        effect,
+                        account: input.account,
+                        effect: input.effect,
                     },
                     realm: realmEntity,
                     transaction,
                     context,
                     actor,
                 });
+
+                await transaction.flush();
             });
 
-            await this.permissionCacheService.invalidate({ accounts: [account] });
+            await this.permissionCacheService.invalidate({ accounts: [input.account] });
 
             return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
@@ -72,32 +69,28 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
         }
     }
 
-    public async purge({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.PermissionOverride.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Handlers.PermissionOverride.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                 }
 
-                await this.permissionOverrideService.purge({
+                this.permissionOverrideService.purge({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -110,32 +103,28 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
         }
     }
 
-    public async revoke({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.PermissionOverride.Revoke): Promise<MessageResult> {
+    public async revoke({ context, input, realm, actor }: Handlers.PermissionOverride.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const entities = await writeManager.transactional(async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                 }
 
-                await this.permissionOverrideService.revoke({
+                this.permissionOverrideService.revoke({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 return entities;
             });
@@ -152,32 +141,28 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
         }
     }
 
-    public async restore({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.PermissionOverride.Restore): Promise<MessageResult> {
+    public async restore({ context, input, realm, actor }: Handlers.PermissionOverride.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const entities = await writeManager.transactional(async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                 }
 
-                await this.permissionOverrideService.restore({
+                this.permissionOverrideService.restore({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 return entities;
             });

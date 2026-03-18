@@ -35,10 +35,10 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
     ) {}
 
     public async create({
-        input: { permissions, role },
         context,
-        actor,
+        input,
         realm,
+        actor,
     }: Handlers.RolePermissionAssignment.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
@@ -49,16 +49,16 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                         transaction,
                     }),
                     this.roleRepository.findUniqueOrThrow({
-                        where: { id: role },
+                        where: { id: input.role },
                         transaction,
                     }),
                     this.permissionRepository.find({
-                        where: { id: { $in: permissions } },
+                        where: { id: { $in: input.permissions } },
                         transaction,
                     }),
                 ]);
 
-                if (permissionEntities.length < permissions.length) {
+                if (permissionEntities.length < input.permissions.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
@@ -73,6 +73,8 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                     actor,
                 });
 
+                await transaction.flush();
+
                 const affected = await this.roleRepository.findAccountsByRoles({ roles: [roleEntity.id] });
 
                 return { affected };
@@ -86,32 +88,28 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
         }
     }
 
-    public async purge({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.RolePermissionAssignment.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Handlers.RolePermissionAssignment.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.rolePermissionAssignmentRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
-                await this.rolePermissionAssignmentService.purge({
+                this.rolePermissionAssignmentService.purge({
+                    input: { entities, reason: input.reason },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -125,31 +123,32 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
     }
 
     public async revoke({
-        input: { identifiers, reason },
         context,
-        actor,
+        input,
         realm,
+        actor,
     }: Handlers.RolePermissionAssignment.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const { entities, affected } = await writeManager.transactional(async (transaction) => {
                 const entities = await this.rolePermissionAssignmentRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
-                await this.rolePermissionAssignmentService.revoke({
+                this.rolePermissionAssignmentService.revoke({
+                    input: { entities, reason: input.reason },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 const affected = await this.roleRepository.findAccountsByRoles({
                     roles: entities.map(({ role: { id } }) => id),
@@ -171,31 +170,32 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
     }
 
     public async restore({
-        input: { identifiers, reason },
         context,
-        actor,
+        input,
         realm,
+        actor,
     }: Handlers.RolePermissionAssignment.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const { entities, affected } = await writeManager.transactional(async (transaction) => {
                 const entities = await this.rolePermissionAssignmentRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
-                await this.rolePermissionAssignmentService.restore({
+                this.rolePermissionAssignmentService.restore({
+                    input: { entities, reason: input.reason },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 const affected = await this.roleRepository.findAccountsByRoles({
                     roles: entities.map(({ role: { id } }) => id),

@@ -15,14 +15,14 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
         this.membersLimit = this.configService.getOrThrow<number>("MAX_CONFLICT_MEMBERS_COUNT");
     }
 
-    public async create({
+    public create({
         transaction,
         context: { userAgent, ip },
-        input: { members, ...input },
+        input,
         realm,
         actor,
-    }: Services.RoleConflictGroup.Create): Promise<void> {
-        if (members.length > this.membersLimit) {
+    }: Services.RoleConflictGroup.Create): void {
+        if (input.members.length > this.membersLimit) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED`);
         } else {
             const group = new RoleConflictGroup({
@@ -34,7 +34,7 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
                 actor,
             });
 
-            for (const role of members) {
+            for (const role of input.members) {
                 const member = new RoleConflictMember({
                     group,
                     actor,
@@ -71,115 +71,110 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
             });
 
             transaction.persist(auditGroup);
-
-            await transaction.flush();
         }
     }
 
-    public async update({
+    public update({
         transaction,
-        input: { patch, reason },
         context: { userAgent, ip },
-        entity,
+        input,
         realm,
         actor,
-    }: Services.RoleConflictGroup.Update): Promise<void> {
-        const historyPatch = entity.changeMetadata({ reason, patch, actor });
+    }: Services.RoleConflictGroup.Update): void {
+        const historyPatch = input.entity.changeMetadata({
+            reason: input.reason,
+            patch: input.patch,
+            actor,
+        });
 
         const auditEntity = new AuditJournal({
             actionType: AccessControlActionType.UPDATE,
             entityType: this.entityType,
-            at: entity.updatedAt!,
+            at: input.entity.updatedAt!,
+            entity: input.entity.id,
+            reason: input.reason,
             patch: historyPatch,
-            entity: entity.id,
             userAgent,
             by: actor,
-            reason,
             realm,
             ip,
         });
 
         transaction.persist(auditEntity);
-        await transaction.flush();
     }
 
-    public async purge({
-        transaction,
-        context: { userAgent, ip },
-        entities,
-        reason,
-        actor,
-    }: Services.RoleConflictGroup.Purge): Promise<void> {
+    public purge({ transaction, context: { userAgent, ip }, input, realm, actor }: Services.RoleConflictGroup.Purge): void {
         transaction.clear();
-        for (const entity of entities) {
+        for (const entity of input.entities) {
             entity.canPurge();
+
             transaction.remove(entity);
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.DELETE,
                 entityType: this.entityType,
+                reason: input.reason,
                 entity: entity.id,
                 at: new Date(),
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async revoke({
+    public revoke({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.RoleConflictGroup.Revoke): Promise<void> {
-        for (const entity of entities) {
-            entity.revoke({ reason, actor });
+    }: Services.RoleConflictGroup.Revoke): void {
+        for (const entity of input.entities) {
+            entity.revoke({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.REVOKE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async restore({
+    public restore({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.RoleConflictGroup.Restore): Promise<void> {
-        for (const entity of entities) {
-            entity.restore({ reason, actor });
+    }: Services.RoleConflictGroup.Restore): void {
+        for (const entity of input.entities) {
+            entity.restore({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.RESTORE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 }

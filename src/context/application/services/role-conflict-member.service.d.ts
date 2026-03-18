@@ -12,25 +12,27 @@ declare global {
         namespace RoleConflictMember {
             interface Contract {
                 create: (props: Create) => Promise<void>;
-                purge: (props: Purge) => Promise<void>;
+                purge: (props: Purge) => void;
             }
 
             type Create = {
                 transaction: EntityManager;
+                context: RequestContext;
                 input: {
                     group: RoleConflictGroupEntity;
                     roles: RoleEntity[];
                 };
-                context: RequestContext;
                 realm: RealmEntity;
                 actor: string;
             };
 
             type Purge = {
-                entities: RoleConflictMemberEntity[];
                 transaction: EntityManager;
                 context: RequestContext;
-                reason: string;
+                input: {
+                    entities: RoleConflictMemberEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };

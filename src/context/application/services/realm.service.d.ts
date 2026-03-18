@@ -6,51 +6,62 @@ declare global {
     namespace Services {
         namespace Realm {
             interface Contract {
-                create: (props: Create) => Promise<RealmEntity>;
-                update: (props: Update) => Promise<void>;
-                purge: (props: Purge) => Promise<void>;
-                revoke: (props: Revoke) => Promise<void>;
-                restore: (props: Restore) => Promise<void>;
+                create: (props: Create) => RealmEntity;
+                restore: (props: Restore) => void;
+                revoke: (props: Revoke) => void;
+                update: (props: Update) => void;
+                purge: (props: Purge) => void;
             }
 
             type Create = {
                 transaction: EntityManager;
                 context: RequestContext;
-                input: Entities.Realm.ConstructorProps;
+                input: {
+                    code: string;
+                    name: string;
+                    description?: string;
+                };
+                actor: string;
             };
 
             type Update = {
                 transaction: EntityManager;
+                context: RequestContext;
                 input: {
                     patch: Partial<Entities.Realm.MutableFields>;
+                    entity: RealmEntity;
                     reason: string;
                 };
-                context: RequestContext;
-                entity: RealmEntity;
                 actor: string;
             };
 
             type Purge = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entities: RealmEntity[];
-                reason: string;
+                input: {
+                    entities: RealmEntity[];
+                    reason: string;
+                };
                 actor: string;
             };
 
             type Revoke = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entities: RealmEntity[];
-                reason: string;
+                input: {
+                    entities: RealmEntity[];
+                    reason: string;
+                };
                 actor: string;
             };
 
             type Restore = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entities: RealmEntity[];
-                reason: string;
+                input: {
+                    entities: RealmEntity[];
+                    reason: string;
+                };
                 actor: string;
             };
         }

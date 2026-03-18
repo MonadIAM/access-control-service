@@ -32,16 +32,17 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.EXISTS_TRANSITIVE_PATH`);
         } else {
             const policy = new RoleDelegationPolicy({
-                delegator: input.delegator,
-                target: input.target,
                 description: input.description,
                 depthLimit: input.depthLimit,
+                delegator: input.delegator,
+                target: input.target,
                 realm,
                 actor,
             });
 
-            policy.canCreate();
             transaction.persist(policy);
+
+            policy.canCreate();
 
             const policyAudit = new AuditJournal({
                 actionType: AccessControlActionType.CREATE,
@@ -55,115 +56,112 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
             });
 
             transaction.persist(policyAudit);
-
-            await transaction.flush();
         }
     }
 
-    public async update({
+    public update({
         transaction,
-        input: { patch, reason },
         context: { userAgent, ip },
-        entity,
+        input,
         realm,
         actor,
-    }: Services.RoleDelegationPolicy.Update): Promise<void> {
-        const historyPatch = entity.changeData({ reason, patch, actor });
+    }: Services.RoleDelegationPolicy.Update): void {
+        const historyPatch = input.entity.changeData({ ...input, actor });
 
         const auditEntity = new AuditJournal({
             actionType: AccessControlActionType.UPDATE,
             entityType: this.entityType,
-            at: entity.updatedAt!,
+            at: input.entity.updatedAt!,
+            entity: input.entity.id,
+            reason: input.reason,
             patch: historyPatch,
-            entity: entity.id,
             userAgent,
             by: actor,
-            reason,
             realm,
             ip,
         });
 
         transaction.persist(auditEntity);
-        await transaction.flush();
     }
 
-    public async purge({
+    public purge({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.RoleDelegationPolicy.Purge): Promise<void> {
+    }: Services.RoleDelegationPolicy.Purge): void {
         transaction.clear();
-        for (const entity of entities) {
+        for (const entity of input.entities) {
             entity.canPurge();
+
             transaction.remove(entity);
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.DELETE,
                 entityType: this.entityType,
+                reason: input.reason,
                 entity: entity.id,
                 at: new Date(),
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async revoke({
+    public revoke({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.RoleDelegationPolicy.Revoke): Promise<void> {
-        for (const entity of entities) {
-            entity.revoke({ reason, actor });
+    }: Services.RoleDelegationPolicy.Revoke): void {
+        for (const entity of input.entities) {
+            entity.revoke({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.REVOKE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 
-    public async restore({
+    public restore({
         transaction,
         context: { userAgent, ip },
-        entities,
-        reason,
+        input,
+        realm,
         actor,
-    }: Services.RoleDelegationPolicy.Restore): Promise<void> {
-        for (const entity of entities) {
-            entity.restore({ reason, actor });
+    }: Services.RoleDelegationPolicy.Restore): void {
+        for (const entity of input.entities) {
+            entity.restore({ reason: input.reason, actor });
 
             const auditEntity = new AuditJournal({
                 actionType: AccessControlActionType.RESTORE,
                 entityType: this.entityType,
                 at: entity.updatedAt!,
+                reason: input.reason,
                 entity: entity.id,
                 userAgent,
                 by: actor,
-                reason,
+                realm,
                 ip,
             });
 
             transaction.persist(auditEntity);
         }
-        await transaction.flush();
     }
 }

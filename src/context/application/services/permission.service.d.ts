@@ -1,32 +1,38 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Permission as PermissionEntity } from "~context/domain/entities";
+import { Permission as PermissionEntity, Realm as RealmEntity } from "~context/domain/entities";
 
 declare global {
     namespace Services {
         namespace Permission {
             interface Contract {
-                create: (props: Create) => Promise<PermissionEntity>;
-                update: (props: Update) => Promise<void>;
-                purge: (props: Purge) => Promise<void>;
-                revoke: (props: Revoke) => Promise<void>;
-                restore: (props: Restore) => Promise<void>;
+                create: (props: Create) => PermissionEntity;
+                restore: (props: Restore) => void;
+                revoke: (props: Revoke) => void;
+                update: (props: Update) => void;
+                purge: (props: Purge) => void;
             }
 
             type Create = {
                 transaction: EntityManager;
-                input: Entities.Permission.ConstructorProps;
                 context: RequestContext;
+                input: {
+                    code: string;
+                    name: string;
+                    description?: string;
+                };
+                realm: RealmEntity;
+                actor: string;
             };
 
             type Update = {
                 transaction: EntityManager;
+                context: RequestContext;
                 input: {
                     patch: Partial<Entities.Permission.MutableFields>;
+                    entity: PermissionEntity;
                     reason: string;
                 };
-                context: RequestContext;
-                entity: PermissionEntity;
                 realm: string;
                 actor: string;
             };
@@ -34,8 +40,10 @@ declare global {
             type Purge = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entities: PermissionEntity[];
-                reason: string;
+                input: {
+                    entities: PermissionEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
@@ -43,8 +51,10 @@ declare global {
             type Revoke = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entities: PermissionEntity[];
-                reason: string;
+                input: {
+                    entities: PermissionEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
@@ -52,8 +62,10 @@ declare global {
             type Restore = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entities: PermissionEntity[];
-                reason: string;
+                input: {
+                    entities: PermissionEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };

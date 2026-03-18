@@ -31,12 +31,7 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create({
-        input: { account, roles },
-        context,
-        actor,
-        realm,
-    }: Handlers.AccountRoleAssignment.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Handlers.AccountRoleAssignment.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
@@ -46,28 +41,30 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
                         transaction,
                     }),
                     this.roleRepository.find({
-                        where: { id: { $in: roles } },
+                        where: { id: { $in: input.roles } },
                         transaction,
                     }),
                 ]);
 
-                if (roleEntities.length < roles.length) {
+                if (roleEntities.length < input.roles.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 }
 
                 await this.accountRoleAssignmentService.create({
                     input: {
+                        account: input.account,
                         roles: roleEntities,
-                        account,
                     },
                     realm: realmEntity,
                     transaction,
                     context,
                     actor,
                 });
+
+                await transaction.flush();
             });
 
-            await this.permissionCacheService.invalidate({ accounts: [account] });
+            await this.permissionCacheService.invalidate({ accounts: [input.account] });
 
             return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
@@ -75,32 +72,28 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
         }
     }
 
-    public async purge({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.AccountRoleAssignment.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Handlers.AccountRoleAssignment.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.accountRoleAssignmentRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
-                await this.accountRoleAssignmentService.purge({
+                this.accountRoleAssignmentService.purge({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -113,32 +106,28 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
         }
     }
 
-    public async revoke({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.AccountRoleAssignment.Revoke): Promise<MessageResult> {
+    public async revoke({ context, input, realm, actor }: Handlers.AccountRoleAssignment.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const entities = await writeManager.transactional(async (transaction) => {
                 const entities = await this.accountRoleAssignmentRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
-                await this.accountRoleAssignmentService.revoke({
+                this.accountRoleAssignmentService.revoke({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 return entities;
             });
@@ -155,32 +144,28 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
         }
     }
 
-    public async restore({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.AccountRoleAssignment.Restore): Promise<MessageResult> {
+    public async restore({ context, input, realm, actor }: Handlers.AccountRoleAssignment.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const entities = await writeManager.transactional(async (transaction) => {
                 const entities = await this.accountRoleAssignmentRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
-                await this.accountRoleAssignmentService.restore({
+                this.accountRoleAssignmentService.restore({
+                    input: { ...input, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 return entities;
             });

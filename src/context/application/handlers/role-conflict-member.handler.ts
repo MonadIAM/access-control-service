@@ -31,18 +31,13 @@ export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Co
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create({
-        input: { roles, group },
-        context,
-        actor,
-        realm,
-    }: Handlers.RoleConflictMember.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Handlers.RoleConflictMember.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const [groupEntity, realmEntity, roleEntities] = await Promise.all([
                     this.roleConflictGroupRepository.findUniqueOrThrow({
-                        where: { id: group },
+                        where: { id: input.group },
                         transaction,
                     }),
                     this.realmRepository.findUniqueOrThrow({
@@ -50,12 +45,12 @@ export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Co
                         transaction,
                     }),
                     this.roleRepository.find({
-                        where: { id: { $in: roles } },
+                        where: { id: { $in: input.roles } },
                         transaction,
                     }),
                 ]);
 
-                if (roleEntities.length < roles.length) {
+                if (roleEntities.length < input.roles.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 }
 
@@ -70,6 +65,8 @@ export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Co
                     actor,
                 });
 
+                await transaction.flush();
+
                 return { message: `${this.dictionaryPath}.CREATED` };
             });
         } catch (error) {
@@ -77,32 +74,28 @@ export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Co
         }
     }
 
-    public async purge({
-        input: { identifiers, reason },
-        context,
-        actor,
-        realm,
-    }: Handlers.RoleConflictMember.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Handlers.RoleConflictMember.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
                 const entities = await this.roleConflictMemberRepository.find({
-                    where: { id: { $in: identifiers } },
+                    where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
-                if (entities.length < identifiers.length) {
+                if (entities.length < input.identifiers.length) {
                     throw HandlerException.notFound(`${this.dictionaryPath}.MEMBERS_NOT_FOUND`);
                 }
 
-                await this.roleConflictMemberService.purge({
+                this.roleConflictMemberService.purge({
+                    input: { reason: input.reason, entities },
                     transaction,
-                    entities,
                     context,
-                    reason,
-                    actor,
                     realm,
+                    actor,
                 });
+
+                await transaction.flush();
 
                 if (entities.length > 1) {
                     return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };

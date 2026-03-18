@@ -1,36 +1,44 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Role as RoleEntity } from "~context/domain/entities";
+import { Realm as RealmEntity, Role as RoleEntity } from "~context/domain/entities";
+import { RoleActorType, RoleProtoType } from "~context/enums";
 
 declare global {
     namespace Services {
         namespace Role {
             interface Contract {
-                create: (props: Create) => Promise<RoleEntity>;
-                update: (props: Update) => Promise<void>;
-                purge: (props: Purge) => Promise<void>;
                 purgeSubtree: (props: PurgeSubtree) => Promise<number>;
-                revoke: (props: Revoke) => Promise<void>;
-                restore: (props: Restore) => Promise<void>;
+                create: (props: Create) => Promise<RoleEntity>;
+                purge: (props: Purge) => Promise<void>;
+                restore: (props: Restore) => void;
+                update: (props: Update) => void;
+                revoke: (props: Revoke) => void;
             }
 
             type Create = {
                 transaction: EntityManager;
                 context: RequestContext;
-                input: Entities.Role.ConstructorProps & {
+                input: {
+                    actorType: RoleActorType;
+                    protoType: RoleProtoType;
+                    description?: string;
                     children?: string[];
                     parent: RoleEntity;
+                    code: string;
+                    name: string;
                 };
+                realm: RealmEntity;
+                actor: string;
             };
 
             type Update = {
                 transaction: EntityManager;
+                context: RequestContext;
                 input: {
                     patch: Partial<Entities.Role.MutableFields>;
+                    entity: RoleEntity;
                     reason: string;
                 };
-                context: RequestContext;
-                entity: RoleEntity;
                 realm: string;
                 actor: string;
             };
@@ -38,8 +46,10 @@ declare global {
             type Purge = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entity: RoleEntity;
-                reason: string;
+                input: {
+                    entity: RoleEntity;
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
@@ -47,8 +57,10 @@ declare global {
             type PurgeSubtree = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entity: RoleEntity;
-                reason: string;
+                input: {
+                    entity: RoleEntity;
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
@@ -56,8 +68,10 @@ declare global {
             type Revoke = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entities: RoleEntity[];
-                reason: string;
+                input: {
+                    entities: RoleEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
@@ -65,8 +79,10 @@ declare global {
             type Restore = {
                 transaction: EntityManager;
                 context: RequestContext;
-                entities: RoleEntity[];
-                reason: string;
+                input: {
+                    entities: RoleEntity[];
+                    reason: string;
+                };
                 realm: string;
                 actor: string;
             };
