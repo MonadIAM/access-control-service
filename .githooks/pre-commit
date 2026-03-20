@@ -25,7 +25,7 @@ run_gitleaks() {
     fi
 
     start_time=$(date +%s)
-    gitleaks detect --config .gitleaks.toml --no-git --source .
+    gitleaks protect --staged --config .gitleaks.toml
     exit_code=$?
     end_time=$(date +%s)
     elapsed=$((end_time - start_time))
