@@ -16,7 +16,7 @@ import {
 
 import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { ROLE_CONFLICT_GROUP_REPOSITORY } from "~context/infrastructure/repositories";
-import { ROLE_CONFLICT_GROUP_HANDLER } from "~context/application/handlers";
+import { ROLE_CONFLICT_GROUP_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
@@ -55,8 +55,8 @@ export class RoleConflictGroupController extends BaseController {
     public constructor(
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
         private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
-        @Inject(ROLE_CONFLICT_GROUP_HANDLER)
-        private readonly roleConflictGroupHandler: Handlers.RoleConflictGroup.Contract,
+        @Inject(ROLE_CONFLICT_GROUP_OPERATION)
+        private readonly roleConflictGroupOperation: Operations.RoleConflictGroup.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -121,7 +121,7 @@ export class RoleConflictGroupController extends BaseController {
         @Query() { realm }: CreateRoleConflictGroupQueryDTO,
         @Body() input: CreateRoleConflictGroupBodyDTO,
     ): Promise<SuccessMessageDTO> {
-        return this.roleConflictGroupHandler
+        return this.roleConflictGroupOperation
             .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
     }
@@ -139,7 +139,7 @@ export class RoleConflictGroupController extends BaseController {
         @Body() input: UpdateRoleConflictGroupBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleConflictGroupHandler
+        return this.roleConflictGroupOperation
             .update({ actor, context, input, realm, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -157,7 +157,7 @@ export class RoleConflictGroupController extends BaseController {
         @Body() input: RevokeRoleConflictGroupBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleConflictGroupHandler
+        return this.roleConflictGroupOperation
             .revoke({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -175,7 +175,7 @@ export class RoleConflictGroupController extends BaseController {
         @Body() input: RestoreRoleConflictGroupBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleConflictGroupHandler
+        return this.roleConflictGroupOperation
             .restore({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -193,7 +193,7 @@ export class RoleConflictGroupController extends BaseController {
         @Body() input: PurgeRoleConflictGroupBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleConflictGroupHandler
+        return this.roleConflictGroupOperation
             .purge({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }

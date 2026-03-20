@@ -4,7 +4,7 @@ import { EntityManager } from "@mikro-orm/postgresql";
 
 import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
-import { HandlerException } from "~common/exceptions";
+import { OperationException } from "~common/exceptions";
 import {
     ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
     PERMISSION_REPOSITORY,
@@ -13,8 +13,8 @@ import {
 } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RolePermissionAssignmentHandler implements Handlers.RolePermissionAssignment.Contract {
-    private readonly dictionaryPath = "handlers.role-permission-assignment";
+export class RolePermissionAssignmentOperation implements Operations.RolePermissionAssignment.Contract {
+    private readonly dictionaryPath = "operations.role-permission-assignment";
     private readonly resource = "RolePermissionAssignment";
 
     public constructor(
@@ -39,7 +39,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
         input,
         realm,
         actor,
-    }: Handlers.RolePermissionAssignment.Create): Promise<MessageResult> {
+    }: Operations.RolePermissionAssignment.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const { affected } = await writeManager.transactional(async (transaction) => {
@@ -59,7 +59,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                 ]);
 
                 if (permissionEntities.length < input.permissions.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
                 await this.rolePermissionAssignmentService.create({
@@ -84,11 +84,16 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
 
             return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purge({ context, input, realm, actor }: Handlers.RolePermissionAssignment.Purge): Promise<MessageResult> {
+    public async purge({
+        context,
+        input,
+        realm,
+        actor,
+    }: Operations.RolePermissionAssignment.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -98,7 +103,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
                 this.rolePermissionAssignmentService.purge({
@@ -118,7 +123,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                 }
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
@@ -127,7 +132,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
         input,
         realm,
         actor,
-    }: Handlers.RolePermissionAssignment.Revoke): Promise<MessageResult> {
+    }: Operations.RolePermissionAssignment.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const { entities, affected } = await writeManager.transactional(async (transaction) => {
@@ -137,7 +142,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
                 this.rolePermissionAssignmentService.revoke({
@@ -165,7 +170,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                 return { message: `${this.dictionaryPath}.REVOKED` };
             }
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
@@ -174,7 +179,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
         input,
         realm,
         actor,
-    }: Handlers.RolePermissionAssignment.Restore): Promise<MessageResult> {
+    }: Operations.RolePermissionAssignment.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const { entities, affected } = await writeManager.transactional(async (transaction) => {
@@ -184,7 +189,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
                 this.rolePermissionAssignmentService.restore({
@@ -212,7 +217,7 @@ export class RolePermissionAssignmentHandler implements Handlers.RolePermissionA
                 return { message: `${this.dictionaryPath}.RESTORED` };
             }
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 }

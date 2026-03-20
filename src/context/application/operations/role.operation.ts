@@ -5,11 +5,11 @@ import { EntityManager } from "@mikro-orm/postgresql";
 import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
 import { ROLE_SERVICE } from "~context/domain/services";
-import { HandlerException } from "~common/exceptions";
+import { OperationException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleHandler implements Handlers.Role.Contract {
-    private readonly dictionaryPath = "handlers.role";
+export class RoleOperation implements Operations.Role.Contract {
+    private readonly dictionaryPath = "operations.role";
 
     public constructor(
         @InjectEntityManager("write")
@@ -24,7 +24,7 @@ export class RoleHandler implements Handlers.Role.Contract {
         private readonly roleService: Services.Role.Contract,
     ) {}
 
-    public async create({ context, input, realm, actor }: Handlers.Role.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Operations.Role.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -52,11 +52,11 @@ export class RoleHandler implements Handlers.Role.Contract {
                 return { message: `${this.dictionaryPath}.CREATED` };
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            throw OperationException.fromOrmError(error);
         }
     }
 
-    public async update({ context, input, realm, actor, id }: Handlers.Role.Update): Promise<MessageResult> {
+    public async update({ context, input, realm, actor, id }: Operations.Role.Update): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -78,11 +78,11 @@ export class RoleHandler implements Handlers.Role.Contract {
                 return { message: `${this.dictionaryPath}.UPDATED` };
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            throw OperationException.fromOrmError(error);
         }
     }
 
-    public async purge({ context, input, realm, actor, id }: Handlers.Role.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor, id }: Operations.Role.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -104,11 +104,11 @@ export class RoleHandler implements Handlers.Role.Contract {
                 return { message: `${this.dictionaryPath}.PURGED` };
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            throw OperationException.fromOrmError(error);
         }
     }
 
-    public async purgeSubtree({ context, input, realm, actor, id }: Handlers.Role.PurgeSubtree): Promise<MessageResult> {
+    public async purgeSubtree({ context, input, realm, actor, id }: Operations.Role.PurgeSubtree): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -130,11 +130,11 @@ export class RoleHandler implements Handlers.Role.Contract {
                 return { message: `${this.dictionaryPath}.SUBTREE_PURGED_COUNT`, params: { count } };
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            throw OperationException.fromOrmError(error);
         }
     }
 
-    public async revoke({ context, input, realm, actor }: Handlers.Role.Revoke): Promise<MessageResult> {
+    public async revoke({ context, input, realm, actor }: Operations.Role.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const { entities, affected } = await writeManager.transactional(async (transaction) => {
@@ -144,7 +144,7 @@ export class RoleHandler implements Handlers.Role.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 }
 
                 this.roleService.revoke({
@@ -172,11 +172,11 @@ export class RoleHandler implements Handlers.Role.Contract {
                 return { message: `${this.dictionaryPath}.REVOKED` };
             }
         } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            throw OperationException.fromOrmError(error);
         }
     }
 
-    public async restore({ context, input, realm, actor }: Handlers.Role.Restore): Promise<MessageResult> {
+    public async restore({ context, input, realm, actor }: Operations.Role.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const { entities, affected } = await writeManager.transactional(async (transaction) => {
@@ -186,7 +186,7 @@ export class RoleHandler implements Handlers.Role.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 }
 
                 this.roleService.restore({
@@ -214,7 +214,7 @@ export class RoleHandler implements Handlers.Role.Contract {
                 return { message: `${this.dictionaryPath}.RESTORED` };
             }
         } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            throw OperationException.fromOrmError(error);
         }
     }
 }

@@ -16,7 +16,7 @@ import {
 
 import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
-import { PERMISSION_HANDLER } from "~context/application/handlers";
+import { PERMISSION_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
@@ -57,8 +57,8 @@ export class PermissionController extends BaseController {
     public constructor(
         @Inject(PERMISSION_REPOSITORY)
         private readonly permissionRepository: Repositories.Permission.Contract,
-        @Inject(PERMISSION_HANDLER)
-        private readonly permissionHandler: Handlers.Permission.Contract,
+        @Inject(PERMISSION_OPERATION)
+        private readonly permissionOperation: Operations.Permission.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -138,7 +138,7 @@ export class PermissionController extends BaseController {
         @Query() { realm }: CreatePermissionQueryDTO,
         @Body() input: CreatePermissionBodyDTO,
     ): Promise<SuccessMessageDTO> {
-        return this.permissionHandler
+        return this.permissionOperation
             .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
     }
@@ -156,7 +156,7 @@ export class PermissionController extends BaseController {
         @Body() input: UpdatePermissionBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.permissionHandler
+        return this.permissionOperation
             .update({ actor, context, input, realm, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -174,7 +174,7 @@ export class PermissionController extends BaseController {
         @Body() input: RevokePermissionBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.permissionHandler
+        return this.permissionOperation
             .revoke({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -192,7 +192,7 @@ export class PermissionController extends BaseController {
         @Body() input: RestorePermissionBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.permissionHandler
+        return this.permissionOperation
             .restore({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -210,7 +210,7 @@ export class PermissionController extends BaseController {
         @Body() input: PurgePermissionBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.permissionHandler
+        return this.permissionOperation
             .purge({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }

@@ -1,8 +1,7 @@
-declare namespace Handlers {
-    namespace RoleConflictGroup {
+declare namespace Operations {
+    namespace AccountRoleAssignment {
         interface Contract {
             create: (props: Create) => Promise<MessageResult>;
-            update: (props: Update) => Promise<MessageResult>;
             purge: (props: Purge) => Promise<MessageResult>;
             revoke: (props: Revoke) => Promise<MessageResult>;
             restore: (props: Restore) => Promise<MessageResult>;
@@ -13,23 +12,9 @@ declare namespace Handlers {
             realm: string;
             context: RequestContext;
             input: {
-                members: string[];
-                description: string;
-                maxAllowed: number;
-                code: string;
-                name: string;
+                account: string;
+                roles: string[];
             };
-        };
-
-        type Update = {
-            id: string;
-            actor: string;
-            realm: string;
-            input: {
-                patch: Partial<Entities.RoleConflictGroup.MutableFields>;
-                reason: string;
-            };
-            context: RequestContext;
         };
 
         type Purge = {

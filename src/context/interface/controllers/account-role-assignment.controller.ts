@@ -16,7 +16,7 @@ import {
 
 import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
-import { ACCOUNT_ROLE_ASSIGNMENT_HANDLER } from "~context/application/handlers";
+import { ACCOUNT_ROLE_ASSIGNMENT_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
@@ -50,8 +50,8 @@ export class AccountRoleAssignmentController extends BaseController {
     public constructor(
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
         private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
-        @Inject(ACCOUNT_ROLE_ASSIGNMENT_HANDLER)
-        private readonly accountRoleAssignmentHandler: Handlers.AccountRoleAssignment.Contract,
+        @Inject(ACCOUNT_ROLE_ASSIGNMENT_OPERATION)
+        private readonly accountRoleAssignmentOperation: Operations.AccountRoleAssignment.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -103,7 +103,7 @@ export class AccountRoleAssignmentController extends BaseController {
         @Query() { realm }: CreateAccountRoleAssignmentQueryDTO,
         @Body() input: CreateAccountRoleAssignmentBodyDTO,
     ): Promise<SuccessMessageDTO> {
-        return this.accountRoleAssignmentHandler
+        return this.accountRoleAssignmentOperation
             .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
     }
@@ -121,7 +121,7 @@ export class AccountRoleAssignmentController extends BaseController {
         @Body() input: RevokeAccountRoleAssignmentBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.accountRoleAssignmentHandler
+        return this.accountRoleAssignmentOperation
             .revoke({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -139,7 +139,7 @@ export class AccountRoleAssignmentController extends BaseController {
         @Body() input: RestoreAccountRoleAssignmentBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.accountRoleAssignmentHandler
+        return this.accountRoleAssignmentOperation
             .restore({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -157,7 +157,7 @@ export class AccountRoleAssignmentController extends BaseController {
         @Body() input: PurgeAccountRoleAssignmentBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.accountRoleAssignmentHandler
+        return this.accountRoleAssignmentOperation
             .purge({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }

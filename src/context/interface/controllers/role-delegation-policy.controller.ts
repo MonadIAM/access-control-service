@@ -16,7 +16,7 @@ import {
 
 import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { ROLE_DELEGATION_POLICY_REPOSITORY } from "~context/infrastructure/repositories";
-import { ROLE_DELEGATION_POLICY_HANDLER } from "~context/application/handlers";
+import { ROLE_DELEGATION_POLICY_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
@@ -52,8 +52,8 @@ export class RoleDelegationPolicyController extends BaseController {
     public constructor(
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
         private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.Contract,
-        @Inject(ROLE_DELEGATION_POLICY_HANDLER)
-        private readonly roleDelegationPolicyHandler: Handlers.RoleDelegationPolicy.Contract,
+        @Inject(ROLE_DELEGATION_POLICY_OPERATION)
+        private readonly roleDelegationPolicyOperation: Operations.RoleDelegationPolicy.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -106,7 +106,7 @@ export class RoleDelegationPolicyController extends BaseController {
         @Body() input: CreateRoleDelegationPolicyBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleDelegationPolicyHandler
+        return this.roleDelegationPolicyOperation
             .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -124,7 +124,7 @@ export class RoleDelegationPolicyController extends BaseController {
         @Body() input: UpdateRoleDelegationPolicyBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleDelegationPolicyHandler
+        return this.roleDelegationPolicyOperation
             .update({ actor, context, input, realm, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -142,7 +142,7 @@ export class RoleDelegationPolicyController extends BaseController {
         @Body() input: RevokeRoleDelegationPolicyBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleDelegationPolicyHandler
+        return this.roleDelegationPolicyOperation
             .revoke({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -160,7 +160,7 @@ export class RoleDelegationPolicyController extends BaseController {
         @Body() input: RestoreRoleDelegationPolicyBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleDelegationPolicyHandler
+        return this.roleDelegationPolicyOperation
             .restore({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -178,7 +178,7 @@ export class RoleDelegationPolicyController extends BaseController {
         @Body() input: PurgeRoleDelegationPolicyBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleDelegationPolicyHandler
+        return this.roleDelegationPolicyOperation
             .purge({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }

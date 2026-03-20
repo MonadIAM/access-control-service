@@ -4,7 +4,7 @@ import { EntityManager } from "@mikro-orm/postgresql";
 
 import { PERMISSION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
-import { HandlerException } from "~common/exceptions";
+import { OperationException } from "~common/exceptions";
 import {
     PERMISSION_OVERRIDE_REPOSITORY,
     PERMISSION_REPOSITORY,
@@ -12,8 +12,8 @@ import {
 } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class PermissionOverrideHandler implements Handlers.PermissionOverride.Contract {
-    private readonly dictionaryPath = "handlers.permission-override";
+export class PermissionOverrideOperation implements Operations.PermissionOverride.Contract {
+    private readonly dictionaryPath = "operations.permission-override";
     private readonly resource = "PermissionOverride";
 
     public constructor(
@@ -31,7 +31,7 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
         private readonly realmRepository: Repositories.Realm.Contract,
     ) {}
 
-    public async create({ context, input, realm, actor }: Handlers.PermissionOverride.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Operations.PermissionOverride.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
@@ -65,11 +65,11 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
 
             return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purge({ context, input, realm, actor }: Handlers.PermissionOverride.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Operations.PermissionOverride.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -79,7 +79,7 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                 }
 
                 this.permissionOverrideService.purge({
@@ -99,11 +99,11 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                 }
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async revoke({ context, input, realm, actor }: Handlers.PermissionOverride.Revoke): Promise<MessageResult> {
+    public async revoke({ context, input, realm, actor }: Operations.PermissionOverride.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const entities = await writeManager.transactional(async (transaction) => {
@@ -113,7 +113,7 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                 }
 
                 this.permissionOverrideService.revoke({
@@ -137,11 +137,11 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                 return { message: `${this.dictionaryPath}.REVOKED` };
             }
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async restore({ context, input, realm, actor }: Handlers.PermissionOverride.Restore): Promise<MessageResult> {
+    public async restore({ context, input, realm, actor }: Operations.PermissionOverride.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const entities = await writeManager.transactional(async (transaction) => {
@@ -151,7 +151,7 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                 }
 
                 this.permissionOverrideService.restore({
@@ -175,7 +175,7 @@ export class PermissionOverrideHandler implements Handlers.PermissionOverride.Co
                 return { message: `${this.dictionaryPath}.RESTORED` };
             }
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 }

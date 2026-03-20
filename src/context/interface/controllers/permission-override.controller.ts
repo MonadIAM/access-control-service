@@ -16,7 +16,7 @@ import {
 
 import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/infrastructure/repositories";
-import { PERMISSION_OVERRIDE_HANDLER } from "~context/application/handlers";
+import { PERMISSION_OVERRIDE_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
@@ -50,8 +50,8 @@ export class PermissionOverrideController extends BaseController {
     public constructor(
         @Inject(PERMISSION_OVERRIDE_REPOSITORY)
         private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
-        @Inject(PERMISSION_OVERRIDE_HANDLER)
-        private readonly permissionOverrideHandler: Handlers.PermissionOverride.Contract,
+        @Inject(PERMISSION_OVERRIDE_OPERATION)
+        private readonly permissionOverrideOperation: Operations.PermissionOverride.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -101,7 +101,7 @@ export class PermissionOverrideController extends BaseController {
         @Query() { realm }: CreatePermissionOverrideQueryDTO,
         @Body() input: CreatePermissionOverrideBodyDTO,
     ): Promise<SuccessMessageDTO> {
-        return this.permissionOverrideHandler
+        return this.permissionOverrideOperation
             .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
     }
@@ -119,7 +119,7 @@ export class PermissionOverrideController extends BaseController {
         @Body() input: RevokePermissionOverrideBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.permissionOverrideHandler
+        return this.permissionOverrideOperation
             .revoke({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -137,7 +137,7 @@ export class PermissionOverrideController extends BaseController {
         @Body() input: RestorePermissionOverrideBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.permissionOverrideHandler
+        return this.permissionOverrideOperation
             .restore({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -155,7 +155,7 @@ export class PermissionOverrideController extends BaseController {
         @Body() input: PurgePermissionOverrideBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.permissionOverrideHandler
+        return this.permissionOverrideOperation
             .purge({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }

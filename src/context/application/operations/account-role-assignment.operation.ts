@@ -4,7 +4,7 @@ import { EntityManager } from "@mikro-orm/postgresql";
 
 import { PERMISSION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services";
-import { HandlerException } from "~common/exceptions";
+import { OperationException } from "~common/exceptions";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
     REALM_REPOSITORY,
@@ -12,8 +12,8 @@ import {
 } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignment.Contract {
-    private readonly dictionaryPath = "handlers.account-role-assignment";
+export class AccountRoleAssignmentOperation implements Operations.AccountRoleAssignment.Contract {
+    private readonly dictionaryPath = "operations.account-role-assignment";
     private readonly resource = "AccountRoleAssignment";
 
     public constructor(
@@ -31,7 +31,7 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create({ context, input, realm, actor }: Handlers.AccountRoleAssignment.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Operations.AccountRoleAssignment.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             await writeManager.transactional(async (transaction) => {
@@ -47,7 +47,7 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
                 ]);
 
                 if (roleEntities.length < input.roles.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 }
 
                 await this.accountRoleAssignmentService.create({
@@ -68,11 +68,11 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
 
             return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purge({ context, input, realm, actor }: Handlers.AccountRoleAssignment.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Operations.AccountRoleAssignment.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -82,7 +82,7 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
                 this.accountRoleAssignmentService.purge({
@@ -102,11 +102,11 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
                 }
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async revoke({ context, input, realm, actor }: Handlers.AccountRoleAssignment.Revoke): Promise<MessageResult> {
+    public async revoke({ context, input, realm, actor }: Operations.AccountRoleAssignment.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const entities = await writeManager.transactional(async (transaction) => {
@@ -116,7 +116,7 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
                 this.accountRoleAssignmentService.revoke({
@@ -140,11 +140,16 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
                 return { message: `${this.dictionaryPath}.REVOKED` };
             }
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async restore({ context, input, realm, actor }: Handlers.AccountRoleAssignment.Restore): Promise<MessageResult> {
+    public async restore({
+        context,
+        input,
+        realm,
+        actor,
+    }: Operations.AccountRoleAssignment.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const entities = await writeManager.transactional(async (transaction) => {
@@ -154,7 +159,7 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 }
 
                 this.accountRoleAssignmentService.restore({
@@ -178,7 +183,7 @@ export class AccountRoleAssignmentHandler implements Handlers.AccountRoleAssignm
                 return { message: `${this.dictionaryPath}.RESTORED` };
             }
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 }

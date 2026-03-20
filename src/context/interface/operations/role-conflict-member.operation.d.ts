@@ -1,4 +1,4 @@
-declare namespace Handlers {
+declare namespace Operations {
     namespace RoleConflictMember {
         interface Contract {
             create: (props: Create) => Promise<MessageResult>;

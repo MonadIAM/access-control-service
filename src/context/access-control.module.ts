@@ -6,9 +6,9 @@ import { PermissionGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
 import { PROCESSORS, QUEUES } from "./infrastructure/queues";
 import { REPOSITORIES } from "./infrastructure/repositories";
+import { OPERATIONS } from "./application/operations";
 import { CONTROLLERS } from "./interface/controllers";
 import { DOMAIN_SERVICES } from "./domain/services";
-import { HANDLERS } from "./application/handlers";
 
 @Module({
     imports: [BullModule.registerQueue({ name: "permission-cache-invalidation" })],
@@ -17,7 +17,7 @@ import { HANDLERS } from "./application/handlers";
         ...DOMAIN_SERVICES,
         ...REPOSITORIES,
         ...PROCESSORS,
-        ...HANDLERS,
+        ...OPERATIONS,
         ...QUEUES,
         PermissionGuard,
         AuthGuard,

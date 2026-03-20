@@ -16,7 +16,7 @@ import {
 
 import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
-import { REALM_HANDLER } from "~context/application/handlers";
+import { REALM_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
@@ -45,8 +45,8 @@ export class RealmController extends BaseController {
     public constructor(
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.Contract,
-        @Inject(REALM_HANDLER)
-        private readonly realmHandler: Handlers.Realm.Contract,
+        @Inject(REALM_OPERATION)
+        private readonly realmOperation: Operations.Realm.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -107,7 +107,7 @@ export class RealmController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Body() input: CreateRealmBodyDTO,
     ): Promise<SuccessMessageDTO> {
-        return this.realmHandler
+        return this.realmOperation
             .create({ actor, context, input })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
     }
@@ -125,7 +125,7 @@ export class RealmController extends BaseController {
         @Body() input: UpdateRealmBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.realmHandler
+        return this.realmOperation
             .update({ actor, context, input, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -142,7 +142,7 @@ export class RealmController extends BaseController {
         @Body() input: RevokeRealmBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.realmHandler
+        return this.realmOperation
             .revoke({ actor, context, input })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -159,7 +159,7 @@ export class RealmController extends BaseController {
         @Body() input: RestoreRealmBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.realmHandler
+        return this.realmOperation
             .restore({ actor, context, input })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -176,7 +176,7 @@ export class RealmController extends BaseController {
         @Body() input: PurgeRealmBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.realmHandler
+        return this.realmOperation
             .purge({ actor, context, input })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }

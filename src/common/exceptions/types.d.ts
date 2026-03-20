@@ -2,7 +2,7 @@ import {
     RepositoryErrorKind,
     DatabaseErrorKind,
     ServiceErrorKind,
-    HandlerErrorKind,
+    OperationErrorKind,
     CommonErrorKind,
     EntityErrorKind,
     GuardErrorKind,
@@ -11,9 +11,9 @@ import {
 declare global {
     namespace Exception {
         type RepositoryErrorKind = keyof typeof RepositoryErrorKind;
+        type OperationErrorKind = keyof typeof OperationErrorKind;
         type DatabaseErrorKind = keyof typeof DatabaseErrorKind;
         type ServiceErrorKind = keyof typeof ServiceErrorKind;
-        type HandlerErrorKind = keyof typeof HandlerErrorKind;
         type CommonErrorKind = keyof typeof CommonErrorKind;
         type EntityErrorKind = keyof typeof EntityErrorKind;
         type GuardErrorKind = keyof typeof GuardErrorKind;

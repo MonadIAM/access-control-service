@@ -1,7 +1,7 @@
 import { PermissionOverrideEffect } from "~context/enums";
 
 declare global {
-    namespace Handlers {
+    namespace Operations {
         namespace PermissionOverride {
             interface Contract {
                 create: (props: Create) => Promise<MessageResult>;

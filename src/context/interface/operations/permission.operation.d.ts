@@ -1,5 +1,5 @@
-declare namespace Handlers {
-    namespace RoleDelegationPolicy {
+declare namespace Operations {
+    namespace Permission {
         interface Contract {
             create: (props: Create) => Promise<MessageResult>;
             update: (props: Update) => Promise<MessageResult>;
@@ -13,10 +13,9 @@ declare namespace Handlers {
             realm: string;
             context: RequestContext;
             input: {
-                delegator: string;
-                target: string;
-                depthLimit?: number;
-                description: string;
+                code: string;
+                name: string;
+                description?: string;
             };
         };
 
@@ -24,11 +23,11 @@ declare namespace Handlers {
             id: string;
             actor: string;
             realm: string;
-            context: RequestContext;
             input: {
-                patch: Partial<Entities.RoleDelegationPolicy.MutableFields>;
+                patch: Partial<Entities.Permission.MutableFields>;
                 reason: string;
             };
+            context: RequestContext;
         };
 
         type Purge = {

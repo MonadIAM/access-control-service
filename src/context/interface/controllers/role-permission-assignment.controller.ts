@@ -16,7 +16,7 @@ import {
 
 import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { ROLE_PERMISSION_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
-import { ROLE_PERMISSION_ASSIGNMENT_HANDLER } from "~context/application/handlers";
+import { ROLE_PERMISSION_ASSIGNMENT_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
@@ -50,8 +50,8 @@ export class RolePermissionAssignmentController extends BaseController {
     public constructor(
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
         private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.Contract,
-        @Inject(ROLE_PERMISSION_ASSIGNMENT_HANDLER)
-        private readonly rolePermissionAssignmentHandler: Handlers.RolePermissionAssignment.Contract,
+        @Inject(ROLE_PERMISSION_ASSIGNMENT_OPERATION)
+        private readonly rolePermissionAssignmentOperation: Operations.RolePermissionAssignment.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -103,7 +103,7 @@ export class RolePermissionAssignmentController extends BaseController {
         @Query() { realm }: CreateRolePermissionAssignmentQueryDTO,
         @Body() input: CreateRolePermissionAssignmentBodyDTO,
     ): Promise<SuccessMessageDTO> {
-        return this.rolePermissionAssignmentHandler
+        return this.rolePermissionAssignmentOperation
             .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
     }
@@ -121,7 +121,7 @@ export class RolePermissionAssignmentController extends BaseController {
         @Body() input: RevokeRolePermissionAssignmentBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.rolePermissionAssignmentHandler
+        return this.rolePermissionAssignmentOperation
             .revoke({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -139,7 +139,7 @@ export class RolePermissionAssignmentController extends BaseController {
         @Body() input: RestoreRolePermissionAssignmentBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.rolePermissionAssignmentHandler
+        return this.rolePermissionAssignmentOperation
             .restore({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -157,7 +157,7 @@ export class RolePermissionAssignmentController extends BaseController {
         @Body() input: PurgeRolePermissionAssignmentBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.rolePermissionAssignmentHandler
+        return this.rolePermissionAssignmentOperation
             .purge({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }

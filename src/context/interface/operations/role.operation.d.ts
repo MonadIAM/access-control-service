@@ -1,7 +1,7 @@
 import { RoleActorType, RoleProtoType } from "~context/enums";
 
 declare global {
-    namespace Handlers {
+    namespace Operations {
         namespace Role {
             interface Contract {
                 create: (props: Create) => Promise<MessageResult>;

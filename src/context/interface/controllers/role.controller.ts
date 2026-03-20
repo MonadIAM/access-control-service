@@ -17,7 +17,7 @@ import {
 import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ROLE_HANDLER } from "~context/application/handlers";
+import { ROLE_OPERATION } from "~context/application/operations";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
@@ -68,8 +68,8 @@ export class RoleController extends BaseController {
     public constructor(
         @Inject(ROLE_REPOSITORY)
         private readonly roleRepository: Repositories.Role.Contract,
-        @Inject(ROLE_HANDLER)
-        private readonly roleHandler: Handlers.Role.Contract,
+        @Inject(ROLE_OPERATION)
+        private readonly roleOperation: Operations.Role.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -219,7 +219,7 @@ export class RoleController extends BaseController {
         @Body() input: CreateRoleBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleHandler
+        return this.roleOperation
             .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -237,7 +237,7 @@ export class RoleController extends BaseController {
         @Body() input: UpdateRoleBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleHandler
+        return this.roleOperation
             .update({ actor, context, input, realm, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -255,7 +255,7 @@ export class RoleController extends BaseController {
         @Body() input: RevokeRoleBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleHandler
+        return this.roleOperation
             .revoke({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -273,7 +273,7 @@ export class RoleController extends BaseController {
         @Body() input: RestoreRoleBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleHandler
+        return this.roleOperation
             .restore({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -291,7 +291,7 @@ export class RoleController extends BaseController {
         @Body() input: PurgeRoleBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleHandler
+        return this.roleOperation
             .purge({ actor, context, input, realm, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }
@@ -309,7 +309,7 @@ export class RoleController extends BaseController {
         @Body() input: PurgeRoleSubtreeBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleHandler
+        return this.roleOperation
             .purgeSubtree({ actor, context, input, realm, id })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }

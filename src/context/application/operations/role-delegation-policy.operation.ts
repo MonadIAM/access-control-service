@@ -2,29 +2,29 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { ROLE_CONFLICT_GROUP_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { ROLE_CONFLICT_GROUP_SERVICE } from "~context/domain/services";
-import { HandlerException } from "~common/exceptions";
+import { ROLE_DELEGATION_POLICY_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
+import { ROLE_DELEGATION_POLICY_SERVICE } from "~context/domain/services";
+import { OperationException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Contract {
-    private readonly dictionaryPath = "handlers.role-conflict-group";
-    private readonly resource = "RoleConflictGroup";
+export class RoleDelegationPolicyOperation implements Operations.RoleDelegationPolicy.Contract {
+    private readonly dictionaryPath = "operations.role-delegation-policy";
+    private readonly resource = "RoleDelegationPolicy";
 
     public constructor(
         @InjectEntityManager("write")
         private readonly writeManager: EntityManager,
-        @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
-        @Inject(ROLE_CONFLICT_GROUP_SERVICE)
-        private readonly roleConflictGroupService: Services.RoleConflictGroup.Contract,
+        @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
+        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.Contract,
+        @Inject(ROLE_DELEGATION_POLICY_SERVICE)
+        private readonly roleDelegationPolicyService: Services.RoleDelegationPolicy.Contract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(ROLE_REPOSITORY)
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create({ context, input, realm, actor }: Handlers.RoleConflictGroup.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Operations.RoleDelegationPolicy.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -34,42 +34,62 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
                         transaction,
                     }),
                     this.roleRepository.find({
-                        where: { id: { $in: input.members } },
+                        where: { id: { $in: [input.delegator, input.target] } },
                         transaction,
                     }),
                 ]);
 
-                if (roleEntities.length < input.members.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                if (roleEntities.length < 2) {
+                    if (roleEntities[0].id === input.delegator) {
+                        throw OperationException.notFound(`${this.dictionaryPath}.TARGET_ROLE_NOT_FOUND`);
+                    } else if (roleEntities[0].id === input.target) {
+                        throw OperationException.notFound(`${this.dictionaryPath}.DELEGATOR_ROLE_NOT_FOUND`);
+                    } else {
+                        throw OperationException.notFound(`${this.dictionaryPath}.BOTH_ROLES_NOT_FOUND`);
+                    }
+                } else {
+                    const [delegatorEntity, targetEntity] =
+                        roleEntities[0].id === input.delegator ? roleEntities : roleEntities.reverse();
+
+                    await this.roleDelegationPolicyService.create({
+                        input: {
+                            description: input.description,
+                            depthLimit: input.depthLimit,
+                            delegator: delegatorEntity,
+                            target: targetEntity,
+                        },
+                        realm: realmEntity,
+                        transaction,
+                        context,
+                        actor,
+                    });
+
+                    await transaction.flush();
+
+                    return { message: `${this.dictionaryPath}.CREATED` };
                 }
-
-                this.roleConflictGroupService.create({
-                    input: { ...input, members: roleEntities },
-                    realm: realmEntity,
-                    transaction,
-                    context,
-                    actor,
-                });
-
-                await transaction.flush();
-
-                return { message: `${this.dictionaryPath}.CREATED` };
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async update({ context, input, realm, actor, id }: Handlers.RoleConflictGroup.Update): Promise<MessageResult> {
+    public async update({
+        context,
+        input,
+        realm,
+        actor,
+        id,
+    }: Operations.RoleDelegationPolicy.Update): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
-                const entity = await this.roleConflictGroupRepository.findUniqueOrThrow({
+                const entity = await this.roleDelegationPolicyRepository.findUniqueOrThrow({
                     where: { id, realm },
                     transaction,
                 });
 
-                this.roleConflictGroupService.update({
+                this.roleDelegationPolicyService.update({
                     input: { ...input, entity },
                     transaction,
                     context,
@@ -82,24 +102,24 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
                 return { message: `${this.dictionaryPath}.UPDATED` };
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error);
+            throw OperationException.fromOrmError(error);
         }
     }
 
-    public async purge({ context, input, realm, actor }: Handlers.RoleConflictGroup.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Operations.RoleDelegationPolicy.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
-                const entities = await this.roleConflictGroupRepository.find({
+                const entities = await this.roleDelegationPolicyRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 }
 
-                this.roleConflictGroupService.purge({
+                this.roleDelegationPolicyService.purge({
                     input: { ...input, entities },
                     transaction,
                     context,
@@ -116,24 +136,24 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
                 }
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async revoke({ context, input, realm, actor }: Handlers.RoleConflictGroup.Revoke): Promise<MessageResult> {
+    public async revoke({ context, input, realm, actor }: Operations.RoleDelegationPolicy.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
-                const entities = await this.roleConflictGroupRepository.find({
+                const entities = await this.roleDelegationPolicyRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 }
 
-                this.roleConflictGroupService.revoke({
+                this.roleDelegationPolicyService.revoke({
                     input: { ...input, entities },
                     transaction,
                     context,
@@ -150,24 +170,29 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
                 }
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async restore({ context, input, realm, actor }: Handlers.RoleConflictGroup.Restore): Promise<MessageResult> {
+    public async restore({
+        context,
+        input,
+        realm,
+        actor,
+    }: Operations.RoleDelegationPolicy.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
-                const entities = await this.roleConflictGroupRepository.find({
+                const entities = await this.roleDelegationPolicyRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 }
 
-                this.roleConflictGroupService.restore({
+                this.roleDelegationPolicyService.restore({
                     input: { ...input, entities },
                     transaction,
                     context,
@@ -184,7 +209,7 @@ export class RoleConflictGroupHandler implements Handlers.RoleConflictGroup.Cont
                 }
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 }

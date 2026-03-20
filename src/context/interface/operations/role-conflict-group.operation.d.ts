@@ -1,5 +1,5 @@
-declare namespace Handlers {
-    namespace Permission {
+declare namespace Operations {
+    namespace RoleConflictGroup {
         interface Contract {
             create: (props: Create) => Promise<MessageResult>;
             update: (props: Update) => Promise<MessageResult>;
@@ -13,9 +13,11 @@ declare namespace Handlers {
             realm: string;
             context: RequestContext;
             input: {
+                members: string[];
+                description: string;
+                maxAllowed: number;
                 code: string;
                 name: string;
-                description?: string;
             };
         };
 
@@ -24,7 +26,7 @@ declare namespace Handlers {
             actor: string;
             realm: string;
             input: {
-                patch: Partial<Entities.Permission.MutableFields>;
+                patch: Partial<Entities.RoleConflictGroup.MutableFields>;
                 reason: string;
             };
             context: RequestContext;

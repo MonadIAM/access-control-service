@@ -4,7 +4,7 @@ import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
 import { ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/infrastructure/repositories";
-import { ROLE_CONFLICT_MEMBER_HANDLER } from "~context/application/handlers";
+import { ROLE_CONFLICT_MEMBER_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
@@ -34,8 +34,8 @@ export class RoleConflictMemberController extends BaseController {
     public constructor(
         @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
         private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.Contract,
-        @Inject(ROLE_CONFLICT_MEMBER_HANDLER)
-        private readonly roleConflictMemberHandler: Handlers.RoleConflictMember.Contract,
+        @Inject(ROLE_CONFLICT_MEMBER_OPERATION)
+        private readonly roleConflictMemberOperation: Operations.RoleConflictMember.Contract,
         i18nService: I18nService,
     ) {
         super(i18nService);
@@ -90,7 +90,7 @@ export class RoleConflictMemberController extends BaseController {
         @Query() { realm }: CreateRoleConflictMemberQueryDTO,
         @Body() input: CreateRoleConflictMemberBodyDTO,
     ): Promise<SuccessMessageDTO> {
-        return this.roleConflictMemberHandler
+        return this.roleConflictMemberOperation
             .create({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
     }
@@ -108,7 +108,7 @@ export class RoleConflictMemberController extends BaseController {
         @Body() input: PurgeRoleConflictMemberBodyDTO,
         @Lang() lang: string,
     ): Promise<SuccessMessageDTO> {
-        return this.roleConflictMemberHandler
+        return this.roleConflictMemberOperation
             .purge({ actor, context, input, realm })
             .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
     }

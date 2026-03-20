@@ -3,7 +3,7 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { EntityManager } from "@mikro-orm/postgresql";
 
 import { ROLE_CONFLICT_MEMBER_SERVICE } from "~context/domain/services";
-import { HandlerException } from "~common/exceptions";
+import { OperationException } from "~common/exceptions";
 import {
     ROLE_CONFLICT_MEMBER_REPOSITORY,
     ROLE_CONFLICT_GROUP_REPOSITORY,
@@ -12,8 +12,8 @@ import {
 } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Contract {
-    private readonly dictionaryPath = "handlers.role-conflict-member";
+export class RoleConflictMemberOperation implements Operations.RoleConflictMember.Contract {
+    private readonly dictionaryPath = "operations.role-conflict-member";
     private readonly resource = "RoleConflictMember";
 
     public constructor(
@@ -31,7 +31,7 @@ export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Co
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create({ context, input, realm, actor }: Handlers.RoleConflictMember.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Operations.RoleConflictMember.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -51,7 +51,7 @@ export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Co
                 ]);
 
                 if (roleEntities.length < input.roles.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 }
 
                 await this.roleConflictMemberService.create({
@@ -70,11 +70,11 @@ export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Co
                 return { message: `${this.dictionaryPath}.CREATED` };
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purge({ context, input, realm, actor }: Handlers.RoleConflictMember.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Operations.RoleConflictMember.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -84,7 +84,7 @@ export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Co
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.MEMBERS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.MEMBERS_NOT_FOUND`);
                 }
 
                 this.roleConflictMemberService.purge({
@@ -104,7 +104,7 @@ export class RoleConflictMemberHandler implements Handlers.RoleConflictMember.Co
                 }
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 }

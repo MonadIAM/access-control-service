@@ -5,11 +5,11 @@ import { EntityManager } from "@mikro-orm/postgresql";
 import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
 import { PERMISSION_SERVICE } from "~context/domain/services";
-import { HandlerException } from "~common/exceptions";
+import { OperationException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class PermissionHandler implements Handlers.Permission.Contract {
-    private readonly dictionaryPath = "handlers.permission";
+export class PermissionOperation implements Operations.Permission.Contract {
+    private readonly dictionaryPath = "operations.permission";
     private readonly resource = "Permission";
 
     public constructor(
@@ -25,7 +25,7 @@ export class PermissionHandler implements Handlers.Permission.Contract {
         private readonly realmRepository: Repositories.Realm.Contract,
     ) {}
 
-    public async create({ context, input, realm, actor }: Handlers.Permission.Create): Promise<MessageResult> {
+    public async create({ context, input, realm, actor }: Operations.Permission.Create): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -47,11 +47,11 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 return { message: `${this.dictionaryPath}.CREATED` };
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async update({ context, input, realm, actor, id }: Handlers.Permission.Update): Promise<MessageResult> {
+    public async update({ context, input, realm, actor, id }: Operations.Permission.Update): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -73,11 +73,11 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 return { message: `${this.dictionaryPath}.UPDATED` };
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purge({ context, input, realm, actor }: Handlers.Permission.Purge): Promise<MessageResult> {
+    public async purge({ context, input, realm, actor }: Operations.Permission.Purge): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
@@ -87,7 +87,7 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
                 this.permissionService.purge({
@@ -107,11 +107,11 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 }
             });
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async revoke({ context, input, realm, actor }: Handlers.Permission.Revoke): Promise<MessageResult> {
+    public async revoke({ context, input, realm, actor }: Operations.Permission.Revoke): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const { entities, affected } = await writeManager.transactional(async (transaction) => {
@@ -121,7 +121,7 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
                 this.permissionService.revoke({
@@ -149,11 +149,11 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 return { message: `${this.dictionaryPath}.REVOKED` };
             }
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async restore({ context, input, realm, actor }: Handlers.Permission.Restore): Promise<MessageResult> {
+    public async restore({ context, input, realm, actor }: Operations.Permission.Restore): Promise<MessageResult> {
         try {
             const writeManager = this.writeManager.fork();
             const { entities, affected } = await writeManager.transactional(async (transaction) => {
@@ -163,7 +163,7 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw HandlerException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                    throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 }
 
                 this.permissionService.restore({
@@ -191,7 +191,7 @@ export class PermissionHandler implements Handlers.Permission.Contract {
                 return { message: `${this.dictionaryPath}.RESTORED` };
             }
         } catch (error) {
-            throw HandlerException.fromOrmError(error, this.resource);
+            throw OperationException.fromOrmError(error, this.resource);
         }
     }
 }
