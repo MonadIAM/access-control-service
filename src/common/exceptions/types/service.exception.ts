@@ -8,7 +8,7 @@ export class ServiceException extends BaseException {
         kind: Exception.ServiceErrorKind,
         statusCode: number,
         messageKey: string,
-        params?: Record<string, unknown>,
+        params?: UnknownObject,
         details?: Exception.ValidationDetail[],
     ) {
         super(kind, statusCode, messageKey, params, details);
@@ -24,10 +24,7 @@ export class ServiceException extends BaseException {
         );
     }
 
-    public static invariantViolation(
-        messageKey = "service.invariant_violation",
-        params?: Record<string, unknown>,
-    ): ServiceException {
+    public static invariantViolation(messageKey = "service.invariant_violation", params?: UnknownObject): ServiceException {
         return new ServiceException(ServiceErrorKind.InvariantViolation, HttpStatus.BAD_REQUEST, messageKey, params);
     }
 }

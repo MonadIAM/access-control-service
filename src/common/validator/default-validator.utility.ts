@@ -34,12 +34,7 @@ import { NotEqualTo } from "./algorithms/not-equal-to.validator";
 import { IsOrdinal } from "./algorithms/is-ordinal.validator";
 
 export abstract class StandardValidationDecorators {
-    private static wrap(
-        key: string,
-        args: Record<string, unknown>,
-        options?: ValidationOptions,
-        label?: string,
-    ): ValidationOptions {
+    private static wrap(key: string, args: UnknownObject, options?: ValidationOptions, label?: string): ValidationOptions {
         return {
             ...options,
             message: `validatior.${key}`,

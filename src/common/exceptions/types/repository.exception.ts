@@ -5,7 +5,7 @@ export class RepositoryException extends BaseException {
         kind: Exception.RepositoryErrorKind,
         statusCode: number,
         messageKey: string,
-        params?: Record<string, unknown>,
+        params?: UnknownObject,
     ) {
         super(kind, statusCode, messageKey, params);
     }

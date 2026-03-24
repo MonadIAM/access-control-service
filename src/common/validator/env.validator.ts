@@ -3,7 +3,7 @@ import { validateSync } from "class-validator";
 
 import { EnvironmentVariablesDTO } from "~common/dto";
 
-export function validateEnv(config: Record<string, unknown>): EnvironmentVariablesDTO {
+export function validateEnv(config: UnknownObject): EnvironmentVariablesDTO {
     const validatedConfig = plainToInstance(EnvironmentVariablesDTO, config, {
         enableImplicitConversion: false,
     });

@@ -19,7 +19,7 @@ export abstract class BaseException extends Error {
         public readonly kind: string,
         public readonly statusCode: number,
         public readonly messageKey: string,
-        public readonly params?: Record<string, unknown>,
+        public readonly params?: UnknownObject,
         public readonly details?: Exception.ValidationDetail[],
     ) {
         super(messageKey);

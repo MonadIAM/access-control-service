@@ -10,7 +10,7 @@ import {
 class NotEqualToConstraint implements ValidatorConstraintInterface {
     public validate(value: unknown, args: ValidationArguments): boolean {
         const [relatedPropertyName] = args.constraints;
-        const relatedValue = (args.object as Record<string, unknown>)[relatedPropertyName];
+        const relatedValue = (args.object as UnknownObject)[relatedPropertyName];
         return value !== relatedValue;
     }
 

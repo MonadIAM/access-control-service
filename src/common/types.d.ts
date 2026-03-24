@@ -13,7 +13,7 @@ declare global {
 
     type MessageResult = {
         message: string;
-        params?: Record<string, unknown>;
+        params?: UnknownObject;
     };
 
     type Req<T extends RouteGenericInterface = RouteGenericInterface> = FastifyRequest<T> & {

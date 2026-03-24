@@ -31,11 +31,11 @@ declare global {
 
         type ValidationDetail = {
             /* eslint-disable prettier/prettier */
-            args?: Record<string, unknown> //
-            invalidValue?: unknown;        // Field value that triggered the error
-            constraint: string;            // Name of the triggered class-validator rule
-            message: string;               // Human-readable message provided by class-validator
-            path: string;                  // Full path to the field
+            args?: UnknownObject    //
+            invalidValue?: unknown; // Field value that triggered the error
+            constraint: string;     // Name of the triggered class-validator rule
+            message: string;        // Human-readable message provided by class-validator
+            path: string;           // Full path to the field
             /* eslint-enable prettier/prettier */
         };
     }
