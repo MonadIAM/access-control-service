@@ -1,6 +1,7 @@
-import { Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
+import { ROLE_CONFLICT_GROUP_REPOSITORY } from "~context/infrastructure/repositories";
 import { RoleConflictGroup, RoleConflictMember } from "~context/domain/entities";
 import { ServiceException } from "~common/exceptions";
 
@@ -9,34 +10,47 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
     private readonly dictionaryPath = "services.role-conflict-group";
     private readonly membersLimit: number;
 
-    public constructor(private readonly configService: ConfigService) {
+    public constructor(
+        @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
+        private readonly configService: ConfigService,
+    ) {
         this.membersLimit = this.configService.getOrThrow<number>("MAX_CONFLICT_MEMBERS_COUNT");
     }
 
-    public create({ transaction, input, realm, actor }: Services.RoleConflictGroup.Create): void {
+    public async create({ transaction, input, realm, actor }: Services.RoleConflictGroup.Create): Promise<void> {
         if (input.members.length > this.membersLimit) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED`);
         } else {
-            const group = new RoleConflictGroup({
-                description: input.description,
-                maxAllowed: input.maxAllowed,
-                code: input.code,
-                name: input.name,
-                realm,
-                actor,
+            const limitExceeded = await this.roleConflictGroupRepository.wouldExceedGroupLimit({
+                realm: realm.id,
+                transaction,
             });
 
-            for (const role of input.members) {
-                transaction.persist(
-                    new RoleConflictMember({
-                        group,
-                        actor,
-                        role,
-                    }),
-                );
-            }
+            if (limitExceeded) {
+                throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
+            } else {
+                const group = new RoleConflictGroup({
+                    description: input.description,
+                    maxAllowed: input.maxAllowed,
+                    code: input.code,
+                    name: input.name,
+                    realm,
+                    actor,
+                });
 
-            transaction.persist(group);
+                for (const role of input.members) {
+                    transaction.persist(
+                        new RoleConflictMember({
+                            group,
+                            actor,
+                            role,
+                        }),
+                    );
+                }
+
+                transaction.persist(group);
+            }
         }
     }
 

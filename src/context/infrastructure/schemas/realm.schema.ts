@@ -19,20 +19,26 @@ export const RealmSchema = new EntitySchema<Realm>({
             name: "realm_name_trgm_idx",
             expression: 'CREATE INDEX "realm_name_trgm_idx" ON "access_control"."realm" USING gin ("name" gin_trgm_ops)',
         },
+        {
+            name: "realm_owner_idx",
+            properties: ["owner"],
+        },
     ],
 
     properties: {
         id: { primary: true, type: "uuid" },
 
+        description: { type: "text", nullable: true },
         code: { type: "string", length: 128 },
         name: { type: "string", length: 255 },
-        description: { type: "text", nullable: true },
+        owner: { type: "uuid" },
+
         isSystemManaged: { type: "boolean" },
+        lastActions: { type: "jsonb" },
+        isRevoked: { type: "boolean" },
 
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
-        lastActions: { type: "jsonb" },
-        isRevoked: { type: "boolean" },
     },
 });

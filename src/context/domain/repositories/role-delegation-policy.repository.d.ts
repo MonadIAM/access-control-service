@@ -28,6 +28,7 @@ declare global {
 
                 existsTransitivePath: (props: ExistsTransitivePath) => Promise<boolean>;
                 isDelegationAllowed: (props: IsDelegationAllowed) => Promise<boolean>;
+                wouldExceedPolicyLimit: (props: WouldExceedPolicyLimit) => Promise<boolean>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -73,6 +74,12 @@ declare global {
                 roles: string[];
                 realm: string;
                 actor: string;
+            };
+
+            type WouldExceedPolicyLimit = {
+                transaction?: EntityManager;
+                delegator: string;
+                count?: number;
             };
 
             type Filters = {

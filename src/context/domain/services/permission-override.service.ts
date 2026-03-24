@@ -1,17 +1,30 @@
-import { Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/infrastructure/repositories";
 import { PermissionOverride } from "~context/domain/entities";
+import { ServiceException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideService implements Services.PermissionOverride.Contract {
-    public create({ transaction, input, realm, actor }: Services.PermissionOverride.Create): void {
-        transaction.persist(
-            new PermissionOverride({
-                ...input,
-                actor,
-                realm,
-            }),
-        );
+    private readonly dictionaryPath = "services.permission-override";
+
+    public constructor(
+        @Inject(PERMISSION_OVERRIDE_REPOSITORY)
+        private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
+    ) {}
+
+    public async create({ transaction, input, realm, actor }: Services.PermissionOverride.Create): Promise<void> {
+        const limitExceeded = await this.permissionOverrideRepository.wouldExceedOverrideLimit({
+            account: input.account,
+            realm: realm.id,
+            transaction,
+        });
+
+        if (limitExceeded) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
+        } else {
+            transaction.persist(new PermissionOverride({ ...input, actor, realm }));
+        }
     }
 
     public purge({ transaction, input }: Services.PermissionOverride.Purge): void {

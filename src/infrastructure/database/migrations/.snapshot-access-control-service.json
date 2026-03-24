@@ -168,6 +168,15 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
         "code": {
           "name": "code",
           "type": "varchar(128)",
@@ -188,17 +197,35 @@
           "length": 255,
           "mappedType": "string"
         },
-        "description": {
-          "name": "description",
-          "type": "text",
+        "owner": {
+          "name": "owner",
+          "type": "uuid",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
-          "mappedType": "text"
+          "nullable": false,
+          "mappedType": "uuid"
         },
         "is_system_managed": {
           "name": "is_system_managed",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
+        "last_actions": {
+          "name": "last_actions",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "json"
+        },
+        "is_revoked": {
+          "name": "is_revoked",
           "type": "boolean",
           "unsigned": false,
           "autoincrement": false,
@@ -235,24 +262,6 @@
           "nullable": false,
           "default": "1",
           "mappedType": "integer"
-        },
-        "last_actions": {
-          "name": "last_actions",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
-        "is_revoked": {
-          "name": "is_revoked",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
         }
       },
       "name": "realm",
@@ -266,6 +275,16 @@
           "primary": false,
           "unique": false,
           "expression": "CREATE INDEX \"realm_name_trgm_idx\" ON \"access_control\".\"realm\" USING gin (\"name\" gin_trgm_ops)"
+        },
+        {
+          "keyName": "realm_owner_idx",
+          "columnNames": [
+            "owner"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false
         },
         {
           "keyName": "realm_code_unique",

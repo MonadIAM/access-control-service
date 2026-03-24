@@ -1,6 +1,7 @@
 import { EntityManager, Loaded, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { RealmAdapter } from "~context/infrastructure/adapters";
 import { RepositoryException } from "~common/exceptions";
@@ -9,12 +10,15 @@ import { Realm } from "~context/domain/entities";
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmRepository extends RealmAdapter implements Repositories.Realm.Contract {
     private readonly resource = "Realm";
+    private readonly realmLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
         private readonly readManager: EntityManager,
+        private readonly configService: ConfigService,
     ) {
         super();
+        this.realmLimit = this.configService.getOrThrow<number>("REALM_LIMIT");
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({
@@ -94,6 +98,23 @@ export class RealmRepository extends RealmAdapter implements Repositories.Realm.
             }
 
             return await builder.getResultAndCount();
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async wouldExceedRealmLimit({
+        transaction,
+        account,
+        count,
+    }: Repositories.Realm.WouldExceedRealmLimit): Promise<boolean> {
+        try {
+            const entityManager = transaction ?? this.readManager.fork();
+            const knex = entityManager.getKnex();
+
+            const [{ total }] = await knex("access_control.realm").where("owner", account).count("id as total");
+
+            return Number(total) + (count ?? 1) > this.realmLimit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

@@ -6,7 +6,7 @@ import { Validator } from "~common/validator";
 export class CreateRoleConflictGroupBodyDTO {
     @Expose()
     @Validator.IsUniqueArray()
-    @Validator.ArrayMaxSize(50)
+    @Validator.ArrayMaxSize(Number(process.env.BULK_OPERATION_LIMIT))
     @Validator.IsUUID("4", { each: true })
     @ApiProperty({ required: true, type: [String], format: "uuid" })
     public members!: string[];

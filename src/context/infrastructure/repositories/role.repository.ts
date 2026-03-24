@@ -356,7 +356,7 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
 
             const [{ total }] = await knex("access_control.role").where("realm_id", realm).count("id as total");
 
-            return Number(total) + count > this.roleLimit;
+            return Number(total) + (count ?? 1) > this.roleLimit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

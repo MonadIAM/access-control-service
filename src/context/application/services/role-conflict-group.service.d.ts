@@ -10,9 +10,9 @@ declare global {
     namespace Services {
         namespace RoleConflictGroup {
             interface Contract {
+                create: (props: Create) => Promise<void>;
                 restore: (props: Restore) => void;
                 revoke: (props: Revoke) => void;
-                create: (props: Create) => void;
                 update: (props: Update) => void;
                 purge: (props: Purge) => void;
             }

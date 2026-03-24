@@ -7,7 +7,7 @@ export class RestoreRolePermissionAssignmentBodyDTO {
     @Expose()
     @Validator.IsUniqueArray()
     @Validator.ArrayMinSize(1)
-    @Validator.ArrayMaxSize(50)
+    @Validator.ArrayMaxSize(Number(process.env.BULK_OPERATION_LIMIT))
     @Validator.IsUUID("4", { each: true })
     @ApiProperty({ required: true, type: [String], format: "uuid" })
     public identifiers!: string[];

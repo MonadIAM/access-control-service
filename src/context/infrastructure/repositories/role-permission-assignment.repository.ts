@@ -91,15 +91,15 @@ export class RolePermissionAssignmentRepository
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
-            const assignments = await knex("access_control.role_permission_assignment as assignment")
-                .join("access_control.permission as permission", "permission.id", "assignment.permission_id")
-                .where("assignment.role_id", role)
-                .select("assignment.permission_id", "assignment.is_revoked", "permission.is_system_managed");
+            const [{ total, overlap }] = await knex("access_control.role_permission_assignment")
+                .where("role_id", role)
+                .andWhere("is_revoked", false)
+                .select(
+                    knex.raw("COUNT(*)::int AS total"),
+                    knex.raw("COUNT(*) FILTER (WHERE permission_id = ANY(?))::int AS overlap", [permissions]),
+                );
 
-            const existingRoleIds = new Set(assignments.map((assignment) => assignment.permission_id));
-            const trulyNewCount = permissions.filter((id) => !existingRoleIds.has(id)).length;
-
-            return assignments.length + trulyNewCount > this.permissionLimit;
+            return Number(total) + permissions.length - Number(overlap) > this.permissionLimit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

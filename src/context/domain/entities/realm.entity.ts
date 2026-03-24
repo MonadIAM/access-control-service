@@ -14,8 +14,10 @@ export class Realm {
 
     public code: string;
     public name: string;
-    public lastActions: DeltaAudit.LastActionsSnapshot<Entities.Realm.MutableFields>;
+    public owner: string;
     public description?: string;
+
+    public lastActions: DeltaAudit.LastActionsSnapshot<Entities.Realm.MutableFields>;
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
@@ -27,9 +29,10 @@ export class Realm {
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;
 
+        this.description = props.description;
+        this.owner = props.actor;
         this.code = props.code;
         this.name = props.name;
-        this.description = props.description;
     }
 
     public changeMetadata({

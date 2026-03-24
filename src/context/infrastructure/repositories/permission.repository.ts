@@ -1,6 +1,7 @@
 import { EntityDictionary, EntityManager, Knex, Loaded, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { PermissionAdapter } from "~context/infrastructure/adapters";
 import { PermissionOverrideEffect } from "~context/enums";
@@ -10,12 +11,15 @@ import { Permission } from "~context/domain/entities";
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionRepository extends PermissionAdapter implements Repositories.Permission.Contract {
     private readonly resource = "Permission";
+    private readonly permissionLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
         private readonly readManager: EntityManager,
+        private readonly configService: ConfigService,
     ) {
         super();
+        this.permissionLimit = this.configService.getOrThrow<number>("PERMISSION_PER_REALM_LIMIT");
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({
@@ -294,5 +298,22 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
         const results = await viaRoles.union([viaOverrides]);
 
         return results.map(({ account }) => account);
+    }
+
+    public async wouldExceedPermissionLimit({
+        transaction,
+        realm,
+        count,
+    }: Repositories.Permission.WouldExceedPermissionLimit): Promise<boolean> {
+        try {
+            const entityManager = transaction ?? this.readManager.fork();
+            const knex = entityManager.getKnex();
+
+            const [{ total }] = await knex("access_control.permission").where("realm_id", realm).count("id as total");
+
+            return Number(total) + (count ?? 1) > this.permissionLimit;
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
     }
 }

@@ -1,6 +1,7 @@
 import { EntityManager, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { PermissionOverrideAdapter } from "~context/infrastructure/adapters";
 import { PermissionOverride } from "~context/domain/entities";
@@ -12,12 +13,15 @@ export class PermissionOverrideRepository
     implements Repositories.PermissionOverride.Contract
 {
     private readonly resource = "PermissionOverride";
+    private readonly overrideLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
         private readonly readManager: EntityManager,
+        private readonly configService: ConfigService,
     ) {
         super();
+        this.overrideLimit = this.configService.getOrThrow<number>("PERMISSION_OVERRIDE_PER_ACCOUNT_LIMIT");
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({
@@ -73,6 +77,28 @@ export class PermissionOverrideRepository
                 const entityManager = this.readManager.fork();
                 return await entityManager.findAndCount(PermissionOverride, where, opts);
             }
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async wouldExceedOverrideLimit({
+        transaction,
+        account,
+        realm,
+        count,
+    }: Repositories.PermissionOverride.WouldExceedOverrideLimit): Promise<boolean> {
+        try {
+            const entityManager = transaction ?? this.readManager.fork();
+            const knex = entityManager.getKnex();
+
+            const [{ total }] = await knex("access_control.permission_override")
+                .where("account", account)
+                .andWhere("realm_id", realm)
+                .andWhere("is_revoked", false)
+                .count("id as total");
+
+            return Number(total) + (count ?? 1) > this.overrideLimit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

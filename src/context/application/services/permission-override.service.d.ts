@@ -11,9 +11,9 @@ declare global {
     namespace Services {
         namespace PermissionOverride {
             interface Contract {
+                create: (props: Create) => Promise<void>;
                 restore: (props: Restore) => void;
                 revoke: (props: Revoke) => void;
-                create: (props: Create) => void;
                 purge: (props: Purge) => void;
             }
 

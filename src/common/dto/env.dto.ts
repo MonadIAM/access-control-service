@@ -41,6 +41,15 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     public POSTGRES_IMAGE!: string;
 
+    @Validator.IsString()
+    public POSTGRES_DB!: string;
+
+    @Validator.IsString()
+    public POSTGRES_USER!: string;
+
+    @Validator.IsString()
+    public POSTGRES_PASSWORD!: string;
+
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     public POSTGRES_PORT!: number;
@@ -52,15 +61,6 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     public POSTGRES_CONTAINER_PORT!: number;
-
-    @Validator.IsString()
-    public POSTGRES_USER!: string;
-
-    @Validator.IsString()
-    public POSTGRES_PASSWORD!: string;
-
-    @Validator.IsString()
-    public POSTGRES_DB!: string;
 
     @Validator.IsBoolean()
     public POSTGRES_SSL!: boolean;
@@ -201,19 +201,37 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsPositiveInt()
-    public MAX_ROLE_SUBTREE_SIZE_FOR_PURGE!: number;
+    public REALM_LIMIT!: number;
 
     @Validator.IsPositiveInt()
-    public MAX_CONFLICT_MEMBERS_COUNT!: number;
-
-    @Validator.IsPositiveInt()
-    public PERMISSION_PER_ROLE_LIMIT!: number;
+    public ROLE_PER_REALM_LIMIT!: number;
 
     @Validator.IsPositiveInt()
     public ROLE_PER_ACCOUNT_LIMIT!: number;
 
     @Validator.IsPositiveInt()
-    public ROLE_PER_REALM_LIMIT!: number;
+    public PERMISSION_PER_REALM_LIMIT!: number;
+
+    @Validator.IsPositiveInt()
+    public PERMISSION_PER_ROLE_LIMIT!: number;
+
+    @Validator.IsPositiveInt()
+    public PERMISSION_OVERRIDE_PER_ACCOUNT_LIMIT!: number;
+
+    @Validator.IsPositiveInt()
+    public CONFLICT_GROUP_PER_REALM_LIMIT!: number;
+
+    @Validator.IsPositiveInt()
+    public MAX_CONFLICT_MEMBERS_COUNT!: number;
+
+    @Validator.IsPositiveInt()
+    public DELEGATION_POLICY_PER_ROLE_LIMIT!: number;
+
+    @Validator.IsPositiveInt()
+    public MAX_ROLE_SUBTREE_SIZE_FOR_PURGE!: number;
+
+    @Validator.IsPositiveInt()
+    public BULK_OPERATION_LIMIT!: number;
 
     // ---------------------------------------------------------------------------
     // BullMQ

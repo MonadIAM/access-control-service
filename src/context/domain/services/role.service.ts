@@ -25,13 +25,12 @@ export class RoleService implements Services.Role.Contract {
         if (input.parent.protoType === RoleProtoType.ATOMIC) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE`);
         } else {
-            const isRoleLimitExceeded = await this.roleRepository.wouldExceedRoleLimit({
+            const limitExceeded = await this.roleRepository.wouldExceedRoleLimit({
                 realm: realm.id,
                 transaction,
-                count: 1,
             });
 
-            if (isRoleLimitExceeded) {
+            if (limitExceeded) {
                 throw ServiceException.invariantViolation(`${this.dictionaryPath}.REALM_ROLE_LIMIT_EXCEEDED`);
             } else {
                 const entity = new Role({
@@ -45,6 +44,7 @@ export class RoleService implements Services.Role.Contract {
                 });
 
                 transaction.persist(entity);
+                await transaction.flush();
 
                 await this.buildHierarchy({
                     transaction,

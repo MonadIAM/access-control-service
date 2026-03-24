@@ -150,8 +150,8 @@ declare global {
 
             type WouldExceedRoleLimit = {
                 transaction?: EntityManager;
+                count?: number;
                 realm: string;
-                count: number;
             };
 
             type Filters = {

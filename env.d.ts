@@ -20,16 +20,16 @@ declare namespace NodeJS {
         // ---------------------------------------------------------------------------
 
         POSTGRES_IMAGE: string;
+        POSTGRES_DB: string;
+        POSTGRES_USER: string;
+        POSTGRES_PASSWORD: string;
         POSTGRES_PORT: `${number}`;
         POSTGRES_REPLICA_PORT: `${number}`;
         POSTGRES_CONTAINER_PORT: `${number}`;
-        POSTGRES_USER: string;
-        POSTGRES_DB: string;
-        POSTGRES_PASSWORD: string;
         POSTGRES_SSL: "true" | "false";
         POSTGRES_SSL_REJECT_UNAUTHORIZED: "true" | "false";
-        POSTGRES_POOL_IDLE_MS: `${number}`;
         POSTGRES_POOL_MAX: `${number}`;
+        POSTGRES_POOL_IDLE_MS: `${number}`;
         POSTGRES_LOGGING: "true" | "false";
         POSTGRES_CQRS_ENABLED: "true" | "false";
 
@@ -92,11 +92,17 @@ declare namespace NodeJS {
         // Domain-specific limits
         // ---------------------------------------------------------------------------
 
-        MAX_ROLE_SUBTREE_SIZE_FOR_PURGE: `${number}`;
-        MAX_CONFLICT_MEMBERS_COUNT: `${number}`;
-        PERMISSION_PER_ROLE_LIMIT: `${number}`;
-        ROLE_PER_ACCOUNT_LIMIT: `${number}`;
+        REALM_LIMIT: `${number}`;
         ROLE_PER_REALM_LIMIT: `${number}`;
+        ROLE_PER_ACCOUNT_LIMIT: `${number}`;
+        PERMISSION_PER_REALM_LIMIT: `${number}`;
+        PERMISSION_PER_ROLE_LIMIT: `${number}`;
+        PERMISSION_OVERRIDE_PER_ACCOUNT_LIMIT: `${number}`;
+        CONFLICT_GROUP_PER_REALM_LIMIT: `${number}`;
+        MAX_CONFLICT_MEMBERS_COUNT: `${number}`;
+        DELEGATION_POLICY_PER_ROLE_LIMIT: `${number}`;
+        MAX_ROLE_SUBTREE_SIZE_FOR_PURGE: `${number}`;
+        BULK_OPERATION_LIMIT: `${number}`;
 
         // ---------------------------------------------------------------------------
         // BullMQ

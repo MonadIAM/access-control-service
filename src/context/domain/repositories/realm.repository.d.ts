@@ -27,6 +27,8 @@ declare global {
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
 
                 getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
+
+                wouldExceedRealmLimit: (props: WouldExceedRealmLimit) => Promise<boolean>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -63,6 +65,12 @@ declare global {
             type GetLookupList = {
                 pagination: Pagination;
                 term: string;
+            };
+
+            type WouldExceedRealmLimit = {
+                transaction?: EntityManager;
+                account: string;
+                count?: number;
             };
 
             type Filters = {

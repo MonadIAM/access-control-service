@@ -1,6 +1,7 @@
 import { EntityManager, Knex, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { RoleDelegationPolicyAdapter } from "~context/infrastructure/adapters";
 import { RoleDelegationPolicy } from "~context/domain/entities";
@@ -12,12 +13,15 @@ export class RoleDelegationPolicyRepository
     implements Repositories.RoleDelegationPolicy.Contract
 {
     private readonly resource = "RoleDelegationPolicy";
+    private readonly policyLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
         private readonly readManager: EntityManager,
+        private readonly configService: ConfigService,
     ) {
         super();
+        this.policyLimit = this.configService.getOrThrow<number>("DELEGATION_POLICY_PER_ROLE_LIMIT");
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({
@@ -161,6 +165,26 @@ export class RoleDelegationPolicyRepository
 
             const [result] = await entityManager.getConnection().execute(sql, [...bindings]);
             return result?.result === true;
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async wouldExceedPolicyLimit({
+        transaction,
+        delegator,
+        count,
+    }: Repositories.RoleDelegationPolicy.WouldExceedPolicyLimit): Promise<boolean> {
+        try {
+            const entityManager = transaction ?? this.readManager.fork();
+            const knex = entityManager.getKnex();
+
+            const [{ total }] = await knex("access_control.role_delegation_policy")
+                .where("delegator_id", delegator)
+                .andWhere("is_revoked", false)
+                .count("id as total");
+
+            return Number(total) + (count ?? 1) > this.policyLimit;
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }

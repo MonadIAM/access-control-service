@@ -1,6 +1,7 @@
 import { EntityManager, Knex, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { RoleConflictGroupAdapter } from "~context/infrastructure/adapters";
 import { RoleConflictGroup } from "~context/domain/entities";
@@ -12,12 +13,15 @@ export class RoleConflictGroupRepository
     implements Repositories.RoleConflictGroup.Contract
 {
     private readonly resource = "RoleConflictGroup";
+    private readonly groupLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
         private readonly readManager: EntityManager,
+        private readonly configService: ConfigService,
     ) {
         super();
+        this.groupLimit = this.configService.getOrThrow<number>("CONFLICT_GROUP_PER_REALM_LIMIT");
     }
 
     public async findUnique<P extends string = never, F extends string = "*">({
@@ -169,5 +173,25 @@ export class RoleConflictGroupRepository
             .where("grp.realm_id", props.realm)
             .groupBy("grp.id", "grp.max_allowed")
             .havingRaw("count(distinct mem.role_id) > grp.max_allowed");
+    }
+
+    public async wouldExceedGroupLimit({
+        transaction,
+        realm,
+        count,
+    }: Repositories.RoleConflictGroup.WouldExceedGroupLimit): Promise<boolean> {
+        try {
+            const entityManager = transaction ?? this.readManager.fork();
+            const knex = entityManager.getKnex();
+
+            const [{ total }] = await knex("access_control.role_conflict_group")
+                .where("realm_id", realm)
+                .andWhere("is_revoked", false)
+                .count("id as total");
+
+            return Number(total) + (count ?? 1) > this.groupLimit;
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.resource);
+        }
     }
 }

@@ -8,6 +8,7 @@ export const Realms = [
         code: "system",
         name: "System",
         description: "Root system realm for all platform-level entities",
+        owner: "00000000-0000-4000-8000-000000000000",
         is_system_managed: true,
         is_revoked: false,
         created_at: CREATED_AT,

@@ -25,6 +25,8 @@ declare global {
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
+
+                wouldExceedOverrideLimit: (props: WouldExceedOverrideLimit) => Promise<boolean>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -58,6 +60,13 @@ declare global {
                       realm: string;
                       options?: FindOptions<Entity, P, F>;
                   };
+
+            type WouldExceedOverrideLimit = {
+                transaction?: EntityManager;
+                account: string;
+                count?: number;
+                realm: string;
+            };
 
             type Filters = {
                 id?: StringFilterDTO;

@@ -14,13 +14,21 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
     ) {}
 
     public async create({ transaction, realm, actor, input }: Services.RoleDelegationPolicy.Create): Promise<void> {
-        const existsTransitivePath = await this.roleDelegationPolicyRepository.existsTransitivePath({
-            to: input.delegator.id,
-            from: input.target.id,
-            transaction,
-        });
+        const [limitExceeded, existsTransitivePath] = await Promise.all([
+            this.roleDelegationPolicyRepository.wouldExceedPolicyLimit({
+                delegator: input.delegator.id,
+                transaction,
+            }),
+            this.roleDelegationPolicyRepository.existsTransitivePath({
+                to: input.delegator.id,
+                from: input.target.id,
+                transaction,
+            }),
+        ]);
 
-        if (existsTransitivePath) {
+        if (limitExceeded) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
+        } else if (existsTransitivePath) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.EXISTS_TRANSITIVE_PATH`);
         } else {
             const entity = new RoleDelegationPolicy({

@@ -31,6 +31,8 @@ declare global {
                 hasViolations: (props: HasViolations) => Promise<boolean>;
 
                 hasAccountViolatingConflictGroup: (props: HasAccountViolatingConflictGroup) => Promise<boolean>;
+
+                wouldExceedGroupLimit: (props: WouldExceedGroupLimit) => Promise<boolean>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -89,6 +91,12 @@ declare global {
                 transaction?: EntityManager;
                 identifiers: string[];
                 maxAllowed: number;
+            };
+
+            type WouldExceedGroupLimit = {
+                transaction?: EntityManager;
+                count?: number;
+                realm: string;
             };
 
             type Filters = {

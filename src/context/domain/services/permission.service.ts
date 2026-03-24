@@ -1,17 +1,29 @@
-import { Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
+import { ServiceException } from "~common/exceptions";
 import { Permission } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionService implements Services.Permission.Contract {
-    public create({ transaction, input, realm, actor }: Services.Permission.Create): void {
-        transaction.persist(
-            new Permission({
-                ...input,
-                realm,
-                actor,
-            }),
-        );
+    private readonly dictionaryPath = "services.permission";
+
+    public constructor(
+        @Inject(PERMISSION_REPOSITORY)
+        private readonly permissionRepository: Repositories.Permission.Contract,
+    ) {}
+
+    public async create({ transaction, input, realm, actor }: Services.Permission.Create): Promise<void> {
+        const limitExceeded = await this.permissionRepository.wouldExceedPermissionLimit({
+            realm: realm.id,
+            transaction,
+        });
+
+        if (limitExceeded) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
+        } else {
+            transaction.persist(new Permission({ ...input, realm, actor }));
+        }
     }
 
     public update({ input, actor }: Services.Permission.Update): void {

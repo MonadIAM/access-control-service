@@ -14,13 +14,13 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
     ) {}
 
     public async create({ transaction, input, actor }: Services.RoleConflictMember.Create): Promise<void> {
-        const isMemberLimitExceeded = await this.roleConflictMemberRepository.wouldExceedMemberLimit({
+        const limitExceeded = await this.roleConflictMemberRepository.wouldExceedMemberLimit({
             count: input.roles.length,
             group: input.group.id,
             transaction,
         });
 
-        if (isMemberLimitExceeded) {
+        if (limitExceeded) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED`);
         } else {
             for (const role of input.roles) {

@@ -6,7 +6,7 @@ declare global {
     namespace Services {
         namespace Realm {
             interface Contract {
-                create: (props: Create) => void;
+                create: (props: Create) => Promise<void>;
                 restore: (props: Restore) => void;
                 revoke: (props: Revoke) => void;
                 update: (props: Update) => void;

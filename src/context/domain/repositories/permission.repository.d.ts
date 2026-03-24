@@ -36,6 +36,8 @@ declare global {
                 ) => Promise<CollectEffectivePermissions.Result>;
 
                 findAccountsByPermissions: (props: FindAccountsByPermissions) => Promise<string[]>;
+
+                wouldExceedPermissionLimit: (props: WouldExceedPermissionLimit) => Promise<boolean>;
             }
 
             type FindUnique<P extends string, F extends string> = {
@@ -100,6 +102,12 @@ declare global {
             type FindAccountsByPermissions = {
                 transaction?: EntityManager;
                 permissions: string[];
+            };
+
+            type WouldExceedPermissionLimit = {
+                transaction?: EntityManager;
+                count?: number;
+                realm: string;
             };
 
             type Filters = {

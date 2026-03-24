@@ -1,16 +1,29 @@
-import { Injectable, Scope } from "@nestjs/common";
+import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
+import { ServiceException } from "~common/exceptions";
 import { Realm } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmService implements Services.Realm.Contract {
-    public create({ transaction, input, actor }: Services.Realm.Create): void {
-        transaction.persist(
-            new Realm({
-                ...input,
-                actor,
-            }),
-        );
+    private readonly dictionaryPath = "services.realm";
+
+    public constructor(
+        @Inject(REALM_REPOSITORY)
+        private readonly realmRepository: Repositories.Realm.Contract,
+    ) {}
+
+    public async create({ transaction, input, actor }: Services.Realm.Create): Promise<void> {
+        const limitExceeded = await this.realmRepository.wouldExceedRealmLimit({
+            account: actor,
+            transaction,
+        });
+
+        if (limitExceeded) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
+        } else {
+            transaction.persist(new Realm({ ...input, actor }));
+        }
     }
 
     public update({ input, actor }: Services.Realm.Update): void {

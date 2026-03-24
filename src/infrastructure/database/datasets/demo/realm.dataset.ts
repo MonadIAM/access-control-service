@@ -8,6 +8,7 @@ export const Realms = [
         code: "demo",
         name: "Demo",
         description: "Demo realm for testing complex role hierarchies, SoD policies and delegation chains",
+        owner: "00000000-0000-4000-8000-000000000000",
         is_system_managed: false,
         is_revoked: false,
         created_at: CREATED_AT,
