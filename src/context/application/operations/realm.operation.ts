@@ -5,9 +5,12 @@ import { EntityManager } from "@mikro-orm/postgresql";
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { REALM_SERVICE } from "~context/domain/services";
 import { OperationException } from "~common/exceptions";
+import { AuditJournal } from "~context/domain/entities";
+import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmOperation implements Operations.Realm.Contract {
+    private readonly entityType = AccessControlEntityType.REALM;
     private readonly dictionaryPath = "operations.realm";
 
     public constructor(
@@ -25,10 +28,19 @@ export class RealmOperation implements Operations.Realm.Contract {
             return await writeManager.transactional(async (transaction) => {
                 this.realmService.create({
                     transaction,
-                    context,
                     input,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.CREATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -50,10 +62,18 @@ export class RealmOperation implements Operations.Realm.Contract {
 
                 this.realmService.update({
                     input: { ...input, entity },
-                    transaction,
-                    context,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.UPDATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -80,9 +100,17 @@ export class RealmOperation implements Operations.Realm.Contract {
                 this.realmService.purge({
                     input: { ...input, entities },
                     transaction,
-                    context,
-                    actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.DELETE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -112,10 +140,18 @@ export class RealmOperation implements Operations.Realm.Contract {
 
                 this.realmService.revoke({
                     input: { ...input, entities },
-                    transaction,
-                    context,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.REVOKE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -145,10 +181,18 @@ export class RealmOperation implements Operations.Realm.Contract {
 
                 this.realmService.restore({
                     input: { ...input, entities },
-                    transaction,
-                    context,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.RESTORE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 

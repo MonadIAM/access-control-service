@@ -8,7 +8,7 @@ declare global {
         namespace Role {
             interface Contract {
                 purgeSubtree: (props: PurgeSubtree) => Promise<number>;
-                create: (props: Create) => Promise<RoleEntity>;
+                create: (props: Create) => Promise<void>;
                 purge: (props: Purge) => Promise<void>;
                 restore: (props: Restore) => void;
                 update: (props: Update) => void;
@@ -17,7 +17,6 @@ declare global {
 
             type Create = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     actorType: RoleActorType;
                     protoType: RoleProtoType;
@@ -32,58 +31,45 @@ declare global {
             };
 
             type Update = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     patch: Partial<Entities.Role.MutableFields>;
                     entity: RoleEntity;
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entity: RoleEntity;
                     reason: string;
                 };
                 realm: string;
-                actor: string;
             };
 
             type PurgeSubtree = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entity: RoleEntity;
                     reason: string;
                 };
                 realm: string;
-                actor: string;
             };
 
             type Revoke = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RoleEntity[];
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
 
             type Restore = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RoleEntity[];
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
 

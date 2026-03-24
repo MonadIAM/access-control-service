@@ -6,9 +6,12 @@ import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure
 import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
 import { PERMISSION_SERVICE } from "~context/domain/services";
 import { OperationException } from "~common/exceptions";
+import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { AuditJournal } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOperation implements Operations.Permission.Contract {
+    private readonly entityType = AccessControlEntityType.PERMISSION;
     private readonly dictionaryPath = "operations.permission";
     private readonly resource = "Permission";
 
@@ -37,10 +40,20 @@ export class PermissionOperation implements Operations.Permission.Contract {
                 this.permissionService.create({
                     realm: realmEntity,
                     transaction,
-                    context,
                     input,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.CREATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -62,11 +75,19 @@ export class PermissionOperation implements Operations.Permission.Contract {
 
                 this.permissionService.update({
                     input: { ...input, entity },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.UPDATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -93,10 +114,18 @@ export class PermissionOperation implements Operations.Permission.Contract {
                 this.permissionService.purge({
                     input: { ...input, entities },
                     transaction,
-                    context,
-                    realm,
-                    actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.DELETE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -126,11 +155,19 @@ export class PermissionOperation implements Operations.Permission.Contract {
 
                 this.permissionService.revoke({
                     input: { ...input, entities },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.REVOKE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -168,11 +205,19 @@ export class PermissionOperation implements Operations.Permission.Contract {
 
                 this.permissionService.restore({
                     input: { ...input, entities },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.RESTORE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 

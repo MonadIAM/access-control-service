@@ -19,7 +19,6 @@ declare global {
 
             type Create = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     delegator: RoleEntity;
                     description: string;
@@ -31,47 +30,35 @@ declare global {
             };
 
             type Update = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     patch: Partial<Entities.RoleConflictGroup.MutableFields>;
                     entity: RoleDelegationPolicyEntity;
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RoleDelegationPolicyEntity[];
                     reason: string;
                 };
-                realm: string;
-                actor: string;
             };
 
             type Revoke = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RoleDelegationPolicyEntity[];
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
 
             type Restore = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RoleDelegationPolicyEntity[];
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
         }

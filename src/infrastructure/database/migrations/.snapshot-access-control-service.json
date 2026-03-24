@@ -15,6 +15,15 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "input": {
+          "name": "input",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "json"
+        },
         "realm": {
           "name": "realm",
           "type": "uuid",
@@ -24,63 +33,26 @@
           "nullable": true,
           "mappedType": "uuid"
         },
-        "entity": {
-          "name": "entity",
+        "actor": {
+          "name": "actor",
           "type": "uuid",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "mappedType": "uuid"
-        },
-        "by": {
-          "name": "by",
-          "type": "uuid",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "uuid"
-        },
-        "at": {
-          "name": "at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 3,
-          "mappedType": "datetime"
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "text"
-        },
-        "patch": {
-          "name": "patch",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "json"
-        },
-        "ip": {
-          "name": "ip",
-          "type": "text",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "text"
         },
         "user_agent": {
           "name": "user_agent",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "ip": {
+          "name": "ip",
           "type": "text",
           "unsigned": false,
           "autoincrement": false,
@@ -139,17 +111,6 @@
       "schema": "access_control",
       "indexes": [
         {
-          "keyName": "audit_journal_entity_idx",
-          "columnNames": [
-            "entity_type",
-            "entity"
-          ],
-          "composite": true,
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
           "keyName": "audit_journal_realm_idx",
           "columnNames": [
             "realm"
@@ -160,10 +121,21 @@
           "unique": false
         },
         {
-          "keyName": "audit_journal_by_at_idx",
+          "keyName": "audit_journal_actor_created_at_idx",
           "columnNames": [
-            "by",
-            "at"
+            "actor",
+            "created_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "audit_journal_entity_type_action_idx",
+          "columnNames": [
+            "entity_type",
+            "action_type"
           ],
           "composite": true,
           "constraint": false,

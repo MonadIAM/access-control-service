@@ -5,9 +5,12 @@ import { EntityManager } from "@mikro-orm/postgresql";
 import { ROLE_DELEGATION_POLICY_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_DELEGATION_POLICY_SERVICE } from "~context/domain/services";
 import { OperationException } from "~common/exceptions";
+import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { AuditJournal } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyOperation implements Operations.RoleDelegationPolicy.Contract {
+    private readonly entityType = AccessControlEntityType.DELEGATION_POLICY;
     private readonly dictionaryPath = "operations.role-delegation-policy";
     private readonly resource = "RoleDelegationPolicy";
 
@@ -60,9 +63,19 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
                         },
                         realm: realmEntity,
                         transaction,
-                        context,
                         actor,
                     });
+
+                    transaction.persist(
+                        new AuditJournal({
+                            actionType: AccessControlActionType.CREATE,
+                            entityType: this.entityType,
+                            ...context,
+                            actor,
+                            realm,
+                            input,
+                        }),
+                    );
 
                     await transaction.flush();
 
@@ -91,11 +104,19 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
 
                 this.roleDelegationPolicyService.update({
                     input: { ...input, entity },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.UPDATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -122,10 +143,18 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
                 this.roleDelegationPolicyService.purge({
                     input: { ...input, entities },
                     transaction,
-                    context,
-                    realm,
-                    actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.DELETE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -155,11 +184,19 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
 
                 this.roleDelegationPolicyService.revoke({
                     input: { ...input, entities },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.REVOKE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -194,11 +231,19 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
 
                 this.roleDelegationPolicyService.restore({
                     input: { ...input, entities },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.RESTORE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 

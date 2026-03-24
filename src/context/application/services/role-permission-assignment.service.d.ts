@@ -19,7 +19,6 @@ declare global {
 
             type Create = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     permissions: PermissionEntity[];
                     role: RoleEntity;
@@ -30,34 +29,25 @@ declare global {
 
             type Purge = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RolePermissionAssignmentEntity[];
                     reason: string;
                 };
-                realm: string;
-                actor: string;
             };
 
             type Revoke = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RolePermissionAssignmentEntity[];
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
 
             type Restore = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RolePermissionAssignmentEntity[];
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
         }

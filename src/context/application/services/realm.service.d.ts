@@ -6,7 +6,7 @@ declare global {
     namespace Services {
         namespace Realm {
             interface Contract {
-                create: (props: Create) => RealmEntity;
+                create: (props: Create) => void;
                 restore: (props: Restore) => void;
                 revoke: (props: Revoke) => void;
                 update: (props: Update) => void;
@@ -15,7 +15,6 @@ declare global {
 
             type Create = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     code: string;
                     name: string;
@@ -25,8 +24,6 @@ declare global {
             };
 
             type Update = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     patch: Partial<Entities.Realm.MutableFields>;
                     entity: RealmEntity;
@@ -37,17 +34,13 @@ declare global {
 
             type Purge = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RealmEntity[];
                     reason: string;
                 };
-                actor: string;
             };
 
             type Revoke = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RealmEntity[];
                     reason: string;
@@ -56,8 +49,6 @@ declare global {
             };
 
             type Restore = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RealmEntity[];
                     reason: string;

@@ -19,7 +19,6 @@ declare global {
 
             type Create = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     members: RoleEntity[];
                     description: string;
@@ -32,47 +31,35 @@ declare global {
             };
 
             type Update = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     patch: Partial<Entities.RoleConflictGroup.MutableFields>;
                     entity: RoleConflictGroupEntity;
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RoleConflictGroupEntity[];
                     reason: string;
                 };
-                realm: string;
-                actor: string;
             };
 
             type Revoke = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RoleConflictGroupEntity[];
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
 
             type Restore = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: RoleConflictGroupEntity[];
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
         }

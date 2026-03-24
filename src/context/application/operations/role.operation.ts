@@ -6,9 +6,12 @@ import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repos
 import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
 import { ROLE_SERVICE } from "~context/domain/services";
 import { OperationException } from "~common/exceptions";
+import { AuditJournal } from "~context/domain/entities";
+import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleOperation implements Operations.Role.Contract {
+    private readonly entityType = AccessControlEntityType.ROLE;
     private readonly dictionaryPath = "operations.role";
 
     public constructor(
@@ -43,9 +46,19 @@ export class RoleOperation implements Operations.Role.Contract {
                     input: { ...input, parent: parentEntity },
                     realm: realmEntity,
                     transaction,
-                    context,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.CREATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -67,11 +80,19 @@ export class RoleOperation implements Operations.Role.Contract {
 
                 this.roleService.update({
                     input: { ...input, entity },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.UPDATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -94,10 +115,19 @@ export class RoleOperation implements Operations.Role.Contract {
                 await this.roleService.purge({
                     input: { ...input, entity },
                     transaction,
-                    context,
                     realm,
-                    actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.DELETE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -120,10 +150,19 @@ export class RoleOperation implements Operations.Role.Contract {
                 const count = await this.roleService.purgeSubtree({
                     input: { ...input, entity },
                     transaction,
-                    context,
                     realm,
-                    actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.DELETE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -149,11 +188,19 @@ export class RoleOperation implements Operations.Role.Contract {
 
                 this.roleService.revoke({
                     input: { entities, reason: input.reason },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.REVOKE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -191,11 +238,19 @@ export class RoleOperation implements Operations.Role.Contract {
 
                 this.roleService.restore({
                     input: { entities, reason: input.reason },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.RESTORE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 

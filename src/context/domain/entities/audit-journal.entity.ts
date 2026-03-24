@@ -1,4 +1,3 @@
-import { AnyEntity } from "@mikro-orm/postgresql";
 import { randomUUID } from "node:crypto";
 
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
@@ -11,16 +10,12 @@ export class AuditJournal {
     public entityType: AccessControlEntityType;
 
     public realm?: string;
-    public entity: string;
-
-    public by: string;
-    public at: Date;
+    public actor: string;
 
     public ip?: string;
     public userAgent?: string;
 
-    public patch?: DeltaAudit.Patch<AnyEntity>;
-    public reason?: string;
+    public input?: UnknownObject;
 
     public constructor(props: Entities.AuditJournal.ConstructorProps) {
         this.createdAt = new Date();
@@ -30,15 +25,10 @@ export class AuditJournal {
         this.entityType = props.entityType;
 
         this.realm = props.realm;
-        this.entity = props.entity;
+        this.actor = props.actor;
+        this.input = props.input;
 
-        this.by = props.by;
-        this.at = props.at;
-
-        this.ip = props.ip;
         this.userAgent = props.userAgent;
-
-        this.patch = props.patch;
-        this.reason = props.reason;
+        this.ip = props.ip;
     }
 }

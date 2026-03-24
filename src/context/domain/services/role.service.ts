@@ -1,14 +1,13 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { AccessControlActionType, AccessControlEntityType, RoleProtoType } from "~context/enums";
 import { ROLE_CLOSURE_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { AuditJournal, Role } from "~context/domain/entities";
 import { ServiceException } from "~common/exceptions";
+import { Role } from "~context/domain/entities";
+import { RoleProtoType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleService implements Services.Role.Contract {
-    private readonly entityType = AccessControlEntityType.ROLE;
     private readonly dictionaryPath = "services.role";
     private readonly purgeSubtreeSizeLimit: number;
 
@@ -22,13 +21,7 @@ export class RoleService implements Services.Role.Contract {
         this.purgeSubtreeSizeLimit = this.configService.getOrThrow<number>("MAX_ROLE_SUBTREE_SIZE_FOR_PURGE");
     }
 
-    public async create({
-        transaction,
-        context: { userAgent, ip },
-        input,
-        realm,
-        actor,
-    }: Services.Role.Create): Promise<Role> {
+    public async create({ transaction, input, realm, actor }: Services.Role.Create): Promise<void> {
         if (input.parent.protoType === RoleProtoType.ATOMIC) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE`);
         } else {
@@ -62,53 +55,16 @@ export class RoleService implements Services.Role.Contract {
                         entity,
                     },
                 });
-
-                const auditEntity = new AuditJournal({
-                    actionType: AccessControlActionType.CREATE,
-                    entityType: this.entityType,
-                    at: entity.createdAt,
-                    entity: entity.id,
-                    realm: realm.id,
-                    userAgent,
-                    by: actor,
-                    ip,
-                });
-
-                transaction.persist(auditEntity);
-
-                return entity;
             }
         }
     }
 
-    public update({ transaction, context: { userAgent, ip }, input, realm, actor }: Services.Role.Update): void {
-        const historyPatch = input.entity.changeMetadata({ ...input, actor });
-
-        const auditEntity = new AuditJournal({
-            actionType: AccessControlActionType.UPDATE,
-            entityType: this.entityType,
-            at: input.entity.updatedAt!,
-            entity: input.entity.id,
-            reason: input.reason,
-            patch: historyPatch,
-            userAgent,
-            by: actor,
-            realm,
-            ip,
-        });
-
-        transaction.persist(auditEntity);
+    public update({ input, actor }: Services.Role.Update): void {
+        input.entity.changeMetadata({ ...input, actor });
     }
 
-    public async purge({
-        transaction,
-        context: { userAgent, ip },
-        input,
-        realm,
-        actor,
-    }: Services.Role.Purge): Promise<void> {
+    public async purge({ transaction, input, realm }: Services.Role.Purge): Promise<void> {
         input.entity.canPurge();
-
         transaction.clear();
 
         await this.roleClosureRepository.decreaseTransitiveDepth({
@@ -118,31 +74,12 @@ export class RoleService implements Services.Role.Contract {
         });
 
         transaction.remove(input.entity);
-
-        const auditEntity = new AuditJournal({
-            actionType: AccessControlActionType.DELETE,
-            entityType: this.entityType,
-            entity: input.entity.id,
-            reason: input.reason,
-            at: new Date(),
-            userAgent,
-            by: actor,
-            realm,
-            ip,
-        });
-
-        transaction.persist(auditEntity);
     }
 
-    public async purgeSubtree({
-        transaction,
-        context: { userAgent, ip },
-        input,
-        realm,
-        actor,
-    }: Services.Role.PurgeSubtree): Promise<number> {
-        const descendants: Role[] = await this.roleRepository.getDescendants({
+    public async purgeSubtree({ transaction, input, realm }: Services.Role.PurgeSubtree): Promise<number> {
+        const descendants = await this.roleRepository.getDescendants({
             ancestor: input.entity.id,
+            where: { realm },
             transaction,
         });
 
@@ -155,65 +92,21 @@ export class RoleService implements Services.Role.Contract {
         } else {
             for (const descendant of descendants) {
                 descendant.canPurge();
-
                 transaction.remove(descendant);
-
-                const auditEntity = new AuditJournal({
-                    actionType: AccessControlActionType.DELETE,
-                    entityType: this.entityType,
-                    entity: descendant.id,
-                    reason: input.reason,
-                    at: new Date(),
-                    userAgent,
-                    by: actor,
-                    realm,
-                    ip,
-                });
-
-                transaction.persist(auditEntity);
             }
-
             return descendants.length;
         }
     }
 
-    public revoke({ transaction, context: { userAgent, ip }, input, realm, actor }: Services.Role.Revoke): void {
+    public revoke({ input, actor }: Services.Role.Revoke): void {
         for (const entity of input.entities) {
             entity.revoke({ reason: input.reason, actor });
-
-            const auditEntity = new AuditJournal({
-                actionType: AccessControlActionType.REVOKE,
-                entityType: this.entityType,
-                at: entity.updatedAt!,
-                reason: input.reason,
-                entity: entity.id,
-                userAgent,
-                by: actor,
-                realm,
-                ip,
-            });
-
-            transaction.persist(auditEntity);
         }
     }
 
-    public restore({ transaction, context: { userAgent, ip }, input, realm, actor }: Services.Role.Restore): void {
+    public restore({ input, actor }: Services.Role.Restore): void {
         for (const entity of input.entities) {
             entity.restore({ reason: input.reason, actor });
-
-            const auditEntity = new AuditJournal({
-                actionType: AccessControlActionType.RESTORE,
-                entityType: this.entityType,
-                at: entity.updatedAt!,
-                reason: input.reason,
-                entity: entity.id,
-                userAgent,
-                by: actor,
-                realm,
-                ip,
-            });
-
-            transaction.persist(auditEntity);
         }
     }
 
@@ -229,7 +122,7 @@ export class RoleService implements Services.Role.Contract {
         });
 
         if (children?.length) {
-            const descendants: Role[] = await this.roleRepository.getDescendants({
+            const descendants = await this.roleRepository.getDescendants({
                 ancestor: parent.id,
                 transaction,
                 depth: 1,

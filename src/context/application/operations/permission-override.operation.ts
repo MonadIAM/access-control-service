@@ -10,9 +10,12 @@ import {
     PERMISSION_REPOSITORY,
     REALM_REPOSITORY,
 } from "~context/infrastructure/repositories";
+import { AuditJournal } from "~context/domain/entities";
+import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideOperation implements Operations.PermissionOverride.Contract {
+    private readonly entityType = AccessControlEntityType.PERMISSION_OVERRIDE;
     private readonly dictionaryPath = "operations.permission-override";
     private readonly resource = "PermissionOverride";
 
@@ -54,9 +57,19 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                     },
                     realm: realmEntity,
                     transaction,
-                    context,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.CREATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
             });
@@ -85,10 +98,18 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                 this.permissionOverrideService.purge({
                     input: { ...input, entities },
                     transaction,
-                    context,
-                    realm,
-                    actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.DELETE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -118,11 +139,19 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
 
                 this.permissionOverrideService.revoke({
                     input: { ...input, entities },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.REVOKE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -156,11 +185,19 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
 
                 this.permissionOverrideService.restore({
                     input: { ...input, entities },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.RESTORE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 

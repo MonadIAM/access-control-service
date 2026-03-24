@@ -24,41 +24,31 @@ declare global {
                     permission: PermissionEntity;
                     account: string;
                 };
-                context: RequestContext;
                 realm: RealmEntity;
                 actor: string;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: PermissionOverrideEntity[];
                     reason: string;
                 };
-                realm: string;
-                actor: string;
             };
 
             type Revoke = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: PermissionOverrideEntity[];
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
 
             type Restore = {
-                transaction: EntityManager;
-                context: RequestContext;
                 input: {
                     entities: PermissionOverrideEntity[];
                     reason: string;
                 };
-                realm: string;
                 actor: string;
             };
         }

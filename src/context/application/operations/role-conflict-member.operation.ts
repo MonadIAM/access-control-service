@@ -7,12 +7,14 @@ import { OperationException } from "~common/exceptions";
 import {
     ROLE_CONFLICT_MEMBER_REPOSITORY,
     ROLE_CONFLICT_GROUP_REPOSITORY,
-    REALM_REPOSITORY,
     ROLE_REPOSITORY,
 } from "~context/infrastructure/repositories";
+import { AuditJournal } from "~context/domain/entities";
+import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberOperation implements Operations.RoleConflictMember.Contract {
+    private readonly entityType = AccessControlEntityType.CONFLICT_MEMBER;
     private readonly dictionaryPath = "operations.role-conflict-member";
     private readonly resource = "RoleConflictMember";
 
@@ -25,8 +27,6 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
         private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
         @Inject(ROLE_CONFLICT_MEMBER_SERVICE)
         private readonly roleConflictMemberService: Services.RoleConflictMember.Contract,
-        @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(ROLE_REPOSITORY)
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
@@ -35,17 +35,13 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
         try {
             const writeManager = this.writeManager.fork();
             return await writeManager.transactional(async (transaction) => {
-                const [groupEntity, realmEntity, roleEntities] = await Promise.all([
-                    this.roleConflictGroupRepository.findUniqueOrThrow({
-                        where: { id: input.group },
-                        transaction,
-                    }),
-                    this.realmRepository.findUniqueOrThrow({
-                        where: { id: realm },
-                        transaction,
-                    }),
+                const [roleEntities, groupEntity] = await Promise.all([
                     this.roleRepository.find({
-                        where: { id: { $in: input.roles } },
+                        where: { id: { $in: input.roles }, realm },
+                        transaction,
+                    }),
+                    this.roleConflictGroupRepository.findUniqueOrThrow({
+                        where: { id: input.group, realm },
                         transaction,
                     }),
                 ]);
@@ -59,11 +55,20 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
                         roles: roleEntities,
                         group: groupEntity,
                     },
-                    realm: realmEntity,
                     transaction,
-                    context,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.CREATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -90,10 +95,18 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
                 this.roleConflictMemberService.purge({
                     input: { reason: input.reason, entities },
                     transaction,
-                    context,
-                    realm,
-                    actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.DELETE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 

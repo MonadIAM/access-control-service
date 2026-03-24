@@ -10,9 +10,12 @@ import {
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
 } from "~context/infrastructure/repositories";
+import { AuditJournal } from "~context/domain/entities";
+import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentOperation implements Operations.AccountRoleAssignment.Contract {
+    private readonly entityType = AccessControlEntityType.ROLE_ASSIGNMENT;
     private readonly dictionaryPath = "operations.account-role-assignment";
     private readonly resource = "AccountRoleAssignment";
 
@@ -57,9 +60,19 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                     },
                     realm: realmEntity,
                     transaction,
-                    context,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.CREATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
             });
@@ -88,10 +101,18 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                 this.accountRoleAssignmentService.purge({
                     input: { ...input, entities },
                     transaction,
-                    context,
-                    realm,
-                    actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.DELETE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -121,11 +142,19 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
 
                 this.accountRoleAssignmentService.revoke({
                     input: { ...input, entities },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.REVOKE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -164,11 +193,19 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
 
                 this.accountRoleAssignmentService.restore({
                     input: { ...input, entities },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.RESTORE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 

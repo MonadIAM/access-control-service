@@ -14,17 +14,11 @@ export class AuditJournalAdapter {
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
         }
-        if (filters.entity) {
-            where.entity = MikroAdapter.applyStringFilter(filters.entity);
+        if (filters.actor) {
+            where.actor = MikroAdapter.applyStringFilter(filters.actor);
         }
         if (filters.realm) {
             where.realm = MikroAdapter.applyStringFilter(filters.realm);
-        }
-        if (filters.by) {
-            where.by = MikroAdapter.applyStringFilter(filters.by);
-        }
-        if (filters.at) {
-            where.at = MikroAdapter.applyOrdinalFilter<Date>(filters.at);
         }
         if (filters.ip) {
             where.ip = MikroAdapter.applyStringFilter(filters.ip);

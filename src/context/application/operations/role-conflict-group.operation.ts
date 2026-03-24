@@ -5,9 +5,12 @@ import { EntityManager } from "@mikro-orm/postgresql";
 import { ROLE_CONFLICT_GROUP_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_CONFLICT_GROUP_SERVICE } from "~context/domain/services";
 import { OperationException } from "~common/exceptions";
+import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { AuditJournal } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.Contract {
+    private readonly entityType = AccessControlEntityType.CONFLICT_GROUP;
     private readonly dictionaryPath = "operations.role-conflict-group";
     private readonly resource = "RoleConflictGroup";
 
@@ -47,9 +50,19 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
                     input: { ...input, members: roleEntities },
                     realm: realmEntity,
                     transaction,
-                    context,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.CREATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -71,11 +84,19 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
 
                 this.roleConflictGroupService.update({
                     input: { ...input, entity },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.UPDATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -102,10 +123,18 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
                 this.roleConflictGroupService.purge({
                     input: { ...input, entities },
                     transaction,
-                    context,
-                    realm,
-                    actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.DELETE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -135,11 +164,19 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
 
                 this.roleConflictGroupService.revoke({
                     input: { ...input, entities },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.REVOKE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -169,11 +206,19 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
 
                 this.roleConflictGroupService.restore({
                     input: { ...input, entities },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.RESTORE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 

@@ -11,9 +11,7 @@ function createJournal(overrides?: Partial<Entities.AuditJournal.ConstructorProp
     return new AuditJournal({
         actionType: AccessControlActionType.CREATE,
         entityType: AccessControlEntityType.ROLE,
-        at: new Date("2025-01-01T00:00:00Z"),
-        entity: "entity-id",
-        by: ACTOR_ID,
+        actor: ACTOR_ID,
         ...overrides,
     });
 }
@@ -21,21 +19,15 @@ function createJournal(overrides?: Partial<Entities.AuditJournal.ConstructorProp
 describe("AuditJournal Entity", () => {
     describe("constructor", () => {
         it("should assign required fields", () => {
-            const at = new Date("2025-06-01T12:00:00Z");
-
             const journal = createJournal({
                 actionType: AccessControlActionType.CREATE,
                 entityType: AccessControlEntityType.PERMISSION,
-                entity: "perm-123",
-                by: ACTOR_ID,
-                at,
+                actor: ACTOR_ID,
             });
 
             expect(journal.actionType).toBe(AccessControlActionType.CREATE);
             expect(journal.entityType).toBe(AccessControlEntityType.PERMISSION);
-            expect(journal.entity).toBe("perm-123");
-            expect(journal.by).toBe(ACTOR_ID);
-            expect(journal.at).toBe(at);
+            expect(journal.actor).toBe(ACTOR_ID);
         });
 
         it("should auto-generate id and createdAt", () => {
@@ -46,21 +38,19 @@ describe("AuditJournal Entity", () => {
         });
 
         it("should assign optional fields when provided", () => {
-            const patch = { name: { old: "A", new: "B" } };
+            const input = { identifiers: ["a1", "a2"], reason: "audit trail" };
 
             const journal = createJournal({
                 realm: "realm-id",
                 ip: "127.0.0.1",
                 userAgent: "Mozilla/5.0",
-                patch,
-                reason: "audit trail",
+                input,
             });
 
             expect(journal.realm).toBe("realm-id");
             expect(journal.ip).toBe("127.0.0.1");
             expect(journal.userAgent).toBe("Mozilla/5.0");
-            expect(journal.patch).toBe(patch);
-            expect(journal.reason).toBe("audit trail");
+            expect(journal.input).toBe(input);
         });
 
         it("should leave optional fields undefined when omitted", () => {
@@ -69,8 +59,7 @@ describe("AuditJournal Entity", () => {
             expect(journal.realm).toBeUndefined();
             expect(journal.ip).toBeUndefined();
             expect(journal.userAgent).toBeUndefined();
-            expect(journal.patch).toBeUndefined();
-            expect(journal.reason).toBeUndefined();
+            expect(journal.input).toBeUndefined();
         });
     });
 });

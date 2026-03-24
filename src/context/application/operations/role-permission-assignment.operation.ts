@@ -11,9 +11,12 @@ import {
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
 } from "~context/infrastructure/repositories";
+import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { AuditJournal } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RolePermissionAssignmentOperation implements Operations.RolePermissionAssignment.Contract {
+    private readonly entityType = AccessControlEntityType.PERMISSION_ASSIGNMENT;
     private readonly dictionaryPath = "operations.role-permission-assignment";
     private readonly resource = "RolePermissionAssignment";
 
@@ -69,9 +72,19 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                     },
                     realm: realmEntity,
                     transaction,
-                    context,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.CREATE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -109,10 +122,18 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                 this.rolePermissionAssignmentService.purge({
                     input: { entities, reason: input.reason },
                     transaction,
-                    context,
-                    realm,
-                    actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.DELETE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -147,11 +168,19 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
 
                 this.rolePermissionAssignmentService.revoke({
                     input: { entities, reason: input.reason },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.REVOKE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 
@@ -194,11 +223,19 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
 
                 this.rolePermissionAssignmentService.restore({
                     input: { entities, reason: input.reason },
-                    transaction,
-                    context,
-                    realm,
                     actor,
                 });
+
+                transaction.persist(
+                    new AuditJournal({
+                        actionType: AccessControlActionType.RESTORE,
+                        entityType: this.entityType,
+                        ...context,
+                        actor,
+                        realm,
+                        input,
+                    }),
+                );
 
                 await transaction.flush();
 

@@ -58,10 +58,8 @@ declare global {
 
             type Filters = {
                 id?: StringFilterDTO;
-                entity?: LinkFilterDTO;
                 realm?: LinkFilterDTO;
-                by?: LinkFilterDTO;
-                at?: OrdinalFilterDTO<Date>;
+                actor?: LinkFilterDTO;
                 ip?: StringFilterDTO;
                 userAgent?: StringFilterDTO;
                 actionType?: StringFilterDTO;

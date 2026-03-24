@@ -1,5 +1,3 @@
-import { AnyEntity } from "@mikro-orm/postgresql";
-
 import {
     PermissionOverrideEffect,
     AccessControlActionType,
@@ -158,16 +156,13 @@ declare global {
 
         namespace AuditJournal {
             type ConstructorProps = {
-                realm?: string;
-                entity: string;
                 actionType: AccessControlActionType;
                 entityType: AccessControlEntityType;
-                by: string;
-                at: Date;
-                ip?: string;
+                input?: UnknownObject;
+                realm?: string;
+                actor: string;
                 userAgent?: string;
-                patch?: DeltaAudit.Patch<AnyEntity>;
-                reason?: string;
+                ip?: string;
             };
         }
 
