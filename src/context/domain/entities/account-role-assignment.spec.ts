@@ -5,7 +5,6 @@ import { AccountRoleAssignment } from "./account-role-assignment.entity";
 import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
 
-const ACTOR_ID = "00000000-0000-4000-8000-000000000000";
 const ACCOUNT_ID = "00000000-0000-4000-8000-000000000001";
 
 function stubRole(overrides?: Partial<Role>): Role {
@@ -14,7 +13,6 @@ function stubRole(overrides?: Partial<Role>): Role {
 
 function createAssignment(overrides?: Partial<Entities.AccountRoleAssignment.ConstructorProps>): AccountRoleAssignment {
     return new AccountRoleAssignment({
-        actor: ACTOR_ID,
         account: ACCOUNT_ID,
         realm: {} as Realm,
         role: stubRole(),
@@ -57,47 +55,39 @@ describe("AccountRoleAssignment Entity", () => {
             expect(assignment.version).toBe(1);
             expect(assignment.updatedAt).toBeUndefined();
         });
-
-        it("should populate lastActions.create", () => {
-            const assignment = createAssignment();
-
-            expect(assignment.lastActions).toEqual({ create: { by: { id: ACTOR_ID } } });
-        });
     });
 
     describe("revoke", () => {
         it("should revoke an active assignment", () => {
             const assignment = createAssignment();
-            assignment.revoke({ actor: ACTOR_ID, reason: "cleanup" });
+            assignment.revoke();
 
             expect(assignment.isRevoked).toBe(true);
             expect(assignment.updatedAt).toBeInstanceOf(Date);
-            expect(assignment.lastActions.revoke).toMatchObject({ by: { id: ACTOR_ID }, reason: "cleanup" });
         });
 
         it("should throw when already revoked", () => {
             const assignment = createAssignment();
-            assignment.revoke({ actor: ACTOR_ID, reason: "first" });
+            assignment.revoke();
 
-            expect(() => assignment.revoke({ actor: ACTOR_ID, reason: "second" })).toThrow("ALREADY_REVOKED");
+            expect(() => assignment.revoke()).toThrow("ALREADY_REVOKED");
         });
     });
 
     describe("restore", () => {
         it("should restore a revoked assignment", () => {
             const assignment = createAssignment();
-            assignment.revoke({ actor: ACTOR_ID, reason: "temp" });
-            assignment.restore({ actor: ACTOR_ID, reason: "re-enable" });
+            assignment.revoke();
+            assignment.restore();
 
             expect(assignment.isRevoked).toBe(false);
             expect(assignment.updatedAt).toBeInstanceOf(Date);
-            expect(assignment.lastActions.restore).toMatchObject({ by: { id: ACTOR_ID }, reason: "re-enable" });
         });
 
         it("should throw when already active", () => {
             const assignment = createAssignment();
 
-            expect(() => assignment.restore({ actor: ACTOR_ID, reason: "noop" })).toThrow("ALREADY_ACTIVE");
+            expect(() => assignment.restore()).toThrow("ALREADY_ACTIVE");
         });
     });
 
@@ -110,14 +100,14 @@ describe("AccountRoleAssignment Entity", () => {
 
         it("should throw for revoked system-managed assignment", () => {
             const assignment = createAssignment({ isSystemManaged: true });
-            assignment.revoke({ actor: ACTOR_ID, reason: "purge" });
+            assignment.revoke();
 
             expect(() => assignment.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
         it("should pass for revoked non-system assignment", () => {
             const assignment = createAssignment();
-            assignment.revoke({ actor: ACTOR_ID, reason: "purge" });
+            assignment.revoke();
 
             expect(() => assignment.canPurge()).not.toThrow();
         });

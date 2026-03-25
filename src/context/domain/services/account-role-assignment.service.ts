@@ -53,7 +53,6 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
             for (const role of input.roles) {
                 const entity = new AccountRoleAssignment({
                     account: input.account,
-                    actor,
                     realm,
                     role,
                 });
@@ -65,23 +64,23 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         }
     }
 
-    public purge({ transaction, input }: Services.AccountRoleAssignment.Purge): void {
+    public purge({ transaction, entities }: Services.AccountRoleAssignment.Purge): void {
         transaction.clear();
-        for (const entity of input.entities) {
+        for (const entity of entities) {
             entity.canPurge();
             transaction.remove(entity);
         }
     }
 
-    public revoke({ input, actor }: Services.AccountRoleAssignment.Revoke): void {
-        for (const entity of input.entities) {
-            entity.revoke({ reason: input.reason, actor });
+    public revoke({ entities }: Services.AccountRoleAssignment.Revoke): void {
+        for (const entity of entities) {
+            entity.revoke();
         }
     }
 
-    public restore({ input, actor }: Services.AccountRoleAssignment.Restore): void {
-        for (const entity of input.entities) {
-            entity.restore({ reason: input.reason, actor });
+    public restore({ entities }: Services.AccountRoleAssignment.Restore): void {
+        for (const entity of entities) {
+            entity.restore();
         }
     }
 }

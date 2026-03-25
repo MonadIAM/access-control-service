@@ -97,10 +97,7 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                         throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
-                    this.accountRoleAssignmentService.purge({
-                        input: { ...input, entities },
-                        transaction,
-                    });
+                    this.accountRoleAssignmentService.purge({ transaction, entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -124,7 +121,7 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.accountRoleAssignmentRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -134,10 +131,7 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                         throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
-                    this.accountRoleAssignmentService.revoke({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.accountRoleAssignmentService.revoke({ entities });
 
                     return entities;
                 },
@@ -165,7 +159,7 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.accountRoleAssignmentRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -175,10 +169,7 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                         throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
-                    this.accountRoleAssignmentService.restore({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.accountRoleAssignmentService.restore({ entities });
 
                     return entities;
                 },

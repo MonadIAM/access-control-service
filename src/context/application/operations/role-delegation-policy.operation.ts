@@ -34,7 +34,7 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor } = props;
+                    const { input, realm } = props;
                     const [roleEntities, realmEntity] = await Promise.all([
                         this.roleRepository.find({
                             where: { id: { $in: [input.delegator, input.target] } },
@@ -67,7 +67,6 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
                             },
                             realm: realmEntity,
                             transaction,
-                            actor,
                         });
 
                         return { message: `${this.dictionaryPath}.CREATED` };
@@ -89,16 +88,13 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor, id } = props;
+                    const { input, realm, id } = props;
                     const entity = await this.roleDelegationPolicyRepository.findUniqueOrThrow({
                         where: { id, realm },
                         transaction,
                     });
 
-                    this.roleDelegationPolicyService.update({
-                        input: { ...input, entity },
-                        actor,
-                    });
+                    this.roleDelegationPolicyService.update({ entity, patch: input.patch });
 
                     return { message: `${this.dictionaryPath}.UPDATED` };
                 },
@@ -128,10 +124,7 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
                         throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                     }
 
-                    this.roleDelegationPolicyService.purge({
-                        input: { ...input, entities },
-                        transaction,
-                    });
+                    this.roleDelegationPolicyService.purge({ transaction, entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -155,7 +148,7 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.roleDelegationPolicyRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -165,10 +158,7 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
                         throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                     }
 
-                    this.roleDelegationPolicyService.revoke({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.roleDelegationPolicyService.revoke({ entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -192,7 +182,7 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.roleDelegationPolicyRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -202,10 +192,7 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
                         throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                     }
 
-                    this.roleDelegationPolicyService.restore({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.roleDelegationPolicyService.restore({ entities });
 
                     if (entities.length > 1) {
                         return {

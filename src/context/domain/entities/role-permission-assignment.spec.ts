@@ -8,8 +8,6 @@ import { Permission } from "./permission.entity";
 import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
 
-const ACTOR_ID = "00000000-0000-4000-8000-000000000000";
-
 function stubRole(overrides?: Partial<Role>): Role {
     return { isRevoked: false, isSystemManaged: false, ...overrides } as Role;
 }
@@ -22,7 +20,6 @@ function createAssignment(
     overrides?: Partial<Entities.RolePermissionAssignment.ConstructorProps>,
 ): RolePermissionAssignment {
     return new RolePermissionAssignment({
-        actor: ACTOR_ID,
         permission: stubPermission(),
         realm: {} as Realm,
         role: stubRole(),
@@ -37,12 +34,7 @@ describe("RolePermissionAssignment Entity", () => {
             const permission = stubPermission();
             const realm = {} as Realm;
 
-            const assignment = new RolePermissionAssignment({
-                actor: ACTOR_ID,
-                permission,
-                realm,
-                role,
-            });
+            const assignment = new RolePermissionAssignment({ permission, realm, role });
 
             expect(assignment.role).toBe(role);
             expect(assignment.permission).toBe(permission);
@@ -72,47 +64,39 @@ describe("RolePermissionAssignment Entity", () => {
             expect(assignment.updatedAt).toBeUndefined();
             expect(assignment.scope).toBe(AssignmentScope.REALM);
         });
-
-        it("should populate lastActions.create", () => {
-            const assignment = createAssignment();
-
-            expect(assignment.lastActions).toEqual({ create: { by: { id: ACTOR_ID } } });
-        });
     });
 
     describe("revoke", () => {
         it("should revoke an active assignment", () => {
             const assignment = createAssignment();
-            assignment.revoke({ actor: ACTOR_ID, reason: "cleanup" });
+            assignment.revoke();
 
             expect(assignment.isRevoked).toBe(true);
             expect(assignment.updatedAt).toBeInstanceOf(Date);
-            expect(assignment.lastActions.revoke).toMatchObject({ by: { id: ACTOR_ID }, reason: "cleanup" });
         });
 
         it("should throw when already revoked", () => {
             const assignment = createAssignment();
-            assignment.revoke({ actor: ACTOR_ID, reason: "first" });
+            assignment.revoke();
 
-            expect(() => assignment.revoke({ actor: ACTOR_ID, reason: "second" })).toThrow("ALREADY_REVOKED");
+            expect(() => assignment.revoke()).toThrow("ALREADY_REVOKED");
         });
     });
 
     describe("restore", () => {
         it("should restore a revoked assignment", () => {
             const assignment = createAssignment();
-            assignment.revoke({ actor: ACTOR_ID, reason: "temp" });
-            assignment.restore({ actor: ACTOR_ID, reason: "re-enable" });
+            assignment.revoke();
+            assignment.restore();
 
             expect(assignment.isRevoked).toBe(false);
             expect(assignment.updatedAt).toBeInstanceOf(Date);
-            expect(assignment.lastActions.restore).toMatchObject({ by: { id: ACTOR_ID }, reason: "re-enable" });
         });
 
         it("should throw when already active", () => {
             const assignment = createAssignment();
 
-            expect(() => assignment.restore({ actor: ACTOR_ID, reason: "noop" })).toThrow("ALREADY_ACTIVE");
+            expect(() => assignment.restore()).toThrow("ALREADY_ACTIVE");
         });
     });
 
@@ -125,14 +109,14 @@ describe("RolePermissionAssignment Entity", () => {
 
         it("should throw for revoked system-managed assignment", () => {
             const assignment = createAssignment({ isSystemManaged: true });
-            assignment.revoke({ actor: ACTOR_ID, reason: "purge" });
+            assignment.revoke();
 
             expect(() => assignment.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
         it("should pass for revoked non-system assignment", () => {
             const assignment = createAssignment();
-            assignment.revoke({ actor: ACTOR_ID, reason: "purge" });
+            assignment.revoke();
 
             expect(() => assignment.canPurge()).not.toThrow();
         });

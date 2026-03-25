@@ -30,8 +30,9 @@ export const PermissionOverrideSchema = new EntitySchema<PermissionOverride>({
         id: { primary: true, type: "uuid" },
 
         account: { type: "uuid", fieldName: "account" },
-
         effect: { enum: true, items: () => PermissionOverrideEffect },
+
+        isRevoked: { type: "boolean" },
 
         permission: {
             kind: "m:1",
@@ -49,7 +50,5 @@ export const PermissionOverrideSchema = new EntitySchema<PermissionOverride>({
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
-        lastActions: { type: "jsonb" },
-        isRevoked: { type: "boolean" },
     },
 });

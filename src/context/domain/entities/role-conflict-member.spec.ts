@@ -5,11 +5,8 @@ import { RoleConflictMember } from "./role-conflict-member.entity";
 import { RoleConflictGroup } from "./role-conflict-group.entity";
 import { Role } from "./role.entity";
 
-const ACTOR_ID = "00000000-0000-4000-8000-000000000000";
-
 function createMember(overrides?: Partial<Entities.RoleConflictMember.ConstructorProps>): RoleConflictMember {
     return new RoleConflictMember({
-        actor: ACTOR_ID,
         group: {} as RoleConflictGroup,
         role: {} as Role,
         ...overrides,
@@ -22,7 +19,7 @@ describe("RoleConflictMember Entity", () => {
             const group = {} as RoleConflictGroup;
             const role = {} as Role;
 
-            const member = new RoleConflictMember({ actor: ACTOR_ID, group, role });
+            const member = new RoleConflictMember({ group, role });
 
             expect(member.group).toBe(group);
             expect(member.role).toBe(role);
@@ -49,12 +46,6 @@ describe("RoleConflictMember Entity", () => {
             expect(member.createdAt).toBeInstanceOf(Date);
             expect(member.version).toBe(1);
             expect(member.updatedAt).toBeUndefined();
-        });
-
-        it("should populate lastActions.create", () => {
-            const member = createMember();
-
-            expect(member.lastActions).toEqual({ create: { by: { id: ACTOR_ID } } });
         });
     });
 

@@ -24,36 +24,21 @@ declare global {
             };
 
             type Update = {
-                input: {
-                    patch: Partial<Entities.Realm.MutableFields>;
-                    entity: RealmEntity;
-                    reason: string;
-                };
-                actor: string;
+                patch: Partial<Entities.Realm.MutableFields>;
+                entity: RealmEntity;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                input: {
-                    entities: RealmEntity[];
-                    reason: string;
-                };
+                entities: RealmEntity[];
             };
 
             type Revoke = {
-                input: {
-                    entities: RealmEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: RealmEntity[];
             };
 
             type Restore = {
-                input: {
-                    entities: RealmEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: RealmEntity[];
             };
         }
     }

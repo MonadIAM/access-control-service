@@ -1,5 +1,4 @@
 export { ErrorResponseBodyDTO } from "./error-response-body.dto";
-export { DeltaAuditLastActionsDTO } from "./delta-audit.dto";
 export { SuccessMessageDTO } from "./success-message.dto";
 export { BaseReadQueryDTO } from "./base-read-query.dto";
 export { OrdinalFilterDTO } from "./ordinal-filter.dto";

@@ -18,7 +18,7 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
         this.membersLimit = this.configService.getOrThrow<number>("MAX_CONFLICT_MEMBERS_COUNT");
     }
 
-    public async create({ transaction, input, realm, actor }: Services.RoleConflictGroup.Create): Promise<void> {
+    public async create({ transaction, input, realm }: Services.RoleConflictGroup.Create): Promise<void> {
         if (input.members.length > this.membersLimit) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED`);
         } else {
@@ -36,17 +36,10 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
                     code: input.code,
                     name: input.name,
                     realm,
-                    actor,
                 });
 
                 for (const role of input.members) {
-                    transaction.persist(
-                        new RoleConflictMember({
-                            group,
-                            actor,
-                            role,
-                        }),
-                    );
+                    transaction.persist(new RoleConflictMember({ group, role }));
                 }
 
                 transaction.persist(group);
@@ -54,31 +47,27 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
         }
     }
 
-    public update({ input, actor }: Services.RoleConflictGroup.Update): void {
-        input.entity.changeMetadata({
-            reason: input.reason,
-            patch: input.patch,
-            actor,
-        });
+    public update({ entity, patch }: Services.RoleConflictGroup.Update): void {
+        entity.update({ patch });
     }
 
-    public purge({ transaction, input }: Services.RoleConflictGroup.Purge): void {
+    public purge({ transaction, entities }: Services.RoleConflictGroup.Purge): void {
         transaction.clear();
-        for (const entity of input.entities) {
+        for (const entity of entities) {
             entity.canPurge();
             transaction.remove(entity);
         }
     }
 
-    public revoke({ input, actor }: Services.RoleConflictGroup.Revoke): void {
-        for (const entity of input.entities) {
-            entity.revoke({ reason: input.reason, actor });
+    public revoke({ entities }: Services.RoleConflictGroup.Revoke): void {
+        for (const entity of entities) {
+            entity.revoke();
         }
     }
 
-    public restore({ input, actor }: Services.RoleConflictGroup.Restore): void {
-        for (const entity of input.entities) {
-            entity.restore({ reason: input.reason, actor });
+    public restore({ entities }: Services.RoleConflictGroup.Restore): void {
+        for (const entity of entities) {
+            entity.restore();
         }
     }
 }

@@ -21,7 +21,7 @@ export class RoleService implements Services.Role.Contract {
         this.purgeSubtreeSizeLimit = this.configService.getOrThrow<number>("MAX_ROLE_SUBTREE_SIZE_FOR_PURGE");
     }
 
-    public async create({ transaction, input, realm, actor }: Services.Role.Create): Promise<void> {
+    public async create({ transaction, input, realm }: Services.Role.Create): Promise<void> {
         if (input.parent.protoType === RoleProtoType.ATOMIC) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE`);
         } else {
@@ -40,7 +40,6 @@ export class RoleService implements Services.Role.Contract {
                     code: input.code,
                     name: input.name,
                     realm,
-                    actor,
                 });
 
                 transaction.persist(entity);
@@ -59,26 +58,26 @@ export class RoleService implements Services.Role.Contract {
         }
     }
 
-    public update({ input, actor }: Services.Role.Update): void {
-        input.entity.changeMetadata({ ...input, actor });
+    public update({ entity, patch }: Services.Role.Update): void {
+        entity.update({ patch });
     }
 
-    public async purge({ transaction, input, realm }: Services.Role.Purge): Promise<void> {
-        input.entity.canPurge();
+    public async purge({ transaction, entity, realm }: Services.Role.Purge): Promise<void> {
+        entity.canPurge();
         transaction.clear();
 
         await this.roleClosureRepository.decreaseTransitiveDepth({
-            role: input.entity.id,
+            role: entity.id,
             transaction,
             realm,
         });
 
-        transaction.remove(input.entity);
+        transaction.remove(entity);
     }
 
-    public async purgeSubtree({ transaction, input, realm }: Services.Role.PurgeSubtree): Promise<number> {
+    public async purgeSubtree({ transaction, entity, realm }: Services.Role.PurgeSubtree): Promise<number> {
         const descendants = await this.roleRepository.getDescendants({
-            ancestor: input.entity.id,
+            ancestor: entity.id,
             where: { realm },
             transaction,
         });
@@ -98,15 +97,15 @@ export class RoleService implements Services.Role.Contract {
         }
     }
 
-    public revoke({ input, actor }: Services.Role.Revoke): void {
-        for (const entity of input.entities) {
-            entity.revoke({ reason: input.reason, actor });
+    public revoke({ entities }: Services.Role.Revoke): void {
+        for (const entity of entities) {
+            entity.revoke();
         }
     }
 
-    public restore({ input, actor }: Services.Role.Restore): void {
-        for (const entity of input.entities) {
-            entity.restore({ reason: input.reason, actor });
+    public restore({ entities }: Services.Role.Restore): void {
+        for (const entity of entities) {
+            entity.restore();
         }
     }
 

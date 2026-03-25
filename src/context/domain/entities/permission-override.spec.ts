@@ -7,12 +7,10 @@ import { PermissionOverride } from "./permission-override.entity";
 import { Permission } from "./permission.entity";
 import { Realm } from "./realm.entity";
 
-const ACTOR_ID = "00000000-0000-4000-8000-000000000000";
 const ACCOUNT_ID = "00000000-0000-4000-8000-000000000001";
 
 function createOverride(overrides?: Partial<Entities.PermissionOverride.ConstructorProps>): PermissionOverride {
     return new PermissionOverride({
-        actor: ACTOR_ID,
         account: ACCOUNT_ID,
         effect: PermissionOverrideEffect.ALLOW,
         permission: {} as Permission,
@@ -60,47 +58,39 @@ describe("PermissionOverride Entity", () => {
             expect(override.version).toBe(1);
             expect(override.updatedAt).toBeUndefined();
         });
-
-        it("should populate lastActions.create", () => {
-            const override = createOverride();
-
-            expect(override.lastActions).toEqual({ create: { by: { id: ACTOR_ID } } });
-        });
     });
 
     describe("revoke", () => {
         it("should revoke an active override", () => {
             const override = createOverride();
-            override.revoke({ actor: ACTOR_ID, reason: "cleanup" });
+            override.revoke();
 
             expect(override.isRevoked).toBe(true);
             expect(override.updatedAt).toBeInstanceOf(Date);
-            expect(override.lastActions.revoke).toMatchObject({ by: { id: ACTOR_ID }, reason: "cleanup" });
         });
 
         it("should throw when already revoked", () => {
             const override = createOverride();
-            override.revoke({ actor: ACTOR_ID, reason: "first" });
+            override.revoke();
 
-            expect(() => override.revoke({ actor: ACTOR_ID, reason: "second" })).toThrow("ALREADY_REVOKED");
+            expect(() => override.revoke()).toThrow("ALREADY_REVOKED");
         });
     });
 
     describe("restore", () => {
         it("should restore a revoked override", () => {
             const override = createOverride();
-            override.revoke({ actor: ACTOR_ID, reason: "temp" });
-            override.restore({ actor: ACTOR_ID, reason: "re-enable" });
+            override.revoke();
+            override.restore();
 
             expect(override.isRevoked).toBe(false);
             expect(override.updatedAt).toBeInstanceOf(Date);
-            expect(override.lastActions.restore).toMatchObject({ by: { id: ACTOR_ID }, reason: "re-enable" });
         });
 
         it("should throw when already active", () => {
             const override = createOverride();
 
-            expect(() => override.restore({ actor: ACTOR_ID, reason: "noop" })).toThrow("ALREADY_ACTIVE");
+            expect(() => override.restore()).toThrow("ALREADY_ACTIVE");
         });
     });
 
@@ -113,7 +103,7 @@ describe("PermissionOverride Entity", () => {
 
         it("should pass for revoked override", () => {
             const override = createOverride();
-            override.revoke({ actor: ACTOR_ID, reason: "purge" });
+            override.revoke();
 
             expect(() => override.canPurge()).not.toThrow();
         });

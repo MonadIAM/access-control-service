@@ -33,7 +33,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
 
     public async create(props: Operations.PermissionOverride.Create): Promise<MessageResult> {
         try {
-            const { input, actor, realm } = props;
+            const { input, realm } = props;
             await this.transactional.run({
                 audit: {
                     entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
@@ -53,7 +53,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                         }),
                     ]);
 
-                    this.permissionOverrideService.create({
+                    await this.permissionOverrideService.create({
                         input: {
                             permission: permissionEntity,
                             account: input.account,
@@ -61,7 +61,6 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                         },
                         realm: realmEntity,
                         transaction,
-                        actor,
                     });
                 },
             });
@@ -94,10 +93,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                         throw OperationException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                     }
 
-                    this.permissionOverrideService.purge({
-                        input: { ...input, entities },
-                        transaction,
-                    });
+                    this.permissionOverrideService.purge({ transaction, entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -121,7 +117,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.permissionOverrideRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -131,10 +127,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                         throw OperationException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                     }
 
-                    this.permissionOverrideService.revoke({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.permissionOverrideService.revoke({ entities });
 
                     return entities;
                 },
@@ -162,7 +155,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.permissionOverrideRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -172,10 +165,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                         throw OperationException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                     }
 
-                    this.permissionOverrideService.restore({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.permissionOverrideService.restore({ entities });
 
                     return entities;
                 },

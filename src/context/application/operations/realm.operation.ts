@@ -55,16 +55,13 @@ export class RealmOperation implements Operations.Realm.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor, id } = props;
+                    const { input, id } = props;
                     const entity = await this.realmRepository.findUniqueOrThrow({
                         where: { id },
                         transaction,
                     });
 
-                    this.realmService.update({
-                        input: { ...input, entity },
-                        actor,
-                    });
+                    this.realmService.update({ entity, patch: input.patch });
 
                     return { message: `${this.dictionaryPath}.UPDATED` };
                 },
@@ -94,10 +91,7 @@ export class RealmOperation implements Operations.Realm.Contract {
                         throw OperationException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                     }
 
-                    this.realmService.purge({
-                        input: { ...input, entities },
-                        transaction,
-                    });
+                    this.realmService.purge({ transaction, entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -121,7 +115,7 @@ export class RealmOperation implements Operations.Realm.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.realmRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -131,10 +125,7 @@ export class RealmOperation implements Operations.Realm.Contract {
                         throw OperationException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                     }
 
-                    this.realmService.revoke({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.realmService.revoke({ entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -158,7 +149,7 @@ export class RealmOperation implements Operations.Realm.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.realmRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -168,10 +159,7 @@ export class RealmOperation implements Operations.Realm.Contract {
                         throw OperationException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                     }
 
-                    this.realmService.restore({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.realmService.restore({ entities });
 
                     if (entities.length > 1) {
                         return {

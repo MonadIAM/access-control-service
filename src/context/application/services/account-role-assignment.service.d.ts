@@ -28,26 +28,15 @@ declare global {
 
             type Purge = {
                 transaction: EntityManager;
-                input: {
-                    entities: AccountRoleAssignmentEntity[];
-                    reason: string;
-                };
+                entities: AccountRoleAssignmentEntity[];
             };
 
             type Revoke = {
-                input: {
-                    entities: AccountRoleAssignmentEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: AccountRoleAssignmentEntity[];
             };
 
             type Restore = {
-                input: {
-                    entities: AccountRoleAssignmentEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: AccountRoleAssignmentEntity[];
             };
         }
     }

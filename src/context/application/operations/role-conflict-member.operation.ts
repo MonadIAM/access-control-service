@@ -38,8 +38,8 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor } = props;
-                    const [roleEntities, groupEntity] = await Promise.all([
+                    const { input, realm } = props;
+                    const [roles, group] = await Promise.all([
                         this.roleRepository.find({
                             where: { id: { $in: input.roles }, realm },
                             transaction,
@@ -50,17 +50,13 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
                         }),
                     ]);
 
-                    if (roleEntities.length < input.roles.length) {
+                    if (roles.length < input.roles.length) {
                         throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                     }
 
                     await this.roleConflictMemberService.create({
-                        input: {
-                            roles: roleEntities,
-                            group: groupEntity,
-                        },
+                        input: { roles, group },
                         transaction,
-                        actor,
                     });
 
                     return { message: `${this.dictionaryPath}.CREATED` };
@@ -91,10 +87,7 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
                         throw OperationException.notFound(`${this.dictionaryPath}.MEMBERS_NOT_FOUND`);
                     }
 
-                    this.roleConflictMemberService.purge({
-                        input: { reason: input.reason, entities },
-                        transaction,
-                    });
+                    this.roleConflictMemberService.purge({ transaction, entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };

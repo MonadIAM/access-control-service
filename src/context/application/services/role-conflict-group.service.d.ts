@@ -27,40 +27,24 @@ declare global {
                     name: string;
                 };
                 realm: RealmEntity;
-                actor: string;
             };
 
             type Update = {
-                input: {
-                    patch: Partial<Entities.RoleConflictGroup.MutableFields>;
-                    entity: RoleConflictGroupEntity;
-                    reason: string;
-                };
-                actor: string;
+                patch: Partial<Entities.RoleConflictGroup.MutableFields>;
+                entity: RoleConflictGroupEntity;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                input: {
-                    entities: RoleConflictGroupEntity[];
-                    reason: string;
-                };
+                entities: RoleConflictGroupEntity[];
             };
 
             type Revoke = {
-                input: {
-                    entities: RoleConflictGroupEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: RoleConflictGroupEntity[];
             };
 
             type Restore = {
-                input: {
-                    entities: RoleConflictGroupEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: RoleConflictGroupEntity[];
             };
         }
     }

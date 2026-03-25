@@ -3,10 +3,8 @@ import { isUUID } from "class-validator";
 
 import { RoleActorType, RoleProtoType } from "~context/enums";
 
-import { Role } from "./role.entity";
 import { Realm } from "./realm.entity";
-
-const ACTOR_ID = "00000000-0000-4000-8000-000000000000";
+import { Role } from "./role.entity";
 
 function createRealm(): Realm {
     return {} as Realm;
@@ -19,7 +17,6 @@ function createRole(overrides?: Partial<Entities.Role.ConstructorProps>): Role {
         actorType: RoleActorType.HUMAN,
         protoType: RoleProtoType.ATOMIC,
         realm: createRealm(),
-        actor: ACTOR_ID,
         ...overrides,
     });
 }
@@ -33,7 +30,6 @@ describe("Role Entity", () => {
                 name: "Moderator",
                 actorType: RoleActorType.HUMAN,
                 protoType: RoleProtoType.ATOMIC,
-                actor: ACTOR_ID,
                 realm,
             });
 
@@ -75,14 +71,6 @@ describe("Role Entity", () => {
             expect(role.version).toBe(1);
         });
 
-        it("should populate lastActions.create with actor id", () => {
-            const role = createRole();
-
-            expect(role.lastActions).toEqual({
-                create: { by: { id: ACTOR_ID } },
-            });
-        });
-
         it("should assign description when provided", () => {
             const role = createRole({ description: "Full access role" });
             expect(role.description).toBe("Full access role");
@@ -94,90 +82,53 @@ describe("Role Entity", () => {
         });
     });
 
-    describe("changeMetadata", () => {
-        it("should update a single field and return history patch", () => {
+    describe("update", () => {
+        it("should update a single field", () => {
             const role = createRole({ name: "Old Name" });
 
-            const patch = role.changeMetadata({
-                actor: ACTOR_ID,
-                reason: "rename",
-                patch: { name: "New Name" },
-            });
+            role.update({ patch: { name: "New Name" } });
 
             expect(role.name).toBe("New Name");
-            expect(patch).toEqual({ name: { old: "Old Name", new: "New Name" } });
             expect(role.updatedAt).toBeInstanceOf(Date);
-            expect(role.lastActions.update).toMatchObject({
-                by: { id: ACTOR_ID },
-                reason: "rename",
-                patch: { name: { old: "Old Name", new: "New Name" } },
-            });
         });
 
         it("should update multiple fields at once", () => {
             const role = createRole({ name: "Old", description: "Old desc" });
 
-            const patch = role.changeMetadata({
-                actor: ACTOR_ID,
-                reason: "bulk update",
-                patch: { name: "New", description: "New desc" },
-            });
+            role.update({ patch: { name: "New", description: "New desc" } });
 
             expect(role.name).toBe("New");
             expect(role.description).toBe("New desc");
-            expect(Object.keys(patch)).toHaveLength(2);
-            expect(patch).toHaveProperty("name");
-            expect(patch).toHaveProperty("description");
         });
 
         it("should skip fields whose value matches the current one", () => {
             const role = createRole({ name: "Same", description: "Changed old" });
 
-            const patch = role.changeMetadata({
-                actor: ACTOR_ID,
-                reason: "partial",
-                patch: { name: "Same", description: "Changed new" },
-            });
+            role.update({ patch: { name: "Same", description: "Changed new" } });
 
-            expect(patch).not.toHaveProperty("name");
-            expect(patch).toHaveProperty("description");
+            expect(role.name).toBe("Same");
+            expect(role.description).toBe("Changed new");
         });
 
         it("should ignore undefined values in patch", () => {
             const role = createRole({ name: "Original" });
 
-            const patch = role.changeMetadata({
-                actor: ACTOR_ID,
-                reason: "with undefined",
-                patch: { name: "Updated", description: undefined },
-            });
+            role.update({ patch: { name: "Updated", description: undefined } });
 
-            expect(patch).toHaveProperty("name");
-            expect(patch).not.toHaveProperty("description");
+            expect(role.name).toBe("Updated");
+            expect(role.description).toBeUndefined();
         });
 
         it("should throw EMPTY_UPDATE_PATCH when patch object is empty", () => {
             const role = createRole();
 
-            expect(() =>
-                role.changeMetadata({
-                    actor: ACTOR_ID,
-                    reason: "empty",
-                    patch: {} as Entities.Role.MutableFields,
-                }),
-            ).toThrow("EMPTY_UPDATE_PATCH");
+            expect(() => role.update({ patch: {} })).toThrow("EMPTY_UPDATE_PATCH");
         });
 
         it("should throw NO_CHANGES_DETECTED when all values match current state", () => {
             const role = createRole({ name: "Same" });
 
-            expect(() =>
-                role.changeMetadata({
-                    actor: ACTOR_ID,
-                    reason: "no-op",
-                    patch: { name: "Same" },
-                }),
-            ).toThrow("NO_CHANGES_DETECTED");
+            expect(() => role.update({ patch: { name: "Same" } })).toThrow("NO_CHANGES_DETECTED");
         });
     });
 
@@ -185,43 +136,35 @@ describe("Role Entity", () => {
         it("should revoke an active role", () => {
             const role = createRole();
 
-            role.revoke({ actor: ACTOR_ID, reason: "deprecated" });
+            role.revoke();
 
             expect(role.isRevoked).toBe(true);
             expect(role.updatedAt).toBeInstanceOf(Date);
-            expect(role.lastActions.revoke).toMatchObject({
-                by: { id: ACTOR_ID },
-                reason: "deprecated",
-            });
         });
 
         it("should throw ALREADY_REVOKED when revoking twice", () => {
             const role = createRole();
-            role.revoke({ actor: ACTOR_ID, reason: "first" });
+            role.revoke();
 
-            expect(() => role.revoke({ actor: ACTOR_ID, reason: "second" })).toThrow("ALREADY_REVOKED");
+            expect(() => role.revoke()).toThrow("ALREADY_REVOKED");
         });
     });
 
     describe("restore", () => {
         it("should restore a revoked role", () => {
             const role = createRole();
-            role.revoke({ actor: ACTOR_ID, reason: "temp" });
+            role.revoke();
 
-            role.restore({ actor: ACTOR_ID, reason: "re-enabled" });
+            role.restore();
 
             expect(role.isRevoked).toBe(false);
             expect(role.updatedAt).toBeInstanceOf(Date);
-            expect(role.lastActions.restore).toMatchObject({
-                by: { id: ACTOR_ID },
-                reason: "re-enabled",
-            });
         });
 
         it("should throw ALREADY_ACTIVE when restoring an active role", () => {
             const role = createRole();
 
-            expect(() => role.restore({ actor: ACTOR_ID, reason: "noop" })).toThrow("ALREADY_ACTIVE");
+            expect(() => role.restore()).toThrow("ALREADY_ACTIVE");
         });
     });
 
@@ -234,14 +177,14 @@ describe("Role Entity", () => {
 
         it("should throw CANNOT_PURGE_SYSTEM for a revoked system-managed role", () => {
             const role = createRole({ isSystemManaged: true });
-            role.revoke({ actor: ACTOR_ID, reason: "try purge" });
+            role.revoke();
 
             expect(() => role.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
         it("should pass for a revoked non-system role", () => {
             const role = createRole();
-            role.revoke({ actor: ACTOR_ID, reason: "purge ready" });
+            role.revoke();
 
             expect(() => role.canPurge()).not.toThrow();
         });

@@ -1,8 +1,8 @@
-import { Expose, Type } from "class-transformer";
+import { UnknownType } from "@mikro-orm/core";
 import { ApiProperty } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
 
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
-import { DeltaAuditLastActionsDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 export class AuditLogDTO {
@@ -22,10 +22,8 @@ export class AuditLogDTO {
     public actor!: string;
 
     @Expose()
-    @Validator.ValidateNested()
-    @Type(() => DeltaAuditLastActionsDTO)
-    @ApiProperty({ required: true, type: DeltaAuditLastActionsDTO })
-    public input!: DeltaAudit.LastActionsSnapshot<unknown>;
+    @ApiProperty({ required: true, type: UnknownType })
+    public input!: UnknownType;
 
     @Expose()
     @Validator.IsString()

@@ -35,7 +35,7 @@ export class RoleOperation implements Operations.Role.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor } = props;
+                    const { input, realm } = props;
                     const [parentEntity, realmEntity] = await Promise.all([
                         this.roleRepository.findUniqueOrThrow({
                             where: { id: input.parent, realm },
@@ -51,7 +51,6 @@ export class RoleOperation implements Operations.Role.Contract {
                         input: { ...input, parent: parentEntity },
                         realm: realmEntity,
                         transaction,
-                        actor,
                     });
 
                     return { message: `${this.dictionaryPath}.CREATED` };
@@ -72,16 +71,13 @@ export class RoleOperation implements Operations.Role.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor, id } = props;
+                    const { input, realm, id } = props;
                     const entity = await this.roleRepository.findUniqueOrThrow({
                         where: { id, realm },
                         transaction,
                     });
 
-                    this.roleService.update({
-                        input: { ...input, entity },
-                        actor,
-                    });
+                    this.roleService.update({ entity, patch: input.patch });
 
                     return { message: `${this.dictionaryPath}.UPDATED` };
                 },
@@ -101,15 +97,15 @@ export class RoleOperation implements Operations.Role.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, id } = props;
+                    const { realm, id } = props;
                     const entity = await this.roleRepository.findUniqueOrThrow({
                         where: { id, realm },
                         transaction,
                     });
 
                     await this.roleService.purge({
-                        input: { ...input, entity },
                         transaction,
+                        entity,
                         realm,
                     });
 
@@ -131,15 +127,15 @@ export class RoleOperation implements Operations.Role.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, id } = props;
+                    const { realm, id } = props;
                     const entity = await this.roleRepository.findUniqueOrThrow({
                         where: { id, realm },
                         transaction,
                     });
 
                     const count = await this.roleService.purgeSubtree({
-                        input: { ...input, entity },
                         transaction,
+                        entity,
                         realm,
                     });
 
@@ -161,7 +157,7 @@ export class RoleOperation implements Operations.Role.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor } = props;
+                    const { input, realm } = props;
                     const entities = await this.roleRepository.find({
                         where: { id: { $in: input.identifiers }, realm },
                         transaction,
@@ -171,10 +167,7 @@ export class RoleOperation implements Operations.Role.Contract {
                         throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                     }
 
-                    this.roleService.revoke({
-                        input: { entities, reason: input.reason },
-                        actor,
-                    });
+                    this.roleService.revoke({ entities });
 
                     const affected = await this.roleRepository.findAccountsByRoles({
                         roles: entities.map(({ id }) => id),
@@ -206,7 +199,7 @@ export class RoleOperation implements Operations.Role.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor } = props;
+                    const { input, realm } = props;
                     const entities = await this.roleRepository.find({
                         where: { id: { $in: input.identifiers }, realm },
                         transaction,
@@ -216,10 +209,7 @@ export class RoleOperation implements Operations.Role.Contract {
                         throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                     }
 
-                    this.roleService.restore({
-                        input: { entities, reason: input.reason },
-                        actor,
-                    });
+                    this.roleService.restore({ entities });
 
                     const affected = await this.roleRepository.findAccountsByRoles({
                         roles: entities.map(({ id }) => id),

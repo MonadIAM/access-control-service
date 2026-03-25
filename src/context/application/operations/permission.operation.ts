@@ -35,17 +35,16 @@ export class PermissionOperation implements Operations.Permission.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor, realm } = props;
+                    const { input, realm } = props;
                     const realmEntity = await this.realmRepository.findUniqueOrThrow({
                         where: { id: realm },
                         transaction,
                     });
 
-                    this.permissionService.create({
+                    await this.permissionService.create({
                         realm: realmEntity,
                         transaction,
                         input,
-                        actor,
                     });
 
                     return { message: `${this.dictionaryPath}.CREATED` };
@@ -66,16 +65,13 @@ export class PermissionOperation implements Operations.Permission.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor, realm, id } = props;
+                    const { input, realm, id } = props;
                     const entity = await this.permissionRepository.findUniqueOrThrow({
                         where: { id, realm },
                         transaction,
                     });
 
-                    this.permissionService.update({
-                        input: { ...input, entity },
-                        actor,
-                    });
+                    this.permissionService.update({ entity, patch: input.patch });
 
                     return { message: `${this.dictionaryPath}.UPDATED` };
                 },
@@ -105,10 +101,7 @@ export class PermissionOperation implements Operations.Permission.Contract {
                         throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                     }
 
-                    this.permissionService.purge({
-                        input: { ...input, entities },
-                        transaction,
-                    });
+                    this.permissionService.purge({ transaction, entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -132,7 +125,7 @@ export class PermissionOperation implements Operations.Permission.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor } = props;
+                    const { input, realm } = props;
                     const entities = await this.permissionRepository.find({
                         where: { id: { $in: input.identifiers }, realm },
                         transaction,
@@ -142,10 +135,7 @@ export class PermissionOperation implements Operations.Permission.Contract {
                         throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                     }
 
-                    this.permissionService.revoke({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.permissionService.revoke({ entities });
 
                     const affected = await this.permissionRepository.findAccountsByPermissions({
                         permissions: entities.map(({ id }) => id),
@@ -177,7 +167,7 @@ export class PermissionOperation implements Operations.Permission.Contract {
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor } = props;
+                    const { input, realm } = props;
                     const entities = await this.permissionRepository.find({
                         where: { id: { $in: input.identifiers }, realm },
                         transaction,
@@ -187,10 +177,7 @@ export class PermissionOperation implements Operations.Permission.Contract {
                         throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                     }
 
-                    this.permissionService.restore({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.permissionService.restore({ entities });
 
                     const affected = await this.permissionRepository.findAccountsByPermissions({
                         permissions: entities.map(({ id }) => id),

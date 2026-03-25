@@ -18,7 +18,6 @@ export class PermissionOverride {
 
     public account: string;
     public effect: PermissionOverrideEffect;
-    public lastActions: DeltaAudit.LastActionsSnapshot;
     public isRevoked: boolean;
 
     public permission: Permission;
@@ -28,7 +27,6 @@ export class PermissionOverride {
         this.createdAt = new Date();
         this.id = randomUUID();
 
-        this.lastActions = { create: { by: { id: props.actor } } };
         this.isRevoked = props.isRevoked ?? false;
 
         this.account = props.account;
@@ -38,22 +36,20 @@ export class PermissionOverride {
         this.realm = props.realm;
     }
 
-    public revoke({ actor, reason }: Entities.BaseMethodProps): void {
+    public revoke(): void {
         if (this.isRevoked) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_REVOKED`);
         } else {
             const now = new Date();
             this.isRevoked = true;
-            this.lastActions.revoke = { at: now, by: { id: actor }, reason };
             this.updatedAt = now;
         }
     }
 
-    public restore({ actor, reason }: Entities.BaseMethodProps): void {
+    public restore(): void {
         if (this.isRevoked) {
             const now = new Date();
             this.isRevoked = false;
-            this.lastActions.restore = { at: now, by: { id: actor }, reason };
             this.updatedAt = now;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVE`);

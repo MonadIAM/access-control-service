@@ -13,7 +13,7 @@ export class PermissionService implements Services.Permission.Contract {
         private readonly permissionRepository: Repositories.Permission.Contract,
     ) {}
 
-    public async create({ transaction, input, realm, actor }: Services.Permission.Create): Promise<void> {
+    public async create({ transaction, input, realm }: Services.Permission.Create): Promise<void> {
         const limitExceeded = await this.permissionRepository.wouldExceedPermissionLimit({
             realm: realm.id,
             transaction,
@@ -22,31 +22,31 @@ export class PermissionService implements Services.Permission.Contract {
         if (limitExceeded) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
         } else {
-            transaction.persist(new Permission({ ...input, realm, actor }));
+            transaction.persist(new Permission({ ...input, realm }));
         }
     }
 
-    public update({ input, actor }: Services.Permission.Update): void {
-        input.entity.changeMetadata({ ...input, actor });
+    public update({ entity, patch }: Services.Permission.Update): void {
+        entity.update({ patch });
     }
 
-    public purge({ transaction, input }: Services.Permission.Purge): void {
+    public purge({ transaction, entities }: Services.Permission.Purge): void {
         transaction.clear();
-        for (const entity of input.entities) {
+        for (const entity of entities) {
             entity.canPurge();
             transaction.remove(entity);
         }
     }
 
-    public revoke({ input, actor }: Services.Permission.Revoke): void {
-        for (const entity of input.entities) {
-            entity.revoke({ reason: input.reason, actor });
+    public revoke({ entities }: Services.Permission.Revoke): void {
+        for (const entity of entities) {
+            entity.revoke();
         }
     }
 
-    public restore({ input, actor }: Services.Permission.Restore): void {
-        for (const entity of input.entities) {
-            entity.restore({ reason: input.reason, actor });
+    public restore({ entities }: Services.Permission.Restore): void {
+        for (const entity of entities) {
+            entity.restore();
         }
     }
 }

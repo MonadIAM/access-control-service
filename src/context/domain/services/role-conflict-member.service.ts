@@ -13,7 +13,7 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
         private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.Contract,
     ) {}
 
-    public async create({ transaction, input, actor }: Services.RoleConflictMember.Create): Promise<void> {
+    public async create({ transaction, input }: Services.RoleConflictMember.Create): Promise<void> {
         const limitExceeded = await this.roleConflictMemberRepository.wouldExceedMemberLimit({
             count: input.roles.length,
             group: input.group.id,
@@ -24,20 +24,14 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED`);
         } else {
             for (const role of input.roles) {
-                transaction.persist(
-                    new RoleConflictMember({
-                        group: input.group,
-                        actor,
-                        role,
-                    }),
-                );
+                transaction.persist(new RoleConflictMember({ group: input.group, role }));
             }
         }
     }
 
-    public purge({ transaction, input }: Services.RoleConflictMember.Purge): void {
+    public purge({ transaction, entities }: Services.RoleConflictMember.Purge): void {
         transaction.clear();
-        for (const entity of input.entities) {
+        for (const entity of entities) {
             entity.canPurge();
 
             transaction.remove(entity);

@@ -1,9 +1,8 @@
-import { ChangeSetType } from "@mikro-orm/postgresql";
-import { Expose, Type } from "class-transformer";
+import { ChangeSetType, UnknownType } from "@mikro-orm/postgresql";
 import { ApiProperty } from "@nestjs/swagger";
+import { Expose } from "class-transformer";
 
 import { AccessControlEntityType } from "~context/enums";
-import { DeltaAuditLastActionsDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 export class ChangeLogDTO {
@@ -33,10 +32,8 @@ export class ChangeLogDTO {
     public entity!: string;
 
     @Expose()
-    @Validator.ValidateNested()
-    @Type(() => DeltaAuditLastActionsDTO)
-    @ApiProperty({ required: true, type: DeltaAuditLastActionsDTO })
-    public delta!: DeltaAudit.LastActionsSnapshot<unknown>;
+    @ApiProperty({ required: true, type: UnknownType })
+    public delta!: UnknownType;
 
     @Expose()
     @Validator.IsDate()

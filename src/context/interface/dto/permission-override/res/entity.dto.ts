@@ -2,7 +2,6 @@ import { Expose, Type } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 
 import { PermissionOverrideEffect } from "~context/enums";
-import { DeltaAuditLastActionsDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 import { PermissionLookupDTO } from "../../permission";
@@ -41,12 +40,6 @@ export class PermissionOverrideDTO {
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: Date })
     public updatedAt?: Date;
-
-    @Expose()
-    @Validator.ValidateNested()
-    @Type(() => DeltaAuditLastActionsDTO)
-    @ApiProperty({ required: true, type: DeltaAuditLastActionsDTO })
-    public lastActions!: DeltaAudit.LastActionsSnapshot;
 
     @Expose()
     @Validator.IsDate()

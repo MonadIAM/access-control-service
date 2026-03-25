@@ -1,7 +1,6 @@
 import { Expose, Type } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 
-import { DeltaAuditLastActionsDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 import { RealmLookupDTO } from "../../realm";
@@ -51,12 +50,6 @@ export class RoleDelegationPolicyDTO {
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: Date })
     public updatedAt?: Date;
-
-    @Expose()
-    @Validator.ValidateNested()
-    @Type(() => DeltaAuditLastActionsDTO)
-    @ApiProperty({ required: true, type: DeltaAuditLastActionsDTO })
-    public lastActions!: DeltaAudit.LastActionsSnapshot;
 
     @Expose()
     @Validator.IsDate()

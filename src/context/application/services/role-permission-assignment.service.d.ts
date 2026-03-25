@@ -24,31 +24,19 @@ declare global {
                     role: RoleEntity;
                 };
                 realm: RealmEntity;
-                actor: string;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                input: {
-                    entities: RolePermissionAssignmentEntity[];
-                    reason: string;
-                };
+                entities: RolePermissionAssignmentEntity[];
             };
 
             type Revoke = {
-                input: {
-                    entities: RolePermissionAssignmentEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: RolePermissionAssignmentEntity[];
             };
 
             type Restore = {
-                input: {
-                    entities: RolePermissionAssignmentEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: RolePermissionAssignmentEntity[];
             };
         }
     }

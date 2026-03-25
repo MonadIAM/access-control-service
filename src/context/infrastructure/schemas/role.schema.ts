@@ -2,10 +2,10 @@ import { EntitySchema } from "@mikro-orm/core";
 
 import { RoleActorType, RoleProtoType } from "~context/enums";
 import {
-    RoleDelegationPolicy,
     RolePermissionAssignment,
-    RoleConflictMember,
     AccountRoleAssignment,
+    RoleDelegationPolicy,
+    RoleConflictMember,
     Realm,
     Role,
 } from "~context/domain/entities";
@@ -37,8 +37,10 @@ export const RoleSchema = new EntitySchema<Role>({
         description: { type: "text", nullable: true },
         actorType: { enum: true, items: () => RoleActorType },
         protoType: { enum: true, items: () => RoleProtoType },
+
         isSystemManaged: { type: "boolean" },
         nonDelegable: { type: "boolean" },
+        isRevoked: { type: "boolean" },
 
         realm: {
             kind: "m:1",
@@ -76,7 +78,5 @@ export const RoleSchema = new EntitySchema<Role>({
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
-        lastActions: { type: "jsonb" },
-        isRevoked: { type: "boolean" },
     },
 });

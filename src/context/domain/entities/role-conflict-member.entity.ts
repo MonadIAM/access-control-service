@@ -15,7 +15,6 @@ export class RoleConflictMember {
     public updatedAt?: Date;
     public version: number = 1;
 
-    public lastActions: DeltaAudit.LastActionsSnapshot;
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
@@ -26,7 +25,6 @@ export class RoleConflictMember {
         this.createdAt = new Date();
         this.id = randomUUID();
 
-        this.lastActions = { create: { by: { id: props.actor } } };
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;
 

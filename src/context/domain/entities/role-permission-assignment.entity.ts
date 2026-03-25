@@ -18,7 +18,6 @@ export class RolePermissionAssignment {
     public version: number = 1;
 
     public scope: AssignmentScope;
-    public lastActions: DeltaAudit.LastActionsSnapshot;
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
@@ -27,11 +26,11 @@ export class RolePermissionAssignment {
     public role: Role;
 
     public constructor(props: Entities.RolePermissionAssignment.ConstructorProps) {
-        this.scope = AssignmentScope.REALM;
-        this.createdAt = new Date();
+        const now = new Date();
+        this.createdAt = now;
         this.id = randomUUID();
+        this.scope = AssignmentScope.REALM;
 
-        this.lastActions = { create: { by: { id: props.actor } } };
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;
 
@@ -40,22 +39,20 @@ export class RolePermissionAssignment {
         this.role = props.role;
     }
 
-    public revoke({ actor, reason }: Entities.BaseMethodProps): void {
+    public revoke(): void {
         if (this.isRevoked) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_REVOKED`);
         } else {
             const now = new Date();
             this.isRevoked = true;
-            this.lastActions.revoke = { at: now, by: { id: actor }, reason };
             this.updatedAt = now;
         }
     }
 
-    public restore({ actor, reason }: Entities.BaseMethodProps): void {
+    public restore(): void {
         if (this.isRevoked) {
             const now = new Date();
             this.isRevoked = false;
-            this.lastActions.restore = { at: now, by: { id: actor }, reason };
             this.updatedAt = now;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVE`);

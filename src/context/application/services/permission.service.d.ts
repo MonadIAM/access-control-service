@@ -21,40 +21,24 @@ declare global {
                     description?: string;
                 };
                 realm: RealmEntity;
-                actor: string;
             };
 
             type Update = {
-                input: {
-                    patch: Partial<Entities.Permission.MutableFields>;
-                    entity: PermissionEntity;
-                    reason: string;
-                };
-                actor: string;
+                patch: Partial<Entities.Permission.MutableFields>;
+                entity: PermissionEntity;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                input: {
-                    entities: PermissionEntity[];
-                    reason: string;
-                };
+                entities: PermissionEntity[];
             };
 
             type Revoke = {
-                input: {
-                    entities: PermissionEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: PermissionEntity[];
             };
 
             type Restore = {
-                input: {
-                    entities: PermissionEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: PermissionEntity[];
             };
         }
     }

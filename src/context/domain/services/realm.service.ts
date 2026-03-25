@@ -22,31 +22,31 @@ export class RealmService implements Services.Realm.Contract {
         if (limitExceeded) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
         } else {
-            transaction.persist(new Realm({ ...input, actor }));
+            transaction.persist(new Realm({ ...input, owner: actor }));
         }
     }
 
-    public update({ input, actor }: Services.Realm.Update): void {
-        input.entity.changeMetadata({ ...input, actor });
+    public update({ entity, patch }: Services.Realm.Update): void {
+        entity.update({ patch });
     }
 
-    public purge({ transaction, input }: Services.Realm.Purge): void {
+    public purge({ transaction, entities }: Services.Realm.Purge): void {
         transaction.clear();
-        for (const entity of input.entities) {
+        for (const entity of entities) {
             entity.canPurge();
             transaction.remove(entity);
         }
     }
 
-    public revoke({ input, actor }: Services.Realm.Revoke): void {
-        for (const entity of input.entities) {
-            entity.revoke({ reason: input.reason, actor });
+    public revoke({ entities }: Services.Realm.Revoke): void {
+        for (const entity of entities) {
+            entity.revoke();
         }
     }
 
-    public restore({ input, actor }: Services.Realm.Restore): void {
-        for (const entity of input.entities) {
-            entity.restore({ reason: input.reason, actor });
+    public restore({ entities }: Services.Realm.Restore): void {
+        for (const entity of entities) {
+            entity.restore();
         }
     }
 }

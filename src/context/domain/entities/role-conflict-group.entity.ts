@@ -19,7 +19,6 @@ export class RoleConflictGroup {
     public code: string;
     public name: string;
     public maxAllowed: number;
-    public lastActions: DeltaAudit.LastActionsSnapshot<Entities.RoleConflictGroup.MutableFields>;
     public description?: string;
     public isSystemManaged: boolean;
     public isRevoked: boolean;
@@ -32,7 +31,6 @@ export class RoleConflictGroup {
         this.createdAt = new Date();
         this.id = randomUUID();
 
-        this.lastActions = { create: { by: { id: props.actor } } };
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;
 
@@ -44,24 +42,18 @@ export class RoleConflictGroup {
         this.realm = props.realm;
     }
 
-    public changeMetadata({
-        reason,
-        patch,
-        actor,
-    }: Entities.RoleConflictGroup.ChangeDataProps): DeltaAudit.Patch<Entities.RoleConflictGroup.MutableFields> {
-        const historyPatch: DeltaAudit.Patch<Entities.RoleConflictGroup.MutableFields> = {};
+    public update({ patch }: Entities.RoleConflictGroup.ChangeDataProps): void {
         const now = new Date();
+        let affected = 0;
         for (const [key, value] of Object.typedEntries(patch)) {
             if (typeof value !== "undefined" && value !== this[key]) {
-                (historyPatch[key] as unknown) = { old: this[key], new: value };
                 (this[key] as unknown) = value;
+                ++affected;
             }
         }
 
-        if (Object.keys(historyPatch).length) {
-            this.lastActions.update = { at: now, by: { id: actor }, reason, patch: historyPatch };
+        if (affected) {
             this.updatedAt = now;
-            return historyPatch;
         } else if (Object.keys(patch).length) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.NO_CHANGES_DETECTED`);
         } else {
@@ -69,22 +61,20 @@ export class RoleConflictGroup {
         }
     }
 
-    public revoke({ actor, reason }: Entities.BaseMethodProps): void {
+    public revoke(): void {
         if (this.isRevoked) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_REVOKED`);
         } else {
             const now = new Date();
             this.isRevoked = true;
-            this.lastActions.revoke = { at: now, by: { id: actor }, reason };
             this.updatedAt = now;
         }
     }
 
-    public restore({ actor, reason }: Entities.BaseMethodProps): void {
+    public restore(): void {
         if (this.isRevoked) {
             const now = new Date();
             this.isRevoked = false;
-            this.lastActions.restore = { at: now, by: { id: actor }, reason };
             this.updatedAt = now;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVE`);

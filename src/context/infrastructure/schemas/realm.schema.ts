@@ -34,7 +34,6 @@ export const RealmSchema = new EntitySchema<Realm>({
         owner: { type: "uuid" },
 
         isSystemManaged: { type: "boolean" },
-        lastActions: { type: "jsonb" },
         isRevoked: { type: "boolean" },
 
         updatedAt: { type: "timestamptz", length: 3, nullable: true },

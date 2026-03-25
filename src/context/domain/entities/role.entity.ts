@@ -4,10 +4,10 @@ import { randomUUID } from "node:crypto";
 import { RoleActorType, RoleProtoType } from "~context/enums";
 import { EntityException } from "~common/exceptions";
 
-import { RoleDelegationPolicy } from "./role-delegation-policy.entity";
 import { RolePermissionAssignment } from "./role-permission-assignment.entity";
-import { RoleConflictMember } from "./role-conflict-member.entity";
 import { AccountRoleAssignment } from "./account-role-assignment.entity";
+import { RoleDelegationPolicy } from "./role-delegation-policy.entity";
+import { RoleConflictMember } from "./role-conflict-member.entity";
 import { Realm } from "./realm.entity";
 
 export class Role {
@@ -24,7 +24,6 @@ export class Role {
     public name: string;
     public actorType: RoleActorType;
     public protoType: RoleProtoType;
-    public lastActions: DeltaAudit.LastActionsSnapshot<Entities.Role.MutableFields>;
     public description?: string;
     public isSystemManaged: boolean;
     public nonDelegable: boolean;
@@ -39,10 +38,10 @@ export class Role {
     public accountAssignment = new Collection<AccountRoleAssignment>(this);
 
     public constructor(props: Entities.Role.ConstructorProps) {
-        this.createdAt = new Date();
+        const now = new Date();
+        this.createdAt = now;
         this.id = randomUUID();
 
-        this.lastActions = { create: { by: { id: props.actor } } };
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.nonDelegable = props.nonDelegable ?? false;
         this.isRevoked = props.isRevoked ?? false;
@@ -56,24 +55,18 @@ export class Role {
         this.realm = props.realm;
     }
 
-    public changeMetadata({
-        reason,
-        patch,
-        actor,
-    }: Entities.Role.ChangeDataProps): DeltaAudit.Patch<Entities.Role.MutableFields> {
-        const historyPatch: DeltaAudit.Patch<Entities.Role.MutableFields> = {};
+    public update({ patch }: Entities.Role.ChangeDataProps): void {
         const now = new Date();
+        let affected = 0;
         for (const [key, value] of Object.typedEntries(patch)) {
             if (typeof value !== "undefined" && value !== this[key]) {
-                (historyPatch[key] as unknown) = { old: this[key], new: value };
                 (this[key] as unknown) = value;
+                ++affected;
             }
         }
 
-        if (Object.keys(historyPatch).length) {
-            this.lastActions.update = { at: now, by: { id: actor }, reason, patch: historyPatch };
+        if (affected) {
             this.updatedAt = now;
-            return historyPatch;
         } else if (Object.keys(patch).length) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.NO_CHANGES_DETECTED`);
         } else {
@@ -81,22 +74,20 @@ export class Role {
         }
     }
 
-    public revoke({ actor, reason }: Entities.BaseMethodProps): void {
+    public revoke(): void {
         if (this.isRevoked) {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_REVOKED`);
         } else {
             const now = new Date();
             this.isRevoked = true;
-            this.lastActions.revoke = { at: now, by: { id: actor }, reason };
             this.updatedAt = now;
         }
     }
 
-    public restore({ actor, reason }: Entities.BaseMethodProps): void {
+    public restore(): void {
         if (this.isRevoked) {
             const now = new Date();
             this.isRevoked = false;
-            this.lastActions.restore = { at: now, by: { id: actor }, reason };
             this.updatedAt = now;
         } else {
             throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVE`);

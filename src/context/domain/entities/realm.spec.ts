@@ -3,11 +3,11 @@ import { isUUID } from "class-validator";
 
 import { Realm } from "./realm.entity";
 
-const ACTOR_ID = "00000000-0000-4000-8000-000000000000";
+const OWNER_ID = "00000000-0000-4000-8000-000000000001";
 
 function createRealm(overrides?: Partial<Entities.Realm.ConstructorProps>): Realm {
     return new Realm({
-        actor: ACTOR_ID,
+        owner: OWNER_ID,
         code: "MAIN",
         name: "Main Realm",
         ...overrides,
@@ -18,13 +18,14 @@ describe("Realm Entity", () => {
     describe("constructor", () => {
         it("should assign required fields", () => {
             const realm = new Realm({
-                actor: ACTOR_ID,
+                owner: OWNER_ID,
                 code: "TENANT_A",
                 name: "Tenant A",
             });
 
             expect(realm.code).toBe("TENANT_A");
             expect(realm.name).toBe("Tenant A");
+            expect(realm.owner).toBe(OWNER_ID);
         });
 
         it("should default booleans to false", () => {
@@ -50,12 +51,6 @@ describe("Realm Entity", () => {
             expect(realm.updatedAt).toBeUndefined();
         });
 
-        it("should populate lastActions.create", () => {
-            const realm = createRealm();
-
-            expect(realm.lastActions).toEqual({ create: { by: { id: ACTOR_ID } } });
-        });
-
         it("should assign description when provided", () => {
             const realm = createRealm({ description: "Primary realm" });
             expect(realm.description).toBe("Primary realm");
@@ -67,123 +62,87 @@ describe("Realm Entity", () => {
         });
     });
 
-    describe("changeMetadata", () => {
-        it("should update a single field and return patch", () => {
+    describe("update", () => {
+        it("should update a single field", () => {
             const realm = createRealm({ name: "Old" });
 
-            const patch = realm.changeMetadata({
-                actor: ACTOR_ID,
-                reason: "rename",
-                patch: { name: "New" },
-            });
+            realm.update({ patch: { name: "New" } });
 
             expect(realm.name).toBe("New");
-            expect(patch).toEqual({ name: { old: "Old", new: "New" } });
             expect(realm.updatedAt).toBeInstanceOf(Date);
-            expect(realm.lastActions.update).toMatchObject({
-                by: { id: ACTOR_ID },
-                reason: "rename",
-            });
         });
 
         it("should update multiple fields at once", () => {
             const realm = createRealm({ name: "Old", description: "Old desc" });
 
-            const patch = realm.changeMetadata({
-                actor: ACTOR_ID,
-                reason: "bulk",
-                patch: { name: "New", description: "New desc" },
-            });
+            realm.update({ patch: { name: "New", description: "New desc" } });
 
             expect(realm.name).toBe("New");
             expect(realm.description).toBe("New desc");
-            expect(Object.keys(patch)).toHaveLength(2);
         });
 
         it("should skip unchanged fields", () => {
             const realm = createRealm({ name: "Same", description: "Old" });
 
-            const patch = realm.changeMetadata({
-                actor: ACTOR_ID,
-                reason: "partial",
-                patch: { name: "Same", description: "New" },
-            });
+            realm.update({ patch: { name: "Same", description: "New" } });
 
-            expect(patch).not.toHaveProperty("name");
-            expect(patch).toHaveProperty("description");
+            expect(realm.name).toBe("Same");
+            expect(realm.description).toBe("New");
         });
 
         it("should ignore undefined values in patch", () => {
             const realm = createRealm({ name: "Original" });
 
-            const patch = realm.changeMetadata({
-                actor: ACTOR_ID,
-                reason: "with undefined",
-                patch: { name: "Updated", description: undefined },
-            });
+            realm.update({ patch: { name: "Updated", description: undefined } });
 
-            expect(patch).toHaveProperty("name");
-            expect(patch).not.toHaveProperty("description");
+            expect(realm.name).toBe("Updated");
+            expect(realm.description).toBeUndefined();
         });
 
         it("should throw when patch is empty object", () => {
             const realm = createRealm();
 
-            expect(() =>
-                realm.changeMetadata({
-                    actor: ACTOR_ID,
-                    reason: "empty",
-                    patch: {} as Entities.Realm.MutableFields,
-                }),
-            ).toThrow("EMPTY_UPDATE_PATCH");
+            expect(() => realm.update({ patch: {} })).toThrow("EMPTY_UPDATE_PATCH");
         });
 
         it("should throw when no values actually changed", () => {
             const realm = createRealm({ name: "Same" });
 
-            expect(() =>
-                realm.changeMetadata({
-                    actor: ACTOR_ID,
-                    reason: "noop",
-                    patch: { name: "Same" },
-                }),
-            ).toThrow("NO_CHANGES_DETECTED");
+            expect(() => realm.update({ patch: { name: "Same" } })).toThrow("NO_CHANGES_DETECTED");
         });
     });
 
     describe("revoke", () => {
         it("should revoke an active realm", () => {
             const realm = createRealm();
-            realm.revoke({ actor: ACTOR_ID, reason: "decommission" });
+            realm.revoke();
 
             expect(realm.isRevoked).toBe(true);
             expect(realm.updatedAt).toBeInstanceOf(Date);
-            expect(realm.lastActions.revoke).toMatchObject({ by: { id: ACTOR_ID }, reason: "decommission" });
         });
 
         it("should throw when already revoked", () => {
             const realm = createRealm();
-            realm.revoke({ actor: ACTOR_ID, reason: "first" });
+            realm.revoke();
 
-            expect(() => realm.revoke({ actor: ACTOR_ID, reason: "second" })).toThrow("ALREADY_REVOKED");
+            expect(() => realm.revoke()).toThrow("ALREADY_REVOKED");
         });
     });
 
     describe("restore", () => {
         it("should restore a revoked realm", () => {
             const realm = createRealm();
-            realm.revoke({ actor: ACTOR_ID, reason: "temp" });
-            realm.restore({ actor: ACTOR_ID, reason: "re-enable" });
+            realm.revoke();
+            realm.restore();
 
             expect(realm.isRevoked).toBe(false);
             expect(realm.updatedAt).toBeInstanceOf(Date);
-            expect(realm.lastActions.restore).toMatchObject({ by: { id: ACTOR_ID }, reason: "re-enable" });
         });
 
         it("should throw when already active", () => {
             const realm = createRealm();
 
-            expect(() => realm.restore({ actor: ACTOR_ID, reason: "noop" })).toThrow("ALREADY_ACTIVE");
+            expect(() => realm.restore()).toThrow("ALREADY_ACTIVE");
         });
     });
 
@@ -196,14 +155,14 @@ describe("Realm Entity", () => {
 
         it("should throw for revoked system-managed realm", () => {
             const realm = createRealm({ isSystemManaged: true });
-            realm.revoke({ actor: ACTOR_ID, reason: "purge" });
+            realm.revoke();
 
             expect(() => realm.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
         it("should pass for revoked non-system realm", () => {
             const realm = createRealm();
-            realm.revoke({ actor: ACTOR_ID, reason: "purge" });
+            realm.revoke();
 
             expect(() => realm.canPurge()).not.toThrow();
         });

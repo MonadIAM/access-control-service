@@ -1,8 +1,6 @@
 import { EntitySchema } from "@mikro-orm/core";
 
-import { Role } from "../../domain/entities/role.entity";
-import { RoleConflictGroup } from "../../domain/entities/role-conflict-group.entity";
-import { RoleConflictMember } from "../../domain/entities/role-conflict-member.entity";
+import { RoleConflictMember, RoleConflictGroup, Role } from "~context/domain/entities";
 
 export const RoleConflictMemberSchema = new EntitySchema<RoleConflictMember>({
     class: RoleConflictMember,
@@ -27,6 +25,7 @@ export const RoleConflictMemberSchema = new EntitySchema<RoleConflictMember>({
         id: { primary: true, type: "uuid" },
 
         isSystemManaged: { type: "boolean" },
+        isRevoked: { type: "boolean" },
 
         group: {
             kind: "m:1",
@@ -44,7 +43,5 @@ export const RoleConflictMemberSchema = new EntitySchema<RoleConflictMember>({
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },
-        lastActions: { type: "jsonb" },
-        isRevoked: { type: "boolean" },
     },
 });

@@ -27,50 +27,31 @@ declare global {
                     name: string;
                 };
                 realm: RealmEntity;
-                actor: string;
             };
 
             type Update = {
-                input: {
-                    patch: Partial<Entities.Role.MutableFields>;
-                    entity: RoleEntity;
-                    reason: string;
-                };
-                actor: string;
+                patch: Partial<Entities.Role.MutableFields>;
+                entity: RoleEntity;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                input: {
-                    entity: RoleEntity;
-                    reason: string;
-                };
+                entity: RoleEntity;
                 realm: string;
             };
 
             type PurgeSubtree = {
                 transaction: EntityManager;
-                input: {
-                    entity: RoleEntity;
-                    reason: string;
-                };
+                entity: RoleEntity;
                 realm: string;
             };
 
             type Revoke = {
-                input: {
-                    entities: RoleEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: RoleEntity[];
             };
 
             type Restore = {
-                input: {
-                    entities: RoleEntity[];
-                    reason: string;
-                };
-                actor: string;
+                entities: RoleEntity[];
             };
 
             type BuildHierarchy = {

@@ -309,15 +309,6 @@
           "nullable": false,
           "mappedType": "boolean"
         },
-        "last_actions": {
-          "name": "last_actions",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
         "is_revoked": {
           "name": "is_revoked",
           "type": "boolean",
@@ -454,6 +445,15 @@
           "nullable": false,
           "mappedType": "boolean"
         },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
         "realm_id": {
           "name": "realm_id",
           "type": "uuid",
@@ -492,24 +492,6 @@
           "nullable": false,
           "default": "1",
           "mappedType": "integer"
-        },
-        "last_actions": {
-          "name": "last_actions",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
-        "is_revoked": {
-          "name": "is_revoked",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
         }
       },
       "name": "permission",
@@ -597,6 +579,15 @@
           ],
           "mappedType": "enum"
         },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
         "permission_id": {
           "name": "permission_id",
           "type": "uuid",
@@ -644,24 +635,6 @@
           "nullable": false,
           "default": "1",
           "mappedType": "integer"
-        },
-        "last_actions": {
-          "name": "last_actions",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
-        "is_revoked": {
-          "name": "is_revoked",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
         }
       },
       "name": "permission_override",
@@ -826,6 +799,15 @@
           "nullable": false,
           "mappedType": "boolean"
         },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
         "realm_id": {
           "name": "realm_id",
           "type": "uuid",
@@ -864,24 +846,6 @@
           "nullable": false,
           "default": "1",
           "mappedType": "integer"
-        },
-        "last_actions": {
-          "name": "last_actions",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
-        "is_revoked": {
-          "name": "is_revoked",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
         }
       },
       "name": "role",
@@ -965,6 +929,15 @@
           "nullable": false,
           "mappedType": "boolean"
         },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
         "role_id": {
           "name": "role_id",
           "type": "uuid",
@@ -1012,24 +985,6 @@
           "nullable": false,
           "default": "1",
           "mappedType": "integer"
-        },
-        "last_actions": {
-          "name": "last_actions",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
-        "is_revoked": {
-          "name": "is_revoked",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
         }
       },
       "name": "account_role_assignment",
@@ -1270,6 +1225,15 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "max_allowed": {
+          "name": "max_allowed",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
         "is_system_managed": {
           "name": "is_system_managed",
           "type": "boolean",
@@ -1279,14 +1243,14 @@
           "nullable": false,
           "mappedType": "boolean"
         },
-        "max_allowed": {
-          "name": "max_allowed",
-          "type": "int",
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "integer"
+          "mappedType": "boolean"
         },
         "realm_id": {
           "name": "realm_id",
@@ -1326,24 +1290,6 @@
           "nullable": false,
           "default": "1",
           "mappedType": "integer"
-        },
-        "last_actions": {
-          "name": "last_actions",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
-        "is_revoked": {
-          "name": "is_revoked",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
         }
       },
       "name": "role_conflict_group",
@@ -1409,6 +1355,15 @@
           "nullable": false,
           "mappedType": "boolean"
         },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
         "group_id": {
           "name": "group_id",
           "type": "uuid",
@@ -1456,24 +1411,6 @@
           "nullable": false,
           "default": "1",
           "mappedType": "integer"
-        },
-        "last_actions": {
-          "name": "last_actions",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
-        "is_revoked": {
-          "name": "is_revoked",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
         }
       },
       "name": "role_conflict_member",
@@ -1562,6 +1499,15 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "depth_limit": {
+          "name": "depth_limit",
+          "type": "smallint",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "smallint"
+        },
         "is_system_managed": {
           "name": "is_system_managed",
           "type": "boolean",
@@ -1571,14 +1517,14 @@
           "nullable": false,
           "mappedType": "boolean"
         },
-        "depth_limit": {
-          "name": "depth_limit",
-          "type": "smallint",
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "smallint"
+          "mappedType": "boolean"
         },
         "realm_id": {
           "name": "realm_id",
@@ -1636,24 +1582,6 @@
           "nullable": false,
           "default": "1",
           "mappedType": "integer"
-        },
-        "last_actions": {
-          "name": "last_actions",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
-        "is_revoked": {
-          "name": "is_revoked",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
         }
       },
       "name": "role_delegation_policy",
@@ -1779,6 +1707,15 @@
           "nullable": false,
           "mappedType": "boolean"
         },
+        "is_revoked": {
+          "name": "is_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
         "role_id": {
           "name": "role_id",
           "type": "uuid",
@@ -1835,24 +1772,6 @@
           "nullable": false,
           "default": "1",
           "mappedType": "integer"
-        },
-        "last_actions": {
-          "name": "last_actions",
-          "type": "jsonb",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
-        "is_revoked": {
-          "name": "is_revoked",
-          "type": "boolean",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "boolean"
         }
       },
       "name": "role_permission_assignment",

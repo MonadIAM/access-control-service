@@ -44,7 +44,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor } = props;
+                    const { input, realm } = props;
                     const [realmEntity, roleEntity, permissionEntities] = await Promise.all([
                         this.realmRepository.findUniqueOrThrow({
                             where: { id: realm },
@@ -71,7 +71,6 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                         },
                         realm: realmEntity,
                         transaction,
-                        actor,
                     });
 
                     const affected = await this.roleRepository.findAccountsByRoles({ roles: [roleEntity.id] });
@@ -108,10 +107,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                         throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
-                    this.rolePermissionAssignmentService.purge({
-                        input: { entities, reason: input.reason },
-                        transaction,
-                    });
+                    this.rolePermissionAssignmentService.purge({ transaction, entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -135,7 +131,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.rolePermissionAssignmentRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -145,10 +141,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                         throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
-                    this.rolePermissionAssignmentService.revoke({
-                        input: { entities, reason: input.reason },
-                        actor,
-                    });
+                    this.rolePermissionAssignmentService.revoke({ entities });
 
                     const affected = await this.roleRepository.findAccountsByRoles({
                         roles: entities.map(({ role: { id } }) => id),
@@ -180,7 +173,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.rolePermissionAssignmentRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -190,10 +183,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                         throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
-                    this.rolePermissionAssignmentService.restore({
-                        input: { entities, reason: input.reason },
-                        actor,
-                    });
+                    this.rolePermissionAssignmentService.restore({ entities });
 
                     const affected = await this.roleRepository.findAccountsByRoles({
                         roles: entities.map(({ role: { id } }) => id),

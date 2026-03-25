@@ -13,7 +13,7 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
         private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.Contract,
     ) {}
 
-    public async create({ transaction, realm, input, actor }: Services.RolePermissionAssignment.Create): Promise<void> {
+    public async create({ transaction, realm, input }: Services.RolePermissionAssignment.Create): Promise<void> {
         const limitExceeded = await this.rolePermissionAssignmentRepository.wouldExceedPermissionLimit({
             permissions: input.permissions.map(({ id }) => id!),
             role: input.role.id,
@@ -27,7 +27,6 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
                 const entity = new RolePermissionAssignment({
                     role: input.role,
                     permission,
-                    actor,
                     realm,
                 });
 
@@ -37,23 +36,22 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
         }
     }
 
-    public purge({ transaction, input }: Services.RolePermissionAssignment.Purge): void {
-        transaction.clear();
-        for (const entity of input.entities) {
+    public purge({ transaction, entities }: Services.RolePermissionAssignment.Purge): void {
+        for (const entity of entities) {
             entity.canPurge();
             transaction.remove(entity);
         }
     }
 
-    public revoke({ input, actor }: Services.RolePermissionAssignment.Revoke): void {
-        for (const entity of input.entities) {
-            entity.revoke({ reason: input.reason, actor });
+    public revoke({ entities }: Services.RolePermissionAssignment.Revoke): void {
+        for (const entity of entities) {
+            entity.revoke();
         }
     }
 
-    public restore({ input, actor }: Services.RolePermissionAssignment.Restore): void {
-        for (const entity of input.entities) {
-            entity.restore({ reason: input.reason, actor });
+    public restore({ entities }: Services.RolePermissionAssignment.Restore): void {
+        for (const entity of entities) {
+            entity.restore();
         }
     }
 }

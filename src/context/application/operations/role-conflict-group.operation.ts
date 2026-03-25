@@ -34,7 +34,7 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor } = props;
+                    const { input, realm } = props;
                     const [realmEntity, roleEntities] = await Promise.all([
                         this.realmRepository.findUniqueOrThrow({
                             where: { id: realm },
@@ -50,11 +50,10 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
                         throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                     }
 
-                    this.roleConflictGroupService.create({
+                    await this.roleConflictGroupService.create({
                         input: { ...input, members: roleEntities },
                         realm: realmEntity,
                         transaction,
-                        actor,
                     });
 
                     return { message: `${this.dictionaryPath}.CREATED` };
@@ -75,16 +74,13 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm, actor, id } = props;
+                    const { input, realm, id } = props;
                     const entity = await this.roleConflictGroupRepository.findUniqueOrThrow({
                         where: { id, realm },
                         transaction,
                     });
 
-                    this.roleConflictGroupService.update({
-                        input: { ...input, entity },
-                        actor,
-                    });
+                    this.roleConflictGroupService.update({ entity, patch: input.patch });
 
                     return { message: `${this.dictionaryPath}.UPDATED` };
                 },
@@ -114,10 +110,7 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
                         throw OperationException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                     }
 
-                    this.roleConflictGroupService.purge({
-                        input: { ...input, entities },
-                        transaction,
-                    });
+                    this.roleConflictGroupService.purge({ transaction, entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -141,7 +134,7 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.roleConflictGroupRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -151,10 +144,7 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
                         throw OperationException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                     }
 
-                    this.roleConflictGroupService.revoke({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.roleConflictGroupService.revoke({ entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -178,7 +168,7 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
+                    const { input } = props;
                     const entities = await this.roleConflictGroupRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
@@ -188,10 +178,7 @@ export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.
                         throw OperationException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                     }
 
-                    this.roleConflictGroupService.restore({
-                        input: { ...input, entities },
-                        actor,
-                    });
+                    this.roleConflictGroupService.restore({ entities });
 
                     if (entities.length > 1) {
                         return {

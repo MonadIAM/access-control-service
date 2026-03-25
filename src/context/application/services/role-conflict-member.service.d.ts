@@ -20,15 +20,11 @@ declare global {
                     group: RoleConflictGroupEntity;
                     roles: RoleEntity[];
                 };
-                actor: string;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                input: {
-                    entities: RoleConflictMemberEntity[];
-                    reason: string;
-                };
+                entities: RoleConflictMemberEntity[];
             };
         }
     }

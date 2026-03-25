@@ -13,7 +13,7 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
         private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.Contract,
     ) {}
 
-    public async create({ transaction, realm, actor, input }: Services.RoleDelegationPolicy.Create): Promise<void> {
+    public async create({ transaction, realm, input }: Services.RoleDelegationPolicy.Create): Promise<void> {
         const [limitExceeded, existsTransitivePath] = await Promise.all([
             this.roleDelegationPolicyRepository.wouldExceedPolicyLimit({
                 delegator: input.delegator.id,
@@ -37,7 +37,6 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
                 delegator: input.delegator,
                 target: input.target,
                 realm,
-                actor,
             });
 
             entity.canCreate();
@@ -45,27 +44,27 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
         }
     }
 
-    public update({ input, actor }: Services.RoleDelegationPolicy.Update): void {
-        input.entity.changeData({ ...input, actor });
+    public update({ entity, patch }: Services.RoleDelegationPolicy.Update): void {
+        entity.update({ patch });
     }
 
-    public purge({ transaction, input }: Services.RoleDelegationPolicy.Purge): void {
+    public purge({ transaction, entities }: Services.RoleDelegationPolicy.Purge): void {
         transaction.clear();
-        for (const entity of input.entities) {
+        for (const entity of entities) {
             entity.canPurge();
             transaction.remove(entity);
         }
     }
 
-    public revoke({ input, actor }: Services.RoleDelegationPolicy.Revoke): void {
-        for (const entity of input.entities) {
-            entity.revoke({ reason: input.reason, actor });
+    public revoke({ entities }: Services.RoleDelegationPolicy.Revoke): void {
+        for (const entity of entities) {
+            entity.revoke();
         }
     }
 
-    public restore({ input, actor }: Services.RoleDelegationPolicy.Restore): void {
-        for (const entity of input.entities) {
-            entity.restore({ reason: input.reason, actor });
+    public restore({ entities }: Services.RoleDelegationPolicy.Restore): void {
+        for (const entity of entities) {
+            entity.restore();
         }
     }
 }

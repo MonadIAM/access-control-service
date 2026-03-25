@@ -5,15 +5,12 @@ import { RoleDelegationPolicy } from "./role-delegation-policy.entity";
 import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
 
-const ACTOR_ID = "00000000-0000-4000-8000-000000000000";
-
 function stubRole(overrides?: Partial<Role>): Role {
     return { isRevoked: false, isSystemManaged: false, ...overrides } as Role;
 }
 
 function createPolicy(overrides?: Partial<Entities.RoleDelegationPolicy.ConstructorProps>): RoleDelegationPolicy {
     return new RoleDelegationPolicy({
-        actor: ACTOR_ID,
         delegator: stubRole(),
         target: stubRole(),
         realm: {} as Realm,
@@ -28,12 +25,7 @@ describe("RoleDelegationPolicy Entity", () => {
             const target = stubRole();
             const realm = {} as Realm;
 
-            const policy = new RoleDelegationPolicy({
-                actor: ACTOR_ID,
-                delegator,
-                target,
-                realm,
-            });
+            const policy = new RoleDelegationPolicy({ delegator, target, realm });
 
             expect(policy.delegator).toBe(delegator);
             expect(policy.target).toBe(target);
@@ -69,12 +61,6 @@ describe("RoleDelegationPolicy Entity", () => {
             expect(policy.updatedAt).toBeUndefined();
         });
 
-        it("should populate lastActions.create", () => {
-            const policy = createPolicy();
-
-            expect(policy.lastActions).toEqual({ create: { by: { id: ACTOR_ID } } });
-        });
-
         it("should assign description when provided", () => {
             const policy = createPolicy({ description: "Allow delegation" });
             expect(policy.description).toBe("Allow delegation");
@@ -86,123 +72,87 @@ describe("RoleDelegationPolicy Entity", () => {
         });
     });
 
-    describe("changeData", () => {
-        it("should update a single field and return patch", () => {
+    describe("update", () => {
+        it("should update a single field", () => {
             const policy = createPolicy({ description: "Old" });
 
-            const patch = policy.changeData({
-                actor: ACTOR_ID,
-                reason: "update",
-                patch: { description: "New" },
-            });
+            policy.update({ patch: { description: "New" } });
 
             expect(policy.description).toBe("New");
-            expect(patch).toEqual({ description: { old: "Old", new: "New" } });
             expect(policy.updatedAt).toBeInstanceOf(Date);
-            expect(policy.lastActions.update).toMatchObject({
-                by: { id: ACTOR_ID },
-                reason: "update",
-            });
         });
 
         it("should update multiple fields at once", () => {
             const policy = createPolicy({ description: "Old", depthLimit: 1 });
 
-            const patch = policy.changeData({
-                actor: ACTOR_ID,
-                reason: "bulk",
-                patch: { description: "New", depthLimit: 3 },
-            });
+            policy.update({ patch: { description: "New", depthLimit: 3 } });
 
             expect(policy.description).toBe("New");
             expect(policy.depthLimit).toBe(3);
-            expect(Object.keys(patch)).toHaveLength(2);
         });
 
         it("should skip unchanged fields", () => {
             const policy = createPolicy({ description: "Same", depthLimit: 1 });
 
-            const patch = policy.changeData({
-                actor: ACTOR_ID,
-                reason: "partial",
-                patch: { description: "Same", depthLimit: 5 },
-            });
+            policy.update({ patch: { description: "Same", depthLimit: 5 } });
 
-            expect(patch).not.toHaveProperty("description");
-            expect(patch).toHaveProperty("depthLimit");
+            expect(policy.description).toBe("Same");
+            expect(policy.depthLimit).toBe(5);
         });
 
         it("should ignore undefined values in patch", () => {
             const policy = createPolicy({ depthLimit: 2 });
 
-            const patch = policy.changeData({
-                actor: ACTOR_ID,
-                reason: "with undefined",
-                patch: { depthLimit: 4, description: undefined },
-            });
+            policy.update({ patch: { depthLimit: 4, description: undefined } });
 
-            expect(patch).toHaveProperty("depthLimit");
-            expect(patch).not.toHaveProperty("description");
+            expect(policy.depthLimit).toBe(4);
+            expect(policy.description).toBeUndefined();
         });
 
         it("should throw when patch is empty object", () => {
             const policy = createPolicy();
 
-            expect(() =>
-                policy.changeData({
-                    actor: ACTOR_ID,
-                    reason: "empty",
-                    patch: {} as Entities.RoleDelegationPolicy.MutableFields,
-                }),
-            ).toThrow("EMPTY_UPDATE_PATCH");
+            expect(() => policy.update({ patch: {} })).toThrow("EMPTY_UPDATE_PATCH");
         });
 
         it("should throw when no values actually changed", () => {
             const policy = createPolicy({ description: "Same" });
 
-            expect(() =>
-                policy.changeData({
-                    actor: ACTOR_ID,
-                    reason: "noop",
-                    patch: { description: "Same" },
-                }),
-            ).toThrow("NO_CHANGES_DETECTED");
+            expect(() => policy.update({ patch: { description: "Same" } })).toThrow("NO_CHANGES_DETECTED");
         });
     });
 
     describe("revoke", () => {
         it("should revoke an active policy", () => {
             const policy = createPolicy();
-            policy.revoke({ actor: ACTOR_ID, reason: "cleanup" });
+            policy.revoke();
 
             expect(policy.isRevoked).toBe(true);
             expect(policy.updatedAt).toBeInstanceOf(Date);
-            expect(policy.lastActions.revoke).toMatchObject({ by: { id: ACTOR_ID }, reason: "cleanup" });
         });
 
         it("should throw when already revoked", () => {
             const policy = createPolicy();
-            policy.revoke({ actor: ACTOR_ID, reason: "first" });
+            policy.revoke();
 
-            expect(() => policy.revoke({ actor: ACTOR_ID, reason: "second" })).toThrow("ALREADY_REVOKED");
+            expect(() => policy.revoke()).toThrow("ALREADY_REVOKED");
         });
     });
 
     describe("restore", () => {
         it("should restore a revoked policy", () => {
             const policy = createPolicy();
-            policy.revoke({ actor: ACTOR_ID, reason: "temp" });
-            policy.restore({ actor: ACTOR_ID, reason: "re-enable" });
+            policy.revoke();
+            policy.restore();
 
             expect(policy.isRevoked).toBe(false);
             expect(policy.updatedAt).toBeInstanceOf(Date);
-            expect(policy.lastActions.restore).toMatchObject({ by: { id: ACTOR_ID }, reason: "re-enable" });
         });
 
         it("should throw when already active", () => {
             const policy = createPolicy();
 
-            expect(() => policy.restore({ actor: ACTOR_ID, reason: "noop" })).toThrow("ALREADY_ACTIVE");
+            expect(() => policy.restore()).toThrow("ALREADY_ACTIVE");
         });
     });
 
@@ -215,14 +165,14 @@ describe("RoleDelegationPolicy Entity", () => {
 
         it("should throw for revoked system-managed policy", () => {
             const policy = createPolicy({ isSystemManaged: true });
-            policy.revoke({ actor: ACTOR_ID, reason: "purge" });
+            policy.revoke();
 
             expect(() => policy.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
         it("should pass for revoked non-system policy", () => {
             const policy = createPolicy();
-            policy.revoke({ actor: ACTOR_ID, reason: "purge" });
+            policy.revoke();
 
             expect(() => policy.canPurge()).not.toThrow();
         });
