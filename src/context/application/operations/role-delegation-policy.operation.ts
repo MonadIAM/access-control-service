@@ -1,22 +1,19 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { InjectEntityManager } from "@mikro-orm/nestjs";
-import { EntityManager } from "@mikro-orm/postgresql";
 
 import { ROLE_DELEGATION_POLICY_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { ROLE_DELEGATION_POLICY_SERVICE } from "~context/domain/services";
-import { OperationException } from "~common/exceptions";
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
-import { AuditJournal } from "~context/domain/entities";
+import { ROLE_DELEGATION_POLICY_SERVICE } from "~context/domain/services";
+import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { OperationException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyOperation implements Operations.RoleDelegationPolicy.Contract {
-    private readonly entityType = AccessControlEntityType.DELEGATION_POLICY;
     private readonly dictionaryPath = "operations.role-delegation-policy";
     private readonly resource = "RoleDelegationPolicy";
 
     public constructor(
-        @InjectEntityManager("write")
-        private readonly writeManager: EntityManager,
+        @Inject(TRANSACTIONAL_SERVICE)
+        private readonly transactional: Tracking.Transactional.Contract,
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
         private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.Contract,
         @Inject(ROLE_DELEGATION_POLICY_SERVICE)
@@ -27,231 +24,198 @@ export class RoleDelegationPolicyOperation implements Operations.RoleDelegationP
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create({ context, input, realm, actor }: Operations.RoleDelegationPolicy.Create): Promise<MessageResult> {
+    public async create(props: Operations.RoleDelegationPolicy.Create): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
-                const [realmEntity, roleEntities] = await Promise.all([
-                    this.realmRepository.findUniqueOrThrow({
-                        where: { id: realm },
-                        transaction,
-                    }),
-                    this.roleRepository.find({
-                        where: { id: { $in: [input.delegator, input.target] } },
-                        transaction,
-                    }),
-                ]);
+            return await this.transactional.run({
+                audit: {
+                    entityType: AccessControlEntityType.DELEGATION_POLICY,
+                    actionType: AccessControlActionType.CREATE,
+                    ...props,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const { input, realm, actor } = props;
+                    const [roleEntities, realmEntity] = await Promise.all([
+                        this.roleRepository.find({
+                            where: { id: { $in: [input.delegator, input.target] } },
+                            transaction,
+                        }),
+                        this.realmRepository.findUniqueOrThrow({
+                            where: { id: realm },
+                            transaction,
+                        }),
+                    ]);
 
-                if (roleEntities.length < 2) {
-                    if (roleEntities[0].id === input.delegator) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.TARGET_ROLE_NOT_FOUND`);
-                    } else if (roleEntities[0].id === input.target) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.DELEGATOR_ROLE_NOT_FOUND`);
+                    if (roleEntities.length < 2) {
+                        if (roleEntities[0].id === input.delegator) {
+                            throw OperationException.notFound(`${this.dictionaryPath}.TARGET_ROLE_NOT_FOUND`);
+                        } else if (roleEntities[0].id === input.target) {
+                            throw OperationException.notFound(`${this.dictionaryPath}.DELEGATOR_ROLE_NOT_FOUND`);
+                        } else {
+                            throw OperationException.notFound(`${this.dictionaryPath}.BOTH_ROLES_NOT_FOUND`);
+                        }
                     } else {
-                        throw OperationException.notFound(`${this.dictionaryPath}.BOTH_ROLES_NOT_FOUND`);
-                    }
-                } else {
-                    const [delegatorEntity, targetEntity] =
-                        roleEntities[0].id === input.delegator ? roleEntities : roleEntities.reverse();
+                        const [delegatorEntity, targetEntity] =
+                            roleEntities[0].id === input.delegator ? roleEntities : roleEntities.reverse();
 
-                    await this.roleDelegationPolicyService.create({
-                        input: {
-                            description: input.description,
-                            depthLimit: input.depthLimit,
-                            delegator: delegatorEntity,
-                            target: targetEntity,
-                        },
-                        realm: realmEntity,
+                        await this.roleDelegationPolicyService.create({
+                            input: {
+                                description: input.description,
+                                depthLimit: input.depthLimit,
+                                delegator: delegatorEntity,
+                                target: targetEntity,
+                            },
+                            realm: realmEntity,
+                            transaction,
+                            actor,
+                        });
+
+                        return { message: `${this.dictionaryPath}.CREATED` };
+                    }
+                },
+            });
+        } catch (error) {
+            throw OperationException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async update(props: Operations.RoleDelegationPolicy.Update): Promise<MessageResult> {
+        try {
+            return await this.transactional.run({
+                audit: {
+                    entityType: AccessControlEntityType.DELEGATION_POLICY,
+                    actionType: AccessControlActionType.UPDATE,
+                    ...props,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const { input, realm, actor, id } = props;
+                    const entity = await this.roleDelegationPolicyRepository.findUniqueOrThrow({
+                        where: { id, realm },
                         transaction,
+                    });
+
+                    this.roleDelegationPolicyService.update({
+                        input: { ...input, entity },
                         actor,
                     });
 
-                    transaction.persist(
-                        new AuditJournal({
-                            actionType: AccessControlActionType.CREATE,
-                            entityType: this.entityType,
-                            ...context,
-                            actor,
-                            realm,
-                            input,
-                        }),
-                    );
-
-                    await transaction.flush();
-
-                    return { message: `${this.dictionaryPath}.CREATED` };
-                }
+                    return { message: `${this.dictionaryPath}.UPDATED` };
+                },
             });
         } catch (error) {
             throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async update({
-        context,
-        input,
-        realm,
-        actor,
-        id,
-    }: Operations.RoleDelegationPolicy.Update): Promise<MessageResult> {
+    public async purge(props: Operations.RoleDelegationPolicy.Purge): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
-                const entity = await this.roleDelegationPolicyRepository.findUniqueOrThrow({
-                    where: { id, realm },
-                    transaction,
-                });
+            return await this.transactional.run({
+                audit: {
+                    entityType: AccessControlEntityType.DELEGATION_POLICY,
+                    actionType: AccessControlActionType.DELETE,
+                    ...props,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const { input } = props;
+                    const entities = await this.roleDelegationPolicyRepository.find({
+                        where: { id: { $in: input.identifiers } },
+                        transaction,
+                    });
 
-                this.roleDelegationPolicyService.update({
-                    input: { ...input, entity },
-                    actor,
-                });
+                    if (entities.length < input.identifiers.length) {
+                        throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
+                    }
 
-                transaction.persist(
-                    new AuditJournal({
-                        actionType: AccessControlActionType.UPDATE,
-                        entityType: this.entityType,
-                        ...context,
-                        actor,
-                        realm,
-                        input,
-                    }),
-                );
+                    this.roleDelegationPolicyService.purge({
+                        input: { ...input, entities },
+                        transaction,
+                    });
 
-                await transaction.flush();
-
-                return { message: `${this.dictionaryPath}.UPDATED` };
-            });
-        } catch (error) {
-            throw OperationException.fromOrmError(error);
-        }
-    }
-
-    public async purge({ context, input, realm, actor }: Operations.RoleDelegationPolicy.Purge): Promise<MessageResult> {
-        try {
-            const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
-                const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: input.identifiers } },
-                    transaction,
-                });
-
-                if (entities.length < input.identifiers.length) {
-                    throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
-                }
-
-                this.roleDelegationPolicyService.purge({
-                    input: { ...input, entities },
-                    transaction,
-                });
-
-                transaction.persist(
-                    new AuditJournal({
-                        actionType: AccessControlActionType.DELETE,
-                        entityType: this.entityType,
-                        ...context,
-                        actor,
-                        realm,
-                        input,
-                    }),
-                );
-
-                await transaction.flush();
-
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
-                } else {
-                    return { message: `${this.dictionaryPath}.PURGED` };
-                }
+                    if (entities.length > 1) {
+                        return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+                    } else {
+                        return { message: `${this.dictionaryPath}.PURGED` };
+                    }
+                },
             });
         } catch (error) {
             throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async revoke({ context, input, realm, actor }: Operations.RoleDelegationPolicy.Revoke): Promise<MessageResult> {
+    public async revoke(props: Operations.RoleDelegationPolicy.Revoke): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
-                const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: input.identifiers } },
-                    transaction,
-                });
+            return await this.transactional.run({
+                audit: {
+                    entityType: AccessControlEntityType.DELEGATION_POLICY,
+                    actionType: AccessControlActionType.REVOKE,
+                    ...props,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const { input, actor } = props;
+                    const entities = await this.roleDelegationPolicyRepository.find({
+                        where: { id: { $in: input.identifiers } },
+                        transaction,
+                    });
 
-                if (entities.length < input.identifiers.length) {
-                    throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
-                }
+                    if (entities.length < input.identifiers.length) {
+                        throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
+                    }
 
-                this.roleDelegationPolicyService.revoke({
-                    input: { ...input, entities },
-                    actor,
-                });
-
-                transaction.persist(
-                    new AuditJournal({
-                        actionType: AccessControlActionType.REVOKE,
-                        entityType: this.entityType,
-                        ...context,
+                    this.roleDelegationPolicyService.revoke({
+                        input: { ...input, entities },
                         actor,
-                        realm,
-                        input,
-                    }),
-                );
+                    });
 
-                await transaction.flush();
-
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
-                } else {
-                    return { message: `${this.dictionaryPath}.REVOKED` };
-                }
+                    if (entities.length > 1) {
+                        return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+                    } else {
+                        return { message: `${this.dictionaryPath}.REVOKED` };
+                    }
+                },
             });
         } catch (error) {
             throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async restore({
-        context,
-        input,
-        realm,
-        actor,
-    }: Operations.RoleDelegationPolicy.Restore): Promise<MessageResult> {
+    public async restore(props: Operations.RoleDelegationPolicy.Restore): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
-                const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: input.identifiers } },
-                    transaction,
-                });
+            return await this.transactional.run({
+                audit: {
+                    entityType: AccessControlEntityType.DELEGATION_POLICY,
+                    actionType: AccessControlActionType.REVOKE,
+                    ...props,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const { input, actor } = props;
+                    const entities = await this.roleDelegationPolicyRepository.find({
+                        where: { id: { $in: input.identifiers } },
+                        transaction,
+                    });
 
-                if (entities.length < input.identifiers.length) {
-                    throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
-                }
+                    if (entities.length < input.identifiers.length) {
+                        throw OperationException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
+                    }
 
-                this.roleDelegationPolicyService.restore({
-                    input: { ...input, entities },
-                    actor,
-                });
-
-                transaction.persist(
-                    new AuditJournal({
-                        actionType: AccessControlActionType.RESTORE,
-                        entityType: this.entityType,
-                        ...context,
+                    this.roleDelegationPolicyService.restore({
+                        input: { ...input, entities },
                         actor,
-                        realm,
-                        input,
-                    }),
-                );
+                    });
 
-                await transaction.flush();
-
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
-                } else {
-                    return { message: `${this.dictionaryPath}.RESTORED` };
-                }
+                    if (entities.length > 1) {
+                        return {
+                            message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`,
+                            params: { count: entities.length },
+                        };
+                    } else {
+                        return { message: `${this.dictionaryPath}.RESTORED` };
+                    }
+                },
             });
         } catch (error) {
             throw OperationException.fromOrmError(error, this.resource);

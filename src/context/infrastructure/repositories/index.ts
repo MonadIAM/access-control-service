@@ -6,9 +6,9 @@ import { RoleDelegationPolicyRepository } from "./role-delegation-policy.reposit
 import { RoleConflictMemberRepository } from "./role-conflict-member.repository";
 import { PermissionOverrideRepository } from "./permission-override.repository";
 import { RoleConflictGroupRepository } from "./role-conflict-group.repository";
-import { AuditJournalRepository } from "./audit-journal.repository";
 import { RoleClosureRepository } from "./role-closure.repository";
 import { PermissionRepository } from "./permission.repository";
+import { AuditLogRepository } from "./audit-log.repository";
 import { RealmRepository } from "./realm.repository";
 import { RoleRepository } from "./role.repository";
 
@@ -18,9 +18,9 @@ export const ROLE_DELEGATION_POLICY_REPOSITORY = Symbol("Repositories.RoleDelega
 export const ROLE_CONFLICT_MEMBER_REPOSITORY = Symbol("Repositories.RoleConflictMember.Contract");
 export const PERMISSION_OVERRIDE_REPOSITORY = Symbol("Repositories.PermissionOverride.Contract");
 export const ROLE_CONFLICT_GROUP_REPOSITORY = Symbol("Repositories.RoleConflictGroup.Contract");
-export const AUDIT_JOURNAL_REPOSITORY = Symbol("Repositories.AuditJournal.Contract");
 export const ROLE_CLOSURE_REPOSITORY = Symbol("Repositories.RoleClosure.Contract");
 export const PERMISSION_REPOSITORY = Symbol("Repositories.Permission.Contract");
+export const AUDIT_LOG_REPOSITORY = Symbol("Repositories.AuditLog.Contract");
 export const REALM_REPOSITORY = Symbol("Repositories.Realm.Contract");
 export const ROLE_REPOSITORY = Symbol("Repositories.Role.Contract");
 
@@ -50,8 +50,8 @@ export const REPOSITORIES: Provider[] = [
         useClass: RoleConflictGroupRepository,
     },
     {
-        provide: AUDIT_JOURNAL_REPOSITORY,
-        useClass: AuditJournalRepository,
+        provide: AUDIT_LOG_REPOSITORY,
+        useClass: AuditLogRepository,
     },
     {
         provide: ROLE_CLOSURE_REPOSITORY,

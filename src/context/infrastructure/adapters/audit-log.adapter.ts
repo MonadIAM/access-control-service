@@ -1,0 +1,53 @@
+import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+
+import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { MikroAdapter } from "~infrastructure/database/utils";
+import { AuditLog } from "~common/tracking";
+
+export class AuditLogAdapter {
+    protected buildWhereORM(
+        filters: Repositories.AuditLog.Filters,
+        basic: ObjectQuery<AuditLog> = {},
+    ): ObjectQuery<AuditLog> {
+        const where: ObjectQuery<AuditLog> = basic;
+
+        if (filters.id) {
+            where.id = MikroAdapter.applyStringFilter(filters.id);
+        }
+        if (filters.actor) {
+            where.actor = MikroAdapter.applyStringFilter(filters.actor);
+        }
+        if (filters.realm) {
+            where.realm = MikroAdapter.applyStringFilter(filters.realm);
+        }
+        if (filters.ip) {
+            where.ip = MikroAdapter.applyStringFilter(filters.ip);
+        }
+        if (filters.userAgent) {
+            where.userAgent = MikroAdapter.applyStringFilter(filters.userAgent);
+        }
+        if (filters.actionType) {
+            where.actionType = MikroAdapter.applyStringFilter<AccessControlActionType>(filters.actionType);
+        }
+        if (filters.entityType) {
+            where.entityType = MikroAdapter.applyStringFilter<AccessControlEntityType>(filters.entityType);
+        }
+        if (filters.createdAt) {
+            where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+        }
+
+        return where;
+    }
+
+    protected buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Repositories.AuditLog.Sort,
+        pagination: Pagination,
+        basic: FindOptions<AuditLog, P, F> = {},
+    ): FindOptions<AuditLog, P, F> {
+        return {
+            ...basic,
+            orderBy: MikroAdapter.orderBy<AuditLog>(sort, { createdAt: QueryOrder.ASC }),
+            ...MikroAdapter.pagination(pagination),
+        };
+    }
+}

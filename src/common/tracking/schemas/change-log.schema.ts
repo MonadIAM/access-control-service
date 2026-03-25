@@ -1,0 +1,34 @@
+import { EntitySchema } from "@mikro-orm/core";
+
+import { ChangeLog } from "~common/tracking/entities";
+
+export const ChangeLogSchema = new EntitySchema<ChangeLog>({
+    class: ChangeLog,
+    tableName: "change_log",
+    schema: "tracking",
+
+    indexes: [
+        {
+            name: "change_log_audit_entry_idx",
+            properties: ["auditEntry"],
+        },
+        {
+            name: "change_log_entity_type_entity_id_idx",
+            properties: ["entityType", "entity"],
+        },
+    ],
+
+    properties: {
+        id: { primary: true, type: "uuid" },
+
+        auditEntry: { type: "uuid", fieldName: "audit_entry_id" },
+
+        changeType: { type: "string", length: 16 },
+        entityType: { type: "string", length: 64 },
+        entity: { type: "uuid" },
+
+        delta: { type: "jsonb" },
+
+        createdAt: { type: "timestamptz", length: 3 },
+    },
+});

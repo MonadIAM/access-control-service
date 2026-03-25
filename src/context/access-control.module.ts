@@ -2,6 +2,8 @@ import { BullModule } from "@nestjs/bullmq";
 import { APP_GUARD } from "@nestjs/core";
 import { Module } from "@nestjs/common";
 
+import { TrackingModule } from "~common/tracking";
+
 import { PermissionGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
 import { PROCESSORS, QUEUES } from "./infrastructure/queues";
@@ -11,7 +13,7 @@ import { CONTROLLERS } from "./interface/controllers";
 import { DOMAIN_SERVICES } from "./domain/services";
 
 @Module({
-    imports: [BullModule.registerQueue({ name: "permission-cache-invalidation" })],
+    imports: [TrackingModule, BullModule.registerQueue({ name: "permission-cache-invalidation" })],
     providers: [
         ...INFRASTRUCTURE_SERVICES,
         ...DOMAIN_SERVICES,

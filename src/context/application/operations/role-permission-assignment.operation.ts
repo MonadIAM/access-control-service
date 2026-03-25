@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { InjectEntityManager } from "@mikro-orm/nestjs";
-import { EntityManager } from "@mikro-orm/postgresql";
 
 import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
+import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
+import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { OperationException } from "~common/exceptions";
 import {
     ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
@@ -11,18 +11,15 @@ import {
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
 } from "~context/infrastructure/repositories";
-import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
-import { AuditJournal } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RolePermissionAssignmentOperation implements Operations.RolePermissionAssignment.Contract {
-    private readonly entityType = AccessControlEntityType.PERMISSION_ASSIGNMENT;
     private readonly dictionaryPath = "operations.role-permission-assignment";
     private readonly resource = "RolePermissionAssignment";
 
     public constructor(
-        @InjectEntityManager("write")
-        private readonly writeManager: EntityManager,
+        @Inject(TRANSACTIONAL_SERVICE)
+        private readonly transactional: Tracking.Transactional.Contract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
         private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.Contract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_SERVICE)
@@ -37,60 +34,50 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create({
-        context,
-        input,
-        realm,
-        actor,
-    }: Operations.RolePermissionAssignment.Create): Promise<MessageResult> {
+    public async create(props: Operations.RolePermissionAssignment.Create): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            const { affected } = await writeManager.transactional(async (transaction) => {
-                const [realmEntity, roleEntity, permissionEntities] = await Promise.all([
-                    this.realmRepository.findUniqueOrThrow({
-                        where: { id: realm },
-                        transaction,
-                    }),
-                    this.roleRepository.findUniqueOrThrow({
-                        where: { id: input.role },
-                        transaction,
-                    }),
-                    this.permissionRepository.find({
-                        where: { id: { $in: input.permissions } },
-                        transaction,
-                    }),
-                ]);
+            const { affected } = await this.transactional.run({
+                audit: {
+                    entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
+                    actionType: AccessControlActionType.CREATE,
+                    ...props,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const { input, realm, actor } = props;
+                    const [realmEntity, roleEntity, permissionEntities] = await Promise.all([
+                        this.realmRepository.findUniqueOrThrow({
+                            where: { id: realm },
+                            transaction,
+                        }),
+                        this.roleRepository.findUniqueOrThrow({
+                            where: { id: input.role },
+                            transaction,
+                        }),
+                        this.permissionRepository.find({
+                            where: { id: { $in: input.permissions } },
+                            transaction,
+                        }),
+                    ]);
 
-                if (permissionEntities.length < input.permissions.length) {
-                    throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
-                }
+                    if (permissionEntities.length < input.permissions.length) {
+                        throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                    }
 
-                await this.rolePermissionAssignmentService.create({
-                    input: {
-                        permissions: permissionEntities,
-                        role: roleEntity,
-                    },
-                    realm: realmEntity,
-                    transaction,
-                    actor,
-                });
-
-                transaction.persist(
-                    new AuditJournal({
-                        actionType: AccessControlActionType.CREATE,
-                        entityType: this.entityType,
-                        ...context,
+                    await this.rolePermissionAssignmentService.create({
+                        input: {
+                            permissions: permissionEntities,
+                            role: roleEntity,
+                        },
+                        realm: realmEntity,
+                        transaction,
                         actor,
-                        realm,
-                        input,
-                    }),
-                );
+                    });
 
-                await transaction.flush();
+                    const affected = await this.roleRepository.findAccountsByRoles({ roles: [roleEntity.id] });
 
-                const affected = await this.roleRepository.findAccountsByRoles({ roles: [roleEntity.id] });
-
-                return { affected };
+                    return { affected };
+                },
             });
 
             await this.permissionCacheInvalidationQueue.add({ accounts: affected });
@@ -101,94 +88,74 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
         }
     }
 
-    public async purge({
-        context,
-        input,
-        realm,
-        actor,
-    }: Operations.RolePermissionAssignment.Purge): Promise<MessageResult> {
+    public async purge(props: Operations.RolePermissionAssignment.Purge): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            return await writeManager.transactional(async (transaction) => {
-                const entities = await this.rolePermissionAssignmentRepository.find({
-                    where: { id: { $in: input.identifiers } },
-                    transaction,
-                });
+            return await this.transactional.run({
+                audit: {
+                    entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
+                    actionType: AccessControlActionType.DELETE,
+                    ...props,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const { input } = props;
+                    const entities = await this.rolePermissionAssignmentRepository.find({
+                        where: { id: { $in: input.identifiers } },
+                        transaction,
+                    });
 
-                if (entities.length < input.identifiers.length) {
-                    throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
-                }
+                    if (entities.length < input.identifiers.length) {
+                        throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    }
 
-                this.rolePermissionAssignmentService.purge({
-                    input: { entities, reason: input.reason },
-                    transaction,
-                });
+                    this.rolePermissionAssignmentService.purge({
+                        input: { entities, reason: input.reason },
+                        transaction,
+                    });
 
-                transaction.persist(
-                    new AuditJournal({
-                        actionType: AccessControlActionType.DELETE,
-                        entityType: this.entityType,
-                        ...context,
-                        actor,
-                        realm,
-                        input,
-                    }),
-                );
-
-                await transaction.flush();
-
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
-                } else {
-                    return { message: `${this.dictionaryPath}.PURGED` };
-                }
+                    if (entities.length > 1) {
+                        return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+                    } else {
+                        return { message: `${this.dictionaryPath}.PURGED` };
+                    }
+                },
             });
         } catch (error) {
             throw OperationException.fromOrmError(error, this.resource);
         }
     }
 
-    public async revoke({
-        context,
-        input,
-        realm,
-        actor,
-    }: Operations.RolePermissionAssignment.Revoke): Promise<MessageResult> {
+    public async revoke(props: Operations.RolePermissionAssignment.Revoke): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            const { entities, affected } = await writeManager.transactional(async (transaction) => {
-                const entities = await this.rolePermissionAssignmentRepository.find({
-                    where: { id: { $in: input.identifiers } },
-                    transaction,
-                });
+            const { entities, affected } = await this.transactional.run({
+                audit: {
+                    entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
+                    actionType: AccessControlActionType.REVOKE,
+                    ...props,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const { input, actor } = props;
+                    const entities = await this.rolePermissionAssignmentRepository.find({
+                        where: { id: { $in: input.identifiers } },
+                        transaction,
+                    });
 
-                if (entities.length < input.identifiers.length) {
-                    throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
-                }
+                    if (entities.length < input.identifiers.length) {
+                        throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    }
 
-                this.rolePermissionAssignmentService.revoke({
-                    input: { entities, reason: input.reason },
-                    actor,
-                });
-
-                transaction.persist(
-                    new AuditJournal({
-                        actionType: AccessControlActionType.REVOKE,
-                        entityType: this.entityType,
-                        ...context,
+                    this.rolePermissionAssignmentService.revoke({
+                        input: { entities, reason: input.reason },
                         actor,
-                        realm,
-                        input,
-                    }),
-                );
+                    });
 
-                await transaction.flush();
+                    const affected = await this.roleRepository.findAccountsByRoles({
+                        roles: entities.map(({ role: { id } }) => id),
+                    });
 
-                const affected = await this.roleRepository.findAccountsByRoles({
-                    roles: entities.map(({ role: { id } }) => id),
-                });
-
-                return { entities, affected };
+                    return { entities, affected };
+                },
             });
 
             await this.permissionCacheInvalidationQueue.add({ accounts: affected });
@@ -203,47 +170,37 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
         }
     }
 
-    public async restore({
-        context,
-        input,
-        realm,
-        actor,
-    }: Operations.RolePermissionAssignment.Restore): Promise<MessageResult> {
+    public async restore(props: Operations.RolePermissionAssignment.Restore): Promise<MessageResult> {
         try {
-            const writeManager = this.writeManager.fork();
-            const { entities, affected } = await writeManager.transactional(async (transaction) => {
-                const entities = await this.rolePermissionAssignmentRepository.find({
-                    where: { id: { $in: input.identifiers } },
-                    transaction,
-                });
+            const { entities, affected } = await this.transactional.run({
+                audit: {
+                    entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
+                    actionType: AccessControlActionType.REVOKE,
+                    ...props,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const { input, actor } = props;
+                    const entities = await this.rolePermissionAssignmentRepository.find({
+                        where: { id: { $in: input.identifiers } },
+                        transaction,
+                    });
 
-                if (entities.length < input.identifiers.length) {
-                    throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
-                }
+                    if (entities.length < input.identifiers.length) {
+                        throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    }
 
-                this.rolePermissionAssignmentService.restore({
-                    input: { entities, reason: input.reason },
-                    actor,
-                });
-
-                transaction.persist(
-                    new AuditJournal({
-                        actionType: AccessControlActionType.RESTORE,
-                        entityType: this.entityType,
-                        ...context,
+                    this.rolePermissionAssignmentService.restore({
+                        input: { entities, reason: input.reason },
                         actor,
-                        realm,
-                        input,
-                    }),
-                );
+                    });
 
-                await transaction.flush();
+                    const affected = await this.roleRepository.findAccountsByRoles({
+                        roles: entities.map(({ role: { id } }) => id),
+                    });
 
-                const affected = await this.roleRepository.findAccountsByRoles({
-                    roles: entities.map(({ role: { id } }) => id),
-                });
-
-                return { entities, affected };
+                    return { entities, affected };
+                },
             });
 
             await this.permissionCacheInvalidationQueue.add({ accounts: affected });
