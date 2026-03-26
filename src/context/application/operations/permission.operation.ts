@@ -9,7 +9,7 @@ import { OperationException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOperation implements Operations.Permission.Contract {
-    private readonly dictionaryPath = "operations.permission";
+    private readonly dictionaryPath = "commands.permission";
     private readonly resource = "Permission";
 
     public constructor(

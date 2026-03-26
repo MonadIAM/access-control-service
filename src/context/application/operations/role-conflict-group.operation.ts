@@ -8,7 +8,7 @@ import { OperationException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupOperation implements Operations.RoleConflictGroup.Contract {
-    private readonly dictionaryPath = "operations.role-conflict-group";
+    private readonly dictionaryPath = "commands.role-conflict-group";
     private readonly resource = "RoleConflictGroup";
 
     public constructor(

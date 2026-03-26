@@ -9,13 +9,25 @@
     "ROLE_PERMISSION_LIMIT_EXCEEDED": "The allowed permission limit for the role has been exceeded."
   },
   "role-delegation-policy": {
+    "LIMIT_EXCEEDED": "The allowed delegation policy limit for the role has been exceeded.",
     "EXISTS_TRANSITIVE_PATH": "Creating this policy would introduce a transitive delegation cycle."
   },
   "role-conflict-member": {
     "MEMBER_LIMIT_EXCEEDED": "The allowed member limit for the conflict group has been exceeded."
   },
   "role-conflict-group": {
-    "MEMBER_LIMIT_EXCEEDED": "The allowed role limit for the conflict group has been exceeded."
+    "LIMIT_EXCEEDED": "The allowed conflict group limit for the realm has been exceeded.",
+    "MEMBER_LIMIT_EXCEEDED": "The allowed member limit for the conflict group has been exceeded."
+  },
+  "permission": {
+    "LIMIT_EXCEEDED": "The allowed permission limit for the realm has been exceeded."
+  },
+  "permission-override": {
+    "LIMIT_EXCEEDED": "The allowed permission override limit for the account has been exceeded."
+  },
+  "realm": {
+    "LIMIT_EXCEEDED": "The allowed realm limit for the account has been exceeded.",
+    "MISSING_SYSTEM_PERMISSIONS": "One or more required system permissions were not found."
   },
   "account-role-assignment": {
     "DELEGATION_NOT_ALLOWED": "Insufficient privileges to assign this role.",

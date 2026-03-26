@@ -38,7 +38,7 @@
 
     "DELEGATOR_ROLE_NOT_FOUND": "Роль-делегатор не найдена.",
     "TARGET_ROLE_NOT_FOUND": "Целевая роль не найдена.",
-    "BOTH_ROLES_NOT_FOUND": "Целевая роль и роль-делегатор не найдены.",
+    "BOTH_ROLES_NOT_FOUND": "Роль-делегатор и целевая роль не найдены.",
     "POLICIES_NOT_FOUND": "Часть указанных политик не найдена."
   },
   "role-conflict-member": {

@@ -38,7 +38,7 @@
 
     "DELEGATOR_ROLE_NOT_FOUND": "Delegator role not found.",
     "TARGET_ROLE_NOT_FOUND": "Target role not found.",
-    "BOTH_ROLES_NOT_FOUND": "Delegator and target roles were not found.",
+    "BOTH_ROLES_NOT_FOUND": "Delegator role and target role were not found.",
     "POLICIES_NOT_FOUND": "Some of the specified policies were not found."
   },
   "role-conflict-member": {

@@ -8,7 +8,7 @@ import { OperationException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyOperation implements Operations.RoleDelegationPolicy.Contract {
-    private readonly dictionaryPath = "operations.role-delegation-policy";
+    private readonly dictionaryPath = "commands.role-delegation-policy";
     private readonly resource = "RoleDelegationPolicy";
 
     public constructor(

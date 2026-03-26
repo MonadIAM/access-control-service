@@ -8,8 +8,6 @@
     "CANNOT_PURGE_SYSTEM": "Deletion is not allowed: the role is system-defined."
   },
   "role-permission-assignment": {
-    "NO_CHANGES_DETECTED": "The assignment state already matches the provided changes.",
-    "EMPTY_UPDATE_PATCH": "The list of assignment changes is empty.",
     "ALREADY_REVOKED": "The assignment is already in a revoked state.",
     "ALREADY_ACTIVE": "The assignment is already in an active state.",
     "CANNOT_PURGE_ACTIVE": "Deletion is not allowed: the assignment is active. Revoke it first.",
@@ -26,9 +24,9 @@
     "ALREADY_ACTIVE": "The policy is already in an active state.",
     "CANNOT_PURGE_ACTIVE": "Deletion is not allowed: the policy is active. Revoke it first.",
     "CANNOT_PURGE_SYSTEM": "Deletion is not allowed: the policy is system-defined.",
-    "CANNOT_DLEGATE_REVOKED_TARGET": "Delegation is not allowed: the target role is in a revoked state.",
-    "CANNOT_DLEGATE_SYSTEM_TARGET": "Delegation is not allowed: the target role is system-defined.",
-    "REVOKED_ROLE_CANNOT_DLEGATE_ROLES": "Delegation is not allowed: the delegating role is in a revoked state."
+    "CANNOT_DELEGATE_REVOKED_TARGET": "Delegation is not allowed: the target role is in a revoked state.",
+    "CANNOT_DELEGATE_SYSTEM_TARGET": "Delegation is not allowed: the target role is system-defined.",
+    "REVOKED_ROLE_CANNOT_DELEGATE_ROLES": "Delegation is not allowed: the delegating role is in a revoked state."
   },
   "role-conflict-member": {
     "CANNOT_PURGE_SYSTEM": "Deletion is not allowed: the membership is system-defined."
@@ -58,8 +56,6 @@
     "CANNOT_PURGE_SYSTEM": "Deletion is not allowed: the permission is system-defined."
   },
   "permission-override": {
-    "NO_CHANGES_DETECTED": "The override state already matches the provided changes.",
-    "EMPTY_UPDATE_PATCH": "The list of override changes is empty.",
     "ALREADY_REVOKED": "The override is already in a revoked state.",
     "ALREADY_ACTIVE": "The override is already in an active state.",
     "CANNOT_PURGE_ACTIVE": "Deletion is not allowed: the override is active. Revoke it first."

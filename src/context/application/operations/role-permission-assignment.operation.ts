@@ -14,7 +14,7 @@ import {
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RolePermissionAssignmentOperation implements Operations.RolePermissionAssignment.Contract {
-    private readonly dictionaryPath = "operations.role-permission-assignment";
+    private readonly dictionaryPath = "commands.role-permission-assignment";
     private readonly resource = "RolePermissionAssignment";
 
     public constructor(

@@ -8,7 +8,7 @@ import { OperationException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmOperation implements Operations.Realm.Contract {
-    private readonly dictionaryPath = "operations.realm";
+    private readonly dictionaryPath = "commands.realm";
     private readonly resource = "Realm";
 
     public constructor(
