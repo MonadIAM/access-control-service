@@ -1,12 +1,10 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Delete, Inject, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 
-import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
+import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
 import { ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_CONFLICT_MEMBER_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -25,7 +23,7 @@ import {
 @ApiTags("RoleConflictMember")
 @Controller("/role-conflict-member")
 @UseInterceptors(MonitoringInterceptor)
-export class RoleConflictMemberController extends BaseController {
+export class RoleConflictMemberController {
     private readonly populate = {
         DETAILED: ["group", "role"] as const,
         COMPACT: [] as const,
@@ -36,30 +34,27 @@ export class RoleConflictMemberController extends BaseController {
         private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.Contract,
         @Inject(ROLE_CONFLICT_MEMBER_OPERATION)
         private readonly roleConflictMemberOperation: Operations.RoleConflictMember.Contract,
-        i18nService: I18nService,
-    ) {
-        super(i18nService);
-    }
+    ) {}
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(RoleConflictMemberDTO)
     @RequirePermission(PermissionCode.ROLE_CONFLICT_MEMBER_READ)
     @ApiOperation({ summary: "Returns a role conflict member by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictMemberDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(
         @Query() { member, group, realm, view }: GetRoleConflictMemberByIdQueryDTO,
-    ): Promise<RoleConflictMemberDTO> {
-        return this.roleConflictMemberRepository
-            .findUniqueOrThrow({
-                options: { populate: this.populate[view] },
-                where: { id: member, group: { id: group, realm } },
-            })
-            .then((data) => super.formatResponse({ DTO: RoleConflictMemberDTO, data }));
+    ): Promise<Repositories.RoleConflictMember.Entity> {
+        return this.roleConflictMemberRepository.findUniqueOrThrow({
+            where: { id: member, group: { id: group, realm } },
+            options: { populate: this.populate[view] },
+        });
     }
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(RoleConflictMemberListDTO)
     @RequirePermission(PermissionCode.ROLE_CONFLICT_MEMBER_READ)
     @ApiOperation({ summary: "Returns a paginated list of role conflict members" })
     @ApiResponse({ status: HttpStatus.OK, type: RoleConflictMemberListDTO })
@@ -67,14 +62,20 @@ export class RoleConflictMemberController extends BaseController {
     public getList(
         @Query() { group, realm, view }: GetRoleConflictMembersListQueryDTO,
         @Body() { pagination, filters, sort }: GetRoleConflictMembersListBodyDTO,
-    ): Promise<RoleConflictMemberListDTO> {
-        return this.roleConflictMemberRepository
-            .findMany({ options: { populate: this.populate[view] }, pagination, filters, sort, group, realm })
-            .then((data) => super.formatResponse({ DTO: RoleConflictMemberListDTO, pagination, data }));
+    ): Promise<[Repositories.RoleConflictMember.Entity[], number]> {
+        return this.roleConflictMemberRepository.findMany({
+            options: { populate: this.populate[view] },
+            pagination,
+            filters,
+            group,
+            realm,
+            sort,
+        });
     }
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.ROLE_CONFLICT_MEMBER_CREATE)
     @ApiOperation({ summary: "Creates a new role conflict member/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -89,14 +90,13 @@ export class RoleConflictMemberController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreateRoleConflictMemberQueryDTO,
         @Body() input: CreateRoleConflictMemberBodyDTO,
-    ): Promise<SuccessMessageDTO> {
-        return this.roleConflictMemberOperation
-            .create({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
+    ): Promise<MessageResult> {
+        return this.roleConflictMemberOperation.create({ actor, context, input, realm });
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.ROLE_CONFLICT_MEMBER_PURGE)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role conflict member/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -106,10 +106,7 @@ export class RoleConflictMemberController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgeRoleConflictMemberQueryDTO,
         @Body() input: PurgeRoleConflictMemberBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.roleConflictMemberOperation
-            .purge({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.roleConflictMemberOperation.purge({ actor, context, input, realm });
     }
 }

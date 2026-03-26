@@ -1,5 +1,4 @@
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 import {
     UseInterceptors,
     Controller,
@@ -14,11 +13,10 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
+import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
 import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
 import { PERMISSION_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -48,7 +46,7 @@ import {
 @ApiTags("Permission")
 @Controller("/permission")
 @UseInterceptors(MonitoringInterceptor)
-export class PermissionController extends BaseController {
+export class PermissionController {
     private readonly populate = {
         DETAILED: ["realm"] as const,
         COMPACT: [] as const,
@@ -59,25 +57,27 @@ export class PermissionController extends BaseController {
         private readonly permissionRepository: Repositories.Permission.Contract,
         @Inject(PERMISSION_OPERATION)
         private readonly permissionOperation: Operations.Permission.Contract,
-        i18nService: I18nService,
-    ) {
-        super(i18nService);
-    }
+    ) {}
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(PermissionDTO)
     @RequirePermission(PermissionCode.PERMISSION_READ)
     @ApiOperation({ summary: "Returns a permission by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
-    public getById(@Query() { realm, permission, view }: GetPermissionByIdQueryDTO): Promise<PermissionDTO> {
-        return this.permissionRepository
-            .findUniqueOrThrow({ options: { populate: this.populate[view] }, where: { id: permission, realm } })
-            .then((data) => super.formatResponse({ DTO: PermissionDTO, data }));
+    public getById(
+        @Query() { realm, permission, view }: GetPermissionByIdQueryDTO,
+    ): Promise<Repositories.Permission.Entity> {
+        return this.permissionRepository.findUniqueOrThrow({
+            options: { populate: this.populate[view] },
+            where: { id: permission, realm },
+        });
     }
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(PermissionListDTO)
     @RequirePermission(PermissionCode.PERMISSION_READ)
     @ApiOperation({ summary: "Returns a paginated list of permissions" })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionListDTO })
@@ -85,14 +85,19 @@ export class PermissionController extends BaseController {
     public getList(
         @Query() { realm, view }: GetPermissionsListQueryDTO,
         @Body() { pagination, filters, sort }: GetPermissionsListBodyDTO,
-    ): Promise<PermissionListDTO> {
-        return this.permissionRepository
-            .findMany({ options: { populate: this.populate[view] }, pagination, filters, realm, sort })
-            .then((data) => super.formatResponse({ DTO: PermissionListDTO, pagination, data }));
+    ): Promise<[Repositories.Permission.Entity[], number]> {
+        return this.permissionRepository.findMany({
+            options: { populate: this.populate[view] },
+            pagination,
+            filters,
+            realm,
+            sort,
+        });
     }
 
     @Post("list/lookup")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(PermissionLookupListDTO)
     @RequirePermission(PermissionCode.PERMISSION_READ)
     @ApiOperation({ summary: "Returns a lookup list of permissions" })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionLookupListDTO })
@@ -100,14 +105,13 @@ export class PermissionController extends BaseController {
     public getLookupList(
         @Query() { realm, term }: GetPermissionsLookupListQueryDTO,
         @Body() { pagination }: GetPermissionsLookupListBodyDTO,
-    ): Promise<PermissionLookupListDTO> {
-        return this.permissionRepository
-            .getLookupList({ pagination, realm, term })
-            .then((data) => super.formatResponse({ DTO: PermissionLookupListDTO, pagination, data }));
+    ): Promise<[Repositories.Permission.Entity[], number]> {
+        return this.permissionRepository.getLookupList({ pagination, realm, term });
     }
 
     @Post("list/effective")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(PermissionListDTO)
     @RequirePermission(PermissionCode.PERMISSION_READ)
     @ApiOperation({ summary: "Returns a paginated list of effective permissions for the account" })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionListDTO })
@@ -115,14 +119,13 @@ export class PermissionController extends BaseController {
     public getEffectiveList(
         @Query() { account, realm }: GetEffectivePermissionsListQueryDTO,
         @Body() { pagination, filters, sort }: GetEffectivePermissionsListBodyDTO,
-    ): Promise<PermissionListDTO> {
-        return this.permissionRepository
-            .findEffectivePermissions({ where: { account, realm }, pagination, filters, sort })
-            .then((data) => super.formatResponse({ DTO: PermissionListDTO, pagination, data }));
+    ): Promise<[Repositories.Permission.Entity[], number]> {
+        return this.permissionRepository.findEffectivePermissions({ where: { account, realm }, pagination, filters, sort });
     }
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.PERMISSION_CREATE)
     @ApiOperation({ summary: "Creates a new permission" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -137,14 +140,13 @@ export class PermissionController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreatePermissionQueryDTO,
         @Body() input: CreatePermissionBodyDTO,
-    ): Promise<SuccessMessageDTO> {
-        return this.permissionOperation
-            .create({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
+    ): Promise<MessageResult> {
+        return this.permissionOperation.create({ actor, context, input, realm });
     }
 
     @Patch("update")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.PERMISSION_UPDATE)
     @ApiOperation({ summary: "Updates permission metadata" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -154,15 +156,13 @@ export class PermissionController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm, id }: UpdatePermissionQueryDTO,
         @Body() input: UpdatePermissionBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.permissionOperation
-            .update({ actor, context, input, realm, id })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.permissionOperation.update({ actor, context, input, realm, id });
     }
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.PERMISSION_REVOKE)
     @ApiOperation({ summary: "Revokes a non-system permission/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -172,15 +172,13 @@ export class PermissionController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokePermissionQueryDTO,
         @Body() input: RevokePermissionBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.permissionOperation
-            .revoke({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.permissionOperation.revoke({ actor, context, input, realm });
     }
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.PERMISSION_RESTORE)
     @ApiOperation({ summary: "Restores a non-system permission/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -190,15 +188,13 @@ export class PermissionController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RestorePermissionQueryDTO,
         @Body() input: RestorePermissionBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.permissionOperation
-            .restore({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.permissionOperation.restore({ actor, context, input, realm });
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.PERMISSION_PURGE)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system permission/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -208,10 +204,7 @@ export class PermissionController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgePermissionQueryDTO,
         @Body() input: PurgePermissionBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.permissionOperation
-            .purge({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.permissionOperation.purge({ actor, context, input, realm });
     }
 }

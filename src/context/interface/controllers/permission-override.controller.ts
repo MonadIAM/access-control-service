@@ -1,5 +1,4 @@
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 import {
     UseInterceptors,
     Controller,
@@ -14,11 +13,10 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
+import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
 import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/infrastructure/repositories";
 import { PERMISSION_OVERRIDE_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -41,7 +39,7 @@ import {
 @ApiTags("PermissionOverride")
 @Controller("/permission-override")
 @UseInterceptors(MonitoringInterceptor)
-export class PermissionOverrideController extends BaseController {
+export class PermissionOverrideController {
     private readonly populate = {
         DETAILED: ["permission", "realm"] as const,
         COMPACT: [] as const,
@@ -52,25 +50,27 @@ export class PermissionOverrideController extends BaseController {
         private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
         @Inject(PERMISSION_OVERRIDE_OPERATION)
         private readonly permissionOverrideOperation: Operations.PermissionOverride.Contract,
-        i18nService: I18nService,
-    ) {
-        super(i18nService);
-    }
+    ) {}
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(PermissionOverrideDTO)
     @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_READ)
     @ApiOperation({ summary: "Returns a permission override by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionOverrideDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
-    public getById(@Query() { override, realm, view }: GetPermissionOverrideByIdQueryDTO): Promise<PermissionOverrideDTO> {
-        return this.permissionOverrideRepository
-            .findUniqueOrThrow({ options: { populate: this.populate[view] }, where: { id: override, realm } })
-            .then((data) => super.formatResponse({ DTO: PermissionOverrideDTO, data }));
+    public getById(
+        @Query() { override, realm, view }: GetPermissionOverrideByIdQueryDTO,
+    ): Promise<Repositories.PermissionOverride.Entity> {
+        return this.permissionOverrideRepository.findUniqueOrThrow({
+            options: { populate: this.populate[view] },
+            where: { id: override, realm },
+        });
     }
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(PermissionOverrideListDTO)
     @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_READ)
     @ApiOperation({ summary: "Returns a paginated list of permission overrides" })
     @ApiResponse({ status: HttpStatus.OK, type: PermissionOverrideListDTO })
@@ -78,14 +78,19 @@ export class PermissionOverrideController extends BaseController {
     public getList(
         @Query() { realm, view }: GetPermissionOverridesListQueryDTO,
         @Body() { pagination, filters, sort }: GetPermissionOverridesListBodyDTO,
-    ): Promise<PermissionOverrideListDTO> {
-        return this.permissionOverrideRepository
-            .findMany({ options: { populate: this.populate[view] }, pagination, filters, sort, realm })
-            .then((data) => super.formatResponse({ DTO: PermissionOverrideListDTO, pagination, data }));
+    ): Promise<[Repositories.PermissionOverride.Entity[], number]> {
+        return this.permissionOverrideRepository.findMany({
+            options: { populate: this.populate[view] },
+            pagination,
+            filters,
+            realm,
+            sort,
+        });
     }
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_CREATE)
     @ApiOperation({ summary: "Creates a new permission override" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -100,14 +105,13 @@ export class PermissionOverrideController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreatePermissionOverrideQueryDTO,
         @Body() input: CreatePermissionOverrideBodyDTO,
-    ): Promise<SuccessMessageDTO> {
-        return this.permissionOverrideOperation
-            .create({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
+    ): Promise<MessageResult> {
+        return this.permissionOverrideOperation.create({ actor, context, input, realm });
     }
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_REVOKE)
     @ApiOperation({ summary: "Revokes a non-system permission override/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -117,15 +121,13 @@ export class PermissionOverrideController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokePermissionOverrideQueryDTO,
         @Body() input: RevokePermissionOverrideBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.permissionOverrideOperation
-            .revoke({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.permissionOverrideOperation.revoke({ actor, context, input, realm });
     }
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_RESTORE)
     @ApiOperation({ summary: "Restores a non-system permission override/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -135,15 +137,13 @@ export class PermissionOverrideController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RestorePermissionOverrideQueryDTO,
         @Body() input: RestorePermissionOverrideBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.permissionOverrideOperation
-            .restore({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.permissionOverrideOperation.restore({ actor, context, input, realm });
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.PERMISSION_OVERRIDE_PURGE)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system permission override/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -153,10 +153,7 @@ export class PermissionOverrideController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgePermissionOverrideQueryDTO,
         @Body() input: PurgePermissionOverrideBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.permissionOverrideOperation
-            .purge({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.permissionOverrideOperation.purge({ actor, context, input, realm });
     }
 }

@@ -1,5 +1,4 @@
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 import {
     UseInterceptors,
     Controller,
@@ -14,11 +13,10 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
+import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { ACCOUNT_ROLE_ASSIGNMENT_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -41,7 +39,7 @@ import {
 @ApiTags("AccountRoleAssignment")
 @Controller("/account-role-assignment")
 @UseInterceptors(MonitoringInterceptor)
-export class AccountRoleAssignmentController extends BaseController {
+export class AccountRoleAssignmentController {
     private readonly populate = {
         DETAILED: ["realm", "role"] as const,
         COMPACT: [] as const,
@@ -52,27 +50,27 @@ export class AccountRoleAssignmentController extends BaseController {
         private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_OPERATION)
         private readonly accountRoleAssignmentOperation: Operations.AccountRoleAssignment.Contract,
-        i18nService: I18nService,
-    ) {
-        super(i18nService);
-    }
+    ) {}
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(AccountRoleAssignmentDTO)
     @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_READ)
     @ApiOperation({ summary: "Returns a account role assignment by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: AccountRoleAssignmentDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
     public getById(
         @Query() { assignment, realm, view }: GetAccountRoleAssignmentByIdQueryDTO,
-    ): Promise<AccountRoleAssignmentDTO> {
-        return this.accountRoleAssignmentRepository
-            .findUniqueOrThrow({ options: { populate: this.populate[view] }, where: { id: assignment, realm } })
-            .then((data) => super.formatResponse({ DTO: AccountRoleAssignmentDTO, data }));
+    ): Promise<Repositories.AccountRoleAssignment.Entity> {
+        return this.accountRoleAssignmentRepository.findUniqueOrThrow({
+            options: { populate: this.populate[view] },
+            where: { id: assignment, realm },
+        });
     }
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(AccountRoleAssignmentListDTO)
     @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_READ)
     @ApiOperation({ summary: "Returns a paginated list of account role assignments" })
     @ApiResponse({ status: HttpStatus.OK, type: AccountRoleAssignmentListDTO })
@@ -80,14 +78,19 @@ export class AccountRoleAssignmentController extends BaseController {
     public getList(
         @Query() { realm, view }: GetAccountRoleAssignmentsListQueryDTO,
         @Body() { pagination, filters, sort }: GetAccountRoleAssignmentsListBodyDTO,
-    ): Promise<AccountRoleAssignmentListDTO> {
-        return this.accountRoleAssignmentRepository
-            .findMany({ options: { populate: this.populate[view] }, pagination, filters, sort, realm })
-            .then((data) => super.formatResponse({ DTO: AccountRoleAssignmentListDTO, pagination, data }));
+    ): Promise<[Repositories.AccountRoleAssignment.Entity[], number]> {
+        return this.accountRoleAssignmentRepository.findMany({
+            options: { populate: this.populate[view] },
+            pagination,
+            filters,
+            realm,
+            sort,
+        });
     }
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_CREATE)
     @ApiOperation({ summary: "Creates a new account role assignment" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -102,14 +105,13 @@ export class AccountRoleAssignmentController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: CreateAccountRoleAssignmentQueryDTO,
         @Body() input: CreateAccountRoleAssignmentBodyDTO,
-    ): Promise<SuccessMessageDTO> {
-        return this.accountRoleAssignmentOperation
-            .create({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
+    ): Promise<MessageResult> {
+        return this.accountRoleAssignmentOperation.create({ actor, context, input, realm });
     }
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_REVOKE)
     @ApiOperation({ summary: "Revokes a non-system account role assignment/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -119,15 +121,13 @@ export class AccountRoleAssignmentController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokeAccountRoleAssignmentQueryDTO,
         @Body() input: RevokeAccountRoleAssignmentBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.accountRoleAssignmentOperation
-            .revoke({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.accountRoleAssignmentOperation.revoke({ actor, context, input, realm });
     }
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_RESTORE)
     @ApiOperation({ summary: "Restores a non-system account role assignment/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -137,15 +137,13 @@ export class AccountRoleAssignmentController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: RestoreAccountRoleAssignmentQueryDTO,
         @Body() input: RestoreAccountRoleAssignmentBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.accountRoleAssignmentOperation
-            .restore({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.accountRoleAssignmentOperation.restore({ actor, context, input, realm });
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_PURGE)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system account role assignment/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -155,10 +153,7 @@ export class AccountRoleAssignmentController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgeAccountRoleAssignmentQueryDTO,
         @Body() input: PurgeAccountRoleAssignmentBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.accountRoleAssignmentOperation
-            .purge({ actor, context, input, realm })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.accountRoleAssignmentOperation.purge({ actor, context, input, realm });
     }
 }

@@ -1,5 +1,4 @@
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { I18nLang as Lang, I18nService } from "nestjs-i18n";
 import {
     UseInterceptors,
     Controller,
@@ -14,11 +13,10 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { EndpointExceptions, ExtractActor, ExtractContext, RequirePermission } from "~common/decorators";
+import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { REALM_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { BaseController } from "~common/abstract";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -41,43 +39,41 @@ import {
 @ApiTags("Realm")
 @Controller("/realm")
 @UseInterceptors(MonitoringInterceptor)
-export class RealmController extends BaseController {
+export class RealmController {
     public constructor(
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(REALM_OPERATION)
         private readonly realmOperation: Operations.Realm.Contract,
-        i18nService: I18nService,
-    ) {
-        super(i18nService);
-    }
+    ) {}
 
     @Get()
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(RealmDTO)
     @RequirePermission(PermissionCode.REALM_READ)
     @ApiOperation({ summary: "Returns a realm by identifier" })
     @ApiResponse({ status: HttpStatus.OK, type: RealmDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
-    public getById(@Query() { realm }: GetRealmByIdQueryDTO): Promise<RealmDTO> {
-        return this.realmRepository
-            .findUniqueOrThrow({ where: { id: realm } })
-            .then((data) => super.formatResponse({ DTO: RealmDTO, data }));
+    public getById(@Query() { realm }: GetRealmByIdQueryDTO): Promise<Repositories.Realm.Entity> {
+        return this.realmRepository.findUniqueOrThrow({ where: { id: realm } });
     }
 
     @Post("list")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(RealmListDTO)
     @RequirePermission(PermissionCode.REALM_READ)
     @ApiOperation({ summary: "Returns a paginated list of realms" })
     @ApiResponse({ status: HttpStatus.OK, type: RealmListDTO })
     @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
-    public getList(@Body() { pagination, filters, sort }: GetRealmsListBodyDTO): Promise<RealmListDTO> {
-        return this.realmRepository
-            .findMany({ pagination, filters, sort })
-            .then((data) => super.formatResponse({ DTO: RealmListDTO, pagination, data }));
+    public getList(
+        @Body() { pagination, filters, sort }: GetRealmsListBodyDTO,
+    ): Promise<[Repositories.Realm.Entity[], number]> {
+        return this.realmRepository.findMany({ pagination, filters, sort });
     }
 
     @Post("list/lookup")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(RealmLookupListDTO)
     @RequirePermission(PermissionCode.REALM_READ)
     @ApiOperation({ summary: "Returns a lookup list of realms" })
     @ApiResponse({ status: HttpStatus.OK, type: RealmLookupListDTO })
@@ -85,14 +81,13 @@ export class RealmController extends BaseController {
     public getLookupList(
         @Query() { term }: GetRealmsLookupListQueryDTO,
         @Body() { pagination }: GetRealmsLookupListBodyDTO,
-    ): Promise<RealmLookupListDTO> {
-        return this.realmRepository
-            .getLookupList({ pagination, term })
-            .then((data) => super.formatResponse({ DTO: RealmLookupListDTO, pagination, data }));
+    ): Promise<[Repositories.Realm.Entity[], number]> {
+        return this.realmRepository.getLookupList({ pagination, term });
     }
 
     @Post("create")
     @HttpCode(HttpStatus.CREATED)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.REALM_CREATE)
     @ApiOperation({ summary: "Creates a new realm" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -106,14 +101,13 @@ export class RealmController extends BaseController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: CreateRealmBodyDTO,
-    ): Promise<SuccessMessageDTO> {
-        return this.realmOperation
-            .create({ actor, context, input })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data }));
+    ): Promise<MessageResult> {
+        return this.realmOperation.create({ actor, context, input });
     }
 
     @Patch("update")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.REALM_UPDATE)
     @ApiOperation({ summary: "Updates realm metadata" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -123,15 +117,13 @@ export class RealmController extends BaseController {
         @ExtractContext() context: RequestContext,
         @Query() { id }: UpdateRealmQueryDTO,
         @Body() input: UpdateRealmBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.realmOperation
-            .update({ actor, context, input, id })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.realmOperation.update({ actor, context, input, id });
     }
 
     @Patch("revoke")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.REALM_REVOKE)
     @ApiOperation({ summary: "Revokes a non-system realm/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -140,15 +132,13 @@ export class RealmController extends BaseController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: RevokeRealmBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.realmOperation
-            .revoke({ actor, context, input })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.realmOperation.revoke({ actor, context, input });
     }
 
     @Patch("restore")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.REALM_RESTORE)
     @ApiOperation({ summary: "Restores a non-system realm/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -157,15 +147,13 @@ export class RealmController extends BaseController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: RestoreRealmBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.realmOperation
-            .restore({ actor, context, input })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.realmOperation.restore({ actor, context, input });
     }
 
     @Delete("purge")
     @HttpCode(HttpStatus.OK)
+    @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PermissionCode.REALM_PURGE)
     @ApiOperation({ summary: "Permanently deletes a revoked non-system realm/s" })
     @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
@@ -174,10 +162,7 @@ export class RealmController extends BaseController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: PurgeRealmBodyDTO,
-        @Lang() lang: string,
-    ): Promise<SuccessMessageDTO> {
-        return this.realmOperation
-            .purge({ actor, context, input })
-            .then((data) => super.formatResponse({ DTO: SuccessMessageDTO, data, lang }));
+    ): Promise<MessageResult> {
+        return this.realmOperation.purge({ actor, context, input });
     }
 }

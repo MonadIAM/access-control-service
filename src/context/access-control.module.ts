@@ -1,7 +1,8 @@
+import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { BullModule } from "@nestjs/bullmq";
-import { APP_GUARD } from "@nestjs/core";
 import { Module } from "@nestjs/common";
 
+import { FormatResponseInterceptor } from "~common/interceptors";
 import { TrackingModule } from "~common/tracking";
 
 import { PermissionGuard, AuthGuard } from "./infrastructure/guards";
@@ -23,6 +24,10 @@ import { DOMAIN_SERVICES } from "./domain/services";
         ...QUEUES,
         PermissionGuard,
         AuthGuard,
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: FormatResponseInterceptor,
+        },
         {
             provide: APP_GUARD,
             useExisting: AuthGuard,
