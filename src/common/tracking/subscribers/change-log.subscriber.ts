@@ -3,8 +3,9 @@ import { Injectable } from "@nestjs/common";
 
 import { ChangeLog, AuditLog } from "~common/tracking/entities";
 import { OperationContext } from "~common/tracking/utilities";
+import { RoleClosure } from "~context/domain/entities";
 
-const EXCLUDED_ENTITIES = new Set([AuditLog.name, ChangeLog.name]);
+const EXCLUDED_ENTITIES = new Set([AuditLog.name, ChangeLog.name, RoleClosure.name]);
 
 @Injectable()
 export class ChangeLogSubscriber implements EventSubscriber {

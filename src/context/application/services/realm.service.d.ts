@@ -1,6 +1,6 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Realm as RealmEntity } from "~context/domain/entities";
+import { Realm as RealmEntity, Role as RoleEntity } from "~context/domain/entities";
 
 declare global {
     namespace Services {
@@ -39,6 +39,25 @@ declare global {
 
             type Restore = {
                 entities: RealmEntity[];
+            };
+
+            namespace CreateBaseRoles {
+                type Props = {
+                    transaction: EntityManager;
+                    input: Create["input"];
+                    realm: RealmEntity;
+                };
+                type Result = {
+                    admin: RoleEntity;
+                    user: RoleEntity;
+                    root: RoleEntity;
+                };
+            }
+
+            type AssignBasePermissions = {
+                transaction: EntityManager;
+                roles: CreateBaseRoles.Result;
+                realm: RealmEntity;
             };
         }
     }

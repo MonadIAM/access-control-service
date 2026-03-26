@@ -49,10 +49,4 @@ export const Roles = [
         RoleActorType.HUMAN,
         true,
     ),
-    entry(
-        "00000002-0000-4000-8000-100000000004",
-        "system.subscriber",
-        "Subscriber",
-        "Paid access role, allows creating and managing realms for service integration",
-    ),
 ];
