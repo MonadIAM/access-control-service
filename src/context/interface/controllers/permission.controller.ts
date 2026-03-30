@@ -13,12 +13,19 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
 import { PERMISSION_OPERATION } from "~context/application/operations";
+import { PERMISSION_QUERY } from "~context/application/query";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
+import {
+    ExtractPermissions,
+    EndpointExceptions,
+    RequirePermission,
+    ExtractContext,
+    FormatResponse,
+    ExtractActor,
+} from "~common/decorators";
 
 import {
     GetEffectivePermissionsListQueryDTO,
@@ -43,168 +50,173 @@ import {
     PermissionDTO,
 } from "../dto/permission";
 
+const {
+    INTERNAL_SERVER_ERROR,
+    UNPROCESSABLE_ENTITY,
+    UNAUTHORIZED,
+    BAD_REQUEST,
+    FORBIDDEN,
+    NOT_FOUND,
+    CONFLICT,
+    CREATED,
+    OK,
+} = HttpStatus;
+const {
+    PERMISSION_READ_PERSONAL,
+    PERMISSION_READ_ABSOLUTE,
+    PERMISSION_READ_COMMON,
+    PERMISSION_RESTORE,
+    PERMISSION_CREATE,
+    PERMISSION_UPDATE,
+    PERMISSION_REVOKE,
+    PERMISSION_PURGE,
+} = PermissionCode;
+
 @ApiTags("Permission")
 @Controller("/permission")
 @UseInterceptors(MonitoringInterceptor)
 export class PermissionController {
-    private readonly populate = {
-        DETAILED: ["realm"] as const,
-        COMPACT: [] as const,
-    };
-
     public constructor(
-        @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.Contract,
         @Inject(PERMISSION_OPERATION)
         private readonly permissionOperation: Operations.Permission.Contract,
+        @Inject(PERMISSION_QUERY)
+        private readonly permissionQuery: Queries.Permission.Contract,
     ) {}
 
     @Get()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(PermissionDTO)
-    @RequirePermission(PermissionCode.PERMISSION_READ_ALL)
+    @RequirePermission(PERMISSION_READ_COMMON)
+    @ApiResponse({ status: OK, type: PermissionDTO })
     @ApiOperation({ summary: "Returns a permission by identifier" })
-    @ApiResponse({ status: HttpStatus.OK, type: PermissionDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
-    public getById(
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    public findUnique(
         @Query() { realm, permission, view }: GetPermissionByIdQueryDTO,
     ): Promise<Repositories.Permission.Entity> {
-        return this.permissionRepository.findUniqueOrThrow({
-            options: { populate: this.populate[view] },
-            where: { id: permission, realm },
-        });
+        return this.permissionQuery.findUnique({ permission, realm, view });
     }
 
     @Post("list")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(PermissionListDTO)
-    @RequirePermission(PermissionCode.PERMISSION_READ_ALL)
+    @RequirePermission(PERMISSION_READ_COMMON)
+    @ApiResponse({ status: OK, type: PermissionListDTO })
     @ApiOperation({ summary: "Returns a paginated list of permissions" })
-    @ApiResponse({ status: HttpStatus.OK, type: PermissionListDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getList(
-        @Query() { realm, view }: GetPermissionsListQueryDTO,
         @Body() { pagination, filters, sort }: GetPermissionsListBodyDTO,
+        @Query() { realm, view }: GetPermissionsListQueryDTO,
     ): Promise<[Repositories.Permission.Entity[], number]> {
-        return this.permissionRepository.findMany({
-            options: { populate: this.populate[view] },
-            pagination,
-            filters,
-            realm,
-            sort,
-        });
+        return this.permissionQuery.findMany({ pagination, filters, realm, sort, view });
     }
 
+    @HttpCode(OK)
+    @Post("list/effective")
+    @FormatResponse(PermissionListDTO)
+    @ApiResponse({ status: OK, type: PermissionListDTO })
+    @RequirePermission(PERMISSION_READ_ABSOLUTE, PERMISSION_READ_PERSONAL)
+    @ApiOperation({ summary: "Returns a paginated list of effective permissions for the account" })
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    public getEffectiveList(
+        @Body() { pagination, filters, sort }: GetEffectivePermissionsListBodyDTO,
+        @Query() { account, realm }: GetEffectivePermissionsListQueryDTO,
+        @ExtractActor() { account: actor }: ActorContext,
+        @ExtractPermissions() permissions?: string[],
+    ): Promise<[Repositories.Permission.Entity[], number]> {
+        return this.permissionQuery.findEffective({ permissions, pagination, filters, account, realm, actor, sort });
+    }
+
+    @HttpCode(OK)
     @Post("list/lookup")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(PermissionLookupListDTO)
-    @RequirePermission(PermissionCode.PERMISSION_READ_ALL)
+    @RequirePermission(PERMISSION_READ_COMMON)
+    @ApiResponse({ status: OK, type: PermissionLookupListDTO })
     @ApiOperation({ summary: "Returns a lookup list of permissions" })
-    @ApiResponse({ status: HttpStatus.OK, type: PermissionLookupListDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getLookupList(
         @Query() { realm, term }: GetPermissionsLookupListQueryDTO,
         @Body() { pagination }: GetPermissionsLookupListBodyDTO,
     ): Promise<[Repositories.Permission.Entity[], number]> {
-        return this.permissionRepository.getLookupList({ pagination, realm, term });
-    }
-
-    @Post("list/effective")
-    @HttpCode(HttpStatus.OK)
-    @FormatResponse(PermissionListDTO)
-    @RequirePermission(PermissionCode.PERMISSION_READ_ALL)
-    @ApiOperation({ summary: "Returns a paginated list of effective permissions for the account" })
-    @ApiResponse({ status: HttpStatus.OK, type: PermissionListDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
-    public getEffectiveList(
-        @Query() { account, realm }: GetEffectivePermissionsListQueryDTO,
-        @Body() { pagination, filters, sort }: GetEffectivePermissionsListBodyDTO,
-    ): Promise<[Repositories.Permission.Entity[], number]> {
-        return this.permissionRepository.findEffectivePermissions({ where: { account, realm }, pagination, filters, sort });
+        return this.permissionQuery.getLookupList({ pagination, realm, term });
     }
 
     @Post("create")
-    @HttpCode(HttpStatus.CREATED)
+    @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(PermissionCode.PERMISSION_CREATE)
+    @RequirePermission(PERMISSION_CREATE)
+    @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Creates a new permission" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    @EndpointExceptions(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        HttpStatus.UNPROCESSABLE_ENTITY,
-        HttpStatus.BAD_REQUEST,
-        HttpStatus.CONFLICT,
-    )
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
         @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
         @Query() { realm }: CreatePermissionQueryDTO,
+        @ExtractContext() context: RequestContext,
         @Body() input: CreatePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionOperation.create({ actor, context, input, realm });
+        return this.permissionOperation.create({ context, realm, actor, input });
     }
 
     @Patch("update")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(PermissionCode.PERMISSION_UPDATE)
+    @RequirePermission(PERMISSION_UPDATE)
     @ApiOperation({ summary: "Updates permission metadata" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
+    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public updateMetadata(
         @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
         @Query() { realm, id }: UpdatePermissionQueryDTO,
+        @ExtractContext() context: RequestContext,
         @Body() input: UpdatePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionOperation.update({ actor, context, input, realm, id });
+        return this.permissionOperation.update({ context, realm, actor, input, id });
     }
 
+    @HttpCode(OK)
     @Patch("revoke")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(PermissionCode.PERMISSION_REVOKE)
-    @ApiOperation({ summary: "Revokes a non-system permission/s" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
+    @RequirePermission(PERMISSION_REVOKE)
+    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({ summary: "Revokes a non-system permission(s)" })
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public revoke(
         @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
         @Query() { realm }: RevokePermissionQueryDTO,
+        @ExtractContext() context: RequestContext,
         @Body() input: RevokePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionOperation.revoke({ actor, context, input, realm });
+        return this.permissionOperation.revoke({ context, realm, actor, input });
     }
 
+    @HttpCode(OK)
     @Patch("restore")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(PermissionCode.PERMISSION_RESTORE)
-    @ApiOperation({ summary: "Restores a non-system permission/s" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
+    @RequirePermission(PERMISSION_RESTORE)
+    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({ summary: "Restores a non-system permission(s)" })
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public restore(
         @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
         @Query() { realm }: RestorePermissionQueryDTO,
+        @ExtractContext() context: RequestContext,
         @Body() input: RestorePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionOperation.restore({ actor, context, input, realm });
+        return this.permissionOperation.restore({ context, realm, actor, input });
     }
 
+    @HttpCode(OK)
     @Delete("purge")
-    @HttpCode(HttpStatus.OK)
     @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(PermissionCode.PERMISSION_PURGE)
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system permission/s" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
+    @RequirePermission(PERMISSION_PURGE)
+    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({ summary: "Permanently deletes a revoked non-system permission(s)" })
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public purge(
         @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
         @Query() { realm }: PurgePermissionQueryDTO,
+        @ExtractContext() context: RequestContext,
         @Body() input: PurgePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionOperation.purge({ actor, context, input, realm });
+        return this.permissionOperation.purge({ context, realm, actor, input });
     }
 }

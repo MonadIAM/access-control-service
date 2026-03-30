@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { REQUIRE_PERMISSION_KEY, IS_PUBLIC_KEY } from "~common/decorators";
+import { REQUIRE_PERMISSIONS_KEY, IS_PUBLIC_KEY } from "~common/decorators";
 import { GuardException } from "~common/exceptions";
 import { PermissionCode } from "~context/enums";
 
@@ -29,29 +29,36 @@ export class PermissionGuard implements CanActivate {
         if (isPublic) {
             return true;
         } else {
-            const permission = this.reflector.getAllAndOverride<PermissionCode>(REQUIRE_PERMISSION_KEY, [
+            const permissions = this.reflector.getAllAndOverride<PermissionCode[]>(REQUIRE_PERMISSIONS_KEY, [
                 context.getHandler(),
                 context.getClass(),
             ]);
 
-            if (permission) {
+            if (permissions?.length) {
+                const request = context.switchToHttp().getRequest<Req<{ Querystring: { realm?: string } }>>();
                 const {
-                    query,
                     actorContext: { account },
-                } = context.switchToHttp().getRequest<Req<{ Querystring: { realm?: string } }>>();
+                    query: { realm },
+                } = request;
 
                 const cached = await this.permissionCacheService.exists({ account });
 
                 if (!cached) {
-                    const rows = await this.permissionRepository.collectEffectivePermissions({ account });
-                    await this.permissionCacheService.populate({ rows, account });
+                    const rows = await this.permissionRepository.collectEffective({ account });
+                    const realms = Array.from(new Set(rows.map(({ realm }) => realm)));
+                    await this.permissionCacheService.populate({ rows, account, realms });
                 }
 
-                const allowed = query.realm
-                    ? await this.permissionCacheService.has({ permission, account, realm: query.realm })
-                    : await this.permissionCacheService.hasGlobal({ permission, account });
+                const foundPermissions = realm
+                    ? await this.permissionCacheService.has({ permissions, account, realm })
+                    : await this.permissionCacheService.hasGlobal({ permissions, account });
 
-                if (allowed) {
+                if (foundPermissions.length) {
+                    if (request.metadata?.permissions) {
+                        request.metadata.permissions = foundPermissions;
+                    } else {
+                        request.metadata = { permissions: foundPermissions };
+                    }
                     return true;
                 } else {
                     throw GuardException.forbidden(`${this.dictionaryPath}.INSUFFICIENT_PERMISSIONS`);

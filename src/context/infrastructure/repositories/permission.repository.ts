@@ -109,12 +109,12 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
         }
     }
 
-    public async findEffectivePermissions({
+    public async findEffective({
         where: { account, realm },
         pagination,
         filters,
         sort,
-    }: Repositories.Permission.FindEffectivePermissions): Promise<[Permission[], number]> {
+    }: Repositories.Permission.FindEffective): Promise<[Permission[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
@@ -201,9 +201,9 @@ export class PermissionRepository extends PermissionAdapter implements Repositor
         }
     }
 
-    public async collectEffectivePermissions(
-        props: Repositories.Permission.CollectEffectivePermissions.Props,
-    ): Promise<Repositories.Permission.CollectEffectivePermissions.Result> {
+    public async collectEffective(
+        props: Repositories.Permission.CollectEffective.Props,
+    ): Promise<Repositories.Permission.CollectEffective.Result> {
         try {
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();

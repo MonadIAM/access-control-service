@@ -8,6 +8,7 @@ import { PermissionOverrideRepository } from "./permission-override.repository";
 import { RoleConflictGroupRepository } from "./role-conflict-group.repository";
 import { RoleClosureRepository } from "./role-closure.repository";
 import { PermissionRepository } from "./permission.repository";
+import { ChangeLogRepository } from "./change-log.repository";
 import { AuditLogRepository } from "./audit-log.repository";
 import { RealmRepository } from "./realm.repository";
 import { RoleRepository } from "./role.repository";
@@ -20,6 +21,7 @@ export const PERMISSION_OVERRIDE_REPOSITORY = Symbol("Repositories.PermissionOve
 export const ROLE_CONFLICT_GROUP_REPOSITORY = Symbol("Repositories.RoleConflictGroup.Contract");
 export const ROLE_CLOSURE_REPOSITORY = Symbol("Repositories.RoleClosure.Contract");
 export const PERMISSION_REPOSITORY = Symbol("Repositories.Permission.Contract");
+export const CHANGE_LOG_REPOSITORY = Symbol("Repositories.ChangeLog.Contract");
 export const AUDIT_LOG_REPOSITORY = Symbol("Repositories.AuditLog.Contract");
 export const REALM_REPOSITORY = Symbol("Repositories.Realm.Contract");
 export const ROLE_REPOSITORY = Symbol("Repositories.Role.Contract");
@@ -48,6 +50,10 @@ export const REPOSITORIES: Provider[] = [
     {
         provide: ROLE_CONFLICT_GROUP_REPOSITORY,
         useClass: RoleConflictGroupRepository,
+    },
+    {
+        provide: CHANGE_LOG_REPOSITORY,
+        useClass: ChangeLogRepository,
     },
     {
         provide: AUDIT_LOG_REPOSITORY,

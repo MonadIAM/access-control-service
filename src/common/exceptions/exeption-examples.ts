@@ -9,6 +9,22 @@ export const EXCEPTION_EXAMPLES = {
         message: "Business rule violation",
     },
 
+    [HttpStatus.UNAUTHORIZED]: {
+        timestamp: "2026-02-22T19:20:44.518Z",
+        path: "/api/resource",
+        statusCode: 401,
+        error: "Unauthorized",
+        message: "An authentication token is required.",
+    },
+
+    [HttpStatus.FORBIDDEN]: {
+        timestamp: "2026-02-22T19:21:07.843Z",
+        path: "/api/resource",
+        statusCode: 403,
+        error: "Forbidden",
+        message: "Insufficient permissions to perform this operation.",
+    },
+
     [HttpStatus.NOT_FOUND]: {
         timestamp: "2026-02-22T19:23:01.235Z",
         path: "/api/resource",

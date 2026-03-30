@@ -49,21 +49,16 @@ declare global {
                 where: FilterQuery<Entity>;
             };
 
-            type FindMany<P extends string, F extends string> =
-                | {
-                      transaction?: EntityManager;
-                      options?: FindOptions<Entity, P, F>;
-                      where: FilterQuery<Entity>;
-                  }
-                | {
-                      pagination: Pagination;
-                      filters: Filters;
-                      sort: Sort;
-                      options?: FindOptions<Entity, P, F>;
-                  };
+            type FindMany<P extends string, F extends string> = {
+                options?: FindOptions<Entity, P, F>;
+                pagination: Pagination;
+                filters: Filters;
+                sort: Sort;
+            };
 
             type GetLookupList = {
                 pagination: Pagination;
+                realms?: string[];
                 term: string;
             };
 

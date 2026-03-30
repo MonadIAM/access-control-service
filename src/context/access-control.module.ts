@@ -12,6 +12,7 @@ import { REPOSITORIES } from "./infrastructure/repositories";
 import { OPERATIONS } from "./application/operations";
 import { CONTROLLERS } from "./interface/controllers";
 import { DOMAIN_SERVICES } from "./domain/services";
+import { QUERIES } from "./application/query";
 
 @Module({
     imports: [TrackingModule, BullModule.registerQueue({ name: "permission-cache-invalidation" })],
@@ -21,6 +22,7 @@ import { DOMAIN_SERVICES } from "./domain/services";
         ...REPOSITORIES,
         ...PROCESSORS,
         ...OPERATIONS,
+        ...QUERIES,
         ...QUEUES,
         PermissionGuard,
         AuthGuard,

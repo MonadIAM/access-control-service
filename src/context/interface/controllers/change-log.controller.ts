@@ -1,43 +1,46 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import { AUDIT_LOG_REPOSITORY } from "~context/infrastructure/repositories";
 import { EndpointExceptions, FormatResponse, RequirePermission } from "~common/decorators";
+import { CHANGE_LOG_QUERY } from "~context/application/query";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import { GetChangeLogsListBodyDTO, GetChangeLogByIdQueryDTO, ChangeLogListDTO, ChangeLogDTO } from "../dto/change-log";
+
+const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, OK } = HttpStatus;
+const { CHANGE_LOG_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("ChangeLog")
 @Controller("/change-log")
 @UseInterceptors(MonitoringInterceptor)
 export class ChangeLogController {
     public constructor(
-        @Inject(AUDIT_LOG_REPOSITORY)
-        private readonly auditLogRepository: Repositories.ChangeLog.Contract,
+        @Inject(CHANGE_LOG_QUERY)
+        private readonly changeLogQuery: Queries.ChangeLog.Contract,
     ) {}
 
     @Get()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(ChangeLogDTO)
-    @RequirePermission(PermissionCode.CHANGE_LOG_READ)
+    @RequirePermission(CHANGE_LOG_READ_ABSOLUTE)
+    @ApiResponse({ status: OK, type: ChangeLogDTO })
     @ApiOperation({ summary: "Returns a change log by identifier" })
-    @ApiResponse({ status: HttpStatus.OK, type: ChangeLogDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
-    public getById(@Query() { log }: GetChangeLogByIdQueryDTO): Promise<Repositories.ChangeLog.Entity> {
-        return this.auditLogRepository.findUniqueOrThrow({ where: { id: log } });
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
+    public findUnique(@Query() { log }: GetChangeLogByIdQueryDTO): Promise<Repositories.ChangeLog.Entity> {
+        return this.changeLogQuery.findUnique({ log });
     }
 
     @Post("list")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(ChangeLogListDTO)
-    @RequirePermission(PermissionCode.CHANGE_LOG_READ)
+    @RequirePermission(CHANGE_LOG_READ_ABSOLUTE)
+    @ApiResponse({ status: OK, type: ChangeLogListDTO })
     @ApiOperation({ summary: "Returns a paginated list of change logs" })
-    @ApiResponse({ status: HttpStatus.OK, type: ChangeLogListDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getList(
         @Body() { pagination, filters, sort }: GetChangeLogsListBodyDTO,
     ): Promise<[Repositories.ChangeLog.Entity[], number]> {
-        return this.auditLogRepository.findMany({ pagination, filters, sort });
+        return this.changeLogQuery.findMany({ pagination, filters, sort });
     }
 }

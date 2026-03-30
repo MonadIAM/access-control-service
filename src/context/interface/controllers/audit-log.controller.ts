@@ -1,43 +1,46 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import { AUDIT_LOG_REPOSITORY } from "~context/infrastructure/repositories";
 import { EndpointExceptions, FormatResponse, RequirePermission } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { AUDIT_LOG_QUERY } from "~context/application/query";
 import { PermissionCode } from "~context/enums";
 
 import { GetAuditLogsListBodyDTO, GetAuditLogByIdQueryDTO, AuditLogListDTO, AuditLogDTO } from "../dto/audit-log";
+
+const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, OK } = HttpStatus;
+const { AUDIT_LOG_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("AuditLog")
 @Controller("/audit-log")
 @UseInterceptors(MonitoringInterceptor)
 export class AuditLogController {
     public constructor(
-        @Inject(AUDIT_LOG_REPOSITORY)
-        private readonly auditLogRepository: Repositories.AuditLog.Contract,
+        @Inject(AUDIT_LOG_QUERY)
+        private readonly auditLogQuery: Queries.AuditLog.Contract,
     ) {}
 
     @Get()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(AuditLogDTO)
-    @RequirePermission(PermissionCode.AUDIT_LOG_READ)
+    @RequirePermission(AUDIT_LOG_READ_ABSOLUTE)
+    @ApiResponse({ status: OK, type: AuditLogDTO })
     @ApiOperation({ summary: "Returns a audit log by identifier" })
-    @ApiResponse({ status: HttpStatus.OK, type: AuditLogDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
-    public getById(@Query() { log }: GetAuditLogByIdQueryDTO): Promise<Repositories.AuditLog.Entity> {
-        return this.auditLogRepository.findUniqueOrThrow({ where: { id: log } });
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
+    public findUnique(@Query() { log }: GetAuditLogByIdQueryDTO): Promise<Repositories.AuditLog.Entity> {
+        return this.auditLogQuery.findUnique({ log });
     }
 
     @Post("list")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(AuditLogListDTO)
-    @RequirePermission(PermissionCode.AUDIT_LOG_READ)
+    @RequirePermission(AUDIT_LOG_READ_ABSOLUTE)
+    @ApiResponse({ status: OK, type: AuditLogListDTO })
     @ApiOperation({ summary: "Returns a paginated list of audit logs" })
-    @ApiResponse({ status: HttpStatus.OK, type: AuditLogListDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getList(
         @Body() { pagination, filters, sort }: GetAuditLogsListBodyDTO,
     ): Promise<[Repositories.AuditLog.Entity[], number]> {
-        return this.auditLogRepository.findMany({ pagination, filters, sort });
+        return this.auditLogQuery.findMany({ pagination, filters, sort });
     }
 }

@@ -197,12 +197,12 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         }
     }
 
-    public async findDelegateableRoles({
+    public async findDelegateable({
         where: { realm, type, id },
         pagination,
         filters,
         sort,
-    }: Repositories.Role.FindDelegateableRoles): Promise<[Role[], number]> {
+    }: Repositories.Role.FindDelegateable): Promise<[Role[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
@@ -248,12 +248,12 @@ export class RoleRepository extends RoleAdapter implements Repositories.Role.Con
         }
     }
 
-    public async findEffectiveRoles({
+    public async findEffective({
         where: { account, realm },
         pagination,
         filters,
         sort,
-    }: Repositories.Role.FindEffectiveRoles): Promise<[Role[], number]> {
+    }: Repositories.Role.FindEffective): Promise<[Role[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();

@@ -29,11 +29,9 @@ declare global {
 
                 getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
 
-                findEffectivePermissions: (props: FindEffectivePermissions) => Promise<[Entity[], number]>;
+                findEffective: (props: FindEffective) => Promise<[Entity[], number]>;
 
-                collectEffectivePermissions: (
-                    props: CollectEffectivePermissions.Props,
-                ) => Promise<CollectEffectivePermissions.Result>;
+                collectEffective: (props: CollectEffective.Props) => Promise<CollectEffective.Result>;
 
                 findAccountsByPermissions: (props: FindAccountsByPermissions) => Promise<string[]>;
 
@@ -78,7 +76,7 @@ declare global {
                 term: string;
             };
 
-            type FindEffectivePermissions = {
+            type FindEffective = {
                 where: {
                     account: string;
                     realm: string;
@@ -88,7 +86,7 @@ declare global {
                 sort: Sort;
             };
 
-            namespace CollectEffectivePermissions {
+            namespace CollectEffective {
                 type Props = {
                     account: string;
                 };

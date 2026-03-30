@@ -36,9 +36,9 @@ declare global {
 
                 getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
 
-                findDelegateableRoles: (props: FindDelegateableRoles) => Promise<[Entity[], number]>;
+                findDelegateable: (props: FindDelegateable) => Promise<[Entity[], number]>;
 
-                findEffectiveRoles: (props: FindEffectiveRoles) => Promise<[Entity[], number]>;
+                findEffective: (props: FindEffective) => Promise<[Entity[], number]>;
 
                 getHierarchyGraph: (props: GetHierarchyGraph) => Promise<Graph.Data>;
 
@@ -117,7 +117,7 @@ declare global {
                 term: string;
             };
 
-            type FindDelegateableRoles = {
+            type FindDelegateable = {
                 where: {
                     type: DelegatorType;
                     realm: string;
@@ -128,7 +128,7 @@ declare global {
                 sort: Sort;
             };
 
-            type FindEffectiveRoles = {
+            type FindEffective = {
                 where: {
                     account: string;
                     realm: string;

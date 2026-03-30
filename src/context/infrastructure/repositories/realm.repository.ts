@@ -63,23 +63,17 @@ export class RealmRepository extends RealmAdapter implements Repositories.Realm.
         props: Repositories.Realm.FindMany<P, F>,
     ): Promise<[Loaded<Realm, P, F>[], number]> {
         try {
-            if ("where" in props) {
-                const { transaction, options, where } = props;
-                const entityManager = transaction ?? this.readManager.fork();
-                return await entityManager.findAndCount(Realm, where, options);
-            } else {
-                const { pagination, filters, sort, options } = props;
-                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
-                const where = super.buildWhereORM(filters);
-                const entityManager = this.readManager.fork();
-                return await entityManager.findAndCount(Realm, where, opts);
-            }
+            const { pagination, filters, sort, options } = props;
+            const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
+            const where = super.buildWhereORM(filters);
+            const entityManager = this.readManager.fork();
+            return await entityManager.findAndCount(Realm, where, opts);
         } catch (error) {
             throw RepositoryException.fromOrmError(error, this.resource);
         }
     }
 
-    public async getLookupList({ pagination, term }: Repositories.Realm.GetLookupList): Promise<[Realm[], number]> {
+    public async getLookupList({ pagination, realms, term }: Repositories.Realm.GetLookupList): Promise<[Realm[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const builder = entityManager.createQueryBuilder(Realm, "r");
@@ -88,6 +82,10 @@ export class RealmRepository extends RealmAdapter implements Repositories.Realm.
                 .select(["r.id", "r.code", "r.name"])
                 .limit(pagination.elementsPerPage)
                 .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
+
+            if (realms?.length) {
+                builder.andWhere({ "r.id": { $in: realms } });
+            }
 
             if (term) {
                 builder.andWhere("r.name % ?", [term]).orderBy({

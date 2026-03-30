@@ -1,5 +1,4 @@
 export { GetRoleDescendantsListQueryDTO, GetRoleDescendantsListBodyDTO } from "./req/get-descendants-list.dto";
-export { GetDelegableRolesListQueryDTO, GetDelegableRolesListBodyDTO } from "./req/get-delegable-list.dto";
 export { GetEffectiveRolesListQueryDTO, GetEffectiveRolesListBodyDTO } from "./req/get-effective-list.dto";
 export { GetRoleAncestorsListQueryDTO, GetRoleAncestorsListBodyDTO } from "./req/get-ancestors-list.dto";
 export { GetRolesLookupListQueryDTO, GetRolesLookupListBodyDTO } from "./req/get-lookup-list.dto";
@@ -12,6 +11,11 @@ export { CreateRoleQueryDTO, CreateRoleBodyDTO } from "./req/create.dto";
 export { UpdateRoleQueryDTO, UpdateRoleBodyDTO } from "./req/update.dto";
 export { PurgeRoleQueryDTO, PurgeRoleBodyDTO } from "./req/purge.dto";
 export { GetRoleByIdQueryDTO } from "./req/get-by-id.dto";
+export {
+    GetDelegableRolesListByAccountQueryDTO,
+    GetDelegableRolesListByRoleQueryDTO,
+    GetDelegableRolesListBodyDTO,
+} from "./req/get-delegable-list.dto";
 
 export { RoleHierarchyGraphDTO } from "./res/hierarchy-graph.dto";
 export { RoleHierarchyListDTO } from "./res/hierarchy-list.dto";

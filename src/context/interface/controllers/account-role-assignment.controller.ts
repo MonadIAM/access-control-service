@@ -14,8 +14,8 @@ import {
 } from "@nestjs/common";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { ACCOUNT_ROLE_ASSIGNMENT_OPERATION } from "~context/application/operations";
+import { ACCOUNT_ROLE_ASSIGNMENT_QUERY } from "~context/application/query";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
@@ -36,124 +36,124 @@ import {
     AccountRoleAssignmentDTO,
 } from "../dto/account-role-assignment";
 
+const {
+    INTERNAL_SERVER_ERROR,
+    UNPROCESSABLE_ENTITY,
+    UNAUTHORIZED,
+    BAD_REQUEST,
+    FORBIDDEN,
+    NOT_FOUND,
+    CONFLICT,
+    CREATED,
+    OK,
+} = HttpStatus;
+const {
+    ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON,
+    ACCOUNT_ROLE_ASSIGNMENT_RESTORE,
+    ACCOUNT_ROLE_ASSIGNMENT_CREATE,
+    ACCOUNT_ROLE_ASSIGNMENT_REVOKE,
+    ACCOUNT_ROLE_ASSIGNMENT_PURGE,
+} = PermissionCode;
+
 @ApiTags("AccountRoleAssignment")
 @Controller("/account-role-assignment")
 @UseInterceptors(MonitoringInterceptor)
 export class AccountRoleAssignmentController {
-    private readonly populate = {
-        DETAILED: ["realm", "role"] as const,
-        COMPACT: [] as const,
-    };
-
     public constructor(
-        @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
-        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_OPERATION)
         private readonly accountRoleAssignmentOperation: Operations.AccountRoleAssignment.Contract,
+        @Inject(ACCOUNT_ROLE_ASSIGNMENT_QUERY)
+        private readonly accountRoleAssignmentQuery: Queries.AccountRoleAssignment.Contract,
     ) {}
 
     @Get()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(AccountRoleAssignmentDTO)
-    @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_READ_ALL)
+    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON)
+    @ApiResponse({ status: OK, type: AccountRoleAssignmentDTO })
     @ApiOperation({ summary: "Returns a account role assignment by identifier" })
-    @ApiResponse({ status: HttpStatus.OK, type: AccountRoleAssignmentDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.NOT_FOUND)
-    public getById(
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    public findUnique(
         @Query() { assignment, realm, view }: GetAccountRoleAssignmentByIdQueryDTO,
     ): Promise<Repositories.AccountRoleAssignment.Entity> {
-        return this.accountRoleAssignmentRepository.findUniqueOrThrow({
-            options: { populate: this.populate[view] },
-            where: { id: assignment, realm },
-        });
+        return this.accountRoleAssignmentQuery.findUnique({ assignment, realm, view });
     }
 
     @Post("list")
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(OK)
     @FormatResponse(AccountRoleAssignmentListDTO)
-    @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_READ_ALL)
+    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON)
+    @ApiResponse({ status: OK, type: AccountRoleAssignmentListDTO })
     @ApiOperation({ summary: "Returns a paginated list of account role assignments" })
-    @ApiResponse({ status: HttpStatus.OK, type: AccountRoleAssignmentListDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY)
-    public getList(
-        @Query() { realm, view }: GetAccountRoleAssignmentsListQueryDTO,
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    public findMany(
         @Body() { pagination, filters, sort }: GetAccountRoleAssignmentsListBodyDTO,
+        @Query() { realm, view }: GetAccountRoleAssignmentsListQueryDTO,
     ): Promise<[Repositories.AccountRoleAssignment.Entity[], number]> {
-        return this.accountRoleAssignmentRepository.findMany({
-            options: { populate: this.populate[view] },
-            pagination,
-            filters,
-            realm,
-            sort,
-        });
+        return this.accountRoleAssignmentQuery.findMany({ pagination, filters, realm, sort, view });
     }
 
     @Post("create")
-    @HttpCode(HttpStatus.CREATED)
+    @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_CREATE)
+    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_CREATE)
+    @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Creates a new account role assignment" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    @EndpointExceptions(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        HttpStatus.UNPROCESSABLE_ENTITY,
-        HttpStatus.BAD_REQUEST,
-        HttpStatus.CONFLICT,
-    )
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
         @Query() { realm }: CreateAccountRoleAssignmentQueryDTO,
         @Body() input: CreateAccountRoleAssignmentBodyDTO,
-    ): Promise<MessageResult> {
-        return this.accountRoleAssignmentOperation.create({ actor, context, input, realm });
-    }
-
-    @Patch("revoke")
-    @HttpCode(HttpStatus.OK)
-    @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_REVOKE)
-    @ApiOperation({ summary: "Revokes a non-system account role assignment/s" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
-    public revoke(
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
+    ): Promise<MessageResult> {
+        return this.accountRoleAssignmentOperation.create({ context, realm, actor, input });
+    }
+
+    @HttpCode(OK)
+    @Patch("revoke")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_REVOKE)
+    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({ summary: "Revokes a non-system account role assignment(s)" })
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    public revoke(
         @Query() { realm }: RevokeAccountRoleAssignmentQueryDTO,
         @Body() input: RevokeAccountRoleAssignmentBodyDTO,
-    ): Promise<MessageResult> {
-        return this.accountRoleAssignmentOperation.revoke({ actor, context, input, realm });
-    }
-
-    @Patch("restore")
-    @HttpCode(HttpStatus.OK)
-    @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_RESTORE)
-    @ApiOperation({ summary: "Restores a non-system account role assignment/s" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
-    public restore(
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
+    ): Promise<MessageResult> {
+        return this.accountRoleAssignmentOperation.revoke({ context, realm, actor, input });
+    }
+
+    @HttpCode(OK)
+    @Patch("restore")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_RESTORE)
+    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({ summary: "Restores a non-system account role assignment(s)" })
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    public restore(
         @Query() { realm }: RestoreAccountRoleAssignmentQueryDTO,
         @Body() input: RestoreAccountRoleAssignmentBodyDTO,
-    ): Promise<MessageResult> {
-        return this.accountRoleAssignmentOperation.restore({ actor, context, input, realm });
-    }
-
-    @Delete("purge")
-    @HttpCode(HttpStatus.OK)
-    @FormatResponse(SuccessMessageDTO)
-    @RequirePermission(PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_PURGE)
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system account role assignment/s" })
-    @ApiResponse({ status: HttpStatus.OK, type: SuccessMessageDTO })
-    @EndpointExceptions(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, HttpStatus.BAD_REQUEST)
-    public purge(
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
+    ): Promise<MessageResult> {
+        return this.accountRoleAssignmentOperation.restore({ context, realm, actor, input });
+    }
+
+    @HttpCode(OK)
+    @Delete("purge")
+    @FormatResponse(SuccessMessageDTO)
+    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_PURGE)
+    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({ summary: "Permanently deletes a revoked non-system account role assignment(s)" })
+    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    public purge(
         @Query() { realm }: PurgeAccountRoleAssignmentQueryDTO,
         @Body() input: PurgeAccountRoleAssignmentBodyDTO,
+        @ExtractActor() { account: actor }: ActorContext,
+        @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.accountRoleAssignmentOperation.purge({ actor, context, input, realm });
+        return this.accountRoleAssignmentOperation.purge({ context, realm, actor, input });
     }
 }

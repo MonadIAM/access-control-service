@@ -42,6 +42,7 @@ export class GetEffectiveRolesListQueryDTO {
 
     @Expose()
     @Validator.IsUUID()
-    @ApiProperty({ required: true, type: String, format: "uuid" })
-    public account!: string;
+    @Validator.IsOptional()
+    @ApiProperty({ required: false, type: String, format: "uuid" })
+    public account?: string;
 }

@@ -1,21 +1,32 @@
 declare namespace Services {
     namespace PermissionCache {
         interface Contract {
-            has: (props: Has) => Promise<boolean>;
+            has: (props: Has) => Promise<string[]>;
             exists: (props: Exists) => Promise<boolean>;
-            hasGlobal: (props: HasGlobal) => Promise<boolean>;
+            hasGlobal: (props: HasGlobal) => Promise<string[]>;
+            hasRealm: (props: HasRealm) => Promise<boolean>;
+            getRealms: (props: GetRealms) => Promise<string[]>;
             populate: (props: Populate) => Promise<void>;
             invalidate: (props: Invalidate) => Promise<void>;
         }
 
         type Has = {
-            permission: string;
+            permissions: string[];
             account: string;
             realm: string;
         };
 
         type HasGlobal = {
-            permission: string;
+            permissions: string[];
+            account: string;
+        };
+
+        type HasRealm = {
+            account: string;
+            realm: string;
+        };
+
+        type GetRealms = {
             account: string;
         };
 
@@ -24,7 +35,8 @@ declare namespace Services {
         };
 
         type Populate = {
-            rows: Repositories.Permission.CollectEffectivePermissions.Result;
+            rows: Repositories.Permission.CollectEffective.Result;
+            realms: string[];
             account: string;
         };
 

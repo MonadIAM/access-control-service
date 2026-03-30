@@ -17,6 +17,7 @@ declare global {
     };
 
     type Req<T extends RouteGenericInterface = RouteGenericInterface> = FastifyRequest<T> & {
+        metadata: Record<string, unknown>;
         actorContext: ActorContext;
     };
 

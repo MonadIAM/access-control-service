@@ -2,7 +2,6 @@ import { IsNotEmptyObject, ValidateIf } from "class-validator";
 import { Expose, Type } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
 
-import { DelegatorType } from "~context/enums";
 import { Validator } from "~common/validator";
 import { PaginationDTO } from "~common/dto";
 
@@ -35,16 +34,24 @@ export class GetDelegableRolesListBodyDTO {
     public sort!: RolesSortDTO;
 }
 
-export class GetDelegableRolesListQueryDTO {
+export class GetDelegableRolesListByAccountQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
     public realm!: string;
 
     @Expose()
-    @Validator.IsEnum(DelegatorType)
-    @ApiProperty({ required: true, enum: DelegatorType, enumName: "DelegatorType" })
-    public type!: DelegatorType;
+    @Validator.IsUUID()
+    @Validator.IsOptional()
+    @ApiProperty({ required: false, type: String, format: "uuid" })
+    public id?: string;
+}
+
+export class GetDelegableRolesListByRoleQueryDTO {
+    @Expose()
+    @Validator.IsUUID()
+    @ApiProperty({ required: true, type: String, format: "uuid" })
+    public realm!: string;
 
     @Expose()
     @Validator.IsUUID()
