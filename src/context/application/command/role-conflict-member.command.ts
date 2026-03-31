@@ -3,7 +3,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { ROLE_CONFLICT_MEMBER_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
-import { OperationException } from "~common/exceptions";
+import { CommandException } from "~common/exceptions";
 import {
     ROLE_CONFLICT_MEMBER_REPOSITORY,
     ROLE_CONFLICT_GROUP_REPOSITORY,
@@ -11,7 +11,7 @@ import {
 } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleConflictMemberOperation implements Operations.RoleConflictMember.Contract {
+export class RoleConflictMemberCommand implements Commands.RoleConflictMember.Contract {
     private readonly dictionaryPath = "commands.role-conflict-member";
     private readonly resource = "RoleConflictMember";
 
@@ -28,7 +28,7 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create(props: Operations.RoleConflictMember.Create): Promise<MessageResult> {
+    public async create(props: Commands.RoleConflictMember.Create): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -51,7 +51,7 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
                     ]);
 
                     if (roles.length < input.roles.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                     }
 
                     await this.roleConflictMemberService.create({
@@ -63,11 +63,11 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purge(props: Operations.RoleConflictMember.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.RoleConflictMember.Purge): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -84,7 +84,7 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.MEMBERS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.MEMBERS_NOT_FOUND`);
                     }
 
                     this.roleConflictMemberService.purge({ transaction, entities });
@@ -97,7 +97,7 @@ export class RoleConflictMemberOperation implements Operations.RoleConflictMembe
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 }

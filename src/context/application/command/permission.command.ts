@@ -5,10 +5,10 @@ import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/que
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { PERMISSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
-import { OperationException } from "~common/exceptions";
+import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class PermissionOperation implements Operations.Permission.Contract {
+export class PermissionCommand implements Commands.Permission.Contract {
     private readonly dictionaryPath = "commands.permission";
     private readonly resource = "Permission";
 
@@ -25,7 +25,7 @@ export class PermissionOperation implements Operations.Permission.Contract {
         private readonly realmRepository: Repositories.Realm.Contract,
     ) {}
 
-    public async create(props: Operations.Permission.Create): Promise<MessageResult> {
+    public async create(props: Commands.Permission.Create): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -51,11 +51,11 @@ export class PermissionOperation implements Operations.Permission.Contract {
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async update(props: Operations.Permission.Update): Promise<MessageResult> {
+    public async update(props: Commands.Permission.Update): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -77,11 +77,11 @@ export class PermissionOperation implements Operations.Permission.Contract {
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purge(props: Operations.Permission.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.Permission.Purge): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -98,7 +98,7 @@ export class PermissionOperation implements Operations.Permission.Contract {
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                     }
 
                     this.permissionService.purge({ transaction, entities });
@@ -111,11 +111,11 @@ export class PermissionOperation implements Operations.Permission.Contract {
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async revoke(props: Operations.Permission.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.Permission.Revoke): Promise<MessageResult> {
         try {
             const { entities, affected } = await this.transactional.run({
                 audit: {
@@ -132,7 +132,7 @@ export class PermissionOperation implements Operations.Permission.Contract {
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                     }
 
                     this.permissionService.revoke({ entities });
@@ -153,11 +153,11 @@ export class PermissionOperation implements Operations.Permission.Contract {
                 return { message: `${this.dictionaryPath}.REVOKED` };
             }
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async restore(props: Operations.Permission.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.Permission.Restore): Promise<MessageResult> {
         try {
             const { entities, affected } = await this.transactional.run({
                 audit: {
@@ -174,7 +174,7 @@ export class PermissionOperation implements Operations.Permission.Contract {
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                     }
 
                     this.permissionService.restore({ entities });
@@ -195,7 +195,7 @@ export class PermissionOperation implements Operations.Permission.Contract {
                 return { message: `${this.dictionaryPath}.RESTORED` };
             }
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 }

@@ -13,8 +13,8 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { ROLE_OPERATION } from "~context/application/operations";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { ROLE_COMMAND } from "~context/application/command";
 import { ROLE_QUERY } from "~context/application/query";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
@@ -90,8 +90,8 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RoleController {
     public constructor(
-        @Inject(ROLE_OPERATION)
-        private readonly roleOperation: Operations.Role.Contract,
+        @Inject(ROLE_COMMAND)
+        private readonly roleCommand: Commands.Role.Contract,
         @Inject(ROLE_QUERY)
         private readonly roleQuery: Queries.Role.Contract,
     ) {}
@@ -233,7 +233,7 @@ export class RoleController {
         @Query() { realm }: CreateRoleQueryDTO,
         @Body() input: CreateRoleBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleOperation.create({ actor, context, input, realm });
+        return this.roleCommand.create({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -249,7 +249,7 @@ export class RoleController {
         @Query() { realm, id }: UpdateRoleQueryDTO,
         @Body() input: UpdateRoleBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleOperation.update({ actor, context, input, realm, id });
+        return this.roleCommand.update({ actor, context, input, realm, id });
     }
 
     @HttpCode(OK)
@@ -265,7 +265,7 @@ export class RoleController {
         @Query() { realm }: RevokeRoleQueryDTO,
         @Body() input: RevokeRoleBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleOperation.revoke({ actor, context, input, realm });
+        return this.roleCommand.revoke({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -281,7 +281,7 @@ export class RoleController {
         @Query() { realm }: RestoreRoleQueryDTO,
         @Body() input: RestoreRoleBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleOperation.restore({ actor, context, input, realm });
+        return this.roleCommand.restore({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -297,7 +297,7 @@ export class RoleController {
         @Query() { realm, id }: PurgeRoleQueryDTO,
         @Body() input: PurgeRoleBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleOperation.purge({ actor, context, input, realm, id });
+        return this.roleCommand.purge({ actor, context, input, realm, id });
     }
 
     @HttpCode(OK)
@@ -313,6 +313,6 @@ export class RoleController {
         @Query() { realm, id }: PurgeRoleSubtreeQueryDTO,
         @Body() input: PurgeRoleSubtreeBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleOperation.purgeSubtree({ actor, context, input, realm, id });
+        return this.roleCommand.purgeSubtree({ actor, context, input, realm, id });
     }
 }

@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 
 import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
-import { REALM_OPERATION } from "~context/application/operations";
+import { REALM_COMMAND } from "~context/application/command";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { REALM_QUERY } from "~context/application/query";
 import { PermissionCode } from "~context/enums";
@@ -62,8 +62,8 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RealmController {
     public constructor(
-        @Inject(REALM_OPERATION)
-        private readonly realmOperation: Operations.Realm.Contract,
+        @Inject(REALM_COMMAND)
+        private readonly realmCommand: Commands.Realm.Contract,
         @Inject(REALM_QUERY)
         private readonly realmQuery: Queries.Realm.Contract,
     ) {}
@@ -120,14 +120,14 @@ export class RealmController {
     @RequirePermission(REALM_CREATE)
     @FormatResponse(SuccessMessageDTO)
     @ApiOperation({ summary: "Creates a new realm" })
-    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
         @Body() input: CreateRealmBodyDTO,
     ): Promise<MessageResult> {
-        return this.realmOperation.create({ context, actor, input });
+        return this.realmCommand.create({ context, actor, input });
     }
 
     @HttpCode(OK)
@@ -143,7 +143,7 @@ export class RealmController {
         @Query() { id }: UpdateRealmQueryDTO,
         @Body() input: UpdateRealmBodyDTO,
     ): Promise<MessageResult> {
-        return this.realmOperation.update({ context, actor, input, id });
+        return this.realmCommand.update({ context, actor, input, id });
     }
 
     @HttpCode(OK)
@@ -158,7 +158,7 @@ export class RealmController {
         @ExtractContext() context: RequestContext,
         @Body() input: RevokeRealmBodyDTO,
     ): Promise<MessageResult> {
-        return this.realmOperation.revoke({ context, actor, input });
+        return this.realmCommand.revoke({ context, actor, input });
     }
 
     @HttpCode(OK)
@@ -173,7 +173,7 @@ export class RealmController {
         @ExtractContext() context: RequestContext,
         @Body() input: RestoreRealmBodyDTO,
     ): Promise<MessageResult> {
-        return this.realmOperation.restore({ context, actor, input });
+        return this.realmCommand.restore({ context, actor, input });
     }
 
     @HttpCode(OK)
@@ -188,6 +188,6 @@ export class RealmController {
         @ExtractContext() context: RequestContext,
         @Body() input: PurgeRealmBodyDTO,
     ): Promise<MessageResult> {
-        return this.realmOperation.purge({ context, actor, input });
+        return this.realmCommand.purge({ context, actor, input });
     }
 }

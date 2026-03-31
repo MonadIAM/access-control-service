@@ -4,7 +4,7 @@ import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/que
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
-import { OperationException } from "~common/exceptions";
+import { CommandException } from "~common/exceptions";
 import {
     ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
     PERMISSION_REPOSITORY,
@@ -13,7 +13,7 @@ import {
 } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RolePermissionAssignmentOperation implements Operations.RolePermissionAssignment.Contract {
+export class RolePermissionAssignmentCommand implements Commands.RolePermissionAssignment.Contract {
     private readonly dictionaryPath = "commands.role-permission-assignment";
     private readonly resource = "RolePermissionAssignment";
 
@@ -34,7 +34,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create(props: Operations.RolePermissionAssignment.Create): Promise<MessageResult> {
+    public async create(props: Commands.RolePermissionAssignment.Create): Promise<MessageResult> {
         try {
             const { affected } = await this.transactional.run({
                 audit: {
@@ -61,7 +61,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                     ]);
 
                     if (permissionEntities.length < input.permissions.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                     }
 
                     await this.rolePermissionAssignmentService.create({
@@ -83,11 +83,11 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
 
             return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purge(props: Operations.RolePermissionAssignment.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.RolePermissionAssignment.Purge): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -104,7 +104,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
                     this.rolePermissionAssignmentService.purge({ transaction, entities });
@@ -117,11 +117,11 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async revoke(props: Operations.RolePermissionAssignment.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.RolePermissionAssignment.Revoke): Promise<MessageResult> {
         try {
             const { entities, affected } = await this.transactional.run({
                 audit: {
@@ -138,7 +138,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
                     this.rolePermissionAssignmentService.revoke({ entities });
@@ -159,11 +159,11 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                 return { message: `${this.dictionaryPath}.REVOKED` };
             }
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async restore(props: Operations.RolePermissionAssignment.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.RolePermissionAssignment.Restore): Promise<MessageResult> {
         try {
             const { entities, affected } = await this.transactional.run({
                 audit: {
@@ -180,7 +180,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
                     this.rolePermissionAssignmentService.restore({ entities });
@@ -201,7 +201,7 @@ export class RolePermissionAssignmentOperation implements Operations.RolePermiss
                 return { message: `${this.dictionaryPath}.RESTORED` };
             }
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 }

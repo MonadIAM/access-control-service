@@ -13,7 +13,7 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { PERMISSION_OVERRIDE_OPERATION } from "~context/application/operations";
+import { PERMISSION_OVERRIDE_COMMAND } from "~context/application/command";
 import { PERMISSION_OVERRIDE_QUERY } from "~context/application/query";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -68,8 +68,8 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class PermissionOverrideController {
     public constructor(
-        @Inject(PERMISSION_OVERRIDE_OPERATION)
-        private readonly permissionOverrideOperation: Operations.PermissionOverride.Contract,
+        @Inject(PERMISSION_OVERRIDE_COMMAND)
+        private readonly permissionOverrideCommand: Commands.PermissionOverride.Contract,
         @Inject(PERMISSION_OVERRIDE_QUERY)
         private readonly permissionOverrideQuery: Queries.PermissionOverride.Contract,
     ) {}
@@ -118,7 +118,7 @@ export class PermissionOverrideController {
         @Body() input: CreatePermissionOverrideBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.permissionOverrideOperation.create({ context, realm, actor, input });
+        return this.permissionOverrideCommand.create({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -134,7 +134,7 @@ export class PermissionOverrideController {
         @Body() input: RevokePermissionOverrideBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.permissionOverrideOperation.revoke({ context, realm, actor, input });
+        return this.permissionOverrideCommand.revoke({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -150,7 +150,7 @@ export class PermissionOverrideController {
         @Body() input: RestorePermissionOverrideBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.permissionOverrideOperation.restore({ context, realm, actor, input });
+        return this.permissionOverrideCommand.restore({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -166,6 +166,6 @@ export class PermissionOverrideController {
         @Body() input: PurgePermissionOverrideBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.permissionOverrideOperation.purge({ context, realm, actor, input });
+        return this.permissionOverrideCommand.purge({ context, realm, actor, input });
     }
 }

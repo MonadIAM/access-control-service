@@ -4,7 +4,7 @@ import { AccessControlActionType, AccessControlEntityType } from "~context/enums
 import { PERMISSION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
-import { OperationException } from "~common/exceptions";
+import { CommandException } from "~common/exceptions";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
     REALM_REPOSITORY,
@@ -12,7 +12,7 @@ import {
 } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class AccountRoleAssignmentOperation implements Operations.AccountRoleAssignment.Contract {
+export class AccountRoleAssignmentCommand implements Commands.AccountRoleAssignment.Contract {
     private readonly dictionaryPath = "commands.account-role-assignment";
     private readonly resource = "AccountRoleAssignment";
 
@@ -31,7 +31,7 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
         private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
-    public async create(props: Operations.AccountRoleAssignment.Create): Promise<MessageResult> {
+    public async create(props: Commands.AccountRoleAssignment.Create): Promise<MessageResult> {
         try {
             const { input, actor, realm } = props;
             await this.transactional.run({
@@ -54,7 +54,7 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                     ]);
 
                     if (roleEntities.length < input.roles.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                     }
 
                     await this.accountRoleAssignmentService.create({
@@ -73,11 +73,11 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
 
             return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purge(props: Operations.AccountRoleAssignment.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.AccountRoleAssignment.Purge): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -94,7 +94,7 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
                     this.accountRoleAssignmentService.purge({ transaction, entities });
@@ -107,11 +107,11 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async revoke(props: Operations.AccountRoleAssignment.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.AccountRoleAssignment.Revoke): Promise<MessageResult> {
         try {
             const entities = await this.transactional.run({
                 audit: {
@@ -128,7 +128,7 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
                     this.accountRoleAssignmentService.revoke({ entities });
@@ -145,11 +145,11 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                 return { message: `${this.dictionaryPath}.REVOKED` };
             }
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async restore(props: Operations.AccountRoleAssignment.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.AccountRoleAssignment.Restore): Promise<MessageResult> {
         try {
             const entities = await this.transactional.run({
                 audit: {
@@ -166,7 +166,7 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                     }
 
                     this.accountRoleAssignmentService.restore({ entities });
@@ -183,7 +183,7 @@ export class AccountRoleAssignmentOperation implements Operations.AccountRoleAss
                 return { message: `${this.dictionaryPath}.RESTORED` };
             }
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 }

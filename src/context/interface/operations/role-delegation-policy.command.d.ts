@@ -1,5 +1,5 @@
-declare namespace Operations {
-    namespace Realm {
+declare namespace Commands {
+    namespace RoleDelegationPolicy {
         interface Contract {
             create: (props: Create) => Promise<MessageResult>;
             update: (props: Update) => Promise<MessageResult>;
@@ -10,19 +10,22 @@ declare namespace Operations {
 
         type Create = {
             actor: string;
-            context: RequestContext;
+            realm: string;
             input: {
-                code: string;
-                name: string;
-                description?: string;
+                delegator: string;
+                target: string;
+                depthLimit?: number;
+                description: string;
             };
+            context: RequestContext;
         };
 
         type Update = {
             id: string;
             actor: string;
+            realm: string;
             input: {
-                patch: Partial<Entities.Realm.MutableFields>;
+                patch: Partial<Entities.RoleDelegationPolicy.MutableFields>;
                 reason: string;
             };
             context: RequestContext;
@@ -30,6 +33,7 @@ declare namespace Operations {
 
         type Purge = {
             actor: string;
+            realm: string;
             input: {
                 identifiers: string[];
                 reason: string;
@@ -39,6 +43,7 @@ declare namespace Operations {
 
         type Revoke = {
             actor: string;
+            realm: string;
             input: {
                 identifiers: string[];
                 reason: string;
@@ -48,6 +53,7 @@ declare namespace Operations {
 
         type Restore = {
             actor: string;
+            realm: string;
             input: {
                 identifiers: string[];
                 reason: string;

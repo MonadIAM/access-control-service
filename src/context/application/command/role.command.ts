@@ -5,10 +5,10 @@ import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/que
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { ROLE_SERVICE } from "~context/domain/services";
-import { OperationException } from "~common/exceptions";
+import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleOperation implements Operations.Role.Contract {
+export class RoleCommand implements Commands.Role.Contract {
     private readonly dictionaryPath = "commands.role";
     private readonly resource = "Role";
 
@@ -25,7 +25,7 @@ export class RoleOperation implements Operations.Role.Contract {
         private readonly roleService: Services.Role.Contract,
     ) {}
 
-    public async create(props: Operations.Role.Create): Promise<MessageResult> {
+    public async create(props: Commands.Role.Create): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -57,11 +57,11 @@ export class RoleOperation implements Operations.Role.Contract {
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async update(props: Operations.Role.Update): Promise<MessageResult> {
+    public async update(props: Commands.Role.Update): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -83,11 +83,11 @@ export class RoleOperation implements Operations.Role.Contract {
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purge(props: Operations.Role.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.Role.Purge): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -113,11 +113,11 @@ export class RoleOperation implements Operations.Role.Contract {
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purgeSubtree(props: Operations.Role.PurgeSubtree): Promise<MessageResult> {
+    public async purgeSubtree(props: Commands.Role.PurgeSubtree): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -143,11 +143,11 @@ export class RoleOperation implements Operations.Role.Contract {
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async revoke(props: Operations.Role.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.Role.Revoke): Promise<MessageResult> {
         try {
             const { entities, affected } = await this.transactional.run({
                 audit: {
@@ -164,7 +164,7 @@ export class RoleOperation implements Operations.Role.Contract {
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                     }
 
                     this.roleService.revoke({ entities });
@@ -185,11 +185,11 @@ export class RoleOperation implements Operations.Role.Contract {
                 return { message: `${this.dictionaryPath}.REVOKED` };
             }
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async restore(props: Operations.Role.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.Role.Restore): Promise<MessageResult> {
         try {
             const { entities, affected } = await this.transactional.run({
                 audit: {
@@ -206,7 +206,7 @@ export class RoleOperation implements Operations.Role.Contract {
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                     }
 
                     this.roleService.restore({ entities });
@@ -227,7 +227,7 @@ export class RoleOperation implements Operations.Role.Contract {
                 return { message: `${this.dictionaryPath}.RESTORED` };
             }
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 }

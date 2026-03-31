@@ -1,11 +1,13 @@
-import { PermissionOverrideEffect } from "~context/enums";
+import { RoleActorType, RoleProtoType } from "~context/enums";
 
 declare global {
-    namespace Operations {
-        namespace PermissionOverride {
+    namespace Commands {
+        namespace Role {
             interface Contract {
                 create: (props: Create) => Promise<MessageResult>;
+                update: (props: Update) => Promise<MessageResult>;
                 purge: (props: Purge) => Promise<MessageResult>;
+                purgeSubtree: (props: PurgeSubtree) => Promise<MessageResult>;
                 revoke: (props: Revoke) => Promise<MessageResult>;
                 restore: (props: Restore) => Promise<MessageResult>;
             }
@@ -13,19 +15,45 @@ declare global {
             type Create = {
                 actor: string;
                 realm: string;
-                context: RequestContext;
                 input: {
-                    effect: PermissionOverrideEffect;
-                    permission: string;
-                    account: string;
+                    code: string;
+                    name: string;
+                    description?: string;
+                    actorType: RoleActorType;
+                    protoType: RoleProtoType;
+                    nonDelegable: boolean;
+                    parent: string;
+                    children: string[];
                 };
+                context: RequestContext;
             };
 
-            type Purge = {
+            type Update = {
+                id: string;
                 actor: string;
                 realm: string;
                 input: {
-                    identifiers: string[];
+                    patch: Partial<Entities.Role.MutableFields>;
+                    reason: string;
+                };
+                context: RequestContext;
+            };
+
+            type Purge = {
+                id: string;
+                actor: string;
+                realm: string;
+                input: {
+                    reason: string;
+                };
+                context: RequestContext;
+            };
+
+            type PurgeSubtree = {
+                id: string;
+                actor: string;
+                realm: string;
+                input: {
                     reason: string;
                 };
                 context: RequestContext;

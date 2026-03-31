@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { ROLE_PERMISSION_ASSIGNMENT_OPERATION } from "~context/application/operations";
+import { ROLE_PERMISSION_ASSIGNMENT_COMMAND } from "~context/application/command";
 import { ROLE_PERMISSION_ASSIGNMENT_QUERY } from "~context/application/query";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -60,8 +60,8 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RolePermissionAssignmentController {
     public constructor(
-        @Inject(ROLE_PERMISSION_ASSIGNMENT_OPERATION)
-        private readonly rolePermissionAssignmentOperation: Operations.RolePermissionAssignment.Contract,
+        @Inject(ROLE_PERMISSION_ASSIGNMENT_COMMAND)
+        private readonly rolePermissionAssignmentCommand: Commands.RolePermissionAssignment.Contract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_QUERY)
         private readonly rolePermissionAssignmentQuery: Queries.RolePermissionAssignment.Contract,
     ) {}
@@ -106,7 +106,7 @@ export class RolePermissionAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.rolePermissionAssignmentOperation.create({ actor, context, input, realm });
+        return this.rolePermissionAssignmentCommand.create({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -122,7 +122,7 @@ export class RolePermissionAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.rolePermissionAssignmentOperation.revoke({ actor, context, input, realm });
+        return this.rolePermissionAssignmentCommand.revoke({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -138,7 +138,7 @@ export class RolePermissionAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.rolePermissionAssignmentOperation.restore({ actor, context, input, realm });
+        return this.rolePermissionAssignmentCommand.restore({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -154,6 +154,6 @@ export class RolePermissionAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.rolePermissionAssignmentOperation.purge({ actor, context, input, realm });
+        return this.rolePermissionAssignmentCommand.purge({ actor, context, input, realm });
     }
 }

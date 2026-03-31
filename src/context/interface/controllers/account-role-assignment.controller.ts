@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { ACCOUNT_ROLE_ASSIGNMENT_OPERATION } from "~context/application/operations";
+import { ACCOUNT_ROLE_ASSIGNMENT_COMMAND } from "~context/application/command";
 import { ACCOUNT_ROLE_ASSIGNMENT_QUERY } from "~context/application/query";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -60,8 +60,8 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class AccountRoleAssignmentController {
     public constructor(
-        @Inject(ACCOUNT_ROLE_ASSIGNMENT_OPERATION)
-        private readonly accountRoleAssignmentOperation: Operations.AccountRoleAssignment.Contract,
+        @Inject(ACCOUNT_ROLE_ASSIGNMENT_COMMAND)
+        private readonly accountRoleAssignmentCommand: Commands.AccountRoleAssignment.Contract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_QUERY)
         private readonly accountRoleAssignmentQuery: Queries.AccountRoleAssignment.Contract,
     ) {}
@@ -97,7 +97,7 @@ export class AccountRoleAssignmentController {
     @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_CREATE)
-    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Creates a new account role assignment" })
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
@@ -106,7 +106,7 @@ export class AccountRoleAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.accountRoleAssignmentOperation.create({ context, realm, actor, input });
+        return this.accountRoleAssignmentCommand.create({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -122,7 +122,7 @@ export class AccountRoleAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.accountRoleAssignmentOperation.revoke({ context, realm, actor, input });
+        return this.accountRoleAssignmentCommand.revoke({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -138,7 +138,7 @@ export class AccountRoleAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.accountRoleAssignmentOperation.restore({ context, realm, actor, input });
+        return this.accountRoleAssignmentCommand.restore({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -154,6 +154,6 @@ export class AccountRoleAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.accountRoleAssignmentOperation.purge({ context, realm, actor, input });
+        return this.accountRoleAssignmentCommand.purge({ context, realm, actor, input });
     }
 }

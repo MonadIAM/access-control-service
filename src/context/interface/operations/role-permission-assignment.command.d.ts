@@ -1,4 +1,4 @@
-declare namespace Operations {
+declare namespace Commands {
     namespace RolePermissionAssignment {
         interface Contract {
             create: (props: Create) => Promise<MessageResult>;
@@ -10,11 +10,11 @@ declare namespace Operations {
         type Create = {
             actor: string;
             realm: string;
-            context: RequestContext;
             input: {
                 permissions: string[];
                 role: string;
             };
+            context: RequestContext;
         };
 
         type Purge = {

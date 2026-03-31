@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { ROLE_CONFLICT_GROUP_OPERATION } from "~context/application/operations";
+import { ROLE_CONFLICT_GROUP_COMMAND } from "~context/application/command";
 import { ROLE_CONFLICT_GROUP_QUERY } from "~context/application/query";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -66,8 +66,8 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RoleConflictGroupController {
     public constructor(
-        @Inject(ROLE_CONFLICT_GROUP_OPERATION)
-        private readonly roleConflictGroupOperation: Operations.RoleConflictGroup.Contract,
+        @Inject(ROLE_CONFLICT_GROUP_COMMAND)
+        private readonly roleConflictGroupCommand: Commands.RoleConflictGroup.Contract,
         @Inject(ROLE_CONFLICT_GROUP_QUERY)
         private readonly roleConflictGroupQuery: Queries.RoleConflictGroup.Contract,
     ) {}
@@ -117,7 +117,7 @@ export class RoleConflictGroupController {
     @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_CONFLICT_GROUP_CREATE)
-    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Creates a new role conflict group" })
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
@@ -126,7 +126,7 @@ export class RoleConflictGroupController {
         @Body() input: CreateRoleConflictGroupBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictGroupOperation.create({ context, realm, actor, input });
+        return this.roleConflictGroupCommand.create({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -142,7 +142,7 @@ export class RoleConflictGroupController {
         @Body() input: UpdateRoleConflictGroupBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictGroupOperation.update({ context, realm, actor, input, id });
+        return this.roleConflictGroupCommand.update({ context, realm, actor, input, id });
     }
 
     @HttpCode(OK)
@@ -158,7 +158,7 @@ export class RoleConflictGroupController {
         @Body() input: RevokeRoleConflictGroupBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictGroupOperation.revoke({ context, realm, actor, input });
+        return this.roleConflictGroupCommand.revoke({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -174,7 +174,7 @@ export class RoleConflictGroupController {
         @Body() input: RestoreRoleConflictGroupBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictGroupOperation.restore({ context, realm, actor, input });
+        return this.roleConflictGroupCommand.restore({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -190,6 +190,6 @@ export class RoleConflictGroupController {
         @Body() input: PurgeRoleConflictGroupBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictGroupOperation.purge({ context, realm, actor, input });
+        return this.roleConflictGroupCommand.purge({ context, realm, actor, input });
     }
 }

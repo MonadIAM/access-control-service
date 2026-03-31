@@ -1,5 +1,5 @@
-declare namespace Operations {
-    namespace RoleConflictGroup {
+declare namespace Commands {
+    namespace Realm {
         interface Contract {
             create: (props: Create) => Promise<MessageResult>;
             update: (props: Update) => Promise<MessageResult>;
@@ -10,23 +10,19 @@ declare namespace Operations {
 
         type Create = {
             actor: string;
-            realm: string;
-            context: RequestContext;
             input: {
-                members: string[];
-                description: string;
-                maxAllowed: number;
                 code: string;
                 name: string;
+                description?: string;
             };
+            context: RequestContext;
         };
 
         type Update = {
             id: string;
             actor: string;
-            realm: string;
             input: {
-                patch: Partial<Entities.RoleConflictGroup.MutableFields>;
+                patch: Partial<Entities.Realm.MutableFields>;
                 reason: string;
             };
             context: RequestContext;
@@ -34,7 +30,6 @@ declare namespace Operations {
 
         type Purge = {
             actor: string;
-            realm: string;
             input: {
                 identifiers: string[];
                 reason: string;
@@ -44,7 +39,6 @@ declare namespace Operations {
 
         type Revoke = {
             actor: string;
-            realm: string;
             input: {
                 identifiers: string[];
                 reason: string;
@@ -54,7 +48,6 @@ declare namespace Operations {
 
         type Restore = {
             actor: string;
-            realm: string;
             input: {
                 identifiers: string[];
                 reason: string;

@@ -26,7 +26,7 @@ export const RepositoryErrorKind = {
     ...DatabaseErrorKind,
 } as const;
 
-export const OperationErrorKind = {
+export const CommandErrorKind = {
     Unprocessable: "Unprocessable",
     Unauthorized: "Unauthorized",
     BadRequest: "BadRequest",

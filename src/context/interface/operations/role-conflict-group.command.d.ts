@@ -1,5 +1,5 @@
-declare namespace Operations {
-    namespace RoleDelegationPolicy {
+declare namespace Commands {
+    namespace RoleConflictGroup {
         interface Contract {
             create: (props: Create) => Promise<MessageResult>;
             update: (props: Update) => Promise<MessageResult>;
@@ -11,24 +11,25 @@ declare namespace Operations {
         type Create = {
             actor: string;
             realm: string;
-            context: RequestContext;
             input: {
-                delegator: string;
-                target: string;
-                depthLimit?: number;
+                members: string[];
                 description: string;
+                maxAllowed: number;
+                code: string;
+                name: string;
             };
+            context: RequestContext;
         };
 
         type Update = {
             id: string;
             actor: string;
             realm: string;
-            context: RequestContext;
             input: {
-                patch: Partial<Entities.RoleDelegationPolicy.MutableFields>;
+                patch: Partial<Entities.RoleConflictGroup.MutableFields>;
                 reason: string;
             };
+            context: RequestContext;
         };
 
         type Purge = {

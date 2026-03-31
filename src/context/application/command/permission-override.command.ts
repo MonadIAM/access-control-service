@@ -4,7 +4,7 @@ import { AccessControlActionType, AccessControlEntityType } from "~context/enums
 import { PERMISSION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
-import { OperationException } from "~common/exceptions";
+import { CommandException } from "~common/exceptions";
 import {
     PERMISSION_OVERRIDE_REPOSITORY,
     PERMISSION_REPOSITORY,
@@ -12,7 +12,7 @@ import {
 } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class PermissionOverrideOperation implements Operations.PermissionOverride.Contract {
+export class PermissionOverrideCommand implements Commands.PermissionOverride.Contract {
     private readonly dictionaryPath = "commands.permission-override";
     private readonly resource = "PermissionOverride";
 
@@ -31,7 +31,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
         private readonly realmRepository: Repositories.Realm.Contract,
     ) {}
 
-    public async create(props: Operations.PermissionOverride.Create): Promise<MessageResult> {
+    public async create(props: Commands.PermissionOverride.Create): Promise<MessageResult> {
         try {
             const { input, realm } = props;
             await this.transactional.run({
@@ -69,11 +69,11 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
 
             return { message: `${this.dictionaryPath}.CREATED` };
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async purge(props: Operations.PermissionOverride.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.PermissionOverride.Purge): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
@@ -90,7 +90,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                     }
 
                     this.permissionOverrideService.purge({ transaction, entities });
@@ -103,11 +103,11 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                 },
             });
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async revoke(props: Operations.PermissionOverride.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.PermissionOverride.Revoke): Promise<MessageResult> {
         try {
             const entities = await this.transactional.run({
                 audit: {
@@ -124,7 +124,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                     }
 
                     this.permissionOverrideService.revoke({ entities });
@@ -141,11 +141,11 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                 return { message: `${this.dictionaryPath}.REVOKED` };
             }
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 
-    public async restore(props: Operations.PermissionOverride.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.PermissionOverride.Restore): Promise<MessageResult> {
         try {
             const entities = await this.transactional.run({
                 audit: {
@@ -162,7 +162,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw OperationException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                     }
 
                     this.permissionOverrideService.restore({ entities });
@@ -179,7 +179,7 @@ export class PermissionOverrideOperation implements Operations.PermissionOverrid
                 return { message: `${this.dictionaryPath}.RESTORED` };
             }
         } catch (error) {
-            throw OperationException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error, this.resource);
         }
     }
 }

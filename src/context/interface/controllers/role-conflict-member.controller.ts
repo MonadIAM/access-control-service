@@ -2,7 +2,7 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Delete, Inject, Quer
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { ROLE_CONFLICT_MEMBER_OPERATION } from "~context/application/operations";
+import { ROLE_CONFLICT_MEMBER_COMMAND } from "~context/application/command";
 import { ROLE_CONFLICT_MEMBER_QUERY } from "~context/application/query";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -38,8 +38,8 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RoleConflictMemberController {
     public constructor(
-        @Inject(ROLE_CONFLICT_MEMBER_OPERATION)
-        private readonly roleConflictMemberOperation: Operations.RoleConflictMember.Contract,
+        @Inject(ROLE_CONFLICT_MEMBER_COMMAND)
+        private readonly roleConflictMemberCommand: Commands.RoleConflictMember.Contract,
         @Inject(ROLE_CONFLICT_MEMBER_QUERY)
         private readonly roleConflictMemberQuery: Queries.RoleConflictMember.Contract,
     ) {}
@@ -75,7 +75,7 @@ export class RoleConflictMemberController {
     @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_CONFLICT_MEMBER_CREATE)
-    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Creates a new role conflict member(s)" })
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
@@ -84,7 +84,7 @@ export class RoleConflictMemberController {
         @Body() input: CreateRoleConflictMemberBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictMemberOperation.create({ actor, context, input, realm });
+        return this.roleConflictMemberCommand.create({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -100,6 +100,6 @@ export class RoleConflictMemberController {
         @Body() input: PurgeRoleConflictMemberBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictMemberOperation.purge({ actor, context, input, realm });
+        return this.roleConflictMemberCommand.purge({ actor, context, input, realm });
     }
 }

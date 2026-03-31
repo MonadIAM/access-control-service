@@ -9,9 +9,9 @@ import { PermissionGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
 import { PROCESSORS, QUEUES } from "./infrastructure/queues";
 import { REPOSITORIES } from "./infrastructure/repositories";
-import { OPERATIONS } from "./application/operations";
 import { CONTROLLERS } from "./interface/controllers";
 import { DOMAIN_SERVICES } from "./domain/services";
+import { COMMANDS } from "./application/command";
 import { QUERIES } from "./application/query";
 
 @Module({
@@ -21,7 +21,7 @@ import { QUERIES } from "./application/query";
         ...DOMAIN_SERVICES,
         ...REPOSITORIES,
         ...PROCESSORS,
-        ...OPERATIONS,
+        ...COMMANDS,
         ...QUERIES,
         ...QUEUES,
         PermissionGuard,

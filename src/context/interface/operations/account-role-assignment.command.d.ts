@@ -1,8 +1,7 @@
-declare namespace Operations {
-    namespace Permission {
+declare namespace Commands {
+    namespace AccountRoleAssignment {
         interface Contract {
             create: (props: Create) => Promise<MessageResult>;
-            update: (props: Update) => Promise<MessageResult>;
             purge: (props: Purge) => Promise<MessageResult>;
             revoke: (props: Revoke) => Promise<MessageResult>;
             restore: (props: Restore) => Promise<MessageResult>;
@@ -11,21 +10,9 @@ declare namespace Operations {
         type Create = {
             actor: string;
             realm: string;
-            context: RequestContext;
             input: {
-                code: string;
-                name: string;
-                description?: string;
-            };
-        };
-
-        type Update = {
-            id: string;
-            actor: string;
-            realm: string;
-            input: {
-                patch: Partial<Entities.Permission.MutableFields>;
-                reason: string;
+                account: string;
+                roles: string[];
             };
             context: RequestContext;
         };

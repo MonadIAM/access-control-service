@@ -13,7 +13,7 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { PERMISSION_OPERATION } from "~context/application/operations";
+import { PERMISSION_COMMAND } from "~context/application/command";
 import { PERMISSION_QUERY } from "~context/application/query";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -77,8 +77,8 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class PermissionController {
     public constructor(
-        @Inject(PERMISSION_OPERATION)
-        private readonly permissionOperation: Operations.Permission.Contract,
+        @Inject(PERMISSION_COMMAND)
+        private readonly permissionCommand: Commands.Permission.Contract,
         @Inject(PERMISSION_QUERY)
         private readonly permissionQuery: Queries.Permission.Contract,
     ) {}
@@ -144,8 +144,8 @@ export class PermissionController {
     @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PERMISSION_CREATE)
-    @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Creates a new permission" })
+    @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
         @ExtractActor() { account: actor }: ActorContext,
@@ -153,7 +153,7 @@ export class PermissionController {
         @ExtractContext() context: RequestContext,
         @Body() input: CreatePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionOperation.create({ context, realm, actor, input });
+        return this.permissionCommand.create({ context, realm, actor, input });
     }
 
     @Patch("update")
@@ -169,7 +169,7 @@ export class PermissionController {
         @ExtractContext() context: RequestContext,
         @Body() input: UpdatePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionOperation.update({ context, realm, actor, input, id });
+        return this.permissionCommand.update({ context, realm, actor, input, id });
     }
 
     @HttpCode(OK)
@@ -185,7 +185,7 @@ export class PermissionController {
         @ExtractContext() context: RequestContext,
         @Body() input: RevokePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionOperation.revoke({ context, realm, actor, input });
+        return this.permissionCommand.revoke({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -201,7 +201,7 @@ export class PermissionController {
         @ExtractContext() context: RequestContext,
         @Body() input: RestorePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionOperation.restore({ context, realm, actor, input });
+        return this.permissionCommand.restore({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -217,6 +217,6 @@ export class PermissionController {
         @ExtractContext() context: RequestContext,
         @Body() input: PurgePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionOperation.purge({ context, realm, actor, input });
+        return this.permissionCommand.purge({ context, realm, actor, input });
     }
 }

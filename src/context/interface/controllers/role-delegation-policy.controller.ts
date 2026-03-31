@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { ROLE_DELEGATION_POLICY_OPERATION } from "~context/application/operations";
+import { ROLE_DELEGATION_POLICY_COMMAND } from "~context/application/command";
 import { ROLE_DELEGATION_POLICY_QUERY } from "~context/application/query";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
@@ -63,8 +63,8 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RoleDelegationPolicyController {
     public constructor(
-        @Inject(ROLE_DELEGATION_POLICY_OPERATION)
-        private readonly roleDelegationPolicyOperation: Operations.RoleDelegationPolicy.Contract,
+        @Inject(ROLE_DELEGATION_POLICY_COMMAND)
+        private readonly roleDelegationPolicyCommand: Commands.RoleDelegationPolicy.Contract,
         @Inject(ROLE_DELEGATION_POLICY_QUERY)
         private readonly roleDelegationPolicyQuery: Queries.RoleDelegationPolicy.Contract,
     ) {}
@@ -109,7 +109,7 @@ export class RoleDelegationPolicyController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleDelegationPolicyOperation.create({ actor, context, input, realm });
+        return this.roleDelegationPolicyCommand.create({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -125,7 +125,7 @@ export class RoleDelegationPolicyController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleDelegationPolicyOperation.update({ actor, context, input, realm, id });
+        return this.roleDelegationPolicyCommand.update({ actor, context, input, realm, id });
     }
 
     @HttpCode(OK)
@@ -141,7 +141,7 @@ export class RoleDelegationPolicyController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleDelegationPolicyOperation.revoke({ actor, context, input, realm });
+        return this.roleDelegationPolicyCommand.revoke({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -157,7 +157,7 @@ export class RoleDelegationPolicyController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleDelegationPolicyOperation.restore({ actor, context, input, realm });
+        return this.roleDelegationPolicyCommand.restore({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -173,6 +173,6 @@ export class RoleDelegationPolicyController {
         @Body() input: PurgeRoleDelegationPolicyBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleDelegationPolicyOperation.purge({ actor, context, input, realm });
+        return this.roleDelegationPolicyCommand.purge({ actor, context, input, realm });
     }
 }

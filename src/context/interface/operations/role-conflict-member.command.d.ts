@@ -1,4 +1,4 @@
-declare namespace Operations {
+declare namespace Commands {
     namespace RoleConflictMember {
         interface Contract {
             create: (props: Create) => Promise<MessageResult>;
@@ -8,11 +8,11 @@ declare namespace Operations {
         type Create = {
             actor: string;
             realm: string;
-            context: RequestContext;
             input: {
                 roles: string[];
                 group: string;
             };
+            context: RequestContext;
         };
 
         type Purge = {
