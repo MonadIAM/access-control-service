@@ -11,6 +11,7 @@ declare global {
                 execute: (transaction: EntityManager) => Promise<T>;
                 audit?: Entities.AuditLog.ConstructorProps;
                 changeLog?: boolean;
+                resource?: string;
             };
         }
     }

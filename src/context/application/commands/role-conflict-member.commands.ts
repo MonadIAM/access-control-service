@@ -29,75 +29,69 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
     ) {}
 
     public async create(props: Commands.RoleConflictMember.Create): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.CONFLICT_MEMBER,
-                    actionType: AccessControlActionType.CREATE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input, realm } = props;
-                    const [roles, group] = await Promise.all([
-                        this.roleRepository.find({
-                            where: { id: { $in: input.roles }, realm },
-                            transaction,
-                        }),
-                        this.roleConflictGroupRepository.findUniqueOrThrow({
-                            where: { id: input.group, realm },
-                            transaction,
-                        }),
-                    ]);
-
-                    if (roles.length < input.roles.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
-                    }
-
-                    await this.roleConflictMemberService.create({
-                        input: { roles, group },
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.CONFLICT_MEMBER,
+                actionType: AccessControlActionType.CREATE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input, realm } = props;
+                const [roles, group] = await Promise.all([
+                    this.roleRepository.find({
+                        where: { id: { $in: input.roles }, realm },
                         transaction,
-                    });
+                    }),
+                    this.roleConflictGroupRepository.findUniqueOrThrow({
+                        where: { id: input.group, realm },
+                        transaction,
+                    }),
+                ]);
 
-                    return { message: `${this.dictionaryPath}.CREATED` };
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                if (roles.length < input.roles.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                }
+
+                await this.roleConflictMemberService.create({
+                    input: { roles, group },
+                    transaction,
+                });
+
+                return { message: `${this.dictionaryPath}.CREATED` };
+            },
+        });
     }
 
     public async purge(props: Commands.RoleConflictMember.Purge): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.CONFLICT_MEMBER,
-                    actionType: AccessControlActionType.DELETE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input } = props;
-                    const entities = await this.roleConflictMemberRepository.find({
-                        where: { id: { $in: input.identifiers } },
-                        transaction,
-                    });
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.CONFLICT_MEMBER,
+                actionType: AccessControlActionType.DELETE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input } = props;
+                const entities = await this.roleConflictMemberRepository.find({
+                    where: { id: { $in: input.identifiers } },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.MEMBERS_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.MEMBERS_NOT_FOUND`);
+                }
 
-                    this.roleConflictMemberService.purge({ transaction, entities });
+                this.roleConflictMemberService.purge({ transaction, entities });
 
-                    if (entities.length > 1) {
-                        return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
-                    } else {
-                        return { message: `${this.dictionaryPath}.PURGED` };
-                    }
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                if (entities.length > 1) {
+                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+                } else {
+                    return { message: `${this.dictionaryPath}.PURGED` };
+                }
+            },
+        });
     }
 }

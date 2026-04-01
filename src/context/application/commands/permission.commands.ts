@@ -26,176 +26,161 @@ export class PermissionCommands implements Commands.Permission.Contract {
     ) {}
 
     public async create(props: Commands.Permission.Create): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION,
-                    actionType: AccessControlActionType.CREATE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input, realm } = props;
-                    const realmEntity = await this.realmRepository.findUniqueOrThrow({
-                        where: { id: realm },
-                        transaction,
-                    });
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION,
+                actionType: AccessControlActionType.CREATE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input, realm } = props;
+                const realmEntity = await this.realmRepository.findUniqueOrThrow({
+                    where: { id: realm },
+                    transaction,
+                });
 
-                    await this.permissionService.create({
-                        realm: realmEntity,
-                        transaction,
-                        input,
-                    });
+                await this.permissionService.create({
+                    realm: realmEntity,
+                    transaction,
+                    input,
+                });
 
-                    return { message: `${this.dictionaryPath}.CREATED` };
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                return { message: `${this.dictionaryPath}.CREATED` };
+            },
+        });
     }
 
     public async update(props: Commands.Permission.Update): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION,
-                    actionType: AccessControlActionType.UPDATE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input, realm, id } = props;
-                    const entity = await this.permissionRepository.findUniqueOrThrow({
-                        where: { id, realm },
-                        transaction,
-                    });
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION,
+                actionType: AccessControlActionType.UPDATE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input, realm, id } = props;
+                const entity = await this.permissionRepository.findUniqueOrThrow({
+                    where: { id, realm },
+                    transaction,
+                });
 
-                    this.permissionService.update({ entity, patch: input.patch });
+                this.permissionService.update({ entity, patch: input.patch });
 
-                    return { message: `${this.dictionaryPath}.UPDATED` };
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                return { message: `${this.dictionaryPath}.UPDATED` };
+            },
+        });
     }
 
     public async purge(props: Commands.Permission.Purge): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION,
-                    actionType: AccessControlActionType.DELETE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input, realm } = props;
-                    const entities = await this.permissionRepository.find({
-                        where: { id: { $in: input.identifiers }, realm },
-                        transaction,
-                    });
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION,
+                actionType: AccessControlActionType.DELETE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input, realm } = props;
+                const entities = await this.permissionRepository.find({
+                    where: { id: { $in: input.identifiers }, realm },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                }
 
-                    this.permissionService.purge({ transaction, entities });
+                this.permissionService.purge({ transaction, entities });
 
-                    if (entities.length > 1) {
-                        return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
-                    } else {
-                        return { message: `${this.dictionaryPath}.PURGED` };
-                    }
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                if (entities.length > 1) {
+                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+                } else {
+                    return { message: `${this.dictionaryPath}.PURGED` };
+                }
+            },
+        });
     }
 
     public async revoke(props: Commands.Permission.Revoke): Promise<MessageResult> {
-        try {
-            const { entities, affected } = await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION,
-                    actionType: AccessControlActionType.REVOKE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input, realm } = props;
-                    const entities = await this.permissionRepository.find({
-                        where: { id: { $in: input.identifiers }, realm },
-                        transaction,
-                    });
+        const { entities, affected } = await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION,
+                actionType: AccessControlActionType.REVOKE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input, realm } = props;
+                const entities = await this.permissionRepository.find({
+                    where: { id: { $in: input.identifiers }, realm },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                }
 
-                    this.permissionService.revoke({ entities });
+                this.permissionService.revoke({ entities });
 
-                    const affected = await this.permissionRepository.findAccountsByPermissions({
-                        permissions: entities.map(({ id }) => id),
-                    });
+                const affected = await this.permissionRepository.findAccountsByPermissions({
+                    permissions: entities.map(({ id }) => id),
+                });
 
-                    return { entities, affected };
-                },
-            });
+                return { entities, affected };
+            },
+        });
 
-            await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
 
-            if (entities.length > 1) {
-                return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
-            } else {
-                return { message: `${this.dictionaryPath}.REVOKED` };
-            }
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.REVOKED` };
         }
     }
 
     public async restore(props: Commands.Permission.Restore): Promise<MessageResult> {
-        try {
-            const { entities, affected } = await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION,
-                    actionType: AccessControlActionType.RESTORE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input, realm } = props;
-                    const entities = await this.permissionRepository.find({
-                        where: { id: { $in: input.identifiers }, realm },
-                        transaction,
-                    });
+        const { entities, affected } = await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION,
+                actionType: AccessControlActionType.RESTORE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input, realm } = props;
+                const entities = await this.permissionRepository.find({
+                    where: { id: { $in: input.identifiers }, realm },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                }
 
-                    this.permissionService.restore({ entities });
+                this.permissionService.restore({ entities });
 
-                    const affected = await this.permissionRepository.findAccountsByPermissions({
-                        permissions: entities.map(({ id }) => id),
-                    });
+                const affected = await this.permissionRepository.findAccountsByPermissions({
+                    permissions: entities.map(({ id }) => id),
+                });
 
-                    return { entities, affected };
-                },
-            });
+                return { entities, affected };
+            },
+        });
 
-            await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
 
-            if (entities.length > 1) {
-                return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
-            } else {
-                return { message: `${this.dictionaryPath}.RESTORED` };
-            }
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.RESTORED` };
         }
     }
 }

@@ -21,158 +21,143 @@ export class RealmCommands implements Commands.Realm.Contract {
     ) {}
 
     public async create(props: Commands.Realm.Create): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    actionType: AccessControlActionType.CREATE,
-                    entityType: AccessControlEntityType.REALM,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input, actor } = props;
-                    await this.realmService.create({
-                        transaction,
-                        input,
-                        actor,
-                    });
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: AccessControlActionType.CREATE,
+                entityType: AccessControlEntityType.REALM,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input, actor } = props;
+                await this.realmService.create({
+                    transaction,
+                    input,
+                    actor,
+                });
 
-                    return { message: `${this.dictionaryPath}.CREATED` };
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                return { message: `${this.dictionaryPath}.CREATED` };
+            },
+        });
     }
 
     public async update(props: Commands.Realm.Update): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    actionType: AccessControlActionType.UPDATE,
-                    entityType: AccessControlEntityType.REALM,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input, id } = props;
-                    const entity = await this.realmRepository.findUniqueOrThrow({
-                        where: { id },
-                        transaction,
-                    });
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: AccessControlActionType.UPDATE,
+                entityType: AccessControlEntityType.REALM,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input, id } = props;
+                const entity = await this.realmRepository.findUniqueOrThrow({
+                    where: { id },
+                    transaction,
+                });
 
-                    this.realmService.update({ entity, patch: input.patch });
+                this.realmService.update({ entity, patch: input.patch });
 
-                    return { message: `${this.dictionaryPath}.UPDATED` };
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                return { message: `${this.dictionaryPath}.UPDATED` };
+            },
+        });
     }
 
     public async purge(props: Commands.Realm.Purge): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    actionType: AccessControlActionType.DELETE,
-                    entityType: AccessControlEntityType.REALM,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input } = props;
-                    const entities = await this.realmRepository.find({
-                        where: { id: { $in: input.identifiers } },
-                        transaction,
-                    });
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: AccessControlActionType.DELETE,
+                entityType: AccessControlEntityType.REALM,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input } = props;
+                const entities = await this.realmRepository.find({
+                    where: { id: { $in: input.identifiers } },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
+                }
 
-                    this.realmService.purge({ transaction, entities });
+                this.realmService.purge({ transaction, entities });
 
-                    if (entities.length > 1) {
-                        return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
-                    } else {
-                        return { message: `${this.dictionaryPath}.PURGED` };
-                    }
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                if (entities.length > 1) {
+                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+                } else {
+                    return { message: `${this.dictionaryPath}.PURGED` };
+                }
+            },
+        });
     }
 
     public async revoke(props: Commands.Realm.Revoke): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    actionType: AccessControlActionType.REVOKE,
-                    entityType: AccessControlEntityType.REALM,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input } = props;
-                    const entities = await this.realmRepository.find({
-                        where: { id: { $in: input.identifiers } },
-                        transaction,
-                    });
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: AccessControlActionType.REVOKE,
+                entityType: AccessControlEntityType.REALM,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input } = props;
+                const entities = await this.realmRepository.find({
+                    where: { id: { $in: input.identifiers } },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
+                }
 
-                    this.realmService.revoke({ entities });
+                this.realmService.revoke({ entities });
 
-                    if (entities.length > 1) {
-                        return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
-                    } else {
-                        return { message: `${this.dictionaryPath}.REVOKED` };
-                    }
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                if (entities.length > 1) {
+                    return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+                } else {
+                    return { message: `${this.dictionaryPath}.REVOKED` };
+                }
+            },
+        });
     }
 
     public async restore(props: Commands.Realm.Restore): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    actionType: AccessControlActionType.RESTORE,
-                    entityType: AccessControlEntityType.REALM,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input } = props;
-                    const entities = await this.realmRepository.find({
-                        where: { id: { $in: input.identifiers } },
-                        transaction,
-                    });
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                actionType: AccessControlActionType.RESTORE,
+                entityType: AccessControlEntityType.REALM,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input } = props;
+                const entities = await this.realmRepository.find({
+                    where: { id: { $in: input.identifiers } },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
+                }
 
-                    this.realmService.restore({ entities });
+                this.realmService.restore({ entities });
 
-                    if (entities.length > 1) {
-                        return {
-                            message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`,
-                            params: { count: entities.length },
-                        };
-                    } else {
-                        return { message: `${this.dictionaryPath}.RESTORED` };
-                    }
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                if (entities.length > 1) {
+                    return {
+                        message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`,
+                        params: { count: entities.length },
+                    };
+                } else {
+                    return { message: `${this.dictionaryPath}.RESTORED` };
+                }
+            },
+        });
     }
 }

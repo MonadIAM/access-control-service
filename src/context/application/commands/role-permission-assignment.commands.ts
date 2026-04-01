@@ -35,173 +35,161 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ) {}
 
     public async create(props: Commands.RolePermissionAssignment.Create): Promise<MessageResult> {
-        try {
-            const { affected } = await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
-                    actionType: AccessControlActionType.CREATE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input, realm } = props;
-                    const [realmEntity, roleEntity, permissionEntities] = await Promise.all([
-                        this.realmRepository.findUniqueOrThrow({
-                            where: { id: realm },
-                            transaction,
-                        }),
-                        this.roleRepository.findUniqueOrThrow({
-                            where: { id: input.role },
-                            transaction,
-                        }),
-                        this.permissionRepository.find({
-                            where: { id: { $in: input.permissions } },
-                            transaction,
-                        }),
-                    ]);
-
-                    if (permissionEntities.length < input.permissions.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
-                    }
-
-                    await this.rolePermissionAssignmentService.create({
-                        input: {
-                            permissions: permissionEntities,
-                            role: roleEntity,
-                        },
-                        realm: realmEntity,
+        const { affected } = await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
+                actionType: AccessControlActionType.CREATE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input, realm } = props;
+                const [realmEntity, roleEntity, permissionEntities] = await Promise.all([
+                    this.realmRepository.findUniqueOrThrow({
+                        where: { id: realm },
                         transaction,
-                    });
+                    }),
+                    this.roleRepository.findUniqueOrThrow({
+                        where: { id: input.role },
+                        transaction,
+                    }),
+                    this.permissionRepository.find({
+                        where: { id: { $in: input.permissions } },
+                        transaction,
+                    }),
+                ]);
 
-                    const affected = await this.roleRepository.findAccountsByRoles({ roles: [roleEntity.id] });
+                if (permissionEntities.length < input.permissions.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                }
 
-                    return { affected };
-                },
-            });
+                await this.rolePermissionAssignmentService.create({
+                    input: {
+                        permissions: permissionEntities,
+                        role: roleEntity,
+                    },
+                    realm: realmEntity,
+                    transaction,
+                });
 
-            await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+                const affected = await this.roleRepository.findAccountsByRoles({ roles: [roleEntity.id] });
 
-            return { message: `${this.dictionaryPath}.CREATED` };
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                return { affected };
+            },
+        });
+
+        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+
+        return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async purge(props: Commands.RolePermissionAssignment.Purge): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
-                    actionType: AccessControlActionType.DELETE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input } = props;
-                    const entities = await this.rolePermissionAssignmentRepository.find({
-                        where: { id: { $in: input.identifiers } },
-                        transaction,
-                    });
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
+                actionType: AccessControlActionType.DELETE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input } = props;
+                const entities = await this.rolePermissionAssignmentRepository.find({
+                    where: { id: { $in: input.identifiers } },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                }
 
-                    this.rolePermissionAssignmentService.purge({ transaction, entities });
+                this.rolePermissionAssignmentService.purge({ transaction, entities });
 
-                    if (entities.length > 1) {
-                        return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
-                    } else {
-                        return { message: `${this.dictionaryPath}.PURGED` };
-                    }
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                if (entities.length > 1) {
+                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+                } else {
+                    return { message: `${this.dictionaryPath}.PURGED` };
+                }
+            },
+        });
     }
 
     public async revoke(props: Commands.RolePermissionAssignment.Revoke): Promise<MessageResult> {
-        try {
-            const { entities, affected } = await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
-                    actionType: AccessControlActionType.REVOKE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input } = props;
-                    const entities = await this.rolePermissionAssignmentRepository.find({
-                        where: { id: { $in: input.identifiers } },
-                        transaction,
-                    });
+        const { entities, affected } = await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
+                actionType: AccessControlActionType.REVOKE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input } = props;
+                const entities = await this.rolePermissionAssignmentRepository.find({
+                    where: { id: { $in: input.identifiers } },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                }
 
-                    this.rolePermissionAssignmentService.revoke({ entities });
+                this.rolePermissionAssignmentService.revoke({ entities });
 
-                    const affected = await this.roleRepository.findAccountsByRoles({
-                        roles: entities.map(({ role: { id } }) => id),
-                    });
+                const affected = await this.roleRepository.findAccountsByRoles({
+                    roles: entities.map(({ role: { id } }) => id),
+                });
 
-                    return { entities, affected };
-                },
-            });
+                return { entities, affected };
+            },
+        });
 
-            await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
 
-            if (entities.length > 1) {
-                return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
-            } else {
-                return { message: `${this.dictionaryPath}.REVOKED` };
-            }
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.REVOKED` };
         }
     }
 
     public async restore(props: Commands.RolePermissionAssignment.Restore): Promise<MessageResult> {
-        try {
-            const { entities, affected } = await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
-                    actionType: AccessControlActionType.REVOKE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input } = props;
-                    const entities = await this.rolePermissionAssignmentRepository.find({
-                        where: { id: { $in: input.identifiers } },
-                        transaction,
-                    });
+        const { entities, affected } = await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
+                actionType: AccessControlActionType.REVOKE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input } = props;
+                const entities = await this.rolePermissionAssignmentRepository.find({
+                    where: { id: { $in: input.identifiers } },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                }
 
-                    this.rolePermissionAssignmentService.restore({ entities });
+                this.rolePermissionAssignmentService.restore({ entities });
 
-                    const affected = await this.roleRepository.findAccountsByRoles({
-                        roles: entities.map(({ role: { id } }) => id),
-                    });
+                const affected = await this.roleRepository.findAccountsByRoles({
+                    roles: entities.map(({ role: { id } }) => id),
+                });
 
-                    return { entities, affected };
-                },
-            });
+                return { entities, affected };
+            },
+        });
 
-            await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
 
-            if (entities.length > 1) {
-                return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
-            } else {
-                return { message: `${this.dictionaryPath}.RESTORED` };
-            }
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.RESTORED` };
         }
     }
 }

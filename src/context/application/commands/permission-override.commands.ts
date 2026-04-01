@@ -32,154 +32,142 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     ) {}
 
     public async create(props: Commands.PermissionOverride.Create): Promise<MessageResult> {
-        try {
-            const { input, realm } = props;
-            await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
-                    actionType: AccessControlActionType.CREATE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const [realmEntity, permissionEntity] = await Promise.all([
-                        this.realmRepository.findUniqueOrThrow({
-                            where: { id: realm },
-                            transaction,
-                        }),
-                        this.permissionRepository.findUniqueOrThrow({
-                            where: { id: input.permission },
-                            transaction,
-                        }),
-                    ]);
-
-                    await this.permissionOverrideService.create({
-                        input: {
-                            permission: permissionEntity,
-                            account: input.account,
-                            effect: input.effect,
-                        },
-                        realm: realmEntity,
+        const { input, realm } = props;
+        await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
+                actionType: AccessControlActionType.CREATE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const [realmEntity, permissionEntity] = await Promise.all([
+                    this.realmRepository.findUniqueOrThrow({
+                        where: { id: realm },
                         transaction,
-                    });
-                },
-            });
+                    }),
+                    this.permissionRepository.findUniqueOrThrow({
+                        where: { id: input.permission },
+                        transaction,
+                    }),
+                ]);
 
-            await this.permissionCacheService.invalidate({ accounts: [input.account] });
+                await this.permissionOverrideService.create({
+                    input: {
+                        permission: permissionEntity,
+                        account: input.account,
+                        effect: input.effect,
+                    },
+                    realm: realmEntity,
+                    transaction,
+                });
+            },
+        });
 
-            return { message: `${this.dictionaryPath}.CREATED` };
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+        await this.permissionCacheService.invalidate({ accounts: [input.account] });
+
+        return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async purge(props: Commands.PermissionOverride.Purge): Promise<MessageResult> {
-        try {
-            return await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
-                    actionType: AccessControlActionType.DELETE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input } = props;
-                    const entities = await this.permissionOverrideRepository.find({
-                        where: { id: { $in: input.identifiers } },
-                        transaction,
-                    });
+        return await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
+                actionType: AccessControlActionType.DELETE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input } = props;
+                const entities = await this.permissionOverrideRepository.find({
+                    where: { id: { $in: input.identifiers } },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                }
 
-                    this.permissionOverrideService.purge({ transaction, entities });
+                this.permissionOverrideService.purge({ transaction, entities });
 
-                    if (entities.length > 1) {
-                        return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
-                    } else {
-                        return { message: `${this.dictionaryPath}.PURGED` };
-                    }
-                },
-            });
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
-        }
+                if (entities.length > 1) {
+                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+                } else {
+                    return { message: `${this.dictionaryPath}.PURGED` };
+                }
+            },
+        });
     }
 
     public async revoke(props: Commands.PermissionOverride.Revoke): Promise<MessageResult> {
-        try {
-            const entities = await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
-                    actionType: AccessControlActionType.REVOKE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input } = props;
-                    const entities = await this.permissionOverrideRepository.find({
-                        where: { id: { $in: input.identifiers } },
-                        transaction,
-                    });
+        const entities = await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
+                actionType: AccessControlActionType.REVOKE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input } = props;
+                const entities = await this.permissionOverrideRepository.find({
+                    where: { id: { $in: input.identifiers } },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                }
 
-                    this.permissionOverrideService.revoke({ entities });
+                this.permissionOverrideService.revoke({ entities });
 
-                    return entities;
-                },
-            });
+                return entities;
+            },
+        });
 
-            await this.permissionCacheService.invalidate({ accounts: entities.map(({ account }) => account) });
+        await this.permissionCacheService.invalidate({ accounts: entities.map(({ account }) => account) });
 
-            if (entities.length > 1) {
-                return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
-            } else {
-                return { message: `${this.dictionaryPath}.REVOKED` };
-            }
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.REVOKED` };
         }
     }
 
     public async restore(props: Commands.PermissionOverride.Restore): Promise<MessageResult> {
-        try {
-            const entities = await this.transactional.run({
-                audit: {
-                    entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
-                    actionType: AccessControlActionType.RESTORE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: async (transaction) => {
-                    const { input } = props;
-                    const entities = await this.permissionOverrideRepository.find({
-                        where: { id: { $in: input.identifiers } },
-                        transaction,
-                    });
+        const entities = await this.transactional.run({
+            resource: this.resource,
+            audit: {
+                entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
+                actionType: AccessControlActionType.RESTORE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const { input } = props;
+                const entities = await this.permissionOverrideRepository.find({
+                    where: { id: { $in: input.identifiers } },
+                    transaction,
+                });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
-                    }
+                if (entities.length < input.identifiers.length) {
+                    throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                }
 
-                    this.permissionOverrideService.restore({ entities });
+                this.permissionOverrideService.restore({ entities });
 
-                    return entities;
-                },
-            });
+                return entities;
+            },
+        });
 
-            await this.permissionCacheService.invalidate({ accounts: entities.map(({ account }) => account) });
+        await this.permissionCacheService.invalidate({ accounts: entities.map(({ account }) => account) });
 
-            if (entities.length > 1) {
-                return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
-            } else {
-                return { message: `${this.dictionaryPath}.RESTORED` };
-            }
-        } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.RESTORED` };
         }
     }
 }
