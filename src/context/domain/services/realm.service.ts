@@ -87,9 +87,9 @@ export class RealmService implements Services.Realm.Contract {
 
     public constructor(
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.Contract,
+        private readonly permissionRepository: Repositories.Permission.InternalContract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.InternalContract,
     ) {}
 
     public async create({ transaction, input, actor }: Services.Realm.Create): Promise<void> {

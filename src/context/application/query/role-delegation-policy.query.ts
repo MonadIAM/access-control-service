@@ -11,7 +11,7 @@ export class RoleDelegationPolicyQuery implements Queries.RoleDelegationPolicy.C
 
     public constructor(
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleDelegationPolicy.Contract,
+        private readonly roleConflictGroupRepository: Repositories.RoleDelegationPolicy.ExternalContract,
     ) {}
 
     public findUnique(props: Queries.RoleDelegationPolicy.FindUnique): Promise<Queries.RoleDelegationPolicy.Entity> {

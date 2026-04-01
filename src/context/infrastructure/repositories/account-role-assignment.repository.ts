@@ -10,7 +10,7 @@ import { RepositoryException } from "~common/exceptions";
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentRepository
     extends AccountRoleAssignmentAdapter
-    implements Repositories.AccountRoleAssignment.Contract
+    implements Repositories.AccountRoleAssignment.ExternalContract, Repositories.AccountRoleAssignment.InternalContract
 {
     private readonly resource = "AccountRoleAssignment";
     private readonly accountRoleLimit: number;

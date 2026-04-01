@@ -15,7 +15,7 @@ export class RealmCommand implements Commands.Realm.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactional: Tracking.Transactional.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(REALM_SERVICE)
         private readonly realmService: Services.Realm.Contract,
     ) {}

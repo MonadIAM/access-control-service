@@ -4,9 +4,9 @@ declare global {
     namespace Repositories {
         namespace RoleClosure {
             interface Contract {
+                decreaseTransitiveDepth: (props: DecreaseTransitiveDepth) => Promise<void>;
                 insertNewHierarchy: (props: InsertNewHierarchy) => Promise<void>;
                 moveSubtrees: (props: MoveSubtrees) => Promise<void>;
-                decreaseTransitiveDepth: (props: DecreaseTransitiveDepth) => Promise<void>;
             }
 
             type InsertNewHierarchy = {

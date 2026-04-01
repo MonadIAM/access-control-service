@@ -20,7 +20,7 @@ export class RealmQuery implements Queries.Realm.Contract {
         @Inject(PERMISSION_CACHE_SERVICE)
         private readonly permissionCacheService: Services.PermissionCache.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.ExternalContract,
     ) {}
 
     public async findUnique(props: Queries.Realm.FindUnique): Promise<Realm> {

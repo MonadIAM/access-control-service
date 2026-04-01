@@ -18,11 +18,11 @@ export class PermissionCommand implements Commands.Permission.Contract {
         @Inject(PERMISSION_CACHE_INVALIDATION_QUEUE)
         private readonly permissionCacheInvalidationQueue: Queues.PermissionInvalidation.Contract,
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.Contract,
+        private readonly permissionRepository: Repositories.Permission.InternalContract,
+        @Inject(REALM_REPOSITORY)
+        private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(PERMISSION_SERVICE)
         private readonly permissionService: Services.Permission.Contract,
-        @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
     ) {}
 
     public async create(props: Commands.Permission.Create): Promise<MessageResult> {

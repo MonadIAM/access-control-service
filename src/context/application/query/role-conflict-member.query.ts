@@ -11,7 +11,7 @@ export class RoleConflictMemberQuery implements Queries.RoleConflictMember.Contr
 
     public constructor(
         @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictMember.Contract,
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictMember.ExternalContract,
     ) {}
 
     public findUnique(props: Queries.RoleConflictMember.FindUnique): Promise<Queries.RoleConflictMember.Entity> {

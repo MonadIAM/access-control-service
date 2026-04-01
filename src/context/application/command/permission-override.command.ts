@@ -20,15 +20,15 @@ export class PermissionOverrideCommand implements Commands.PermissionOverride.Co
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactional: Tracking.Transactional.Contract,
         @Inject(PERMISSION_OVERRIDE_REPOSITORY)
-        private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
+        private readonly permissionOverrideRepository: Repositories.PermissionOverride.InternalContract,
+        @Inject(PERMISSION_REPOSITORY)
+        private readonly permissionRepository: Repositories.Permission.InternalContract,
+        @Inject(REALM_REPOSITORY)
+        private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(PERMISSION_OVERRIDE_SERVICE)
         private readonly permissionOverrideService: Services.PermissionOverride.Contract,
         @Inject(PERMISSION_CACHE_SERVICE)
         private readonly permissionCacheService: Services.PermissionCache.Contract,
-        @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.Contract,
-        @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
     ) {}
 
     public async create(props: Commands.PermissionOverride.Create): Promise<MessageResult> {

@@ -20,15 +20,15 @@ export class AccountRoleAssignmentCommand implements Commands.AccountRoleAssignm
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactional: Tracking.Transactional.Contract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
-        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
+        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.InternalContract,
+        @Inject(REALM_REPOSITORY)
+        private readonly realmRepository: Repositories.Realm.InternalContract,
+        @Inject(ROLE_REPOSITORY)
+        private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_SERVICE)
         private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.Contract,
         @Inject(PERMISSION_CACHE_SERVICE)
         private readonly permissionCacheService: Services.PermissionCache.Contract,
-        @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
-        @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
     public async create(props: Commands.AccountRoleAssignment.Create): Promise<MessageResult> {

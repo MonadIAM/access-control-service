@@ -10,7 +10,7 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
 
     public constructor(
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
-        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.Contract,
+        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.InternalContract,
     ) {}
 
     public async create({ transaction, realm, input }: Services.RolePermissionAssignment.Create): Promise<void> {

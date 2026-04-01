@@ -9,7 +9,10 @@ import { RepositoryException } from "~common/exceptions";
 import { MikroAdapter } from "~infrastructure/database";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleRepository extends RoleAdapter implements Repositories.Role.Contract {
+export class RoleRepository
+    extends RoleAdapter
+    implements Repositories.Role.ExternalContract, Repositories.Role.InternalContract
+{
     private readonly resource = "Role";
     private readonly roleLimit: number;
 

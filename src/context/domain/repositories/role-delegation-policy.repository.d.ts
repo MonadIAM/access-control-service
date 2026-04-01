@@ -9,7 +9,7 @@ declare global {
         namespace RoleDelegationPolicy {
             type Entity = RoleDelegationPolicyEntity;
 
-            interface Contract {
+            interface CommonContract {
                 findUnique: <P extends string = never, F extends string = "*">(
                     props: FindUnique<P, F>,
                 ) => Promise<Nullable<Loaded<Entity, P, F>>>;
@@ -17,18 +17,24 @@ declare global {
                 findUniqueOrThrow: <P extends string = never, F extends string = "*">(
                     props: FindUniqueOrThrow<P, F>,
                 ) => Promise<Loaded<Entity, P, F>>;
+            }
 
+            interface ExternalContract extends CommonContract {
+                findMany: <P extends string = never, F extends string = "*">(
+                    props: FindMany<P, F>,
+                ) => Promise<[Loaded<Entity, P, F>[], number]>;
+            }
+
+            interface InternalContract extends CommonContract {
                 find: <P extends string = never, F extends string = "*">(
                     props: Find<P, F>,
                 ) => Promise<Loaded<Entity, P, F>[]>;
 
-                findMany: <P extends string = never, F extends string = "*">(
-                    props: FindMany<P, F>,
-                ) => Promise<[Loaded<Entity, P, F>[], number]>;
+                wouldExceedPolicyLimit: (props: WouldExceedPolicyLimit) => Promise<boolean>;
 
                 existsTransitivePath: (props: ExistsTransitivePath) => Promise<boolean>;
+
                 isDelegationAllowed: (props: IsDelegationAllowed) => Promise<boolean>;
-                wouldExceedPolicyLimit: (props: WouldExceedPolicyLimit) => Promise<boolean>;
             }
 
             type FindUnique<P extends string, F extends string> = {

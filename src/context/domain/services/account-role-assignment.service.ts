@@ -14,11 +14,11 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
 
     public constructor(
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
-        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
+        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.InternalContract,
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
-        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.Contract,
+        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.InternalContract,
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.InternalContract,
     ) {}
 
     public async create({ transaction, input, realm, actor }: Services.AccountRoleAssignment.Create): Promise<void> {

@@ -10,7 +10,7 @@ import { RepositoryException } from "~common/exceptions";
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideRepository
     extends PermissionOverrideAdapter
-    implements Repositories.PermissionOverride.Contract
+    implements Repositories.PermissionOverride.ExternalContract, Repositories.PermissionOverride.InternalContract
 {
     private readonly resource = "PermissionOverride";
     private readonly overrideLimit: number;

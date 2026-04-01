@@ -11,7 +11,7 @@ export class RolePermissionAssignmentQuery implements Queries.RolePermissionAssi
 
     public constructor(
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
-        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.Contract,
+        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.ExternalContract,
     ) {}
 
     public findUnique(

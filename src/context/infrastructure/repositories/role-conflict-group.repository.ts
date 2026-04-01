@@ -10,7 +10,7 @@ import { RepositoryException } from "~common/exceptions";
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupRepository
     extends RoleConflictGroupAdapter
-    implements Repositories.RoleConflictGroup.Contract
+    implements Repositories.RoleConflictGroup.ExternalContract, Repositories.RoleConflictGroup.InternalContract
 {
     private readonly resource = "RoleConflictGroup";
     private readonly groupLimit: number;

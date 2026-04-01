@@ -12,7 +12,7 @@ export class PermissionQuery implements Queries.Permission.Contract {
 
     public constructor(
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.Contract,
+        private readonly permissionRepository: Repositories.Permission.ExternalContract,
     ) {}
 
     public findUnique(props: Queries.Permission.FindUnique): Promise<Queries.Permission.Entity> {

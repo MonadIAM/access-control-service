@@ -12,7 +12,7 @@ export class RoleQuery implements Queries.Role.Contract {
 
     public constructor(
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.Contract,
+        private readonly roleRepository: Repositories.Role.ExternalContract,
     ) {}
 
     public findUnique(props: Queries.Role.FindUnique): Promise<Repositories.Role.Entity> {

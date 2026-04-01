@@ -8,7 +8,10 @@ import { RepositoryException } from "~common/exceptions";
 import { Realm } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RealmRepository extends RealmAdapter implements Repositories.Realm.Contract {
+export class RealmRepository
+    extends RealmAdapter
+    implements Repositories.Realm.ExternalContract, Repositories.Realm.InternalContract
+{
     private readonly resource = "Realm";
     private readonly realmLimit: number;
 

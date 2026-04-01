@@ -11,7 +11,7 @@ export class AccountRoleAssignmentQuery implements Queries.AccountRoleAssignment
 
     public constructor(
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
-        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
+        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.ExternalContract,
     ) {}
 
     public findUnique(props: Queries.AccountRoleAssignment.FindUnique): Promise<Queries.AccountRoleAssignment.Entity> {

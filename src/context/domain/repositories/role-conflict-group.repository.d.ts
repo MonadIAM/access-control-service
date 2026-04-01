@@ -9,7 +9,7 @@ declare global {
         namespace RoleConflictGroup {
             type Entity = RoleConflictGroupEntity;
 
-            interface Contract {
+            interface CommonContract {
                 findUnique: <P extends string = never, F extends string = "*">(
                     props: FindUnique<P, F>,
                 ) => Promise<Nullable<Loaded<Entity, P, F>>>;
@@ -17,16 +17,20 @@ declare global {
                 findUniqueOrThrow: <P extends string = never, F extends string = "*">(
                     props: FindUniqueOrThrow<P, F>,
                 ) => Promise<Loaded<Entity, P, F>>;
+            }
 
-                find: <P extends string = never, F extends string = "*">(
-                    props: Find<P, F>,
-                ) => Promise<Loaded<Entity, P, F>[]>;
-
+            interface ExternalContract extends CommonContract {
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
 
                 findViolationDetails: (props: FindViolationDetails) => Promise<Entity[]>;
+            }
+
+            interface InternalContract extends CommonContract {
+                find: <P extends string = never, F extends string = "*">(
+                    props: Find<P, F>,
+                ) => Promise<Loaded<Entity, P, F>[]>;
 
                 hasViolations: (props: HasViolations) => Promise<boolean>;
 

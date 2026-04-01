@@ -9,7 +9,10 @@ import { RepositoryException } from "~common/exceptions";
 import { Permission } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class PermissionRepository extends PermissionAdapter implements Repositories.Permission.Contract {
+export class PermissionRepository
+    extends PermissionAdapter
+    implements Repositories.Permission.ExternalContract, Repositories.Permission.InternalContract
+{
     private readonly resource = "Permission";
     private readonly permissionLimit: number;
 

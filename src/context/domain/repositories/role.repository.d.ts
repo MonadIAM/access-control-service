@@ -11,7 +11,7 @@ declare global {
             type Entity = RoleEntity;
             type DepthEntity = Entity & { depth: number };
 
-            interface Contract {
+            interface CommonContract {
                 findUnique: <P extends string = never, F extends string = "*">(
                     props: FindUnique<P, F>,
                 ) => Promise<Nullable<Loaded<Entity, P, F>>>;
@@ -19,19 +19,15 @@ declare global {
                 findUniqueOrThrow: <P extends string = never, F extends string = "*">(
                     props: FindUniqueOrThrow<P, F>,
                 ) => Promise<Loaded<Entity, P, F>>;
+            }
 
-                find: <P extends string = never, F extends string = "*">(
-                    props: Find<P, F>,
-                ) => Promise<Loaded<Entity, P, F>[]>;
-
+            interface ExternalContract extends CommonContract {
                 findMany: <P extends string = never, F extends string = "*">(
                     props: FindMany<P, F>,
                 ) => Promise<[Loaded<Entity, P, F>[], number]>;
 
-                getAncestors: (props: GetAncestors) => Promise<Entity[]>;
                 findAncestors: (props: FindAncestors) => Promise<[DepthEntity[], number]>;
 
-                getDescendants: (props: GetDescendants) => Promise<Entity[]>;
                 findDescendants: (props: FindDescendants) => Promise<[DepthEntity[], number]>;
 
                 getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
@@ -41,6 +37,16 @@ declare global {
                 findEffective: (props: FindEffective) => Promise<[Entity[], number]>;
 
                 getHierarchyGraph: (props: GetHierarchyGraph) => Promise<Graph.Data>;
+            }
+
+            interface InternalContract extends CommonContract {
+                find: <P extends string = never, F extends string = "*">(
+                    props: Find<P, F>,
+                ) => Promise<Loaded<Entity, P, F>[]>;
+
+                getAncestors: (props: GetAncestors) => Promise<Entity[]>;
+
+                getDescendants: (props: GetDescendants) => Promise<Entity[]>;
 
                 findAccountsByRoles: (props: FindAccountsByRoles) => Promise<string[]>;
 

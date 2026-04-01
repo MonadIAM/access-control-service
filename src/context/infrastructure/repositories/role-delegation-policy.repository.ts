@@ -10,7 +10,7 @@ import { RepositoryException } from "~common/exceptions";
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyRepository
     extends RoleDelegationPolicyAdapter
-    implements Repositories.RoleDelegationPolicy.Contract
+    implements Repositories.RoleDelegationPolicy.ExternalContract, Repositories.RoleDelegationPolicy.InternalContract
 {
     private readonly resource = "RoleDelegationPolicy";
     private readonly policyLimit: number;

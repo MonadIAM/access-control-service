@@ -13,7 +13,7 @@ export class PermissionOverrideQuery implements Queries.PermissionOverride.Contr
 
     public constructor(
         @Inject(PERMISSION_OVERRIDE_REPOSITORY)
-        private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
+        private readonly permissionOverrideRepository: Repositories.PermissionOverride.ExternalContract,
     ) {}
 
     public findUnique(props: Queries.PermissionOverride.FindUnique): Promise<Queries.PermissionOverride.Entity> {

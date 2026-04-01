@@ -21,17 +21,17 @@ export class RolePermissionAssignmentCommand implements Commands.RolePermissionA
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactional: Tracking.Transactional.Contract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
-        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.Contract,
+        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.InternalContract,
+        @Inject(PERMISSION_REPOSITORY)
+        private readonly permissionRepository: Repositories.Permission.InternalContract,
+        @Inject(REALM_REPOSITORY)
+        private readonly realmRepository: Repositories.Realm.InternalContract,
+        @Inject(ROLE_REPOSITORY)
+        private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_SERVICE)
         private readonly rolePermissionAssignmentService: Services.RolePermissionAssignment.Contract,
         @Inject(PERMISSION_CACHE_INVALIDATION_QUEUE)
         private readonly permissionCacheInvalidationQueue: Queues.PermissionInvalidation.Contract,
-        @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.Contract,
-        @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
-        @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.Contract,
     ) {}
 
     public async create(props: Commands.RolePermissionAssignment.Create): Promise<MessageResult> {

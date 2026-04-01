@@ -10,7 +10,7 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
 
     public constructor(
         @Inject(PERMISSION_OVERRIDE_REPOSITORY)
-        private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
+        private readonly permissionOverrideRepository: Repositories.PermissionOverride.InternalContract,
     ) {}
 
     public async create({ transaction, input, realm }: Services.PermissionOverride.Create): Promise<void> {

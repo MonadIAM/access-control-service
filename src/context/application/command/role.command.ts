@@ -18,9 +18,9 @@ export class RoleCommand implements Commands.Role.Contract {
         @Inject(PERMISSION_CACHE_INVALIDATION_QUEUE)
         private readonly permissionCacheInvalidationQueue: Queues.PermissionInvalidation.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.Contract,
+        private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ROLE_SERVICE)
         private readonly roleService: Services.Role.Contract,
     ) {}
