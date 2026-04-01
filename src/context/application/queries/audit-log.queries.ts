@@ -3,7 +3,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { AUDIT_LOG_REPOSITORY } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class AuditLogQuery implements Queries.AuditLog.Contract {
+export class AuditLogQueries implements Queries.AuditLog.Contract {
     public constructor(
         @Inject(AUDIT_LOG_REPOSITORY)
         private readonly auditLogRepository: Repositories.AuditLog.Contract,

@@ -2,7 +2,7 @@ import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseIntercepto
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { EndpointExceptions, FormatResponse, RequirePermission } from "~common/decorators";
-import { CHANGE_LOG_QUERY } from "~context/application/query";
+import { CHANGE_LOG_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
@@ -16,8 +16,8 @@ const { CHANGE_LOG_READ_ABSOLUTE } = PermissionCode;
 @UseInterceptors(MonitoringInterceptor)
 export class ChangeLogController {
     public constructor(
-        @Inject(CHANGE_LOG_QUERY)
-        private readonly changeLogQuery: Queries.ChangeLog.Contract,
+        @Inject(CHANGE_LOG_QUERIES)
+        private readonly changeLogQueries: Queries.ChangeLog.Contract,
     ) {}
 
     @Get()
@@ -27,8 +27,8 @@ export class ChangeLogController {
     @ApiResponse({ status: OK, type: ChangeLogDTO })
     @ApiOperation({ summary: "Returns a change log by identifier" })
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
-    public findUnique(@Query() { log }: GetChangeLogByIdQueryDTO): Promise<Repositories.ChangeLog.Entity> {
-        return this.changeLogQuery.findUnique({ log });
+    public findUnique(@Query() { log }: GetChangeLogByIdQueryDTO): Promise<Queries.ChangeLog.Entity> {
+        return this.changeLogQueries.findUnique({ log });
     }
 
     @Post("list")
@@ -40,7 +40,7 @@ export class ChangeLogController {
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getList(
         @Body() { pagination, filters, sort }: GetChangeLogsListBodyDTO,
-    ): Promise<[Repositories.ChangeLog.Entity[], number]> {
-        return this.changeLogQuery.findMany({ pagination, filters, sort });
+    ): Promise<[Queries.ChangeLog.Entity[], number]> {
+        return this.changeLogQueries.findMany({ pagination, filters, sort });
     }
 }

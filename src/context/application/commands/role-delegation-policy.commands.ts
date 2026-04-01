@@ -7,7 +7,7 @@ import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleDelegationPolicyCommand implements Commands.RoleDelegationPolicy.Contract {
+export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPolicy.Contract {
     private readonly dictionaryPath = "commands.role-delegation-policy";
     private readonly resource = "RoleDelegationPolicy";
 

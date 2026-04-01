@@ -3,7 +3,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class AccountRoleAssignmentQuery implements Queries.AccountRoleAssignment.Contract {
+export class AccountRoleAssignmentQueries implements Queries.AccountRoleAssignment.Contract {
     private readonly populate = {
         DETAILED: ["realm", "role"] as const,
         COMPACT: [] as const,

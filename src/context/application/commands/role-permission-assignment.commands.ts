@@ -13,7 +13,7 @@ import {
 } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RolePermissionAssignmentCommand implements Commands.RolePermissionAssignment.Contract {
+export class RolePermissionAssignmentCommands implements Commands.RolePermissionAssignment.Contract {
     private readonly dictionaryPath = "commands.role-permission-assignment";
     private readonly resource = "RolePermissionAssignment";
 

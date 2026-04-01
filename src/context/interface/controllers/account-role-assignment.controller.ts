@@ -14,8 +14,8 @@ import {
 } from "@nestjs/common";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { ACCOUNT_ROLE_ASSIGNMENT_COMMAND } from "~context/application/command";
-import { ACCOUNT_ROLE_ASSIGNMENT_QUERY } from "~context/application/query";
+import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS } from "~context/application/commands";
+import { ACCOUNT_ROLE_ASSIGNMENT_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
@@ -60,10 +60,10 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class AccountRoleAssignmentController {
     public constructor(
-        @Inject(ACCOUNT_ROLE_ASSIGNMENT_COMMAND)
-        private readonly accountRoleAssignmentCommand: Commands.AccountRoleAssignment.Contract,
-        @Inject(ACCOUNT_ROLE_ASSIGNMENT_QUERY)
-        private readonly accountRoleAssignmentQuery: Queries.AccountRoleAssignment.Contract,
+        @Inject(ACCOUNT_ROLE_ASSIGNMENT_COMMANDS)
+        private readonly accountRoleAssignmentCommands: Commands.AccountRoleAssignment.Contract,
+        @Inject(ACCOUNT_ROLE_ASSIGNMENT_QUERIES)
+        private readonly accountRoleAssignmentQueries: Queries.AccountRoleAssignment.Contract,
     ) {}
 
     @Get()
@@ -75,8 +75,8 @@ export class AccountRoleAssignmentController {
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
         @Query() { assignment, realm, view }: GetAccountRoleAssignmentByIdQueryDTO,
-    ): Promise<Repositories.AccountRoleAssignment.Entity> {
-        return this.accountRoleAssignmentQuery.findUnique({ assignment, realm, view });
+    ): Promise<Queries.AccountRoleAssignment.Entity> {
+        return this.accountRoleAssignmentQueries.findUnique({ assignment, realm, view });
     }
 
     @Post("list")
@@ -89,8 +89,8 @@ export class AccountRoleAssignmentController {
     public findMany(
         @Body() { pagination, filters, sort }: GetAccountRoleAssignmentsListBodyDTO,
         @Query() { realm, view }: GetAccountRoleAssignmentsListQueryDTO,
-    ): Promise<[Repositories.AccountRoleAssignment.Entity[], number]> {
-        return this.accountRoleAssignmentQuery.findMany({ pagination, filters, realm, sort, view });
+    ): Promise<[Queries.AccountRoleAssignment.Entity[], number]> {
+        return this.accountRoleAssignmentQueries.findMany({ pagination, filters, realm, sort, view });
     }
 
     @Post("create")
@@ -106,7 +106,7 @@ export class AccountRoleAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.accountRoleAssignmentCommand.create({ context, realm, actor, input });
+        return this.accountRoleAssignmentCommands.create({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -122,7 +122,7 @@ export class AccountRoleAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.accountRoleAssignmentCommand.revoke({ context, realm, actor, input });
+        return this.accountRoleAssignmentCommands.revoke({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -138,7 +138,7 @@ export class AccountRoleAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.accountRoleAssignmentCommand.restore({ context, realm, actor, input });
+        return this.accountRoleAssignmentCommands.restore({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -154,6 +154,6 @@ export class AccountRoleAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.accountRoleAssignmentCommand.purge({ context, realm, actor, input });
+        return this.accountRoleAssignmentCommands.purge({ context, realm, actor, input });
     }
 }

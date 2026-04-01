@@ -13,8 +13,8 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { PERMISSION_OVERRIDE_COMMAND } from "~context/application/command";
-import { PERMISSION_OVERRIDE_QUERY } from "~context/application/query";
+import { PERMISSION_OVERRIDE_COMMANDS } from "~context/application/commands";
+import { PERMISSION_OVERRIDE_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
@@ -68,10 +68,10 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class PermissionOverrideController {
     public constructor(
-        @Inject(PERMISSION_OVERRIDE_COMMAND)
-        private readonly permissionOverrideCommand: Commands.PermissionOverride.Contract,
-        @Inject(PERMISSION_OVERRIDE_QUERY)
-        private readonly permissionOverrideQuery: Queries.PermissionOverride.Contract,
+        @Inject(PERMISSION_OVERRIDE_COMMANDS)
+        private readonly permissionOverrideCommands: Commands.PermissionOverride.Contract,
+        @Inject(PERMISSION_OVERRIDE_QUERIES)
+        private readonly permissionOverrideQueries: Queries.PermissionOverride.Contract,
     ) {}
 
     @Get()
@@ -85,8 +85,8 @@ export class PermissionOverrideController {
         @Query() { override, realm, view }: GetPermissionOverrideByIdQueryDTO,
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractPermissions() permissions?: string[],
-    ): Promise<Repositories.PermissionOverride.Entity> {
-        return this.permissionOverrideQuery.findUnique({ permissions, override, realm, actor, view });
+    ): Promise<Queries.PermissionOverride.Entity> {
+        return this.permissionOverrideQueries.findUnique({ permissions, override, realm, actor, view });
     }
 
     @Post("list")
@@ -101,8 +101,8 @@ export class PermissionOverrideController {
         @Query() { realm, view }: GetPermissionOverridesListQueryDTO,
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractPermissions() permissions?: string[],
-    ): Promise<[Repositories.PermissionOverride.Entity[], number]> {
-        return this.permissionOverrideQuery.findMany({ permissions, pagination, filters, realm, actor, sort, view });
+    ): Promise<[Queries.PermissionOverride.Entity[], number]> {
+        return this.permissionOverrideQueries.findMany({ permissions, pagination, filters, realm, actor, sort, view });
     }
 
     @Post("create")
@@ -118,7 +118,7 @@ export class PermissionOverrideController {
         @Body() input: CreatePermissionOverrideBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.permissionOverrideCommand.create({ context, realm, actor, input });
+        return this.permissionOverrideCommands.create({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -134,7 +134,7 @@ export class PermissionOverrideController {
         @Body() input: RevokePermissionOverrideBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.permissionOverrideCommand.revoke({ context, realm, actor, input });
+        return this.permissionOverrideCommands.revoke({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -150,7 +150,7 @@ export class PermissionOverrideController {
         @Body() input: RestorePermissionOverrideBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.permissionOverrideCommand.restore({ context, realm, actor, input });
+        return this.permissionOverrideCommands.restore({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -166,6 +166,6 @@ export class PermissionOverrideController {
         @Body() input: PurgePermissionOverrideBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.permissionOverrideCommand.purge({ context, realm, actor, input });
+        return this.permissionOverrideCommands.purge({ context, realm, actor, input });
     }
 }

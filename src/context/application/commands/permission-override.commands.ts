@@ -2,69 +2,65 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { PERMISSION_CACHE_SERVICE } from "~context/infrastructure/services";
-import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services";
+import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { CommandException } from "~common/exceptions";
 import {
-    ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
+    PERMISSION_OVERRIDE_REPOSITORY,
+    PERMISSION_REPOSITORY,
     REALM_REPOSITORY,
-    ROLE_REPOSITORY,
 } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class AccountRoleAssignmentCommand implements Commands.AccountRoleAssignment.Contract {
-    private readonly dictionaryPath = "commands.account-role-assignment";
-    private readonly resource = "AccountRoleAssignment";
+export class PermissionOverrideCommands implements Commands.PermissionOverride.Contract {
+    private readonly dictionaryPath = "commands.permission-override";
+    private readonly resource = "PermissionOverride";
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactional: Tracking.Transactional.Contract,
-        @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
-        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.InternalContract,
+        @Inject(PERMISSION_OVERRIDE_REPOSITORY)
+        private readonly permissionOverrideRepository: Repositories.PermissionOverride.InternalContract,
+        @Inject(PERMISSION_REPOSITORY)
+        private readonly permissionRepository: Repositories.Permission.InternalContract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.InternalContract,
-        @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.InternalContract,
-        @Inject(ACCOUNT_ROLE_ASSIGNMENT_SERVICE)
-        private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.Contract,
+        @Inject(PERMISSION_OVERRIDE_SERVICE)
+        private readonly permissionOverrideService: Services.PermissionOverride.Contract,
         @Inject(PERMISSION_CACHE_SERVICE)
         private readonly permissionCacheService: Services.PermissionCache.Contract,
     ) {}
 
-    public async create(props: Commands.AccountRoleAssignment.Create): Promise<MessageResult> {
+    public async create(props: Commands.PermissionOverride.Create): Promise<MessageResult> {
         try {
-            const { input, actor, realm } = props;
+            const { input, realm } = props;
             await this.transactional.run({
                 audit: {
-                    entityType: AccessControlEntityType.ROLE_ASSIGNMENT,
+                    entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
                     actionType: AccessControlActionType.CREATE,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const [realmEntity, roleEntities] = await Promise.all([
+                    const [realmEntity, permissionEntity] = await Promise.all([
                         this.realmRepository.findUniqueOrThrow({
                             where: { id: realm },
                             transaction,
                         }),
-                        this.roleRepository.find({
-                            where: { id: { $in: input.roles } },
+                        this.permissionRepository.findUniqueOrThrow({
+                            where: { id: input.permission },
                             transaction,
                         }),
                     ]);
 
-                    if (roleEntities.length < input.roles.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
-                    }
-
-                    await this.accountRoleAssignmentService.create({
+                    await this.permissionOverrideService.create({
                         input: {
+                            permission: permissionEntity,
                             account: input.account,
-                            roles: roleEntities,
+                            effect: input.effect,
                         },
                         realm: realmEntity,
                         transaction,
-                        actor,
                     });
                 },
             });
@@ -77,27 +73,27 @@ export class AccountRoleAssignmentCommand implements Commands.AccountRoleAssignm
         }
     }
 
-    public async purge(props: Commands.AccountRoleAssignment.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.PermissionOverride.Purge): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
-                    entityType: AccessControlEntityType.ROLE_ASSIGNMENT,
+                    entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
                     actionType: AccessControlActionType.DELETE,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const { input } = props;
-                    const entities = await this.accountRoleAssignmentRepository.find({
+                    const entities = await this.permissionOverrideRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                     }
 
-                    this.accountRoleAssignmentService.purge({ transaction, entities });
+                    this.permissionOverrideService.purge({ transaction, entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -111,27 +107,27 @@ export class AccountRoleAssignmentCommand implements Commands.AccountRoleAssignm
         }
     }
 
-    public async revoke(props: Commands.AccountRoleAssignment.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.PermissionOverride.Revoke): Promise<MessageResult> {
         try {
             const entities = await this.transactional.run({
                 audit: {
-                    entityType: AccessControlEntityType.ROLE_ASSIGNMENT,
+                    entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
                     actionType: AccessControlActionType.REVOKE,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const { input } = props;
-                    const entities = await this.accountRoleAssignmentRepository.find({
+                    const entities = await this.permissionOverrideRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                     }
 
-                    this.accountRoleAssignmentService.revoke({ entities });
+                    this.permissionOverrideService.revoke({ entities });
 
                     return entities;
                 },
@@ -149,27 +145,27 @@ export class AccountRoleAssignmentCommand implements Commands.AccountRoleAssignm
         }
     }
 
-    public async restore(props: Commands.AccountRoleAssignment.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.PermissionOverride.Restore): Promise<MessageResult> {
         try {
             const entities = await this.transactional.run({
                 audit: {
-                    entityType: AccessControlEntityType.ROLE_ASSIGNMENT,
+                    entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
                     actionType: AccessControlActionType.RESTORE,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const { input } = props;
-                    const entities = await this.accountRoleAssignmentRepository.find({
+                    const entities = await this.permissionOverrideRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
                     }
 
-                    this.accountRoleAssignmentService.restore({ entities });
+                    this.permissionOverrideService.restore({ entities });
 
                     return entities;
                 },

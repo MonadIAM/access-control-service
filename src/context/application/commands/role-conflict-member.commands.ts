@@ -11,7 +11,7 @@ import {
 } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleConflictMemberCommand implements Commands.RoleConflictMember.Contract {
+export class RoleConflictMemberCommands implements Commands.RoleConflictMember.Contract {
     private readonly dictionaryPath = "commands.role-conflict-member";
     private readonly resource = "RoleConflictMember";
 

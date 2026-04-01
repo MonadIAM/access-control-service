@@ -13,9 +13,9 @@ import {
     Get,
 } from "@nestjs/common";
 
+import { ROLE_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { ROLE_COMMAND } from "~context/application/command";
-import { ROLE_QUERY } from "~context/application/query";
+import { ROLE_QUERIES } from "~context/application/queries";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 import {
@@ -90,10 +90,10 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RoleController {
     public constructor(
-        @Inject(ROLE_COMMAND)
-        private readonly roleCommand: Commands.Role.Contract,
-        @Inject(ROLE_QUERY)
-        private readonly roleQuery: Queries.Role.Contract,
+        @Inject(ROLE_COMMANDS)
+        private readonly roleCommands: Commands.Role.Contract,
+        @Inject(ROLE_QUERIES)
+        private readonly roleQueries: Queries.Role.Contract,
     ) {}
 
     @Get()
@@ -103,8 +103,8 @@ export class RoleController {
     @ApiResponse({ status: OK, type: RoleDTO })
     @ApiOperation({ summary: "Returns a role by identifier" })
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public findUnique(@Query() { realm, role, view }: GetRoleByIdQueryDTO): Promise<Repositories.Role.Entity> {
-        return this.roleQuery.findUnique({ realm, role, view });
+    public findUnique(@Query() { realm, role, view }: GetRoleByIdQueryDTO): Promise<Queries.Role.Entity> {
+        return this.roleQueries.findUnique({ realm, role, view });
     }
 
     @HttpCode(OK)
@@ -117,8 +117,8 @@ export class RoleController {
     public findMany(
         @Query() { realm, view }: GetRolesListQueryDTO,
         @Body() { pagination, filters, sort }: GetRolesListBodyDTO,
-    ): Promise<[Repositories.Role.Entity[], number]> {
-        return this.roleQuery.findMany({ pagination, filters, realm, sort, view });
+    ): Promise<[Queries.Role.Entity[], number]> {
+        return this.roleQueries.findMany({ pagination, filters, realm, sort, view });
     }
 
     @HttpCode(OK)
@@ -131,8 +131,8 @@ export class RoleController {
     public findAncestors(
         @Query() { descendant, realm, view }: GetRoleAncestorsListQueryDTO,
         @Body() { pagination, filters }: GetRoleAncestorsListBodyDTO,
-    ): Promise<[Repositories.Role.DepthEntity[], number]> {
-        return this.roleQuery.findAncestors({ descendant, pagination, filters, realm, view });
+    ): Promise<[Queries.Role.DepthEntity[], number]> {
+        return this.roleQueries.findAncestors({ descendant, pagination, filters, realm, view });
     }
 
     @HttpCode(OK)
@@ -145,8 +145,8 @@ export class RoleController {
     public findDescendants(
         @Query() { ancestor, realm, view }: GetRoleDescendantsListQueryDTO,
         @Body() { pagination, filters }: GetRoleDescendantsListBodyDTO,
-    ): Promise<[Repositories.Role.DepthEntity[], number]> {
-        return this.roleQuery.findDescendants({ pagination, ancestor, filters, realm, view });
+    ): Promise<[Queries.Role.DepthEntity[], number]> {
+        return this.roleQueries.findDescendants({ pagination, ancestor, filters, realm, view });
     }
 
     @HttpCode(OK)
@@ -161,8 +161,8 @@ export class RoleController {
         @Query() { realm, id }: GetDelegableRolesListByAccountQueryDTO,
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractPermissions() permissions?: string[],
-    ): Promise<[Repositories.Role.Entity[], number]> {
-        return this.roleQuery.findDelegableByAccount({ permissions, pagination, filters, sort, realm, actor, id });
+    ): Promise<[Queries.Role.Entity[], number]> {
+        return this.roleQueries.findDelegableByAccount({ permissions, pagination, filters, sort, realm, actor, id });
     }
 
     @HttpCode(OK)
@@ -175,8 +175,8 @@ export class RoleController {
     public findDelegableByRole(
         @Body() { pagination, filters, sort }: GetDelegableRolesListBodyDTO,
         @Query() { realm, id }: GetDelegableRolesListByRoleQueryDTO,
-    ): Promise<[Repositories.Role.Entity[], number]> {
-        return this.roleQuery.findDelegableByRole({ pagination, filters, sort, realm, id });
+    ): Promise<[Queries.Role.Entity[], number]> {
+        return this.roleQueries.findDelegableByRole({ pagination, filters, sort, realm, id });
     }
 
     @HttpCode(OK)
@@ -191,8 +191,8 @@ export class RoleController {
         @Query() { realm, account }: GetEffectiveRolesListQueryDTO,
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractPermissions() permissions?: string[],
-    ): Promise<[Repositories.Role.Entity[], number]> {
-        return this.roleQuery.findEffective({ permissions, pagination, filters, sort, account, actor, realm });
+    ): Promise<[Queries.Role.Entity[], number]> {
+        return this.roleQueries.findEffective({ permissions, pagination, filters, sort, account, actor, realm });
     }
 
     @HttpCode(OK)
@@ -205,8 +205,8 @@ export class RoleController {
     public getLookupList(
         @Query() { realm, term }: GetRolesLookupListQueryDTO,
         @Body() { pagination }: GetRolesLookupListBodyDTO,
-    ): Promise<[Repositories.Role.Entity[], number]> {
-        return this.roleQuery.getLookupList({ pagination, realm, term });
+    ): Promise<[Queries.Role.Entity[], number]> {
+        return this.roleQueries.getLookupList({ pagination, realm, term });
     }
 
     @HttpCode(OK)
@@ -216,8 +216,8 @@ export class RoleController {
     @ApiResponse({ status: OK, type: RoleHierarchyGraphDTO })
     @ApiOperation({ summary: "Returns the role hierarchy graph (nodes and edges)" })
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
-    public getHierarchyGraph(@Query() { realm }: GetRoleHierarchyGraphQueryDTO): Promise<Repositories.Role.Graph.Data> {
-        return this.roleQuery.getHierarchyGraph({ realm });
+    public getHierarchyGraph(@Query() { realm }: GetRoleHierarchyGraphQueryDTO): Promise<Queries.Role.Graph> {
+        return this.roleQueries.getHierarchyGraph({ realm });
     }
 
     @Post("create")
@@ -233,7 +233,7 @@ export class RoleController {
         @Query() { realm }: CreateRoleQueryDTO,
         @Body() input: CreateRoleBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleCommand.create({ actor, context, input, realm });
+        return this.roleCommands.create({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -249,7 +249,7 @@ export class RoleController {
         @Query() { realm, id }: UpdateRoleQueryDTO,
         @Body() input: UpdateRoleBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleCommand.update({ actor, context, input, realm, id });
+        return this.roleCommands.update({ actor, context, input, realm, id });
     }
 
     @HttpCode(OK)
@@ -265,7 +265,7 @@ export class RoleController {
         @Query() { realm }: RevokeRoleQueryDTO,
         @Body() input: RevokeRoleBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleCommand.revoke({ actor, context, input, realm });
+        return this.roleCommands.revoke({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -281,7 +281,7 @@ export class RoleController {
         @Query() { realm }: RestoreRoleQueryDTO,
         @Body() input: RestoreRoleBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleCommand.restore({ actor, context, input, realm });
+        return this.roleCommands.restore({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -297,7 +297,7 @@ export class RoleController {
         @Query() { realm, id }: PurgeRoleQueryDTO,
         @Body() input: PurgeRoleBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleCommand.purge({ actor, context, input, realm, id });
+        return this.roleCommands.purge({ actor, context, input, realm, id });
     }
 
     @HttpCode(OK)
@@ -313,6 +313,6 @@ export class RoleController {
         @Query() { realm, id }: PurgeRoleSubtreeQueryDTO,
         @Body() input: PurgeRoleSubtreeBodyDTO,
     ): Promise<MessageResult> {
-        return this.roleCommand.purgeSubtree({ actor, context, input, realm, id });
+        return this.roleCommands.purgeSubtree({ actor, context, input, realm, id });
     }
 }

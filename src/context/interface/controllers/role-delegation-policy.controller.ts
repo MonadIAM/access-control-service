@@ -14,8 +14,8 @@ import {
 } from "@nestjs/common";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { ROLE_DELEGATION_POLICY_COMMAND } from "~context/application/command";
-import { ROLE_DELEGATION_POLICY_QUERY } from "~context/application/query";
+import { ROLE_DELEGATION_POLICY_COMMANDS } from "~context/application/commands";
+import { ROLE_DELEGATION_POLICY_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
@@ -63,10 +63,10 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RoleDelegationPolicyController {
     public constructor(
-        @Inject(ROLE_DELEGATION_POLICY_COMMAND)
-        private readonly roleDelegationPolicyCommand: Commands.RoleDelegationPolicy.Contract,
-        @Inject(ROLE_DELEGATION_POLICY_QUERY)
-        private readonly roleDelegationPolicyQuery: Queries.RoleDelegationPolicy.Contract,
+        @Inject(ROLE_DELEGATION_POLICY_COMMANDS)
+        private readonly roleDelegationPolicyCommands: Commands.RoleDelegationPolicy.Contract,
+        @Inject(ROLE_DELEGATION_POLICY_QUERIES)
+        private readonly roleDelegationPolicyQueries: Queries.RoleDelegationPolicy.Contract,
     ) {}
 
     @Get()
@@ -78,8 +78,8 @@ export class RoleDelegationPolicyController {
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
         @Query() { policy, realm, view }: GetRoleDelegationPolicyByIdQueryDTO,
-    ): Promise<Repositories.RoleDelegationPolicy.Entity> {
-        return this.roleDelegationPolicyQuery.findUnique({ policy, realm, view });
+    ): Promise<Queries.RoleDelegationPolicy.Entity> {
+        return this.roleDelegationPolicyQueries.findUnique({ policy, realm, view });
     }
 
     @Post("list")
@@ -92,8 +92,8 @@ export class RoleDelegationPolicyController {
     public findMany(
         @Body() { pagination, filters, sort }: GetRoleDelegationPoliciesListBodyDTO,
         @Query() { realm, view }: GetRoleDelegationPoliciesListQueryDTO,
-    ): Promise<[Repositories.RoleDelegationPolicy.Entity[], number]> {
-        return this.roleDelegationPolicyQuery.findMany({ pagination, filters, realm, sort, view });
+    ): Promise<[Queries.RoleDelegationPolicy.Entity[], number]> {
+        return this.roleDelegationPolicyQueries.findMany({ pagination, filters, realm, sort, view });
     }
 
     @Post("create")
@@ -109,7 +109,7 @@ export class RoleDelegationPolicyController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleDelegationPolicyCommand.create({ actor, context, input, realm });
+        return this.roleDelegationPolicyCommands.create({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -125,7 +125,7 @@ export class RoleDelegationPolicyController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleDelegationPolicyCommand.update({ actor, context, input, realm, id });
+        return this.roleDelegationPolicyCommands.update({ actor, context, input, realm, id });
     }
 
     @HttpCode(OK)
@@ -141,7 +141,7 @@ export class RoleDelegationPolicyController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleDelegationPolicyCommand.revoke({ actor, context, input, realm });
+        return this.roleDelegationPolicyCommands.revoke({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -157,7 +157,7 @@ export class RoleDelegationPolicyController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleDelegationPolicyCommand.restore({ actor, context, input, realm });
+        return this.roleDelegationPolicyCommands.restore({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -173,6 +173,6 @@ export class RoleDelegationPolicyController {
         @Body() input: PurgeRoleDelegationPolicyBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleDelegationPolicyCommand.purge({ actor, context, input, realm });
+        return this.roleDelegationPolicyCommands.purge({ actor, context, input, realm });
     }
 }

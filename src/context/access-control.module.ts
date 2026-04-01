@@ -11,8 +11,8 @@ import { PROCESSORS, QUEUES } from "./infrastructure/queues";
 import { REPOSITORIES } from "./infrastructure/repositories";
 import { CONTROLLERS } from "./interface/controllers";
 import { DOMAIN_SERVICES } from "./domain/services";
-import { COMMANDS } from "./application/command";
-import { QUERIES } from "./application/query";
+import { COMMANDS } from "./application/commands";
+import { QUERIES } from "./application/queries";
 
 @Module({
     imports: [TrackingModule, BullModule.registerQueue({ name: "permission-cache-invalidation" })],

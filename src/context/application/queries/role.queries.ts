@@ -4,7 +4,7 @@ import { ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { DelegatorType, PermissionCode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleQuery implements Queries.Role.Contract {
+export class RoleQueries implements Queries.Role.Contract {
     private readonly populate = {
         DETAILED: ["realm"] as const,
         COMPACT: [] as const,
@@ -15,14 +15,14 @@ export class RoleQuery implements Queries.Role.Contract {
         private readonly roleRepository: Repositories.Role.ExternalContract,
     ) {}
 
-    public findUnique(props: Queries.Role.FindUnique): Promise<Repositories.Role.Entity> {
+    public findUnique(props: Queries.Role.FindUnique): Promise<Queries.Role.Entity> {
         return this.roleRepository.findUniqueOrThrow({
             options: { populate: this.populate[props.view] },
             where: { id: props.role, realm: props.realm },
         });
     }
 
-    public findMany(props: Queries.Role.FindMany): Promise<[Repositories.Role.Entity[], number]> {
+    public findMany(props: Queries.Role.FindMany): Promise<[Queries.Role.Entity[], number]> {
         return this.roleRepository.findMany({
             options: { populate: this.populate[props.view] },
             pagination: props.pagination,
@@ -52,9 +52,7 @@ export class RoleQuery implements Queries.Role.Contract {
         });
     }
 
-    public findDelegableByAccount(
-        props: Queries.Role.FindDelegableByAccount,
-    ): Promise<[Repositories.Role.Entity[], number]> {
+    public findDelegableByAccount(props: Queries.Role.FindDelegableByAccount): Promise<[Queries.Role.Entity[], number]> {
         let id = props.actor;
         if (props.permissions?.includes(PermissionCode.ROLE_READ_ABSOLUTE)) {
             id = props.id ?? props.actor;
@@ -67,7 +65,7 @@ export class RoleQuery implements Queries.Role.Contract {
         });
     }
 
-    public findDelegableByRole(props: Queries.Role.FindDelegableByRole): Promise<[Repositories.Role.Entity[], number]> {
+    public findDelegableByRole(props: Queries.Role.FindDelegableByRole): Promise<[Queries.Role.Entity[], number]> {
         return this.roleRepository.findDelegateable({
             where: {
                 type: DelegatorType.ROLE,
@@ -80,7 +78,7 @@ export class RoleQuery implements Queries.Role.Contract {
         });
     }
 
-    public findEffective(props: Queries.Role.FindEffective): Promise<[Repositories.Role.Entity[], number]> {
+    public findEffective(props: Queries.Role.FindEffective): Promise<[Queries.Role.Entity[], number]> {
         let account = props.actor;
         if (props.permissions?.includes(PermissionCode.ROLE_READ_ABSOLUTE)) {
             account = props.account ?? props.actor;
@@ -93,7 +91,7 @@ export class RoleQuery implements Queries.Role.Contract {
         });
     }
 
-    public getLookupList(props: Queries.Role.GetLookupList): Promise<[Repositories.Role.Entity[], number]> {
+    public getLookupList(props: Queries.Role.GetLookupList): Promise<[Queries.Role.Entity[], number]> {
         return this.roleRepository.getLookupList({
             pagination: props.pagination,
             realm: props.realm,

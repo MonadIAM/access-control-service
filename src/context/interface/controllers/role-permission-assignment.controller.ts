@@ -14,8 +14,8 @@ import {
 } from "@nestjs/common";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { ROLE_PERMISSION_ASSIGNMENT_COMMAND } from "~context/application/command";
-import { ROLE_PERMISSION_ASSIGNMENT_QUERY } from "~context/application/query";
+import { ROLE_PERMISSION_ASSIGNMENT_COMMANDS } from "~context/application/commands";
+import { ROLE_PERMISSION_ASSIGNMENT_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
@@ -60,10 +60,10 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RolePermissionAssignmentController {
     public constructor(
-        @Inject(ROLE_PERMISSION_ASSIGNMENT_COMMAND)
-        private readonly rolePermissionAssignmentCommand: Commands.RolePermissionAssignment.Contract,
-        @Inject(ROLE_PERMISSION_ASSIGNMENT_QUERY)
-        private readonly rolePermissionAssignmentQuery: Queries.RolePermissionAssignment.Contract,
+        @Inject(ROLE_PERMISSION_ASSIGNMENT_COMMANDS)
+        private readonly rolePermissionAssignmentCommands: Commands.RolePermissionAssignment.Contract,
+        @Inject(ROLE_PERMISSION_ASSIGNMENT_QUERIES)
+        private readonly rolePermissionAssignmentQueries: Queries.RolePermissionAssignment.Contract,
     ) {}
 
     @Get()
@@ -75,8 +75,8 @@ export class RolePermissionAssignmentController {
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
         @Query() { assignment, realm, view }: GetRolePermissionAssignmentByIdQueryDTO,
-    ): Promise<Repositories.RolePermissionAssignment.Entity> {
-        return this.rolePermissionAssignmentQuery.findUnique({ assignment, realm, view });
+    ): Promise<Queries.RolePermissionAssignment.Entity> {
+        return this.rolePermissionAssignmentQueries.findUnique({ assignment, realm, view });
     }
 
     @Post("list")
@@ -89,8 +89,8 @@ export class RolePermissionAssignmentController {
     public findMany(
         @Body() { pagination, filters, sort }: GetRolePermissionAssignmentsListBodyDTO,
         @Query() { realm, view }: GetRolePermissionAssignmentsListQueryDTO,
-    ): Promise<[Repositories.RolePermissionAssignment.Entity[], number]> {
-        return this.rolePermissionAssignmentQuery.findMany({ pagination, filters, sort, realm, view });
+    ): Promise<[Queries.RolePermissionAssignment.Entity[], number]> {
+        return this.rolePermissionAssignmentQueries.findMany({ pagination, filters, sort, realm, view });
     }
 
     @Post("create")
@@ -106,7 +106,7 @@ export class RolePermissionAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.rolePermissionAssignmentCommand.create({ actor, context, input, realm });
+        return this.rolePermissionAssignmentCommands.create({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -122,7 +122,7 @@ export class RolePermissionAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.rolePermissionAssignmentCommand.revoke({ actor, context, input, realm });
+        return this.rolePermissionAssignmentCommands.revoke({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -138,7 +138,7 @@ export class RolePermissionAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.rolePermissionAssignmentCommand.restore({ actor, context, input, realm });
+        return this.rolePermissionAssignmentCommands.restore({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -154,6 +154,6 @@ export class RolePermissionAssignmentController {
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.rolePermissionAssignmentCommand.purge({ actor, context, input, realm });
+        return this.rolePermissionAssignmentCommands.purge({ actor, context, input, realm });
     }
 }

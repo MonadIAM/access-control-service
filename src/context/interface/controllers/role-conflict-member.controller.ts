@@ -2,8 +2,8 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Delete, Inject, Quer
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { ROLE_CONFLICT_MEMBER_COMMAND } from "~context/application/command";
-import { ROLE_CONFLICT_MEMBER_QUERY } from "~context/application/query";
+import { ROLE_CONFLICT_MEMBER_COMMANDS } from "~context/application/commands";
+import { ROLE_CONFLICT_MEMBER_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
@@ -38,10 +38,10 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RoleConflictMemberController {
     public constructor(
-        @Inject(ROLE_CONFLICT_MEMBER_COMMAND)
-        private readonly roleConflictMemberCommand: Commands.RoleConflictMember.Contract,
-        @Inject(ROLE_CONFLICT_MEMBER_QUERY)
-        private readonly roleConflictMemberQuery: Queries.RoleConflictMember.Contract,
+        @Inject(ROLE_CONFLICT_MEMBER_COMMANDS)
+        private readonly roleConflictMemberCommands: Commands.RoleConflictMember.Contract,
+        @Inject(ROLE_CONFLICT_MEMBER_QUERIES)
+        private readonly roleConflictMemberQueries: Queries.RoleConflictMember.Contract,
     ) {}
 
     @Get()
@@ -53,8 +53,8 @@ export class RoleConflictMemberController {
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
         @Query() { member, group, realm, view }: GetRoleConflictMemberByIdQueryDTO,
-    ): Promise<Repositories.RoleConflictMember.Entity> {
-        return this.roleConflictMemberQuery.findUnique({ member, group, realm, view });
+    ): Promise<Queries.RoleConflictMember.Entity> {
+        return this.roleConflictMemberQueries.findUnique({ member, group, realm, view });
     }
 
     @Post("list")
@@ -67,8 +67,8 @@ export class RoleConflictMemberController {
     public findMany(
         @Body() { pagination, filters, sort }: GetRoleConflictMembersListBodyDTO,
         @Query() { group, realm, view }: GetRoleConflictMembersListQueryDTO,
-    ): Promise<[Repositories.RoleConflictMember.Entity[], number]> {
-        return this.roleConflictMemberQuery.findMany({ pagination, filters, group, realm, sort, view });
+    ): Promise<[Queries.RoleConflictMember.Entity[], number]> {
+        return this.roleConflictMemberQueries.findMany({ pagination, filters, group, realm, sort, view });
     }
 
     @Post("create")
@@ -84,7 +84,7 @@ export class RoleConflictMemberController {
         @Body() input: CreateRoleConflictMemberBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictMemberCommand.create({ actor, context, input, realm });
+        return this.roleConflictMemberCommands.create({ actor, context, input, realm });
     }
 
     @HttpCode(OK)
@@ -100,6 +100,6 @@ export class RoleConflictMemberController {
         @Body() input: PurgeRoleConflictMemberBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictMemberCommand.purge({ actor, context, input, realm });
+        return this.roleConflictMemberCommands.purge({ actor, context, input, realm });
     }
 }

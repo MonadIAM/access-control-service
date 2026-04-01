@@ -3,7 +3,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleConflictMemberQuery implements Queries.RoleConflictMember.Contract {
+export class RoleConflictMemberQueries implements Queries.RoleConflictMember.Contract {
     private readonly populate = {
         DETAILED: ["group", "role"] as const,
         COMPACT: [] as const,

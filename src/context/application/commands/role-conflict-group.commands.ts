@@ -1,40 +1,59 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { ROLE_CONFLICT_GROUP_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
-import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
+import { ROLE_CONFLICT_GROUP_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
-import { REALM_SERVICE } from "~context/domain/services";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RealmCommand implements Commands.Realm.Contract {
-    private readonly dictionaryPath = "commands.realm";
-    private readonly resource = "Realm";
+export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Contract {
+    private readonly dictionaryPath = "commands.role-conflict-group";
+    private readonly resource = "RoleConflictGroup";
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactional: Tracking.Transactional.Contract,
+        @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.InternalContract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.InternalContract,
-        @Inject(REALM_SERVICE)
-        private readonly realmService: Services.Realm.Contract,
+        @Inject(ROLE_REPOSITORY)
+        private readonly roleRepository: Repositories.Role.InternalContract,
+        @Inject(ROLE_CONFLICT_GROUP_SERVICE)
+        private readonly roleConflictGroupService: Services.RoleConflictGroup.Contract,
     ) {}
 
-    public async create(props: Commands.Realm.Create): Promise<MessageResult> {
+    public async create(props: Commands.RoleConflictGroup.Create): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
+                    entityType: AccessControlEntityType.CONFLICT_GROUP,
                     actionType: AccessControlActionType.CREATE,
-                    entityType: AccessControlEntityType.REALM,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, actor } = props;
-                    await this.realmService.create({
+                    const { input, realm } = props;
+                    const [realmEntity, roleEntities] = await Promise.all([
+                        this.realmRepository.findUniqueOrThrow({
+                            where: { id: realm },
+                            transaction,
+                        }),
+                        this.roleRepository.find({
+                            where: { id: { $in: input.members } },
+                            transaction,
+                        }),
+                    ]);
+
+                    if (roleEntities.length < input.members.length) {
+                        throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                    }
+
+                    await this.roleConflictGroupService.create({
+                        input: { ...input, members: roleEntities },
+                        realm: realmEntity,
                         transaction,
-                        input,
-                        actor,
                     });
 
                     return { message: `${this.dictionaryPath}.CREATED` };
@@ -45,53 +64,53 @@ export class RealmCommand implements Commands.Realm.Contract {
         }
     }
 
-    public async update(props: Commands.Realm.Update): Promise<MessageResult> {
+    public async update(props: Commands.RoleConflictGroup.Update): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
+                    entityType: AccessControlEntityType.CONFLICT_GROUP,
                     actionType: AccessControlActionType.UPDATE,
-                    entityType: AccessControlEntityType.REALM,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, id } = props;
-                    const entity = await this.realmRepository.findUniqueOrThrow({
-                        where: { id },
+                    const { input, realm, id } = props;
+                    const entity = await this.roleConflictGroupRepository.findUniqueOrThrow({
+                        where: { id, realm },
                         transaction,
                     });
 
-                    this.realmService.update({ entity, patch: input.patch });
+                    this.roleConflictGroupService.update({ entity, patch: input.patch });
 
                     return { message: `${this.dictionaryPath}.UPDATED` };
                 },
             });
         } catch (error) {
-            throw CommandException.fromOrmError(error, this.resource);
+            throw CommandException.fromOrmError(error);
         }
     }
 
-    public async purge(props: Commands.Realm.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.RoleConflictGroup.Purge): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
+                    entityType: AccessControlEntityType.CONFLICT_GROUP,
                     actionType: AccessControlActionType.DELETE,
-                    entityType: AccessControlEntityType.REALM,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const { input } = props;
-                    const entities = await this.realmRepository.find({
+                    const entities = await this.roleConflictGroupRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                     }
 
-                    this.realmService.purge({ transaction, entities });
+                    this.roleConflictGroupService.purge({ transaction, entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
@@ -105,27 +124,27 @@ export class RealmCommand implements Commands.Realm.Contract {
         }
     }
 
-    public async revoke(props: Commands.Realm.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.RoleConflictGroup.Revoke): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
+                    entityType: AccessControlEntityType.CONFLICT_GROUP,
                     actionType: AccessControlActionType.REVOKE,
-                    entityType: AccessControlEntityType.REALM,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const { input } = props;
-                    const entities = await this.realmRepository.find({
+                    const entities = await this.roleConflictGroupRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                     }
 
-                    this.realmService.revoke({ entities });
+                    this.roleConflictGroupService.revoke({ entities });
 
                     if (entities.length > 1) {
                         return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -139,27 +158,27 @@ export class RealmCommand implements Commands.Realm.Contract {
         }
     }
 
-    public async restore(props: Commands.Realm.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.RoleConflictGroup.Restore): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
+                    entityType: AccessControlEntityType.CONFLICT_GROUP,
                     actionType: AccessControlActionType.RESTORE,
-                    entityType: AccessControlEntityType.REALM,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const { input } = props;
-                    const entities = await this.realmRepository.find({
+                    const entities = await this.roleConflictGroupRepository.find({
                         where: { id: { $in: input.identifiers } },
                         transaction,
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                     }
 
-                    this.realmService.restore({ entities });
+                    this.roleConflictGroupService.restore({ entities });
 
                     if (entities.length > 1) {
                         return {

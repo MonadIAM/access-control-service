@@ -3,7 +3,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ROLE_DELEGATION_POLICY_REPOSITORY } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RoleDelegationPolicyQuery implements Queries.RoleDelegationPolicy.Contract {
+export class RoleDelegationPolicyQueries implements Queries.RoleDelegationPolicy.Contract {
     private readonly populate = {
         DETAILED: ["delegator", "target", "realm"] as const,
         COMPACT: [] as const,

@@ -14,8 +14,8 @@ import {
 } from "@nestjs/common";
 
 import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
-import { ROLE_CONFLICT_GROUP_COMMAND } from "~context/application/command";
-import { ROLE_CONFLICT_GROUP_QUERY } from "~context/application/query";
+import { ROLE_CONFLICT_GROUP_COMMANDS } from "~context/application/commands";
+import { ROLE_CONFLICT_GROUP_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
@@ -66,10 +66,10 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RoleConflictGroupController {
     public constructor(
-        @Inject(ROLE_CONFLICT_GROUP_COMMAND)
-        private readonly roleConflictGroupCommand: Commands.RoleConflictGroup.Contract,
-        @Inject(ROLE_CONFLICT_GROUP_QUERY)
-        private readonly roleConflictGroupQuery: Queries.RoleConflictGroup.Contract,
+        @Inject(ROLE_CONFLICT_GROUP_COMMANDS)
+        private readonly roleConflictGroupCommands: Commands.RoleConflictGroup.Contract,
+        @Inject(ROLE_CONFLICT_GROUP_QUERIES)
+        private readonly roleConflictGroupQueries: Queries.RoleConflictGroup.Contract,
     ) {}
 
     @Get()
@@ -81,8 +81,8 @@ export class RoleConflictGroupController {
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
         @Query() { group, realm, view }: GetRoleConflictGroupByIdQueryDTO,
-    ): Promise<Repositories.RoleConflictGroup.Entity> {
-        return this.roleConflictGroupQuery.findUnique({ group, realm, view });
+    ): Promise<Queries.RoleConflictGroup.Entity> {
+        return this.roleConflictGroupQueries.findUnique({ group, realm, view });
     }
 
     @Post("list")
@@ -95,8 +95,8 @@ export class RoleConflictGroupController {
     public findMany(
         @Body() { pagination, filters, sort }: GetRoleConflictGroupsListBodyDTO,
         @Query() { realm, view }: GetRoleConflictGroupsListQueryDTO,
-    ): Promise<[Repositories.RoleConflictGroup.Entity[], number]> {
-        return this.roleConflictGroupQuery.findMany({ pagination, filters, realm, sort, view });
+    ): Promise<[Queries.RoleConflictGroup.Entity[], number]> {
+        return this.roleConflictGroupQueries.findMany({ pagination, filters, realm, sort, view });
     }
 
     @HttpCode(OK)
@@ -109,8 +109,8 @@ export class RoleConflictGroupController {
     public findViolationDetails(
         @Body() { account, roles }: GetViolationDetailsBodyDTO,
         @Query() { realm }: GetViolationDetailsQueryDTO,
-    ): Promise<Repositories.RoleConflictGroup.Entity[]> {
-        return this.roleConflictGroupQuery.findViolationDetails({ account, realm, roles });
+    ): Promise<Queries.RoleConflictGroup.Entity[]> {
+        return this.roleConflictGroupQueries.findViolationDetails({ account, realm, roles });
     }
 
     @Post("create")
@@ -126,7 +126,7 @@ export class RoleConflictGroupController {
         @Body() input: CreateRoleConflictGroupBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictGroupCommand.create({ context, realm, actor, input });
+        return this.roleConflictGroupCommands.create({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -142,7 +142,7 @@ export class RoleConflictGroupController {
         @Body() input: UpdateRoleConflictGroupBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictGroupCommand.update({ context, realm, actor, input, id });
+        return this.roleConflictGroupCommands.update({ context, realm, actor, input, id });
     }
 
     @HttpCode(OK)
@@ -158,7 +158,7 @@ export class RoleConflictGroupController {
         @Body() input: RevokeRoleConflictGroupBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictGroupCommand.revoke({ context, realm, actor, input });
+        return this.roleConflictGroupCommands.revoke({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -174,7 +174,7 @@ export class RoleConflictGroupController {
         @Body() input: RestoreRoleConflictGroupBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictGroupCommand.restore({ context, realm, actor, input });
+        return this.roleConflictGroupCommands.restore({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -190,6 +190,6 @@ export class RoleConflictGroupController {
         @Body() input: PurgeRoleConflictGroupBodyDTO,
         @ExtractContext() context: RequestContext,
     ): Promise<MessageResult> {
-        return this.roleConflictGroupCommand.purge({ context, realm, actor, input });
+        return this.roleConflictGroupCommands.purge({ context, realm, actor, input });
     }
 }

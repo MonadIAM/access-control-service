@@ -4,7 +4,7 @@ import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
 import { PermissionCode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class PermissionQuery implements Queries.Permission.Contract {
+export class PermissionQueries implements Queries.Permission.Contract {
     private readonly populate = {
         DETAILED: ["realm"] as const,
         COMPACT: [] as const,

@@ -1,50 +1,56 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
+import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
-import { PERMISSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { ROLE_SERVICE } from "~context/domain/services";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class PermissionCommand implements Commands.Permission.Contract {
-    private readonly dictionaryPath = "commands.permission";
-    private readonly resource = "Permission";
+export class RoleCommands implements Commands.Role.Contract {
+    private readonly dictionaryPath = "commands.role";
+    private readonly resource = "Role";
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactional: Tracking.Transactional.Contract,
         @Inject(PERMISSION_CACHE_INVALIDATION_QUEUE)
         private readonly permissionCacheInvalidationQueue: Queues.PermissionInvalidation.Contract,
-        @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.InternalContract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.InternalContract,
-        @Inject(PERMISSION_SERVICE)
-        private readonly permissionService: Services.Permission.Contract,
+        @Inject(ROLE_REPOSITORY)
+        private readonly roleRepository: Repositories.Role.InternalContract,
+        @Inject(ROLE_SERVICE)
+        private readonly roleService: Services.Role.Contract,
     ) {}
 
-    public async create(props: Commands.Permission.Create): Promise<MessageResult> {
+    public async create(props: Commands.Role.Create): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
-                    entityType: AccessControlEntityType.PERMISSION,
                     actionType: AccessControlActionType.CREATE,
+                    entityType: AccessControlEntityType.ROLE,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const { input, realm } = props;
-                    const realmEntity = await this.realmRepository.findUniqueOrThrow({
-                        where: { id: realm },
-                        transaction,
-                    });
+                    const [parentEntity, realmEntity] = await Promise.all([
+                        this.roleRepository.findUniqueOrThrow({
+                            where: { id: input.parent, realm },
+                            transaction,
+                        }),
+                        this.realmRepository.findUniqueOrThrow({
+                            where: { id: realm },
+                            transaction,
+                        }),
+                    ]);
 
-                    await this.permissionService.create({
+                    await this.roleService.create({
+                        input: { ...input, parent: parentEntity },
                         realm: realmEntity,
                         transaction,
-                        input,
                     });
 
                     return { message: `${this.dictionaryPath}.CREATED` };
@@ -55,23 +61,23 @@ export class PermissionCommand implements Commands.Permission.Contract {
         }
     }
 
-    public async update(props: Commands.Permission.Update): Promise<MessageResult> {
+    public async update(props: Commands.Role.Update): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
-                    entityType: AccessControlEntityType.PERMISSION,
                     actionType: AccessControlActionType.UPDATE,
+                    entityType: AccessControlEntityType.ROLE,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const { input, realm, id } = props;
-                    const entity = await this.permissionRepository.findUniqueOrThrow({
+                    const entity = await this.roleRepository.findUniqueOrThrow({
                         where: { id, realm },
                         transaction,
                     });
 
-                    this.permissionService.update({ entity, patch: input.patch });
+                    this.roleService.update({ entity, patch: input.patch });
 
                     return { message: `${this.dictionaryPath}.UPDATED` };
                 },
@@ -81,33 +87,29 @@ export class PermissionCommand implements Commands.Permission.Contract {
         }
     }
 
-    public async purge(props: Commands.Permission.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.Role.Purge): Promise<MessageResult> {
         try {
             return await this.transactional.run({
                 audit: {
-                    entityType: AccessControlEntityType.PERMISSION,
                     actionType: AccessControlActionType.DELETE,
+                    entityType: AccessControlEntityType.ROLE,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const { input, realm } = props;
-                    const entities = await this.permissionRepository.find({
-                        where: { id: { $in: input.identifiers }, realm },
+                    const { realm, id } = props;
+                    const entity = await this.roleRepository.findUniqueOrThrow({
+                        where: { id, realm },
                         transaction,
                     });
 
-                    if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
-                    }
+                    await this.roleService.purge({
+                        transaction,
+                        entity,
+                        realm,
+                    });
 
-                    this.permissionService.purge({ transaction, entities });
-
-                    if (entities.length > 1) {
-                        return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
-                    } else {
-                        return { message: `${this.dictionaryPath}.PURGED` };
-                    }
+                    return { message: `${this.dictionaryPath}.PURGED` };
                 },
             });
         } catch (error) {
@@ -115,30 +117,60 @@ export class PermissionCommand implements Commands.Permission.Contract {
         }
     }
 
-    public async revoke(props: Commands.Permission.Revoke): Promise<MessageResult> {
+    public async purgeSubtree(props: Commands.Role.PurgeSubtree): Promise<MessageResult> {
+        try {
+            return await this.transactional.run({
+                audit: {
+                    actionType: AccessControlActionType.DELETE,
+                    entityType: AccessControlEntityType.ROLE,
+                    ...props,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const { realm, id } = props;
+                    const entity = await this.roleRepository.findUniqueOrThrow({
+                        where: { id, realm },
+                        transaction,
+                    });
+
+                    const count = await this.roleService.purgeSubtree({
+                        transaction,
+                        entity,
+                        realm,
+                    });
+
+                    return { message: `${this.dictionaryPath}.SUBTREE_PURGED_COUNT`, params: { count } };
+                },
+            });
+        } catch (error) {
+            throw CommandException.fromOrmError(error, this.resource);
+        }
+    }
+
+    public async revoke(props: Commands.Role.Revoke): Promise<MessageResult> {
         try {
             const { entities, affected } = await this.transactional.run({
                 audit: {
-                    entityType: AccessControlEntityType.PERMISSION,
                     actionType: AccessControlActionType.REVOKE,
+                    entityType: AccessControlEntityType.ROLE,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const { input, realm } = props;
-                    const entities = await this.permissionRepository.find({
+                    const entities = await this.roleRepository.find({
                         where: { id: { $in: input.identifiers }, realm },
                         transaction,
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                     }
 
-                    this.permissionService.revoke({ entities });
+                    this.roleService.revoke({ entities });
 
-                    const affected = await this.permissionRepository.findAccountsByPermissions({
-                        permissions: entities.map(({ id }) => id),
+                    const affected = await this.roleRepository.findAccountsByRoles({
+                        roles: entities.map(({ id }) => id),
                     });
 
                     return { entities, affected };
@@ -157,30 +189,30 @@ export class PermissionCommand implements Commands.Permission.Contract {
         }
     }
 
-    public async restore(props: Commands.Permission.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.Role.Restore): Promise<MessageResult> {
         try {
             const { entities, affected } = await this.transactional.run({
                 audit: {
-                    entityType: AccessControlEntityType.PERMISSION,
                     actionType: AccessControlActionType.RESTORE,
+                    entityType: AccessControlEntityType.ROLE,
                     ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const { input, realm } = props;
-                    const entities = await this.permissionRepository.find({
+                    const entities = await this.roleRepository.find({
                         where: { id: { $in: input.identifiers }, realm },
                         transaction,
                     });
 
                     if (entities.length < input.identifiers.length) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                        throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                     }
 
-                    this.permissionService.restore({ entities });
+                    this.roleService.restore({ entities });
 
-                    const affected = await this.permissionRepository.findAccountsByPermissions({
-                        permissions: entities.map(({ id }) => id),
+                    const affected = await this.roleRepository.findAccountsByRoles({
+                        roles: entities.map(({ id }) => id),
                     });
 
                     return { entities, affected };

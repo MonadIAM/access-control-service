@@ -5,7 +5,7 @@ import { PublicLinkOperator } from "~infrastructure/database";
 import { PermissionCode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class PermissionOverrideQuery implements Queries.PermissionOverride.Contract {
+export class PermissionOverrideQueries implements Queries.PermissionOverride.Contract {
     private readonly populate = {
         DETAILED: ["permission", "realm"] as const,
         COMPACT: [] as const,

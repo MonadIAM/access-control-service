@@ -8,7 +8,7 @@ import { Realm } from "~context/domain/entities";
 import { PermissionCode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
-export class RealmQuery implements Queries.Realm.Contract {
+export class RealmQueries implements Queries.Realm.Contract {
     private readonly dictionaryPath = "queries.realm";
 
     private readonly populate = {

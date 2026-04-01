@@ -14,9 +14,9 @@ import {
 } from "@nestjs/common";
 
 import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
-import { REALM_COMMAND } from "~context/application/command";
+import { REALM_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { REALM_QUERY } from "~context/application/query";
+import { REALM_QUERIES } from "~context/application/queries";
 import { PermissionCode } from "~context/enums";
 import {
     ExtractPermissions,
@@ -62,10 +62,10 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class RealmController {
     public constructor(
-        @Inject(REALM_COMMAND)
-        private readonly realmCommand: Commands.Realm.Contract,
-        @Inject(REALM_QUERY)
-        private readonly realmQuery: Queries.Realm.Contract,
+        @Inject(REALM_COMMANDS)
+        private readonly realmCommands: Commands.Realm.Contract,
+        @Inject(REALM_QUERIES)
+        private readonly realmQueries: Queries.Realm.Contract,
     ) {}
 
     @Get()
@@ -79,8 +79,8 @@ export class RealmController {
         @Query() { realm, view }: GetRealmByIdQueryDTO,
         @ExtractActor() { account }: ActorContext,
         @ExtractPermissions() permissions?: string[],
-    ): Promise<Repositories.Realm.Entity> {
-        return this.realmQuery.findUnique({ permissions, account, realm, view });
+    ): Promise<Queries.Realm.Entity> {
+        return this.realmQueries.findUnique({ permissions, account, realm, view });
     }
 
     @Post("list")
@@ -95,8 +95,8 @@ export class RealmController {
         @ExtractActor() { account }: ActorContext,
         @Query() { view }: BaseReadQueryDTO,
         @ExtractPermissions() permissions?: string[],
-    ): Promise<[Repositories.Realm.Entity[], number]> {
-        return this.realmQuery.findMany({ permissions, pagination, filters, account, view, sort });
+    ): Promise<[Queries.Realm.Entity[], number]> {
+        return this.realmQueries.findMany({ permissions, pagination, filters, account, view, sort });
     }
 
     @HttpCode(OK)
@@ -111,8 +111,8 @@ export class RealmController {
         @Query() { term }: GetRealmsLookupListQueryDTO,
         @ExtractActor() { account }: ActorContext,
         @ExtractPermissions() permissions?: string[],
-    ): Promise<[Repositories.Realm.Entity[], number]> {
-        return this.realmQuery.getLookupList({ permissions, pagination, account, term });
+    ): Promise<[Queries.Realm.Entity[], number]> {
+        return this.realmQueries.getLookupList({ permissions, pagination, account, term });
     }
 
     @Post("create")
@@ -127,7 +127,7 @@ export class RealmController {
         @ExtractContext() context: RequestContext,
         @Body() input: CreateRealmBodyDTO,
     ): Promise<MessageResult> {
-        return this.realmCommand.create({ context, actor, input });
+        return this.realmCommands.create({ context, actor, input });
     }
 
     @HttpCode(OK)
@@ -143,7 +143,7 @@ export class RealmController {
         @Query() { id }: UpdateRealmQueryDTO,
         @Body() input: UpdateRealmBodyDTO,
     ): Promise<MessageResult> {
-        return this.realmCommand.update({ context, actor, input, id });
+        return this.realmCommands.update({ context, actor, input, id });
     }
 
     @HttpCode(OK)
@@ -158,7 +158,7 @@ export class RealmController {
         @ExtractContext() context: RequestContext,
         @Body() input: RevokeRealmBodyDTO,
     ): Promise<MessageResult> {
-        return this.realmCommand.revoke({ context, actor, input });
+        return this.realmCommands.revoke({ context, actor, input });
     }
 
     @HttpCode(OK)
@@ -173,7 +173,7 @@ export class RealmController {
         @ExtractContext() context: RequestContext,
         @Body() input: RestoreRealmBodyDTO,
     ): Promise<MessageResult> {
-        return this.realmCommand.restore({ context, actor, input });
+        return this.realmCommands.restore({ context, actor, input });
     }
 
     @HttpCode(OK)
@@ -188,6 +188,6 @@ export class RealmController {
         @ExtractContext() context: RequestContext,
         @Body() input: PurgeRealmBodyDTO,
     ): Promise<MessageResult> {
-        return this.realmCommand.purge({ context, actor, input });
+        return this.realmCommands.purge({ context, actor, input });
     }
 }

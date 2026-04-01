@@ -3,7 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { EndpointExceptions, FormatResponse, RequirePermission } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { AUDIT_LOG_QUERY } from "~context/application/query";
+import { AUDIT_LOG_QUERIES } from "~context/application/queries";
 import { PermissionCode } from "~context/enums";
 
 import { GetAuditLogsListBodyDTO, GetAuditLogByIdQueryDTO, AuditLogListDTO, AuditLogDTO } from "../dto/audit-log";
@@ -16,8 +16,8 @@ const { AUDIT_LOG_READ_ABSOLUTE } = PermissionCode;
 @UseInterceptors(MonitoringInterceptor)
 export class AuditLogController {
     public constructor(
-        @Inject(AUDIT_LOG_QUERY)
-        private readonly auditLogQuery: Queries.AuditLog.Contract,
+        @Inject(AUDIT_LOG_QUERIES)
+        private readonly auditLogQueries: Queries.AuditLog.Contract,
     ) {}
 
     @Get()
@@ -27,8 +27,8 @@ export class AuditLogController {
     @ApiResponse({ status: OK, type: AuditLogDTO })
     @ApiOperation({ summary: "Returns a audit log by identifier" })
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
-    public findUnique(@Query() { log }: GetAuditLogByIdQueryDTO): Promise<Repositories.AuditLog.Entity> {
-        return this.auditLogQuery.findUnique({ log });
+    public findUnique(@Query() { log }: GetAuditLogByIdQueryDTO): Promise<Queries.AuditLog.Entity> {
+        return this.auditLogQueries.findUnique({ log });
     }
 
     @Post("list")
@@ -40,7 +40,7 @@ export class AuditLogController {
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getList(
         @Body() { pagination, filters, sort }: GetAuditLogsListBodyDTO,
-    ): Promise<[Repositories.AuditLog.Entity[], number]> {
-        return this.auditLogQuery.findMany({ pagination, filters, sort });
+    ): Promise<[Queries.AuditLog.Entity[], number]> {
+        return this.auditLogQueries.findMany({ pagination, filters, sort });
     }
 }

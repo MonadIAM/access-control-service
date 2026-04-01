@@ -13,8 +13,8 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { PERMISSION_COMMAND } from "~context/application/command";
-import { PERMISSION_QUERY } from "~context/application/query";
+import { PERMISSION_COMMANDS } from "~context/application/commands";
+import { PERMISSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
@@ -77,10 +77,10 @@ const {
 @UseInterceptors(MonitoringInterceptor)
 export class PermissionController {
     public constructor(
-        @Inject(PERMISSION_COMMAND)
-        private readonly permissionCommand: Commands.Permission.Contract,
-        @Inject(PERMISSION_QUERY)
-        private readonly permissionQuery: Queries.Permission.Contract,
+        @Inject(PERMISSION_COMMANDS)
+        private readonly permissionCommands: Commands.Permission.Contract,
+        @Inject(PERMISSION_QUERIES)
+        private readonly permissionQueries: Queries.Permission.Contract,
     ) {}
 
     @Get()
@@ -90,10 +90,8 @@ export class PermissionController {
     @ApiResponse({ status: OK, type: PermissionDTO })
     @ApiOperation({ summary: "Returns a permission by identifier" })
     @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public findUnique(
-        @Query() { realm, permission, view }: GetPermissionByIdQueryDTO,
-    ): Promise<Repositories.Permission.Entity> {
-        return this.permissionQuery.findUnique({ permission, realm, view });
+    public findUnique(@Query() { realm, permission, view }: GetPermissionByIdQueryDTO): Promise<Queries.Permission.Entity> {
+        return this.permissionQueries.findUnique({ permission, realm, view });
     }
 
     @Post("list")
@@ -106,8 +104,8 @@ export class PermissionController {
     public getList(
         @Body() { pagination, filters, sort }: GetPermissionsListBodyDTO,
         @Query() { realm, view }: GetPermissionsListQueryDTO,
-    ): Promise<[Repositories.Permission.Entity[], number]> {
-        return this.permissionQuery.findMany({ pagination, filters, realm, sort, view });
+    ): Promise<[Queries.Permission.Entity[], number]> {
+        return this.permissionQueries.findMany({ pagination, filters, realm, sort, view });
     }
 
     @HttpCode(OK)
@@ -122,8 +120,8 @@ export class PermissionController {
         @Query() { account, realm }: GetEffectivePermissionsListQueryDTO,
         @ExtractActor() { account: actor }: ActorContext,
         @ExtractPermissions() permissions?: string[],
-    ): Promise<[Repositories.Permission.Entity[], number]> {
-        return this.permissionQuery.findEffective({ permissions, pagination, filters, account, realm, actor, sort });
+    ): Promise<[Queries.Permission.Entity[], number]> {
+        return this.permissionQueries.findEffective({ permissions, pagination, filters, account, realm, actor, sort });
     }
 
     @HttpCode(OK)
@@ -136,8 +134,8 @@ export class PermissionController {
     public getLookupList(
         @Query() { realm, term }: GetPermissionsLookupListQueryDTO,
         @Body() { pagination }: GetPermissionsLookupListBodyDTO,
-    ): Promise<[Repositories.Permission.Entity[], number]> {
-        return this.permissionQuery.getLookupList({ pagination, realm, term });
+    ): Promise<[Queries.Permission.Entity[], number]> {
+        return this.permissionQueries.getLookupList({ pagination, realm, term });
     }
 
     @Post("create")
@@ -153,7 +151,7 @@ export class PermissionController {
         @ExtractContext() context: RequestContext,
         @Body() input: CreatePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionCommand.create({ context, realm, actor, input });
+        return this.permissionCommands.create({ context, realm, actor, input });
     }
 
     @Patch("update")
@@ -169,7 +167,7 @@ export class PermissionController {
         @ExtractContext() context: RequestContext,
         @Body() input: UpdatePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionCommand.update({ context, realm, actor, input, id });
+        return this.permissionCommands.update({ context, realm, actor, input, id });
     }
 
     @HttpCode(OK)
@@ -185,7 +183,7 @@ export class PermissionController {
         @ExtractContext() context: RequestContext,
         @Body() input: RevokePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionCommand.revoke({ context, realm, actor, input });
+        return this.permissionCommands.revoke({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -201,7 +199,7 @@ export class PermissionController {
         @ExtractContext() context: RequestContext,
         @Body() input: RestorePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionCommand.restore({ context, realm, actor, input });
+        return this.permissionCommands.restore({ context, realm, actor, input });
     }
 
     @HttpCode(OK)
@@ -217,6 +215,6 @@ export class PermissionController {
         @ExtractContext() context: RequestContext,
         @Body() input: PurgePermissionBodyDTO,
     ): Promise<MessageResult> {
-        return this.permissionCommand.purge({ context, realm, actor, input });
+        return this.permissionCommands.purge({ context, realm, actor, input });
     }
 }
