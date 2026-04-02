@@ -1,11 +1,19 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
-import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { PERMISSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { CommandException } from "~common/exceptions";
+
+import {
+    PermissionRestoredEvent,
+    PermissionRevokedEvent,
+    PermissionCreatedEvent,
+    PermissionUpdatedEvent,
+    PermissionPurgedEvent,
+} from "../events/permission.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionCommands implements Commands.Permission.Contract {
@@ -15,18 +23,19 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactional: Tracking.Transactional.Contract,
-        @Inject(PERMISSION_CACHE_INVALIDATION_QUEUE)
-        private readonly permissionCacheInvalidationQueue: Queues.PermissionInvalidation.Contract,
         @Inject(PERMISSION_REPOSITORY)
         private readonly permissionRepository: Repositories.Permission.InternalContract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(PERMISSION_SERVICE)
         private readonly permissionService: Services.Permission.Contract,
+        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(props: Commands.Permission.Create): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input, realm } = props;
+
+        const entity = await this.transactional.run({
             resource: this.resource,
             audit: {
                 entityType: AccessControlEntityType.PERMISSION,
@@ -35,25 +44,28 @@ export class PermissionCommands implements Commands.Permission.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, realm } = props;
                 const realmEntity = await this.realmRepository.findUniqueOrThrow({
                     where: { id: realm },
                     transaction,
                 });
 
-                await this.permissionService.create({
+                return this.permissionService.create({
                     realm: realmEntity,
                     transaction,
                     input,
                 });
-
-                return { message: `${this.dictionaryPath}.CREATED` };
             },
         });
+
+        this.eventEmitter.emit(PermissionCreatedEvent.TOKEN, new PermissionCreatedEvent(entity.id, realm));
+
+        return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async update(props: Commands.Permission.Update): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input, realm, id } = props;
+
+        await this.transactional.run({
             resource: this.resource,
             audit: {
                 entityType: AccessControlEntityType.PERMISSION,
@@ -62,21 +74,24 @@ export class PermissionCommands implements Commands.Permission.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, realm, id } = props;
                 const entity = await this.permissionRepository.findUniqueOrThrow({
                     where: { id, realm },
                     transaction,
                 });
 
                 this.permissionService.update({ entity, patch: input.patch });
-
-                return { message: `${this.dictionaryPath}.UPDATED` };
             },
         });
+
+        this.eventEmitter.emit(PermissionUpdatedEvent.TOKEN, new PermissionUpdatedEvent(id, realm));
+
+        return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
     public async purge(props: Commands.Permission.Purge): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input, realm } = props;
+
+        const count = await this.transactional.run({
             resource: this.resource,
             audit: {
                 entityType: AccessControlEntityType.PERMISSION,
@@ -85,7 +100,6 @@ export class PermissionCommands implements Commands.Permission.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, realm } = props;
                 const entities = await this.permissionRepository.find({
                     where: { id: { $in: input.identifiers }, realm },
                     transaction,
@@ -93,20 +107,26 @@ export class PermissionCommands implements Commands.Permission.Contract {
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
-                }
-
-                this.permissionService.purge({ transaction, entities });
-
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
                 } else {
-                    return { message: `${this.dictionaryPath}.PURGED` };
+                    this.permissionService.purge({ transaction, entities });
+
+                    return entities.length;
                 }
             },
         });
+
+        this.eventEmitter.emit(PermissionPurgedEvent.TOKEN, new PermissionPurgedEvent(input.identifiers, realm));
+
+        if (count > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
+        }
     }
 
     public async revoke(props: Commands.Permission.Revoke): Promise<MessageResult> {
+        const { input, realm } = props;
+
         const { entities, affected } = await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -116,7 +136,6 @@ export class PermissionCommands implements Commands.Permission.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, realm } = props;
                 const entities = await this.permissionRepository.find({
                     where: { id: { $in: input.identifiers }, realm },
                     transaction,
@@ -124,19 +143,26 @@ export class PermissionCommands implements Commands.Permission.Contract {
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                } else {
+                    this.permissionService.revoke({ entities });
+
+                    const affected = await this.permissionRepository.findAccountsByPermissions({
+                        permissions: entities.map(({ id }) => id),
+                    });
+
+                    return { entities, affected };
                 }
-
-                this.permissionService.revoke({ entities });
-
-                const affected = await this.permissionRepository.findAccountsByPermissions({
-                    permissions: entities.map(({ id }) => id),
-                });
-
-                return { entities, affected };
             },
         });
 
-        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+        this.eventEmitter.emit(
+            PermissionRevokedEvent.TOKEN,
+            new PermissionRevokedEvent(
+                entities.map(({ id }) => id),
+                props.realm,
+                affected,
+            ),
+        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -146,6 +172,8 @@ export class PermissionCommands implements Commands.Permission.Contract {
     }
 
     public async restore(props: Commands.Permission.Restore): Promise<MessageResult> {
+        const { input, realm } = props;
+
         const { entities, affected } = await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -155,7 +183,6 @@ export class PermissionCommands implements Commands.Permission.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, realm } = props;
                 const entities = await this.permissionRepository.find({
                     where: { id: { $in: input.identifiers }, realm },
                     transaction,
@@ -163,19 +190,26 @@ export class PermissionCommands implements Commands.Permission.Contract {
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                } else {
+                    this.permissionService.restore({ entities });
+
+                    const affected = await this.permissionRepository.findAccountsByPermissions({
+                        permissions: entities.map(({ id }) => id),
+                    });
+
+                    return { entities, affected };
                 }
-
-                this.permissionService.restore({ entities });
-
-                const affected = await this.permissionRepository.findAccountsByPermissions({
-                    permissions: entities.map(({ id }) => id),
-                });
-
-                return { entities, affected };
             },
         });
 
-        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+        this.eventEmitter.emit(
+            PermissionRestoredEvent.TOKEN,
+            new PermissionRestoredEvent(
+                entities.map(({ id }) => id),
+                realm,
+                affected,
+            ),
+        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };

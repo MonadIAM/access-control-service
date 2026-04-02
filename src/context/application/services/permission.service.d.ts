@@ -6,7 +6,7 @@ declare global {
     namespace Services {
         namespace Permission {
             interface Contract {
-                create: (props: Create) => Promise<void>;
+                create: (props: Create) => Promise<PermissionEntity>;
                 restore: (props: Restore) => void;
                 revoke: (props: Revoke) => void;
                 update: (props: Update) => void;

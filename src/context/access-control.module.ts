@@ -7,6 +7,7 @@ import { TrackingModule } from "~common/tracking";
 
 import { PermissionGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
+import { EVENT_HANDLERS } from "./application/event-handlers";
 import { PROCESSORS, QUEUES } from "./infrastructure/queues";
 import { REPOSITORIES } from "./infrastructure/repositories";
 import { CONTROLLERS } from "./interface/controllers";
@@ -19,6 +20,7 @@ import { QUERIES } from "./application/queries";
     providers: [
         ...INFRASTRUCTURE_SERVICES,
         ...DOMAIN_SERVICES,
+        ...EVENT_HANDLERS,
         ...REPOSITORIES,
         ...PROCESSORS,
         ...COMMANDS,

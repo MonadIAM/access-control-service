@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
-import { PERMISSION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { CommandException } from "~common/exceptions";
@@ -10,6 +10,13 @@ import {
     PERMISSION_REPOSITORY,
     REALM_REPOSITORY,
 } from "~context/infrastructure/repositories";
+
+import {
+    PermissionOverrideCreatedEvent,
+    PermissionOverridePurgedEvent,
+    PermissionOverrideRevokedEvent,
+    PermissionOverrideRestoredEvent,
+} from "../events/permission-override.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideCommands implements Commands.PermissionOverride.Contract {
@@ -27,12 +34,12 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(PERMISSION_OVERRIDE_SERVICE)
         private readonly permissionOverrideService: Services.PermissionOverride.Contract,
-        @Inject(PERMISSION_CACHE_SERVICE)
-        private readonly permissionCacheService: Services.PermissionCache.Contract,
+        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(props: Commands.PermissionOverride.Create): Promise<MessageResult> {
         const { input, realm } = props;
+
         await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -65,13 +72,18 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             },
         });
 
-        await this.permissionCacheService.invalidate({ accounts: [input.account] });
+        this.eventEmitter.emit(
+            PermissionOverrideCreatedEvent.TOKEN,
+            new PermissionOverrideCreatedEvent(realm, input.permission, input.account, [input.account]),
+        );
 
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async purge(props: Commands.PermissionOverride.Purge): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input } = props;
+
+        const count = await this.transactional.run({
             resource: this.resource,
             audit: {
                 entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
@@ -80,7 +92,6 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input } = props;
                 const entities = await this.permissionOverrideRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
@@ -88,20 +99,26 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
-                }
-
-                this.permissionOverrideService.purge({ transaction, entities });
-
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
                 } else {
-                    return { message: `${this.dictionaryPath}.PURGED` };
+                    this.permissionOverrideService.purge({ transaction, entities });
+
+                    return entities.length;
                 }
             },
         });
+
+        this.eventEmitter.emit(PermissionOverridePurgedEvent.TOKEN, new PermissionOverridePurgedEvent(input.identifiers));
+
+        if (count > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
+        }
     }
 
     public async revoke(props: Commands.PermissionOverride.Revoke): Promise<MessageResult> {
+        const { input } = props;
+
         const entities = await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -111,7 +128,6 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input } = props;
                 const entities = await this.permissionOverrideRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
@@ -119,15 +135,21 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                } else {
+                    this.permissionOverrideService.revoke({ entities });
+
+                    return entities;
                 }
-
-                this.permissionOverrideService.revoke({ entities });
-
-                return entities;
             },
         });
 
-        await this.permissionCacheService.invalidate({ accounts: entities.map(({ account }) => account) });
+        this.eventEmitter.emit(
+            PermissionOverrideRevokedEvent.TOKEN,
+            new PermissionOverrideRevokedEvent(
+                entities.map(({ id }) => id),
+                entities.map(({ account }) => account),
+            ),
+        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -137,6 +159,8 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     }
 
     public async restore(props: Commands.PermissionOverride.Restore): Promise<MessageResult> {
+        const { input } = props;
+
         const entities = await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -146,7 +170,6 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input } = props;
                 const entities = await this.permissionOverrideRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
@@ -154,15 +177,21 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                } else {
+                    this.permissionOverrideService.restore({ entities });
+
+                    return entities;
                 }
-
-                this.permissionOverrideService.restore({ entities });
-
-                return entities;
             },
         });
 
-        await this.permissionCacheService.invalidate({ accounts: entities.map(({ account }) => account) });
+        this.eventEmitter.emit(
+            PermissionOverrideRestoredEvent.TOKEN,
+            new PermissionOverrideRestoredEvent(
+                entities.map(({ id }) => id),
+                entities.map(({ account }) => account),
+            ),
+        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };

@@ -92,7 +92,7 @@ export class RealmService implements Services.Realm.Contract {
         private readonly realmRepository: Repositories.Realm.InternalContract,
     ) {}
 
-    public async create({ transaction, input, actor }: Services.Realm.Create): Promise<void> {
+    public async create({ transaction, input, actor }: Services.Realm.Create): Promise<Realm> {
         const limitExceeded = await this.realmRepository.wouldExceedRealmLimit({
             account: actor,
             transaction,
@@ -110,6 +110,8 @@ export class RealmService implements Services.Realm.Contract {
             await this.assignBasePermissions({ transaction, roles, realm });
 
             transaction.persist(new AccountRoleAssignment({ account: actor, role: roles.admin, realm }));
+
+            return realm;
         }
     }
 

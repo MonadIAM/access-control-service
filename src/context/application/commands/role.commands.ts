@@ -1,11 +1,20 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { ROLE_SERVICE } from "~context/domain/services";
 import { CommandException } from "~common/exceptions";
+
+import {
+    RoleSubtreePurgedEvent,
+    RoleRestoredEvent,
+    RoleRevokedEvent,
+    RoleUpdatedEvent,
+    RoleCreatedEvent,
+    RolePurgedEvent,
+} from "../events/role.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleCommands implements Commands.Role.Contract {
@@ -15,18 +24,19 @@ export class RoleCommands implements Commands.Role.Contract {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactional: Tracking.Transactional.Contract,
-        @Inject(PERMISSION_CACHE_INVALIDATION_QUEUE)
-        private readonly permissionCacheInvalidationQueue: Queues.PermissionInvalidation.Contract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(ROLE_REPOSITORY)
         private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ROLE_SERVICE)
         private readonly roleService: Services.Role.Contract,
+        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(props: Commands.Role.Create): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input, realm } = props;
+
+        const entity = await this.transactional.run({
             resource: this.resource,
             audit: {
                 actionType: AccessControlActionType.CREATE,
@@ -35,7 +45,6 @@ export class RoleCommands implements Commands.Role.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, realm } = props;
                 const [parentEntity, realmEntity] = await Promise.all([
                     this.roleRepository.findUniqueOrThrow({
                         where: { id: input.parent, realm },
@@ -47,19 +56,23 @@ export class RoleCommands implements Commands.Role.Contract {
                     }),
                 ]);
 
-                await this.roleService.create({
+                return this.roleService.create({
                     input: { ...input, parent: parentEntity },
                     realm: realmEntity,
                     transaction,
                 });
-
-                return { message: `${this.dictionaryPath}.CREATED` };
             },
         });
+
+        this.eventEmitter.emit(RoleCreatedEvent.TOKEN, new RoleCreatedEvent(entity.id, realm, input.parent));
+
+        return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async update(props: Commands.Role.Update): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input, realm, id } = props;
+
+        await this.transactional.run({
             resource: this.resource,
             audit: {
                 actionType: AccessControlActionType.UPDATE,
@@ -68,21 +81,24 @@ export class RoleCommands implements Commands.Role.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, realm, id } = props;
                 const entity = await this.roleRepository.findUniqueOrThrow({
                     where: { id, realm },
                     transaction,
                 });
 
                 this.roleService.update({ entity, patch: input.patch });
-
-                return { message: `${this.dictionaryPath}.UPDATED` };
             },
         });
+
+        this.eventEmitter.emit(RoleUpdatedEvent.TOKEN, new RoleUpdatedEvent(id, realm));
+
+        return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
     public async purge(props: Commands.Role.Purge): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { realm, id } = props;
+
+        await this.transactional.run({
             resource: this.resource,
             audit: {
                 actionType: AccessControlActionType.DELETE,
@@ -91,7 +107,6 @@ export class RoleCommands implements Commands.Role.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { realm, id } = props;
                 const entity = await this.roleRepository.findUniqueOrThrow({
                     where: { id, realm },
                     transaction,
@@ -102,14 +117,18 @@ export class RoleCommands implements Commands.Role.Contract {
                     entity,
                     realm,
                 });
-
-                return { message: `${this.dictionaryPath}.PURGED` };
             },
         });
+
+        this.eventEmitter.emit(RolePurgedEvent.TOKEN, new RolePurgedEvent(id, realm));
+
+        return { message: `${this.dictionaryPath}.PURGED` };
     }
 
     public async purgeSubtree(props: Commands.Role.PurgeSubtree): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { realm, id } = props;
+
+        const count = await this.transactional.run({
             resource: this.resource,
             audit: {
                 actionType: AccessControlActionType.DELETE,
@@ -118,24 +137,27 @@ export class RoleCommands implements Commands.Role.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { realm, id } = props;
                 const entity = await this.roleRepository.findUniqueOrThrow({
                     where: { id, realm },
                     transaction,
                 });
 
-                const count = await this.roleService.purgeSubtree({
+                return await this.roleService.purgeSubtree({
                     transaction,
                     entity,
                     realm,
                 });
-
-                return { message: `${this.dictionaryPath}.SUBTREE_PURGED_COUNT`, params: { count } };
             },
         });
+
+        this.eventEmitter.emit(RoleSubtreePurgedEvent.TOKEN, new RoleSubtreePurgedEvent(id, realm, count));
+
+        return { message: `${this.dictionaryPath}.SUBTREE_PURGED_COUNT`, params: { count } };
     }
 
     public async revoke(props: Commands.Role.Revoke): Promise<MessageResult> {
+        const { input, realm } = props;
+
         const { entities, affected } = await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -145,7 +167,6 @@ export class RoleCommands implements Commands.Role.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, realm } = props;
                 const entities = await this.roleRepository.find({
                     where: { id: { $in: input.identifiers }, realm },
                     transaction,
@@ -153,19 +174,26 @@ export class RoleCommands implements Commands.Role.Contract {
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                } else {
+                    this.roleService.revoke({ entities });
+
+                    const affected = await this.roleRepository.findAccountsByRoles({
+                        roles: entities.map(({ id }) => id),
+                    });
+
+                    return { entities, affected };
                 }
-
-                this.roleService.revoke({ entities });
-
-                const affected = await this.roleRepository.findAccountsByRoles({
-                    roles: entities.map(({ id }) => id),
-                });
-
-                return { entities, affected };
             },
         });
 
-        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+        this.eventEmitter.emit(
+            RoleRevokedEvent.TOKEN,
+            new RoleRevokedEvent(
+                entities.map(({ id }) => id),
+                realm,
+                affected,
+            ),
+        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -175,6 +203,8 @@ export class RoleCommands implements Commands.Role.Contract {
     }
 
     public async restore(props: Commands.Role.Restore): Promise<MessageResult> {
+        const { input, realm } = props;
+
         const { entities, affected } = await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -184,7 +214,6 @@ export class RoleCommands implements Commands.Role.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, realm } = props;
                 const entities = await this.roleRepository.find({
                     where: { id: { $in: input.identifiers }, realm },
                     transaction,
@@ -192,19 +221,26 @@ export class RoleCommands implements Commands.Role.Contract {
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                } else {
+                    this.roleService.restore({ entities });
+
+                    const affected = await this.roleRepository.findAccountsByRoles({
+                        roles: entities.map(({ id }) => id),
+                    });
+
+                    return { entities, affected };
                 }
-
-                this.roleService.restore({ entities });
-
-                const affected = await this.roleRepository.findAccountsByRoles({
-                    roles: entities.map(({ id }) => id),
-                });
-
-                return { entities, affected };
             },
         });
 
-        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+        this.eventEmitter.emit(
+            RoleRestoredEvent.TOKEN,
+            new RoleRestoredEvent(
+                entities.map(({ id }) => id),
+                realm,
+                affected,
+            ),
+        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };

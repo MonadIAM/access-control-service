@@ -8,7 +8,7 @@ declare global {
         namespace Role {
             interface Contract {
                 purgeSubtree: (props: PurgeSubtree) => Promise<number>;
-                create: (props: Create) => Promise<void>;
+                create: (props: Create) => Promise<RoleEntity>;
                 purge: (props: Purge) => Promise<void>;
                 restore: (props: Restore) => void;
                 update: (props: Update) => void;

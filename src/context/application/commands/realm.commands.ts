@@ -1,10 +1,19 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
 import { REALM_SERVICE } from "~context/domain/services";
 import { CommandException } from "~common/exceptions";
+
+import {
+    RealmRestoredEvent,
+    RealmCreatedEvent,
+    RealmUpdatedEvent,
+    RealmRevokedEvent,
+    RealmPurgedEvent,
+} from "../events/realm.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmCommands implements Commands.Realm.Contract {
@@ -18,10 +27,13 @@ export class RealmCommands implements Commands.Realm.Contract {
         private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(REALM_SERVICE)
         private readonly realmService: Services.Realm.Contract,
+        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(props: Commands.Realm.Create): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input, actor } = props;
+
+        const entity = await this.transactional.run({
             resource: this.resource,
             audit: {
                 actionType: AccessControlActionType.CREATE,
@@ -29,21 +41,24 @@ export class RealmCommands implements Commands.Realm.Contract {
                 ...props,
             },
             changeLog: true,
-            execute: async (transaction) => {
-                const { input, actor } = props;
-                await this.realmService.create({
+            execute: (transaction) => {
+                return this.realmService.create({
                     transaction,
                     input,
                     actor,
                 });
-
-                return { message: `${this.dictionaryPath}.CREATED` };
             },
         });
+
+        this.eventEmitter.emit(RealmCreatedEvent.TOKEN, new RealmCreatedEvent(entity.id, actor));
+
+        return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async update(props: Commands.Realm.Update): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input, id } = props;
+
+        await this.transactional.run({
             resource: this.resource,
             audit: {
                 actionType: AccessControlActionType.UPDATE,
@@ -52,21 +67,24 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, id } = props;
                 const entity = await this.realmRepository.findUniqueOrThrow({
                     where: { id },
                     transaction,
                 });
 
                 this.realmService.update({ entity, patch: input.patch });
-
-                return { message: `${this.dictionaryPath}.UPDATED` };
             },
         });
+
+        this.eventEmitter.emit(RealmUpdatedEvent.TOKEN, new RealmUpdatedEvent(id));
+
+        return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
     public async purge(props: Commands.Realm.Purge): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input } = props;
+
+        const count = await this.transactional.run({
             resource: this.resource,
             audit: {
                 actionType: AccessControlActionType.DELETE,
@@ -75,7 +93,6 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input } = props;
                 const entities = await this.realmRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
@@ -83,21 +100,27 @@ export class RealmCommands implements Commands.Realm.Contract {
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
-                }
-
-                this.realmService.purge({ transaction, entities });
-
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
                 } else {
-                    return { message: `${this.dictionaryPath}.PURGED` };
+                    this.realmService.purge({ transaction, entities });
+
+                    return entities.length;
                 }
             },
         });
+
+        this.eventEmitter.emit(RealmPurgedEvent.TOKEN, new RealmPurgedEvent(input.identifiers));
+
+        if (count > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
+        }
     }
 
     public async revoke(props: Commands.Realm.Revoke): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input } = props;
+
+        const count = await this.transactional.run({
             resource: this.resource,
             audit: {
                 actionType: AccessControlActionType.REVOKE,
@@ -106,7 +129,6 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input } = props;
                 const entities = await this.realmRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
@@ -114,21 +136,27 @@ export class RealmCommands implements Commands.Realm.Contract {
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
-                }
-
-                this.realmService.revoke({ entities });
-
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
                 } else {
-                    return { message: `${this.dictionaryPath}.REVOKED` };
+                    this.realmService.revoke({ entities });
+
+                    return entities.length;
                 }
             },
         });
+
+        this.eventEmitter.emit(RealmRevokedEvent.TOKEN, new RealmRevokedEvent(input.identifiers));
+
+        if (count > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count } };
+        } else {
+            return { message: `${this.dictionaryPath}.REVOKED` };
+        }
     }
 
     public async restore(props: Commands.Realm.Restore): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input } = props;
+
+        const count = await this.transactional.run({
             resource: this.resource,
             audit: {
                 actionType: AccessControlActionType.RESTORE,
@@ -137,7 +165,6 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input } = props;
                 const entities = await this.realmRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
@@ -145,19 +172,20 @@ export class RealmCommands implements Commands.Realm.Contract {
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
-                }
-
-                this.realmService.restore({ entities });
-
-                if (entities.length > 1) {
-                    return {
-                        message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`,
-                        params: { count: entities.length },
-                    };
                 } else {
-                    return { message: `${this.dictionaryPath}.RESTORED` };
+                    this.realmService.restore({ entities });
+
+                    return entities.length;
                 }
             },
         });
+
+        this.eventEmitter.emit(RealmRestoredEvent.TOKEN, new RealmRestoredEvent(input.identifiers));
+
+        if (count > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count } };
+        } else {
+            return { message: `${this.dictionaryPath}.RESTORED` };
+        }
     }
 }

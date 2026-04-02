@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
-import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "~context/infrastructure/queues";
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/tracking";
@@ -11,6 +11,13 @@ import {
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
 } from "~context/infrastructure/repositories";
+
+import {
+    RolePermissionAssignmentRestoredEvent,
+    RolePermissionAssignmentCreatedEvent,
+    RolePermissionAssignmentRevokedEvent,
+    RolePermissionAssignmentPurgedEvent,
+} from "../events/role-permission-assignment.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RolePermissionAssignmentCommands implements Commands.RolePermissionAssignment.Contract {
@@ -30,11 +37,12 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
         private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_SERVICE)
         private readonly rolePermissionAssignmentService: Services.RolePermissionAssignment.Contract,
-        @Inject(PERMISSION_CACHE_INVALIDATION_QUEUE)
-        private readonly permissionCacheInvalidationQueue: Queues.PermissionInvalidation.Contract,
+        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(props: Commands.RolePermissionAssignment.Create): Promise<MessageResult> {
+        const { input, realm } = props;
+
         const { affected } = await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -44,7 +52,6 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, realm } = props;
                 const [realmEntity, roleEntity, permissionEntities] = await Promise.all([
                     this.realmRepository.findUniqueOrThrow({
                         where: { id: realm },
@@ -62,30 +69,38 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
                 if (permissionEntities.length < input.permissions.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                } else {
+                    await this.rolePermissionAssignmentService.create({
+                        input: {
+                            permissions: permissionEntities,
+                            role: roleEntity,
+                        },
+                        realm: realmEntity,
+                        transaction,
+                    });
+
+                    const affected = await this.roleRepository.findAccountsByRoles({
+                        roles: [roleEntity.id],
+                        transaction,
+                    });
+
+                    return { affected };
                 }
-
-                await this.rolePermissionAssignmentService.create({
-                    input: {
-                        permissions: permissionEntities,
-                        role: roleEntity,
-                    },
-                    realm: realmEntity,
-                    transaction,
-                });
-
-                const affected = await this.roleRepository.findAccountsByRoles({ roles: [roleEntity.id] });
-
-                return { affected };
             },
         });
 
-        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+        this.eventEmitter.emit(
+            RolePermissionAssignmentCreatedEvent.TOKEN,
+            new RolePermissionAssignmentCreatedEvent(input.role, realm, input.permissions, affected),
+        );
 
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async purge(props: Commands.RolePermissionAssignment.Purge): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input } = props;
+
+        const count = await this.transactional.run({
             resource: this.resource,
             audit: {
                 entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
@@ -94,7 +109,6 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input } = props;
                 const entities = await this.rolePermissionAssignmentRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
@@ -102,20 +116,29 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
-                }
-
-                this.rolePermissionAssignmentService.purge({ transaction, entities });
-
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
                 } else {
-                    return { message: `${this.dictionaryPath}.PURGED` };
+                    this.rolePermissionAssignmentService.purge({ transaction, entities });
+
+                    return entities.length;
                 }
             },
         });
+
+        this.eventEmitter.emit(
+            RolePermissionAssignmentPurgedEvent.TOKEN,
+            new RolePermissionAssignmentPurgedEvent(input.identifiers),
+        );
+
+        if (count > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
+        }
     }
 
     public async revoke(props: Commands.RolePermissionAssignment.Revoke): Promise<MessageResult> {
+        const { input } = props;
+
         const { entities, affected } = await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -125,7 +148,6 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input } = props;
                 const entities = await this.rolePermissionAssignmentRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
@@ -133,19 +155,25 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                } else {
+                    this.rolePermissionAssignmentService.revoke({ entities });
+
+                    const affected = await this.roleRepository.findAccountsByRoles({
+                        roles: entities.map(({ role: { id } }) => id),
+                    });
+
+                    return { entities, affected };
                 }
-
-                this.rolePermissionAssignmentService.revoke({ entities });
-
-                const affected = await this.roleRepository.findAccountsByRoles({
-                    roles: entities.map(({ role: { id } }) => id),
-                });
-
-                return { entities, affected };
             },
         });
 
-        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+        this.eventEmitter.emit(
+            RolePermissionAssignmentRevokedEvent.TOKEN,
+            new RolePermissionAssignmentRevokedEvent(
+                entities.map(({ id }) => id),
+                affected,
+            ),
+        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -155,6 +183,8 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     }
 
     public async restore(props: Commands.RolePermissionAssignment.Restore): Promise<MessageResult> {
+        const { input } = props;
+
         const { entities, affected } = await this.transactional.run({
             resource: this.resource,
             audit: {
@@ -164,7 +194,6 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input } = props;
                 const entities = await this.rolePermissionAssignmentRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
@@ -172,19 +201,25 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                } else {
+                    this.rolePermissionAssignmentService.restore({ entities });
+
+                    const affected = await this.roleRepository.findAccountsByRoles({
+                        roles: entities.map(({ role: { id } }) => id),
+                    });
+
+                    return { entities, affected };
                 }
-
-                this.rolePermissionAssignmentService.restore({ entities });
-
-                const affected = await this.roleRepository.findAccountsByRoles({
-                    roles: entities.map(({ role: { id } }) => id),
-                });
-
-                return { entities, affected };
             },
         });
 
-        await this.permissionCacheInvalidationQueue.add({ accounts: affected });
+        this.eventEmitter.emit(
+            RolePermissionAssignmentRestoredEvent.TOKEN,
+            new RolePermissionAssignmentRestoredEvent(
+                entities.map(({ id }) => id),
+                affected,
+            ),
+        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };

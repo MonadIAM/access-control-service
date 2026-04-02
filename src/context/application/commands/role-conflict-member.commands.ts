@@ -1,4 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { ROLE_CONFLICT_MEMBER_SERVICE } from "~context/domain/services";
@@ -9,6 +10,8 @@ import {
     ROLE_CONFLICT_GROUP_REPOSITORY,
     ROLE_REPOSITORY,
 } from "~context/infrastructure/repositories";
+
+import { RoleConflictMemberCreatedEvent, RoleConflictMemberPurgedEvent } from "../events/role-conflict-member.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberCommands implements Commands.RoleConflictMember.Contract {
@@ -26,10 +29,13 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
         private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ROLE_CONFLICT_MEMBER_SERVICE)
         private readonly roleConflictMemberService: Services.RoleConflictMember.Contract,
+        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(props: Commands.RoleConflictMember.Create): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input, realm } = props;
+
+        await this.transactional.run({
             resource: this.resource,
             audit: {
                 entityType: AccessControlEntityType.CONFLICT_MEMBER,
@@ -38,7 +44,6 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input, realm } = props;
                 const [roles, group] = await Promise.all([
                     this.roleRepository.find({
                         where: { id: { $in: input.roles }, realm },
@@ -52,20 +57,27 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
 
                 if (roles.length < input.roles.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                } else {
+                    await this.roleConflictMemberService.create({
+                        input: { roles, group },
+                        transaction,
+                    });
                 }
-
-                await this.roleConflictMemberService.create({
-                    input: { roles, group },
-                    transaction,
-                });
-
-                return { message: `${this.dictionaryPath}.CREATED` };
             },
         });
+
+        this.eventEmitter.emit(
+            RoleConflictMemberCreatedEvent.TOKEN,
+            new RoleConflictMemberCreatedEvent(input.group, realm, input.roles),
+        );
+
+        return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async purge(props: Commands.RoleConflictMember.Purge): Promise<MessageResult> {
-        return await this.transactional.run({
+        const { input } = props;
+
+        const count = await this.transactional.run({
             resource: this.resource,
             audit: {
                 entityType: AccessControlEntityType.CONFLICT_MEMBER,
@@ -74,7 +86,6 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
             },
             changeLog: true,
             execute: async (transaction) => {
-                const { input } = props;
                 const entities = await this.roleConflictMemberRepository.find({
                     where: { id: { $in: input.identifiers } },
                     transaction,
@@ -82,16 +93,20 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
 
                 if (entities.length < input.identifiers.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.MEMBERS_NOT_FOUND`);
-                }
-
-                this.roleConflictMemberService.purge({ transaction, entities });
-
-                if (entities.length > 1) {
-                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
                 } else {
-                    return { message: `${this.dictionaryPath}.PURGED` };
+                    this.roleConflictMemberService.purge({ transaction, entities });
+
+                    return entities.length;
                 }
             },
         });
+
+        this.eventEmitter.emit(RoleConflictMemberPurgedEvent.TOKEN, new RoleConflictMemberPurgedEvent(input.identifiers));
+
+        if (count > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
+        }
     }
 }

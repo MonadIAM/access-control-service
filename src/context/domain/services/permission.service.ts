@@ -13,7 +13,7 @@ export class PermissionService implements Services.Permission.Contract {
         private readonly permissionRepository: Repositories.Permission.InternalContract,
     ) {}
 
-    public async create({ transaction, input, realm }: Services.Permission.Create): Promise<void> {
+    public async create({ transaction, input, realm }: Services.Permission.Create): Promise<Permission> {
         const limitExceeded = await this.permissionRepository.wouldExceedPermissionLimit({
             realm: realm.id,
             transaction,
@@ -22,7 +22,11 @@ export class PermissionService implements Services.Permission.Contract {
         if (limitExceeded) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
         } else {
-            transaction.persist(new Permission({ ...input, realm }));
+            const entity = new Permission({ ...input, realm });
+
+            transaction.persist(entity);
+
+            return entity;
         }
     }
 
