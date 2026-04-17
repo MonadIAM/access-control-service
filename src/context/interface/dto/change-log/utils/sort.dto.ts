@@ -4,7 +4,7 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class ChangeLogsSortDTO implements Repositories.ChangeLog.Sort {
+export class ChangeLogsSortDTO implements Adapters.ChangeLog.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

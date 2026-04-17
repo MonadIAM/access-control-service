@@ -4,11 +4,8 @@ import { AccessControlActionType, AccessControlEntityType } from "~context/enums
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { AuditLog } from "~common/tracking";
 
-export class AuditLogAdapter {
-    protected buildWhereORM(
-        filters: Repositories.AuditLog.Filters,
-        basic: ObjectQuery<AuditLog> = {},
-    ): ObjectQuery<AuditLog> {
+export class AuditLogAdapter implements Adapters.Contract<AuditLog, Adapters.AuditLog.Types> {
+    public buildWhereORM(filters: Adapters.AuditLog.Filters, basic: ObjectQuery<AuditLog> = {}): ObjectQuery<AuditLog> {
         const where: ObjectQuery<AuditLog> = basic;
 
         if (filters.id) {
@@ -39,8 +36,8 @@ export class AuditLogAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.AuditLog.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.AuditLog.Sort,
         pagination: Pagination,
         basic: FindOptions<AuditLog, P, F> = {},
     ): FindOptions<AuditLog, P, F> {

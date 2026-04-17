@@ -1,3 +1,6 @@
+import { HttpStatus } from "@nestjs/common";
+
+import { RepositoryErrorKind } from "../error-kinds";
 import { BaseException } from "./base.exception";
 
 export class RepositoryException extends BaseException {
@@ -8,5 +11,9 @@ export class RepositoryException extends BaseException {
         params?: UnknownObject,
     ) {
         super(kind, statusCode, messageKey, params);
+    }
+
+    public static notFound(messageKey = "repositories.not_found", params?: UnknownObject): RepositoryException {
+        return new RepositoryException(RepositoryErrorKind.NotFound, HttpStatus.NOT_FOUND, messageKey, params);
     }
 }

@@ -4,7 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class RoleDelegationPoliciesFiltersDTO implements Repositories.RoleDelegationPolicy.Filters {
+export class RoleDelegationPoliciesFiltersDTO implements Adapters.RoleDelegationPolicy.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

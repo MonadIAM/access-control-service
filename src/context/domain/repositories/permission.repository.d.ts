@@ -1,6 +1,5 @@
-import { EntityManager, FilterQuery, FindOptions, Loaded, QueryOrder } from "@mikro-orm/postgresql";
+import { EntityManager } from "@mikro-orm/postgresql";
 
-import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { AssignmentScope } from "~context/enums";
 
 import { Permission as PermissionEntity } from "../entities";
@@ -10,69 +9,16 @@ declare global {
         namespace Permission {
             type Entity = PermissionEntity;
 
-            interface CommonContract {
-                findUnique: <P extends string = never, F extends string = "*">(
-                    props: FindUnique<P, F>,
-                ) => Promise<Nullable<Loaded<Entity, P, F>>>;
-
-                findUniqueOrThrow: <P extends string = never, F extends string = "*">(
-                    props: FindUniqueOrThrow<P, F>,
-                ) => Promise<Loaded<Entity, P, F>>;
-            }
-
-            interface ExternalContract extends CommonContract {
-                findMany: <P extends string = never, F extends string = "*">(
-                    props: FindMany<P, F>,
-                ) => Promise<[Loaded<Entity, P, F>[], number]>;
-
+            interface InternalContract extends Repositories.Base.Contract<Entity, Adapters.Permission.Types> {
+                collectEffective: (props: CollectEffective.Props) => Promise<CollectEffective.Result>;
+                wouldExceedPermissionLimit: (props: WouldExceedPermissionLimit) => Promise<boolean>;
+                findAccountsByPermissions: (props: FindAccountsByPermissions) => Promise<string[]>;
                 getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
-
                 findEffective: (props: FindEffective) => Promise<[Entity[], number]>;
             }
 
-            interface InternalContract extends CommonContract {
-                find: <P extends string = never, F extends string = "*">(
-                    props: Find<P, F>,
-                ) => Promise<Loaded<Entity, P, F>[]>;
-
-                collectEffective: (props: CollectEffective.Props) => Promise<CollectEffective.Result>;
-
-                findAccountsByPermissions: (props: FindAccountsByPermissions) => Promise<string[]>;
-
-                wouldExceedPermissionLimit: (props: WouldExceedPermissionLimit) => Promise<boolean>;
-            }
-
-            type FindUnique<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            };
-
-            type FindUniqueOrThrow<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            };
-
-            type Find<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            };
-
-            type FindMany<P extends string, F extends string> =
-                | {
-                      transaction?: EntityManager;
-                      options?: FindOptions<Entity, P, F>;
-                      where: FilterQuery<Entity>;
-                  }
-                | {
-                      pagination: Pagination;
-                      filters: Filters;
-                      sort: Sort;
-                      realm: string;
-                      options?: FindOptions<Entity, P, F>;
-                  };
+            interface ExternalContract
+                extends Pick<InternalContract, "getLookupList" | "findEffective" | "findUniqueOrThrow" | "findMany"> {}
 
             type GetLookupList = {
                 pagination: Pagination;
@@ -81,13 +27,13 @@ declare global {
             };
 
             type FindEffective = {
+                filters: Adapters.Permission.Filters;
+                sort: Adapters.Permission.Sort;
+                pagination: Pagination;
                 where: {
                     account: string;
                     realm: string;
                 };
-                pagination: Pagination;
-                filters: Filters;
-                sort: Sort;
             };
 
             namespace CollectEffective {
@@ -110,22 +56,6 @@ declare global {
                 transaction?: EntityManager;
                 count?: number;
                 realm: string;
-            };
-
-            type Filters = {
-                id?: StringFilterDTO;
-                isSystemManaged?: boolean;
-                code?: StringFilterDTO;
-                name?: StringFilterDTO;
-                realm?: LinkFilterDTO;
-                role?: LinkFilterDTO;
-                updatedAt?: OrdinalFilterDTO<Date>;
-                createdAt?: OrdinalFilterDTO<Date>;
-                isRevoked?: boolean;
-            };
-
-            type Sort = {
-                createdAt?: QueryOrder;
             };
         }
     }

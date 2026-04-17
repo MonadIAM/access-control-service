@@ -32,7 +32,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
         private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    public async create(props: Commands.Permission.Create): Promise<MessageResult> {
+    public async create(props: Commands.Permission.Create.Props): Promise<Commands.Permission.Create.Result> {
         const { input, realm } = props;
 
         const entity = await this.transactional.run({
@@ -62,7 +62,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async update(props: Commands.Permission.Update): Promise<MessageResult> {
+    public async update(props: Commands.Permission.Update.Props): Promise<Commands.Permission.Update.Result> {
         const { input, realm, id } = props;
 
         await this.transactional.run({
@@ -88,7 +88,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
-    public async purge(props: Commands.Permission.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.Permission.Purge.Props): Promise<Commands.Permission.Purge.Result> {
         const { input, realm } = props;
 
         const count = await this.transactional.run({
@@ -124,7 +124,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
         }
     }
 
-    public async revoke(props: Commands.Permission.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.Permission.Revoke.Props): Promise<Commands.Permission.Revoke.Result> {
         const { input, realm } = props;
 
         const { entities, affected } = await this.transactional.run({
@@ -171,7 +171,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
         }
     }
 
-    public async restore(props: Commands.Permission.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.Permission.Restore.Props): Promise<Commands.Permission.Restore.Result> {
         const { input, realm } = props;
 
         const { entities, affected } = await this.transactional.run({

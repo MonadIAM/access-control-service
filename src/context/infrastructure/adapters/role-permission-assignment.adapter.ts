@@ -3,9 +3,11 @@ import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { RolePermissionAssignment } from "~context/domain/entities";
 
-export class RolePermissionAssignmentAdapter {
-    protected buildWhereORM(
-        filters: Repositories.RolePermissionAssignment.Filters,
+export class RolePermissionAssignmentAdapter
+    implements Adapters.Contract<RolePermissionAssignment, Adapters.RolePermissionAssignment.Types>
+{
+    public buildWhereORM(
+        filters: Adapters.RolePermissionAssignment.Filters,
         basic: ObjectQuery<RolePermissionAssignment> = {},
     ): ObjectQuery<RolePermissionAssignment> {
         const where: ObjectQuery<RolePermissionAssignment> = basic;
@@ -35,8 +37,8 @@ export class RolePermissionAssignmentAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.RolePermissionAssignment.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.RolePermissionAssignment.Sort,
         pagination: Pagination,
         basic: FindOptions<RolePermissionAssignment, P, F> = {},
     ): FindOptions<RolePermissionAssignment, P, F> {

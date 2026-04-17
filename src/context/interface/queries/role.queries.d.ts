@@ -10,85 +10,121 @@ declare global {
             type Graph = Repositories.Role.Graph.Data;
 
             interface Contract {
-                findDelegableByAccount: (props: FindDelegableByAccount) => Promise<[Entity[], number]>;
-                findDelegableByRole: (props: FindDelegableByRole) => Promise<[Entity[], number]>;
-                findDescendants: (props: FindDescendants) => Promise<[DepthEntity[], number]>;
-                findAncestors: (props: FindAncestors) => Promise<[DepthEntity[], number]>;
-                findEffective: (props: FindEffective) => Promise<[Entity[], number]>;
-                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
-                getHierarchyGraph: (props: GetHierarchyGraph) => Promise<Graph>;
-                findMany: (props: FindMany) => Promise<[Entity[], number]>;
-                findUnique: (props: FindUnique) => Promise<Entity>;
+                findDelegableByAccount: (props: FindDelegableByAccount.Props) => Promise<FindDelegableByAccount.Result>;
+                findDelegableByRole: (props: FindDelegableByRole.Props) => Promise<FindDelegableByRole.Result>;
+                getHierarchyGraph: (props: GetHierarchyGraph.Props) => Promise<GetHierarchyGraph.Result>;
+                findDescendants: (props: FindDescendants.Props) => Promise<FindDescendants.Result>;
+                findAncestors: (props: FindAncestors.Props) => Promise<FindAncestors.Result>;
+                findEffective: (props: FindEffective.Props) => Promise<FindEffective.Result>;
+                getLookupList: (props: GetLookupList.Props) => Promise<GetLookupList.Result>;
+                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
+                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
             }
 
-            type FindDelegableByAccount = {
-                permissions?: string[];
-                filters: Repositories.Role.Filters;
-                sort: Repositories.Role.Sort;
-                pagination: Pagination;
-                realm: string;
-                actor: string;
-                id?: string;
-            };
+            namespace FindDelegableByAccount {
+                type Props = {
+                    permissions?: string[];
+                    filters: Adapters.Role.Filters;
+                    sort: Adapters.Role.Sort;
+                    pagination: Pagination;
+                    realm: string;
+                    actor: string;
+                    id?: string;
+                };
 
-            type FindDelegableByRole = {
-                filters: Repositories.Role.Filters;
-                sort: Repositories.Role.Sort;
-                pagination: Pagination;
-                realm: string;
-                id: string;
-            };
+                type Result = [Entity[], number];
+            }
 
-            type FindDescendants = {
-                filters: Repositories.Role.Filters;
-                view: ResponseViewType;
-                pagination: Pagination;
-                ancestor: string;
-                realm: string;
-            };
+            namespace FindDelegableByRole {
+                type Props = {
+                    filters: Adapters.Role.Filters;
+                    sort: Adapters.Role.Sort;
+                    pagination: Pagination;
+                    realm: string;
+                    id: string;
+                };
 
-            type FindAncestors = {
-                filters: Repositories.Role.Filters;
-                view: ResponseViewType;
-                pagination: Pagination;
-                descendant: string;
-                realm: string;
-            };
+                type Result = [Entity[], number];
+            }
 
-            type FindEffective = {
-                permissions?: string[];
-                filters: Repositories.Role.Filters;
-                sort: Repositories.Role.Sort;
-                pagination: Pagination;
-                account?: string;
-                realm: string;
-                actor: string;
-            };
+            namespace FindDescendants {
+                type Props = {
+                    filters: Adapters.Role.Filters;
+                    view: ResponseViewType;
+                    pagination: Pagination;
+                    ancestor: string;
+                    realm: string;
+                };
 
-            type GetLookupList = {
-                options?: FindOptions<Entity>;
-                pagination: Pagination;
-                realm: string;
-                term: string;
-            };
+                type Result = [DepthEntity[], number];
+            }
 
-            type GetHierarchyGraph = {
-                realm: string;
-            };
+            namespace FindAncestors {
+                type Props = {
+                    filters: Adapters.Role.Filters;
+                    view: ResponseViewType;
+                    pagination: Pagination;
+                    descendant: string;
+                    realm: string;
+                };
 
-            type FindMany = {
-                filters: Repositories.Role.Filters;
-                sort: Repositories.Role.Sort;
-                view: ResponseViewType;
-                pagination: Pagination;
-                realm: string;
-            };
+                type Result = [DepthEntity[], number];
+            }
 
-            type FindUnique = {
-                view: ResponseViewType;
-                realm: string;
-                role: string;
-            };
+            namespace FindEffective {
+                type Props = {
+                    permissions?: string[];
+                    filters: Adapters.Role.Filters;
+                    sort: Adapters.Role.Sort;
+                    pagination: Pagination;
+                    account?: string;
+                    realm: string;
+                    actor: string;
+                };
+
+                type Result = [Entity[], number];
+            }
+
+            namespace GetLookupList {
+                type Props = {
+                    options?: FindOptions<Entity>;
+                    pagination: Pagination;
+                    realm: string;
+                    term: string;
+                };
+
+                type Result = [Entity[], number];
+            }
+
+            namespace GetHierarchyGraph {
+                type Props = {
+                    realm: string;
+                };
+
+                type Result = Graph;
+            }
+
+            namespace FindMany {
+                type Props = {
+                    filters: Adapters.Role.Filters;
+                    sort: Adapters.Role.Sort;
+                    view: ResponseViewType;
+                    pagination: Pagination;
+                    realm: string;
+                };
+
+                type Result = [Entity[], number];
+            }
+
+            namespace FindUnique {
+                type Props = {
+                    view: ResponseViewType;
+                    realm: string;
+                    role: string;
+                };
+
+                type Result = Entity;
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ export class RoleService implements Services.Role.Contract {
         this.purgeSubtreeSizeLimit = this.configService.getOrThrow<number>("MAX_ROLE_SUBTREE_SIZE_FOR_PURGE");
     }
 
-    public async create({ transaction, input, realm }: Services.Role.Create): Promise<Role> {
+    public async create({ transaction, input, realm }: Services.Role.Create.Props): Promise<Services.Role.Create.Result> {
         if (input.parent.protoType === RoleProtoType.ATOMIC) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE`);
         } else {
@@ -77,7 +77,11 @@ export class RoleService implements Services.Role.Contract {
         transaction.remove(entity);
     }
 
-    public async purgeSubtree({ transaction, entity, realm }: Services.Role.PurgeSubtree): Promise<number> {
+    public async purgeSubtree({
+        transaction,
+        entity,
+        realm,
+    }: Services.Role.PurgeSubtree.Props): Promise<Services.Role.PurgeSubtree.Result> {
         const descendants = await this.roleRepository.getDescendants({
             ancestor: entity.id,
             where: { realm },

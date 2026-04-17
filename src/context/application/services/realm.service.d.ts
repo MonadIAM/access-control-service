@@ -6,22 +6,26 @@ declare global {
     namespace Services {
         namespace Realm {
             interface Contract {
-                create: (props: Create) => Promise<RealmEntity>;
+                create: (props: Create.Props) => Promise<Create.Result>;
                 restore: (props: Restore) => void;
                 revoke: (props: Revoke) => void;
                 update: (props: Update) => void;
                 purge: (props: Purge) => void;
             }
 
-            type Create = {
-                transaction: EntityManager;
-                input: {
-                    code: string;
-                    name: string;
-                    description?: string;
+            namespace Create {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        code: string;
+                        name: string;
+                        description?: string;
+                    };
+                    actor: string;
                 };
-                actor: string;
-            };
+
+                type Result = RealmEntity;
+            }
 
             type Update = {
                 patch: Partial<Entities.Realm.MutableFields>;
@@ -44,7 +48,7 @@ declare global {
             namespace CreateBaseRoles {
                 type Props = {
                     transaction: EntityManager;
-                    input: Create["input"];
+                    input: Create.Props["input"];
                     realm: RealmEntity;
                 };
                 type Result = {

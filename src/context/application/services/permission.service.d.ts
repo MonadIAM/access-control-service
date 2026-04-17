@@ -6,22 +6,26 @@ declare global {
     namespace Services {
         namespace Permission {
             interface Contract {
-                create: (props: Create) => Promise<PermissionEntity>;
+                create: (props: Create.Props) => Promise<Create.Result>;
                 restore: (props: Restore) => void;
                 revoke: (props: Revoke) => void;
                 update: (props: Update) => void;
                 purge: (props: Purge) => void;
             }
 
-            type Create = {
-                transaction: EntityManager;
-                input: {
-                    code: string;
-                    name: string;
-                    description?: string;
+            namespace Create {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        code: string;
+                        name: string;
+                        description?: string;
+                    };
+                    realm: RealmEntity;
                 };
-                realm: RealmEntity;
-            };
+
+                type Result = PermissionEntity;
+            }
 
             type Update = {
                 patch: Partial<Entities.Permission.MutableFields>;

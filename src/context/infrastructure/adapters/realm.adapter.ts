@@ -3,8 +3,8 @@ import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { Realm } from "~context/domain/entities";
 
-export class RealmAdapter {
-    protected buildWhereORM(filters: Repositories.Realm.Filters, basic: ObjectQuery<Realm> = {}): ObjectQuery<Realm> {
+export class RealmAdapter implements Adapters.Contract<Realm, Adapters.Realm.Types> {
+    public buildWhereORM(filters: Adapters.Realm.Filters, basic: ObjectQuery<Realm> = {}): ObjectQuery<Realm> {
         const where: ObjectQuery<Realm> = basic;
 
         if (filters.id) {
@@ -32,8 +32,8 @@ export class RealmAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.Realm.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.Realm.Sort,
         pagination: Pagination,
         basic: FindOptions<Realm, P, F> = {},
     ): FindOptions<Realm, P, F> {

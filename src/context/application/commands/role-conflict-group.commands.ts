@@ -34,7 +34,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    public async create(props: Commands.RoleConflictGroup.Create): Promise<MessageResult> {
+    public async create(props: Commands.RoleConflictGroup.Create.Props): Promise<Commands.RoleConflictGroup.Create.Result> {
         const { input, realm } = props;
 
         await this.transactional.run({
@@ -77,7 +77,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async update(props: Commands.RoleConflictGroup.Update): Promise<MessageResult> {
+    public async update(props: Commands.RoleConflictGroup.Update.Props): Promise<Commands.RoleConflictGroup.Update.Result> {
         const { input, realm, id } = props;
 
         await this.transactional.run({
@@ -103,7 +103,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
-    public async purge(props: Commands.RoleConflictGroup.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.RoleConflictGroup.Purge.Props): Promise<Commands.RoleConflictGroup.Purge.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({
@@ -139,7 +139,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         }
     }
 
-    public async revoke(props: Commands.RoleConflictGroup.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.RoleConflictGroup.Revoke.Props): Promise<Commands.RoleConflictGroup.Revoke.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({
@@ -175,7 +175,9 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         }
     }
 
-    public async restore(props: Commands.RoleConflictGroup.Restore): Promise<MessageResult> {
+    public async restore(
+        props: Commands.RoleConflictGroup.Restore.Props,
+    ): Promise<Commands.RoleConflictGroup.Restore.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({

@@ -30,7 +30,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    public async create(props: Commands.Realm.Create): Promise<MessageResult> {
+    public async create(props: Commands.Realm.Create.Props): Promise<Commands.Realm.Create.Result> {
         const { input, actor } = props;
 
         const entity = await this.transactional.run({
@@ -55,7 +55,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async update(props: Commands.Realm.Update): Promise<MessageResult> {
+    public async update(props: Commands.Realm.Update.Props): Promise<Commands.Realm.Update.Result> {
         const { input, id } = props;
 
         await this.transactional.run({
@@ -81,7 +81,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
-    public async purge(props: Commands.Realm.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.Realm.Purge.Props): Promise<Commands.Realm.Purge.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({
@@ -117,7 +117,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         }
     }
 
-    public async revoke(props: Commands.Realm.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.Realm.Revoke.Props): Promise<Commands.Realm.Revoke.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({
@@ -153,7 +153,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         }
     }
 
-    public async restore(props: Commands.Realm.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.Realm.Restore.Props): Promise<Commands.Realm.Restore.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({

@@ -4,7 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class RealmsFiltersDTO implements Repositories.Realm.Filters {
+export class RealmsFiltersDTO implements Adapters.Realm.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

@@ -1,6 +1,4 @@
-import { EntityManager, FilterQuery, FindOptions, Loaded, QueryOrder } from "@mikro-orm/postgresql";
-
-import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
+import { EntityManager } from "@mikro-orm/postgresql";
 
 import { RoleConflictMember as RoleConflictMemberEntity } from "../entities";
 
@@ -9,82 +7,16 @@ declare global {
         namespace RoleConflictMember {
             type Entity = RoleConflictMemberEntity;
 
-            interface CommonContract {
-                findUnique: <P extends string = never, F extends string = "*">(
-                    props: FindUnique<P, F>,
-                ) => Promise<Nullable<Loaded<Entity, P, F>>>;
-
-                findUniqueOrThrow: <P extends string = never, F extends string = "*">(
-                    props: FindUniqueOrThrow<P, F>,
-                ) => Promise<Loaded<Entity, P, F>>;
-            }
-
-            interface ExternalContract extends CommonContract {
-                findMany: <P extends string = never, F extends string = "*">(
-                    props: FindMany<P, F>,
-                ) => Promise<[Loaded<Entity, P, F>[], number]>;
-            }
-
-            interface InternalContract extends CommonContract {
-                find: <P extends string = never, F extends string = "*">(
-                    props: Find<P, F>,
-                ) => Promise<Loaded<Entity, P, F>[]>;
-
+            interface InternalContract extends Repositories.Base.Contract<Entity, Adapters.RoleConflictMember.Types> {
                 wouldExceedMemberLimit: (props: WouldExceedMemberLimit) => Promise<boolean>;
             }
 
-            type FindUnique<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            };
-
-            type FindUniqueOrThrow<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            };
-
-            type Find<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            };
-
-            type FindMany<P extends string, F extends string> =
-                | {
-                      transaction?: EntityManager;
-                      options?: FindOptions<Entity, P, F>;
-                      where: FilterQuery<Entity>;
-                  }
-                | {
-                      pagination: Pagination;
-                      filters: Filters;
-                      sort: Sort;
-                      options?: FindOptions<Entity, P, F>;
-                      group: string;
-                      realm: string;
-                  };
+            interface ExternalContract extends Pick<InternalContract, "findUniqueOrThrow" | "findMany"> {}
 
             type WouldExceedMemberLimit = {
                 transaction?: EntityManager;
                 group: string;
                 count: number;
-            };
-
-            type Filters = {
-                id?: StringFilterDTO;
-                isSystemManaged?: boolean;
-                group?: LinkFilterDTO;
-                role?: LinkFilterDTO;
-                updatedAt?: OrdinalFilterDTO<Date>;
-                createdAt?: OrdinalFilterDTO<Date>;
-                isRevoked?: boolean;
-            };
-
-            type Sort = {
-                createdAt?: QueryOrder;
-                updatedAt?: QueryOrder;
             };
         }
     }

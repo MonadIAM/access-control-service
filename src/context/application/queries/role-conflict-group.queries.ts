@@ -14,26 +14,28 @@ export class RoleConflictGroupQueries implements Queries.RoleConflictGroup.Contr
         private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.ExternalContract,
     ) {}
 
-    public findUnique(props: Queries.RoleConflictGroup.FindUnique): Promise<Queries.RoleConflictGroup.Entity> {
+    public findUnique(
+        props: Queries.RoleConflictGroup.FindUnique.Props,
+    ): Promise<Queries.RoleConflictGroup.FindUnique.Result> {
         return this.roleConflictGroupRepository.findUniqueOrThrow({
             options: { populate: this.populate[props.view] },
             where: { id: props.group, realm: props.realm },
         });
     }
 
-    public findMany(props: Queries.RoleConflictGroup.FindMany): Promise<[Queries.RoleConflictGroup.Entity[], number]> {
+    public findMany(props: Queries.RoleConflictGroup.FindMany.Props): Promise<Queries.RoleConflictGroup.FindMany.Result> {
         return this.roleConflictGroupRepository.findMany({
             options: { populate: this.populate[props.view] },
+            prefilter: { realm: props.realm },
             pagination: props.pagination,
             filters: props.filters,
-            realm: props.realm,
             sort: props.sort,
         });
     }
 
     public findViolationDetails(
-        props: Queries.RoleConflictGroup.FindViolationDetails,
-    ): Promise<Queries.RoleConflictGroup.Entity[]> {
+        props: Queries.RoleConflictGroup.FindViolationDetails.Props,
+    ): Promise<Queries.RoleConflictGroup.FindViolationDetails.Result> {
         return this.roleConflictGroupRepository.findViolationDetails({
             account: props.account,
             roles: props.roles,

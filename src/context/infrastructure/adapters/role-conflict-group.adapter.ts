@@ -3,9 +3,9 @@ import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { RoleConflictGroup } from "~context/domain/entities";
 
-export class RoleConflictGroupAdapter {
-    protected buildWhereORM(
-        filters: Repositories.RoleConflictGroup.Filters,
+export class RoleConflictGroupAdapter implements Adapters.Contract<RoleConflictGroup, Adapters.RoleConflictGroup.Types> {
+    public buildWhereORM(
+        filters: Adapters.RoleConflictGroup.Filters,
         basic: ObjectQuery<RoleConflictGroup> = {},
     ): ObjectQuery<RoleConflictGroup> {
         const where: ObjectQuery<RoleConflictGroup> = basic;
@@ -41,8 +41,8 @@ export class RoleConflictGroupAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.RoleConflictGroup.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.RoleConflictGroup.Sort,
         pagination: Pagination,
         basic: FindOptions<RoleConflictGroup, P, F> = {},
     ): FindOptions<RoleConflictGroup, P, F> {

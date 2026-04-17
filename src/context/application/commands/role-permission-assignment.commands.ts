@@ -40,7 +40,9 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
         private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    public async create(props: Commands.RolePermissionAssignment.Create): Promise<MessageResult> {
+    public async create(
+        props: Commands.RolePermissionAssignment.Create.Props,
+    ): Promise<Commands.RolePermissionAssignment.Create.Result> {
         const { input, realm } = props;
 
         const { affected } = await this.transactional.run({
@@ -97,7 +99,9 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async purge(props: Commands.RolePermissionAssignment.Purge): Promise<MessageResult> {
+    public async purge(
+        props: Commands.RolePermissionAssignment.Purge.Props,
+    ): Promise<Commands.RolePermissionAssignment.Purge.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({
@@ -136,7 +140,9 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
         }
     }
 
-    public async revoke(props: Commands.RolePermissionAssignment.Revoke): Promise<MessageResult> {
+    public async revoke(
+        props: Commands.RolePermissionAssignment.Revoke.Props,
+    ): Promise<Commands.RolePermissionAssignment.Revoke.Result> {
         const { input } = props;
 
         const { entities, affected } = await this.transactional.run({
@@ -182,7 +188,9 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
         }
     }
 
-    public async restore(props: Commands.RolePermissionAssignment.Restore): Promise<MessageResult> {
+    public async restore(
+        props: Commands.RolePermissionAssignment.Restore.Props,
+    ): Promise<Commands.RolePermissionAssignment.Restore.Result> {
         const { input } = props;
 
         const { entities, affected } = await this.transactional.run({

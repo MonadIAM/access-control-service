@@ -32,7 +32,9 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
         private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    public async create(props: Commands.RoleConflictMember.Create): Promise<MessageResult> {
+    public async create(
+        props: Commands.RoleConflictMember.Create.Props,
+    ): Promise<Commands.RoleConflictMember.Create.Result> {
         const { input, realm } = props;
 
         await this.transactional.run({
@@ -74,7 +76,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async purge(props: Commands.RoleConflictMember.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.RoleConflictMember.Purge.Props): Promise<Commands.RoleConflictMember.Purge.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({

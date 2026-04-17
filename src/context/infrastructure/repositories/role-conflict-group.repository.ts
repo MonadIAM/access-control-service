@@ -1,4 +1,4 @@
-import { EntityManager, Knex, Loaded } from "@mikro-orm/postgresql";
+import { EntityManager, Knex } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -6,80 +6,25 @@ import { ConfigService } from "@nestjs/config";
 import { RoleConflictGroupAdapter } from "~context/infrastructure/adapters";
 import { RoleConflictGroup } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
+import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupRepository
-    extends RoleConflictGroupAdapter
-    implements Repositories.RoleConflictGroup.ExternalContract, Repositories.RoleConflictGroup.InternalContract
+    extends BaseRepository<RoleConflictGroup, Adapters.RoleConflictGroup.Types>({
+        Adapter: RoleConflictGroupAdapter,
+        Entity: RoleConflictGroup,
+    })
+    implements Repositories.RoleConflictGroup.InternalContract
 {
-    private readonly resource = "RoleConflictGroup";
-    private readonly groupLimit: number;
+    protected readonly groupLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
-        private readonly readManager: EntityManager,
-        private readonly configService: ConfigService,
+        protected readonly readManager: EntityManager,
+        protected readonly configService: ConfigService,
     ) {
         super();
         this.groupLimit = this.configService.getOrThrow<number>("CONFLICT_GROUP_PER_REALM_LIMIT");
-    }
-
-    public async findUnique<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.RoleConflictGroup.FindUnique<P, F>): Promise<Nullable<Loaded<RoleConflictGroup, P, F>>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOne(RoleConflictGroup, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.RoleConflictGroup.FindUniqueOrThrow<P, F>): Promise<Loaded<RoleConflictGroup, P, F>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOneOrFail(RoleConflictGroup, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async find<P extends string = never, F extends string = "*">(
-        props: Repositories.RoleConflictGroup.Find<P, F>,
-    ): Promise<Loaded<RoleConflictGroup, P, F>[]> {
-        try {
-            const { transaction, options, where } = props;
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.find(RoleConflictGroup, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findMany<P extends string = never, F extends string = "*">(
-        props: Repositories.RoleConflictGroup.FindMany<P, F>,
-    ): Promise<[Loaded<RoleConflictGroup, P, F>[], number]> {
-        try {
-            if ("where" in props) {
-                const { transaction, options, where } = props;
-                const entityManager = transaction ?? this.readManager.fork();
-                return await entityManager.findAndCount(RoleConflictGroup, where, options);
-            } else {
-                const { pagination, filters, sort, options, realm } = props;
-                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
-                const where = super.buildWhereORM(filters, { realm });
-                const entityManager = this.readManager.fork();
-                return await entityManager.findAndCount(RoleConflictGroup, where, opts);
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async findViolationDetails(
@@ -102,7 +47,7 @@ export class RoleConflictGroupRepository
 
             return rawRows.map((row) => entityManager.map(RoleConflictGroup, row));
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -118,7 +63,7 @@ export class RoleConflictGroupRepository
 
             return existsRow.length > 0;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -143,7 +88,27 @@ export class RoleConflictGroupRepository
 
             return result.length > 0;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
+        }
+    }
+
+    public async wouldExceedGroupLimit({
+        transaction,
+        realm,
+        count,
+    }: Repositories.RoleConflictGroup.WouldExceedGroupLimit): Promise<boolean> {
+        try {
+            const entityManager = transaction ?? this.readManager.fork();
+            const knex = entityManager.getKnex();
+
+            const [{ total }] = await knex("access_control.role_conflict_group")
+                .where("realm_id", realm)
+                .andWhere("is_revoked", false)
+                .count("id as total");
+
+            return Number(total) + (count ?? 1) > this.groupLimit;
+        } catch (error) {
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -173,25 +138,5 @@ export class RoleConflictGroupRepository
             .where("grp.realm_id", props.realm)
             .groupBy("grp.id", "grp.max_allowed")
             .havingRaw("count(distinct mem.role_id) > grp.max_allowed");
-    }
-
-    public async wouldExceedGroupLimit({
-        transaction,
-        realm,
-        count,
-    }: Repositories.RoleConflictGroup.WouldExceedGroupLimit): Promise<boolean> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
-
-            const [{ total }] = await knex("access_control.role_conflict_group")
-                .where("realm_id", realm)
-                .andWhere("is_revoked", false)
-                .count("id as total");
-
-            return Number(total) + (count ?? 1) > this.groupLimit;
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 }

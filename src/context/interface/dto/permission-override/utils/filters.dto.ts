@@ -4,7 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class PermissionOverridesFiltersDTO implements Repositories.PermissionOverride.Filters {
+export class PermissionOverridesFiltersDTO implements Adapters.PermissionOverride.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

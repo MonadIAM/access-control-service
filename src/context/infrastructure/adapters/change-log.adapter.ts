@@ -4,11 +4,8 @@ import { AccessControlEntityType } from "~context/enums";
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { ChangeLog } from "~common/tracking";
 
-export class ChangeLogAdapter {
-    protected buildWhereORM(
-        filters: Repositories.ChangeLog.Filters,
-        basic: ObjectQuery<ChangeLog> = {},
-    ): ObjectQuery<ChangeLog> {
+export class ChangeLogAdapter implements Adapters.Contract<ChangeLog, Adapters.ChangeLog.Types> {
+    public buildWhereORM(filters: Adapters.ChangeLog.Filters, basic: ObjectQuery<ChangeLog> = {}): ObjectQuery<ChangeLog> {
         const where: ObjectQuery<ChangeLog> = basic;
 
         if (filters.id) {
@@ -33,8 +30,8 @@ export class ChangeLogAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.ChangeLog.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.ChangeLog.Sort,
         pagination: Pagination,
         basic: FindOptions<ChangeLog, P, F> = {},
     ): FindOptions<ChangeLog, P, F> {

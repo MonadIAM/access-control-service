@@ -34,7 +34,9 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    public async create(props: Commands.RoleDelegationPolicy.Create): Promise<MessageResult> {
+    public async create(
+        props: Commands.RoleDelegationPolicy.Create.Props,
+    ): Promise<Commands.RoleDelegationPolicy.Create.Result> {
         const { input, realm } = props;
 
         await this.transactional.run({
@@ -91,7 +93,9 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async update(props: Commands.RoleDelegationPolicy.Update): Promise<MessageResult> {
+    public async update(
+        props: Commands.RoleDelegationPolicy.Update.Props,
+    ): Promise<Commands.RoleDelegationPolicy.Update.Result> {
         const { input, realm, id } = props;
 
         await this.transactional.run({
@@ -117,7 +121,9 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
-    public async purge(props: Commands.RoleDelegationPolicy.Purge): Promise<MessageResult> {
+    public async purge(
+        props: Commands.RoleDelegationPolicy.Purge.Props,
+    ): Promise<Commands.RoleDelegationPolicy.Purge.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({
@@ -156,7 +162,9 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         }
     }
 
-    public async revoke(props: Commands.RoleDelegationPolicy.Revoke): Promise<MessageResult> {
+    public async revoke(
+        props: Commands.RoleDelegationPolicy.Revoke.Props,
+    ): Promise<Commands.RoleDelegationPolicy.Revoke.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({
@@ -195,7 +203,9 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         }
     }
 
-    public async restore(props: Commands.RoleDelegationPolicy.Restore): Promise<MessageResult> {
+    public async restore(
+        props: Commands.RoleDelegationPolicy.Restore.Props,
+    ): Promise<Commands.RoleDelegationPolicy.Restore.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({

@@ -33,7 +33,6 @@ export class AuthGuard implements CanActivate {
             if (token) {
                 try {
                     const { payload } = await jwtVerify(token, this.secret);
-
                     if (payload.sub) {
                         request.actorContext = { account: payload.sub } satisfies ActorContext;
                         return true;

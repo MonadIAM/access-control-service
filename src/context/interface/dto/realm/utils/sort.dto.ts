@@ -4,7 +4,7 @@ import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class RealmsSortDTO implements Repositories.Realm.Sort {
+export class RealmsSortDTO implements Adapters.Realm.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

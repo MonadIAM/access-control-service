@@ -14,20 +14,21 @@ export class RoleConflictMemberQueries implements Queries.RoleConflictMember.Con
         private readonly roleConflictGroupRepository: Repositories.RoleConflictMember.ExternalContract,
     ) {}
 
-    public findUnique(props: Queries.RoleConflictMember.FindUnique): Promise<Queries.RoleConflictMember.Entity> {
+    public findUnique(
+        props: Queries.RoleConflictMember.FindUnique.Props,
+    ): Promise<Queries.RoleConflictMember.FindUnique.Result> {
         return this.roleConflictGroupRepository.findUniqueOrThrow({
             where: { id: props.member, group: { id: props.group, realm: props.realm } },
             options: { populate: this.populate[props.view] },
         });
     }
 
-    public findMany(props: Queries.RoleConflictMember.FindMany): Promise<[Queries.RoleConflictMember.Entity[], number]> {
+    public findMany(props: Queries.RoleConflictMember.FindMany.Props): Promise<Queries.RoleConflictMember.FindMany.Result> {
         return this.roleConflictGroupRepository.findMany({
+            prefilter: { group: { id: props.group, realm: props.realm } },
             options: { populate: this.populate[props.view] },
             pagination: props.pagination,
             filters: props.filters,
-            realm: props.realm,
-            group: props.group,
             sort: props.sort,
         });
     }

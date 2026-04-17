@@ -15,24 +15,24 @@ export class PermissionQueries implements Queries.Permission.Contract {
         private readonly permissionRepository: Repositories.Permission.ExternalContract,
     ) {}
 
-    public findUnique(props: Queries.Permission.FindUnique): Promise<Queries.Permission.Entity> {
+    public findUnique(props: Queries.Permission.FindUnique.Props): Promise<Queries.Permission.FindUnique.Result> {
         return this.permissionRepository.findUniqueOrThrow({
             where: { id: props.permission, realm: props.realm },
             options: { populate: this.populate[props.view] },
         });
     }
 
-    public findMany(props: Queries.Permission.FindMany): Promise<[Queries.Permission.Entity[], number]> {
+    public findMany(props: Queries.Permission.FindMany.Props): Promise<Queries.Permission.FindMany.Result> {
         return this.permissionRepository.findMany({
             options: { populate: this.populate[props.view] },
+            prefilter: { realm: props.realm },
             pagination: props.pagination,
             filters: props.filters,
-            realm: props.realm,
             sort: props.sort,
         });
     }
 
-    public getLookupList(props: Queries.Permission.GetLookupList): Promise<[Queries.Permission.Entity[], number]> {
+    public getLookupList(props: Queries.Permission.GetLookupList.Props): Promise<Queries.Permission.GetLookupList.Result> {
         return this.permissionRepository.getLookupList({
             pagination: props.pagination,
             realm: props.realm,
@@ -40,7 +40,7 @@ export class PermissionQueries implements Queries.Permission.Contract {
         });
     }
 
-    public findEffective(props: Queries.Permission.FindEffective): Promise<[Queries.Permission.Entity[], number]> {
+    public findEffective(props: Queries.Permission.FindEffective.Props): Promise<Queries.Permission.FindEffective.Result> {
         let account = props.actor;
         if (props.permissions?.includes(PermissionCode.PERMISSION_READ_ABSOLUTE)) {
             account = props.account ?? props.actor;

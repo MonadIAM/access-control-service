@@ -3,9 +3,9 @@ import { FindOptions, Knex, ObjectQuery, QueryOrder } from "@mikro-orm/postgresq
 import { MikroAdapter, KnexAdapter } from "~infrastructure/database/utils";
 import { Permission } from "~context/domain/entities";
 
-export class PermissionAdapter {
-    protected buildWhereORM(
-        filters: Repositories.Permission.Filters,
+export class PermissionAdapter implements Adapters.Contract<Permission, Adapters.Permission.Types> {
+    public buildWhereORM(
+        filters: Adapters.Permission.Filters,
         basic: ObjectQuery<Permission> = {},
     ): ObjectQuery<Permission> {
         const where: ObjectQuery<Permission> = basic;
@@ -41,8 +41,8 @@ export class PermissionAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.Permission.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.Permission.Sort,
         pagination: Pagination,
         basic: FindOptions<Permission, P, F> = {},
     ): FindOptions<Permission, P, F> {
@@ -53,7 +53,7 @@ export class PermissionAdapter {
         };
     }
 
-    protected buildWhereKnex(query: Knex.QueryBuilder, filters: Repositories.Permission.Filters, tableAlias: string): void {
+    public buildWhereKnex(query: Knex.QueryBuilder, filters: Adapters.Permission.Filters, tableAlias: string): void {
         if (filters.code) {
             KnexAdapter.applyStringFilter(query, filters.code, `${tableAlias}.code`);
         }
@@ -76,9 +76,9 @@ export class PermissionAdapter {
         }
     }
 
-    protected buildOptionsKnex(
+    public buildOptionsKnex(
         query: Knex.QueryBuilder,
-        sort: Repositories.Permission.Sort,
+        sort: Adapters.Permission.Sort,
         pagination: Pagination,
         tableAlias: string,
     ): void {

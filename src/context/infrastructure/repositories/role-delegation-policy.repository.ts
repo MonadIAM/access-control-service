@@ -1,4 +1,4 @@
-import { EntityManager, Knex, Loaded } from "@mikro-orm/postgresql";
+import { EntityManager, Knex } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -6,80 +6,25 @@ import { ConfigService } from "@nestjs/config";
 import { RoleDelegationPolicyAdapter } from "~context/infrastructure/adapters";
 import { RoleDelegationPolicy } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
+import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyRepository
-    extends RoleDelegationPolicyAdapter
-    implements Repositories.RoleDelegationPolicy.ExternalContract, Repositories.RoleDelegationPolicy.InternalContract
+    extends BaseRepository<RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types>({
+        Adapter: RoleDelegationPolicyAdapter,
+        Entity: RoleDelegationPolicy,
+    })
+    implements Repositories.RoleDelegationPolicy.InternalContract
 {
-    private readonly resource = "RoleDelegationPolicy";
-    private readonly policyLimit: number;
+    protected readonly policyLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
-        private readonly readManager: EntityManager,
-        private readonly configService: ConfigService,
+        protected readonly readManager: EntityManager,
+        protected readonly configService: ConfigService,
     ) {
         super();
         this.policyLimit = this.configService.getOrThrow<number>("DELEGATION_POLICY_PER_ROLE_LIMIT");
-    }
-
-    public async findUnique<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.RoleDelegationPolicy.FindUnique<P, F>): Promise<Nullable<Loaded<RoleDelegationPolicy, P, F>>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOne(RoleDelegationPolicy, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.RoleDelegationPolicy.FindUniqueOrThrow<P, F>): Promise<Loaded<RoleDelegationPolicy, P, F>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOneOrFail(RoleDelegationPolicy, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async find<P extends string = never, F extends string = "*">(
-        props: Repositories.RoleDelegationPolicy.Find<P, F>,
-    ): Promise<Loaded<RoleDelegationPolicy, P, F>[]> {
-        try {
-            const { transaction, options, where } = props;
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.find(RoleDelegationPolicy, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findMany<P extends string = never, F extends string = "*">(
-        props: Repositories.RoleDelegationPolicy.FindMany<P, F>,
-    ): Promise<[Loaded<RoleDelegationPolicy, P, F>[], number]> {
-        try {
-            if ("where" in props) {
-                const { transaction, options, where } = props;
-                const entityManager = transaction ?? this.readManager.fork();
-                return await entityManager.findAndCount(RoleDelegationPolicy, where, options);
-            } else {
-                const { pagination, filters, sort, options, realm } = props;
-                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
-                const where = super.buildWhereORM(filters, { realm });
-                const entityManager = this.readManager.fork();
-                return await entityManager.findAndCount(RoleDelegationPolicy, where, opts);
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async existsTransitivePath({
@@ -124,7 +69,7 @@ export class RoleDelegationPolicyRepository
 
             return Boolean(result);
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -166,7 +111,7 @@ export class RoleDelegationPolicyRepository
             const [result] = await entityManager.getConnection().execute(sql, [...bindings]);
             return result?.result === true;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -186,7 +131,7 @@ export class RoleDelegationPolicyRepository
 
             return Number(total) + (count ?? 1) > this.policyLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 }

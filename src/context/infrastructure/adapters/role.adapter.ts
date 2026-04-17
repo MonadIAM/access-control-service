@@ -4,8 +4,8 @@ import { MikroAdapter, KnexAdapter } from "~infrastructure/database/utils";
 import { RoleActorType, RoleProtoType } from "~context/enums";
 import { Role } from "~context/domain/entities";
 
-export class RoleAdapter {
-    protected buildWhereORM(filters: Repositories.Role.Filters, basic: ObjectQuery<Role> = {}): ObjectQuery<Role> {
+export class RoleAdapter implements Adapters.Contract<Role, Adapters.Role.Types> {
+    public buildWhereORM(filters: Adapters.Role.Filters, basic: ObjectQuery<Role> = {}): ObjectQuery<Role> {
         const where: ObjectQuery<Role> = basic;
 
         if (filters.id) {
@@ -45,8 +45,8 @@ export class RoleAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.Role.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.Role.Sort,
         pagination: Pagination,
         basic: FindOptions<Role, P, F> = {},
     ): FindOptions<Role, P, F> {
@@ -57,7 +57,7 @@ export class RoleAdapter {
         };
     }
 
-    protected buildWhereKnex(query: Knex.QueryBuilder, filters: Repositories.Role.Filters, tableAlias: string): void {
+    public buildWhereKnex(query: Knex.QueryBuilder, filters: Adapters.Role.Filters, tableAlias: string): void {
         if (filters.actorType) {
             KnexAdapter.applyStringFilter(query, filters.actorType, `${tableAlias}.actor_type`);
         }
@@ -89,9 +89,9 @@ export class RoleAdapter {
         }
     }
 
-    protected buildOptionsKnex(
+    public buildOptionsKnex(
         query: Knex.QueryBuilder,
-        sort: Repositories.Role.Sort,
+        sort: Adapters.Role.Sort,
         pagination: Pagination,
         tableAlias: string,
     ): void {

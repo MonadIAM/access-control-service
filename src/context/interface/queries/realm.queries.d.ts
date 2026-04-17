@@ -6,33 +6,45 @@ declare global {
             type Entity = Repositories.Realm.Entity;
 
             interface Contract {
-                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
-                findMany: (props: FindMany) => Promise<[Entity[], number]>;
-                findUnique: (props: FindUnique) => Promise<Entity>;
+                getLookupList: (props: GetLookupList.Props) => Promise<GetLookupList.Result>;
+                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
+                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
             }
 
-            type GetLookupList = {
-                permissions?: string[];
-                pagination: Pagination;
-                account: string;
-                term: string;
-            };
+            namespace GetLookupList {
+                type Props = {
+                    permissions?: string[];
+                    pagination: Pagination;
+                    account: string;
+                    term: string;
+                };
 
-            type FindMany = {
-                permissions?: string[];
-                filters: Repositories.Realm.Filters;
-                sort: Repositories.Realm.Sort;
-                pagination: Pagination;
-                view: ResponseViewType;
-                account: string;
-            };
+                type Result = [Entity[], number];
+            }
 
-            type FindUnique = {
-                view: ResponseViewType;
-                permissions?: string[];
-                account: string;
-                realm: string;
-            };
+            namespace FindMany {
+                type Props = {
+                    permissions?: string[];
+                    filters: Adapters.Realm.Filters;
+                    sort: Adapters.Realm.Sort;
+                    pagination: Pagination;
+                    view: ResponseViewType;
+                    account: string;
+                };
+
+                type Result = [Entity[], number];
+            }
+
+            namespace FindUnique {
+                type Props = {
+                    view: ResponseViewType;
+                    permissions?: string[];
+                    account: string;
+                    realm: string;
+                };
+
+                type Result = Entity;
+            }
         }
     }
 }

@@ -6,28 +6,36 @@ declare global {
             type Entity = Repositories.PermissionOverride.Entity;
 
             interface Contract {
-                findMany: (props: FindMany) => Promise<[Entity[], number]>;
-                findUnique: (props: FindUnique) => Promise<Entity>;
+                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
+                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
             }
 
-            type FindMany = {
-                permissions?: string[];
-                filters: Repositories.PermissionOverride.Filters;
-                sort: Repositories.PermissionOverride.Sort;
-                view: ResponseViewType;
-                pagination: Pagination;
-                realm: string;
-                actor: string;
-            };
+            namespace FindUnique {
+                type Props = {
+                    permissions?: string[];
+                    view: ResponseViewType;
+                    override: string;
+                    account?: string;
+                    realm: string;
+                    actor: string;
+                };
 
-            type FindUnique = {
-                permissions?: string[];
-                view: ResponseViewType;
-                override: string;
-                account?: string;
-                realm: string;
-                actor: string;
-            };
+                type Result = Entity;
+            }
+
+            namespace FindMany {
+                type Props = {
+                    permissions?: string[];
+                    filters: Adapters.PermissionOverride.Filters;
+                    sort: Adapters.PermissionOverride.Sort;
+                    view: ResponseViewType;
+                    pagination: Pagination;
+                    realm: string;
+                    actor: string;
+                };
+
+                type Result = [Entity[], number];
+            }
         }
     }
 }

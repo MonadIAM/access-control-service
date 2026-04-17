@@ -6,25 +6,33 @@ declare global {
             type Entity = Repositories.RoleConflictMember.Entity;
 
             interface Contract {
-                findMany: (props: FindMany) => Promise<[Entity[], number]>;
-                findUnique: (props: FindUnique) => Promise<Entity>;
+                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
+                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
             }
 
-            type FindMany = {
-                filters: Repositories.RoleConflictMember.Filters;
-                sort: Repositories.RoleConflictMember.Sort;
-                view: ResponseViewType;
-                pagination: Pagination;
-                realm: string;
-                group: string;
-            };
+            namespace FindMany {
+                type Props = {
+                    filters: Adapters.RoleConflictMember.Filters;
+                    sort: Adapters.RoleConflictMember.Sort;
+                    view: ResponseViewType;
+                    pagination: Pagination;
+                    realm: string;
+                    group: string;
+                };
 
-            type FindUnique = {
-                view: ResponseViewType;
-                member: string;
-                realm: string;
-                group: string;
-            };
+                type Result = [Entity[], number];
+            }
+
+            namespace FindUnique {
+                type Props = {
+                    view: ResponseViewType;
+                    member: string;
+                    realm: string;
+                    group: string;
+                };
+
+                type Result = Entity;
+            }
         }
     }
 }

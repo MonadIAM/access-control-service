@@ -4,7 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class AuditLogsFiltersDTO implements Repositories.AuditLog.Filters {
+export class AuditLogsFiltersDTO implements Adapters.AuditLog.Filters {
     @Expose()
     @Validator.IsOptional()
     @Type(() => StringFilterDTO)

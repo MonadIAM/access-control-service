@@ -3,9 +3,11 @@ import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { RoleDelegationPolicy } from "~context/domain/entities";
 
-export class RoleDelegationPolicyAdapter {
-    protected buildWhereORM(
-        filters: Repositories.RoleDelegationPolicy.Filters,
+export class RoleDelegationPolicyAdapter
+    implements Adapters.Contract<RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types>
+{
+    public buildWhereORM(
+        filters: Adapters.RoleDelegationPolicy.Filters,
         basic: ObjectQuery<RoleDelegationPolicy> = {},
     ): ObjectQuery<RoleDelegationPolicy> {
         const where: ObjectQuery<RoleDelegationPolicy> = basic;
@@ -38,8 +40,8 @@ export class RoleDelegationPolicyAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.RoleDelegationPolicy.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.RoleDelegationPolicy.Sort,
         pagination: Pagination,
         basic: FindOptions<RoleDelegationPolicy, P, F> = {},
     ): FindOptions<RoleDelegationPolicy, P, F> {

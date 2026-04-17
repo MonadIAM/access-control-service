@@ -6,23 +6,31 @@ declare global {
             type Entity = Repositories.AccountRoleAssignment.Entity;
 
             interface Contract {
-                findMany: (props: FindMany) => Promise<[Entity[], number]>;
-                findUnique: (props: FindUnique) => Promise<Entity>;
+                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
+                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
             }
 
-            type FindMany = {
-                filters: Repositories.AccountRoleAssignment.Filters;
-                sort: Repositories.AccountRoleAssignment.Sort;
-                view: ResponseViewType;
-                pagination: Pagination;
-                realm: string;
-            };
+            namespace FindUnique {
+                type Props = {
+                    view: ResponseViewType;
+                    assignment: string;
+                    realm: string;
+                };
 
-            type FindUnique = {
-                view: ResponseViewType;
-                assignment: string;
-                realm: string;
-            };
+                type Result = Entity;
+            }
+
+            namespace FindMany {
+                type Props = {
+                    filters: Adapters.AccountRoleAssignment.Filters;
+                    sort: Adapters.AccountRoleAssignment.Sort;
+                    view: ResponseViewType;
+                    pagination: Pagination;
+                    realm: string;
+                };
+
+                type Result = [Entity[], number];
+            }
         }
     }
 }

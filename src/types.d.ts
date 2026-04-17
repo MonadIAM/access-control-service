@@ -1,3 +1,5 @@
+type AnyArray = any[];
+
 type Nullable<T> = T | null;
 
 type Optional<T> = T | undefined;
@@ -6,7 +8,7 @@ type Maybe<T> = T | undefined | null;
 
 type Ordinal = number | string | Date;
 
-type Class<T = unknown> = new (...args: unknown[]) => T;
+type Class<T = {}> = new (...args: AnyArray) => T;
 
 type UnknownObject = Record<string, unknown>;
 

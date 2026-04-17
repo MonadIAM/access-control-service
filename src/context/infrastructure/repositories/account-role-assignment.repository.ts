@@ -1,85 +1,30 @@
-import { EntityManager, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
+import { EntityManager } from "@mikro-orm/postgresql";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { AccountRoleAssignmentAdapter } from "~context/infrastructure/adapters";
 import { AccountRoleAssignment } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
+import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentRepository
-    extends AccountRoleAssignmentAdapter
-    implements Repositories.AccountRoleAssignment.ExternalContract, Repositories.AccountRoleAssignment.InternalContract
+    extends BaseRepository<AccountRoleAssignment, Adapters.AccountRoleAssignment.Types>({
+        Adapter: AccountRoleAssignmentAdapter,
+        Entity: AccountRoleAssignment,
+    })
+    implements Repositories.AccountRoleAssignment.InternalContract
 {
-    private readonly resource = "AccountRoleAssignment";
-    private readonly accountRoleLimit: number;
+    protected readonly accountRoleLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
-        private readonly readManager: EntityManager,
-        private readonly configService: ConfigService,
+        protected readonly readManager: EntityManager,
+        protected readonly configService: ConfigService,
     ) {
         super();
         this.accountRoleLimit = this.configService.getOrThrow<number>("ROLE_PER_ACCOUNT_LIMIT");
-    }
-
-    public async findUnique<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.AccountRoleAssignment.FindUnique<P, F>): Promise<Nullable<Loaded<AccountRoleAssignment, P, F>>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOne(AccountRoleAssignment, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.AccountRoleAssignment.FindUniqueOrThrow<P, F>): Promise<Loaded<AccountRoleAssignment, P, F>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOneOrFail(AccountRoleAssignment, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async find<P extends string = never, F extends string = "*">(
-        props: Repositories.AccountRoleAssignment.Find<P, F>,
-    ): Promise<Loaded<AccountRoleAssignment, P, F>[]> {
-        try {
-            const { transaction, options, where } = props;
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.find(AccountRoleAssignment, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findMany<P extends string = never, F extends string = "*">(
-        props: Repositories.AccountRoleAssignment.FindMany<P, F>,
-    ): Promise<[Loaded<AccountRoleAssignment, P, F>[], number]> {
-        try {
-            if ("where" in props) {
-                const { transaction, options, where } = props;
-                const entityManager = transaction ?? this.readManager.fork();
-                return await entityManager.findAndCount(AccountRoleAssignment, where, options);
-            } else {
-                const { pagination, filters, sort, options, realm } = props;
-                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
-                const where = super.buildWhereORM(filters, { realm });
-                const entityManager = this.readManager.fork();
-                return await entityManager.findAndCount(AccountRoleAssignment, where, opts);
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async wouldExceedRoleLimit({
@@ -101,7 +46,7 @@ export class AccountRoleAssignmentRepository
 
             return Number(total) + roles.length - Number(overlap) > this.accountRoleLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 }

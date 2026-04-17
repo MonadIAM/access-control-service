@@ -1,4 +1,4 @@
-import { EntityDictionary, EntityManager, Knex, Loaded, raw } from "@mikro-orm/postgresql";
+import { EntityDictionary, EntityManager, Knex, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -7,80 +7,25 @@ import { PermissionAdapter } from "~context/infrastructure/adapters";
 import { PermissionOverrideEffect } from "~context/enums";
 import { RepositoryException } from "~common/exceptions";
 import { Permission } from "~context/domain/entities";
+import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionRepository
-    extends PermissionAdapter
-    implements Repositories.Permission.ExternalContract, Repositories.Permission.InternalContract
+    extends BaseRepository<Permission, Adapters.Permission.Types>({
+        Adapter: PermissionAdapter,
+        Entity: Permission,
+    })
+    implements Repositories.Permission.InternalContract
 {
-    private readonly resource = "Permission";
-    private readonly permissionLimit: number;
+    protected readonly permissionLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
-        private readonly readManager: EntityManager,
-        private readonly configService: ConfigService,
+        protected readonly readManager: EntityManager,
+        protected readonly configService: ConfigService,
     ) {
         super();
         this.permissionLimit = this.configService.getOrThrow<number>("PERMISSION_PER_REALM_LIMIT");
-    }
-
-    public async findUnique<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.Permission.FindUnique<P, F>): Promise<Nullable<Loaded<Permission, P, F>>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOne(Permission, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.Permission.FindUniqueOrThrow<P, F>): Promise<Loaded<Permission, P, F>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOneOrFail(Permission, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async find<P extends string = never, F extends string = "*">(
-        props: Repositories.Permission.Find<P, F>,
-    ): Promise<Loaded<Permission, P, F>[]> {
-        try {
-            const { transaction, options, where } = props;
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.find(Permission, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findMany<P extends string = never, F extends string = "*">(
-        props: Repositories.Permission.FindMany<P, F>,
-    ): Promise<[Loaded<Permission, P, F>[], number]> {
-        try {
-            if ("where" in props) {
-                const { transaction, options, where } = props;
-                const entityManager = transaction ?? this.readManager.fork();
-                return await entityManager.findAndCount(Permission, where, options);
-            } else {
-                const { pagination, filters, sort, options, realm } = props;
-                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
-                const where = super.buildWhereORM(filters, { realm });
-                const entityManager = this.readManager.fork();
-                return await entityManager.findAndCount(Permission, where, opts);
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async getLookupList({
@@ -108,7 +53,7 @@ export class PermissionRepository
 
             return await builder.getResultAndCount();
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -177,15 +122,15 @@ export class PermissionRepository
                 .from(knex.raw("? as effective", [buildEffectivePermissionIDs()]))
                 .innerJoin({ p: "access_control.permission" }, "p.id", "effective.permission_id");
 
-            super.buildWhereKnex(dataQuery, filters, "p");
-            super.buildOptionsKnex(dataQuery, sort, pagination, "p");
+            super.buildWhereKnex?.(dataQuery, filters, "p");
+            super.buildOptionsKnex?.(dataQuery, sort, pagination, "p");
 
             const countQuery = knex
                 .count("* as total")
                 .from(knex.raw("? as effective", [buildEffectivePermissionIDs()]))
                 .innerJoin({ p: "access_control.permission" }, "p.id", "effective.permission_id");
 
-            super.buildWhereKnex(countQuery, filters, "p");
+            super.buildWhereKnex?.(countQuery, filters, "p");
 
             const [rawPermissions, countResult] = await Promise.all([
                 dataQuery,
@@ -200,7 +145,7 @@ export class PermissionRepository
 
             return [permissions, total];
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -270,7 +215,7 @@ export class PermissionRepository
 
             return results;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -316,7 +261,7 @@ export class PermissionRepository
 
             return Number(total) + (count ?? 1) > this.permissionLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 }

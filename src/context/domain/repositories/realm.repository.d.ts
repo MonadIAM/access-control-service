@@ -1,6 +1,4 @@
-import { EntityManager, FilterQuery, FindOptions, Loaded, QueryOrder } from "@mikro-orm/postgresql";
-
-import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
+import { EntityManager } from "@mikro-orm/postgresql";
 
 import { Realm as RealmEntity } from "../entities";
 
@@ -9,56 +7,12 @@ declare global {
         namespace Realm {
             type Entity = RealmEntity;
 
-            interface CommonContract {
-                findUnique: <P extends string = never, F extends string = "*">(
-                    props: FindUnique<P, F>,
-                ) => Promise<Nullable<Loaded<Entity, P, F>>>;
-
-                findUniqueOrThrow: <P extends string = never, F extends string = "*">(
-                    props: FindUniqueOrThrow<P, F>,
-                ) => Promise<Loaded<Entity, P, F>>;
-            }
-
-            interface ExternalContract extends CommonContract {
-                findMany: <P extends string = never, F extends string = "*">(
-                    props: FindMany<P, F>,
-                ) => Promise<[Loaded<Entity, P, F>[], number]>;
-
+            interface InternalContract extends Repositories.Base.Contract<Entity, Adapters.Realm.Types> {
+                wouldExceedRealmLimit: (props: WouldExceedRealmLimit) => Promise<boolean>;
                 getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
             }
 
-            interface InternalContract extends CommonContract {
-                find: <P extends string = never, F extends string = "*">(
-                    props: Find<P, F>,
-                ) => Promise<Loaded<Entity, P, F>[]>;
-
-                wouldExceedRealmLimit: (props: WouldExceedRealmLimit) => Promise<boolean>;
-            }
-
-            type FindUnique<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            };
-
-            type FindUniqueOrThrow<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            };
-
-            type Find<P extends string, F extends string> = {
-                transaction?: EntityManager;
-                options?: FindOptions<Entity, P, F>;
-                where: FilterQuery<Entity>;
-            };
-
-            type FindMany<P extends string, F extends string> = {
-                options?: FindOptions<Entity, P, F>;
-                pagination: Pagination;
-                filters: Filters;
-                sort: Sort;
-            };
+            interface ExternalContract extends Pick<InternalContract, "getLookupList" | "findUniqueOrThrow" | "findMany"> {}
 
             type GetLookupList = {
                 pagination: Pagination;
@@ -70,20 +24,6 @@ declare global {
                 transaction?: EntityManager;
                 account: string;
                 count?: number;
-            };
-
-            type Filters = {
-                id?: StringFilterDTO;
-                isSystemManaged?: boolean;
-                code?: StringFilterDTO;
-                name?: StringFilterDTO;
-                updatedAt?: OrdinalFilterDTO<Date>;
-                createdAt?: OrdinalFilterDTO<Date>;
-                isRevoked?: boolean;
-            };
-
-            type Sort = {
-                createdAt?: QueryOrder;
             };
         }
     }

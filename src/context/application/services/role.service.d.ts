@@ -7,27 +7,41 @@ declare global {
     namespace Services {
         namespace Role {
             interface Contract {
-                purgeSubtree: (props: PurgeSubtree) => Promise<number>;
-                create: (props: Create) => Promise<RoleEntity>;
+                purgeSubtree: (props: PurgeSubtree.Props) => Promise<PurgeSubtree.Result>;
+                create: (props: Create.Props) => Promise<Create.Result>;
                 purge: (props: Purge) => Promise<void>;
                 restore: (props: Restore) => void;
                 update: (props: Update) => void;
                 revoke: (props: Revoke) => void;
             }
 
-            type Create = {
-                transaction: EntityManager;
-                input: {
-                    actorType: RoleActorType;
-                    protoType: RoleProtoType;
-                    description?: string;
-                    children?: string[];
-                    parent: RoleEntity;
-                    code: string;
-                    name: string;
+            namespace PurgeSubtree {
+                type Props = {
+                    transaction: EntityManager;
+                    entity: RoleEntity;
+                    realm: string;
                 };
-                realm: RealmEntity;
-            };
+
+                type Result = number;
+            }
+
+            namespace Create {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        actorType: RoleActorType;
+                        protoType: RoleProtoType;
+                        description?: string;
+                        children?: string[];
+                        parent: RoleEntity;
+                        code: string;
+                        name: string;
+                    };
+                    realm: RealmEntity;
+                };
+
+                type Result = RoleEntity;
+            }
 
             type Update = {
                 patch: Partial<Entities.Role.MutableFields>;
@@ -35,12 +49,6 @@ declare global {
             };
 
             type Purge = {
-                transaction: EntityManager;
-                entity: RoleEntity;
-                realm: string;
-            };
-
-            type PurgeSubtree = {
                 transaction: EntityManager;
                 entity: RoleEntity;
                 realm: string;

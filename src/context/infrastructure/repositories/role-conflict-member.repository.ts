@@ -1,85 +1,30 @@
-import { EntityManager, Loaded } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
+import { EntityManager } from "@mikro-orm/postgresql";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { RoleConflictMemberAdapter } from "~context/infrastructure/adapters";
 import { RoleConflictMember } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
+import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberRepository
-    extends RoleConflictMemberAdapter
-    implements Repositories.RoleConflictMember.ExternalContract, Repositories.RoleConflictMember.InternalContract
+    extends BaseRepository<RoleConflictMember, Adapters.RoleConflictMember.Types>({
+        Adapter: RoleConflictMemberAdapter,
+        Entity: RoleConflictMember,
+    })
+    implements Repositories.RoleConflictMember.InternalContract
 {
-    private readonly resource = "RoleConflictMember";
-    private readonly membersLimit: number;
+    protected readonly membersLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
-        private readonly readManager: EntityManager,
-        private readonly configService: ConfigService,
+        protected readonly readManager: EntityManager,
+        protected readonly configService: ConfigService,
     ) {
         super();
         this.membersLimit = this.configService.getOrThrow<number>("MAX_CONFLICT_MEMBERS_COUNT");
-    }
-
-    public async findUnique<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.RoleConflictMember.FindUnique<P, F>): Promise<Nullable<Loaded<RoleConflictMember, P, F>>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOne(RoleConflictMember, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.RoleConflictMember.FindUniqueOrThrow<P, F>): Promise<Loaded<RoleConflictMember, P, F>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOneOrFail(RoleConflictMember, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async find<P extends string = never, F extends string = "*">(
-        props: Repositories.RoleConflictMember.Find<P, F>,
-    ): Promise<Loaded<RoleConflictMember, P, F>[]> {
-        try {
-            const { transaction, options, where } = props;
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.find(RoleConflictMember, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findMany<P extends string = never, F extends string = "*">(
-        props: Repositories.RoleConflictMember.FindMany<P, F>,
-    ): Promise<[Loaded<RoleConflictMember, P, F>[], number]> {
-        try {
-            if ("where" in props) {
-                const { transaction, options, where } = props;
-                const entityManager = transaction ?? this.readManager.fork();
-                return await entityManager.findAndCount(RoleConflictMember, where, options);
-            } else {
-                const { pagination, filters, sort, options, group, realm } = props;
-                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
-                const where = super.buildWhereORM(filters, { group: { id: group, realm } });
-                const entityManager = this.readManager.fork();
-                return await entityManager.findAndCount(RoleConflictMember, where, opts);
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async wouldExceedMemberLimit({
@@ -97,7 +42,7 @@ export class RoleConflictMemberRepository
 
             return Number(total) + count > this.membersLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 }

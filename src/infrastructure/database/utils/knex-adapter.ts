@@ -1,6 +1,6 @@
 import { AnyEntity, EntityKey, Knex, QueryOrder } from "@mikro-orm/postgresql";
 
-import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
+import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 
 import { PublicOrdinalOperator, PublicStringOperator } from "../enums";
 
@@ -13,7 +13,11 @@ export class KnexAdapter {
         return query;
     }
 
-    public static applyStringFilter(query: Knex.QueryBuilder, filter: StringFilterDTO, column: string): void {
+    public static applyStringFilter(
+        query: Knex.QueryBuilder,
+        filter: StringFilterDTO | LinkFilterDTO,
+        column: string,
+    ): void {
         if (Array.isArray(filter.value)) {
             switch (filter.operator) {
                 case PublicStringOperator.IN:

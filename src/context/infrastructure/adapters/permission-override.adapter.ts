@@ -4,9 +4,9 @@ import { MikroAdapter } from "~infrastructure/database/utils";
 import { PermissionOverride } from "~context/domain/entities";
 import { PermissionOverrideEffect } from "~context/enums";
 
-export class PermissionOverrideAdapter {
-    protected buildWhereORM(
-        filters: Repositories.PermissionOverride.Filters,
+export class PermissionOverrideAdapter implements Adapters.Contract<PermissionOverride, Adapters.PermissionOverride.Types> {
+    public buildWhereORM(
+        filters: Adapters.PermissionOverride.Filters,
         basic: ObjectQuery<PermissionOverride> = {},
     ): ObjectQuery<PermissionOverride> {
         const where: ObjectQuery<PermissionOverride> = basic;
@@ -39,8 +39,8 @@ export class PermissionOverrideAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.PermissionOverride.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.PermissionOverride.Sort,
         pagination: Pagination,
         basic: FindOptions<PermissionOverride, P, F> = {},
     ): FindOptions<PermissionOverride, P, F> {

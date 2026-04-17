@@ -4,7 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class RoleConflictGroupsFiltersDTO implements Repositories.RoleConflictGroup.Filters {
+export class RoleConflictGroupsFiltersDTO implements Adapters.RoleConflictGroup.Filters {
     @Expose()
     @Validator.IsOptional()
     @Type(() => StringFilterDTO)

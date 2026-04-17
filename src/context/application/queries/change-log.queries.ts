@@ -9,13 +9,13 @@ export class ChangeLogQueries implements Queries.ChangeLog.Contract {
         private readonly changeLogRepository: Repositories.ChangeLog.Contract,
     ) {}
 
-    public findUnique(props: Queries.ChangeLog.FindUnique): Promise<Queries.ChangeLog.Entity> {
+    public findUnique(props: Queries.ChangeLog.FindUnique.Props): Promise<Queries.ChangeLog.FindUnique.Result> {
         return this.changeLogRepository.findUniqueOrThrow({
             where: { id: props.log },
         });
     }
 
-    public findMany(props: Queries.ChangeLog.FindMany): Promise<[Queries.ChangeLog.Entity[], number]> {
+    public findMany(props: Queries.ChangeLog.FindMany.Props): Promise<Queries.ChangeLog.FindMany.Result> {
         return this.changeLogRepository.findMany({
             pagination: props.pagination,
             filters: props.filters,

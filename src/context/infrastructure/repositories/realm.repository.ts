@@ -1,4 +1,4 @@
-import { EntityManager, Loaded, raw } from "@mikro-orm/postgresql";
+import { EntityManager, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -6,74 +6,25 @@ import { ConfigService } from "@nestjs/config";
 import { RealmAdapter } from "~context/infrastructure/adapters";
 import { RepositoryException } from "~common/exceptions";
 import { Realm } from "~context/domain/entities";
+import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmRepository
-    extends RealmAdapter
-    implements Repositories.Realm.ExternalContract, Repositories.Realm.InternalContract
+    extends BaseRepository<Realm, Adapters.Realm.Types>({
+        Adapter: RealmAdapter,
+        Entity: Realm,
+    })
+    implements Repositories.Realm.InternalContract
 {
-    private readonly resource = "Realm";
-    private readonly realmLimit: number;
+    protected readonly realmLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
-        private readonly readManager: EntityManager,
-        private readonly configService: ConfigService,
+        protected readonly readManager: EntityManager,
+        protected readonly configService: ConfigService,
     ) {
         super();
         this.realmLimit = this.configService.getOrThrow<number>("REALM_LIMIT");
-    }
-
-    public async findUnique<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.Realm.FindUnique<P, F>): Promise<Nullable<Loaded<Realm, P, F>>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOne(Realm, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.Realm.FindUniqueOrThrow<P, F>): Promise<Loaded<Realm, P, F>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOneOrFail(Realm, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async find<P extends string = never, F extends string = "*">(
-        props: Repositories.Realm.Find<P, F>,
-    ): Promise<Loaded<Realm, P, F>[]> {
-        try {
-            const { transaction, options, where } = props;
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.find(Realm, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findMany<P extends string = never, F extends string = "*">(
-        props: Repositories.Realm.FindMany<P, F>,
-    ): Promise<[Loaded<Realm, P, F>[], number]> {
-        try {
-            const { pagination, filters, sort, options } = props;
-            const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
-            const where = super.buildWhereORM(filters);
-            const entityManager = this.readManager.fork();
-            return await entityManager.findAndCount(Realm, where, opts);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async getLookupList({ pagination, realms, term }: Repositories.Realm.GetLookupList): Promise<[Realm[], number]> {
@@ -100,7 +51,7 @@ export class RealmRepository
 
             return await builder.getResultAndCount();
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -117,7 +68,7 @@ export class RealmRepository
 
             return Number(total) + (count ?? 1) > this.realmLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 }

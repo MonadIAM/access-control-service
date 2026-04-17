@@ -3,9 +3,11 @@ import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 import { AccountRoleAssignment } from "~context/domain/entities";
 import { MikroAdapter } from "~infrastructure/database/utils";
 
-export class AccountRoleAssignmentAdapter {
-    protected buildWhereORM(
-        filters: Repositories.AccountRoleAssignment.Filters,
+export class AccountRoleAssignmentAdapter
+    implements Adapters.Contract<AccountRoleAssignment, Adapters.AccountRoleAssignment.Types>
+{
+    public buildWhereORM(
+        filters: Adapters.AccountRoleAssignment.Filters,
         basic: ObjectQuery<AccountRoleAssignment> = {},
     ): ObjectQuery<AccountRoleAssignment> {
         const where: ObjectQuery<AccountRoleAssignment> = basic;
@@ -38,8 +40,8 @@ export class AccountRoleAssignmentAdapter {
         return where;
     }
 
-    protected buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Repositories.AccountRoleAssignment.Sort,
+    public buildOptionsORM<P extends string = never, F extends string = "*">(
+        sort: Adapters.AccountRoleAssignment.Sort,
         pagination: Pagination,
         basic: FindOptions<AccountRoleAssignment, P, F> = {},
     ): FindOptions<AccountRoleAssignment, P, F> {

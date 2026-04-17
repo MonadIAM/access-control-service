@@ -92,7 +92,7 @@ export class RealmService implements Services.Realm.Contract {
         private readonly realmRepository: Repositories.Realm.InternalContract,
     ) {}
 
-    public async create({ transaction, input, actor }: Services.Realm.Create): Promise<Realm> {
+    public async create({ transaction, input, actor }: Services.Realm.Create.Props): Promise<Services.Realm.Create.Result> {
         const limitExceeded = await this.realmRepository.wouldExceedRealmLimit({
             account: actor,
             transaction,

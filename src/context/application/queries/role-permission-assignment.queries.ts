@@ -15,8 +15,8 @@ export class RolePermissionAssignmentQueries implements Queries.RolePermissionAs
     ) {}
 
     public findUnique(
-        props: Queries.RolePermissionAssignment.FindUnique,
-    ): Promise<Queries.RolePermissionAssignment.Entity> {
+        props: Queries.RolePermissionAssignment.FindUnique.Props,
+    ): Promise<Queries.RolePermissionAssignment.FindUnique.Result> {
         return this.rolePermissionAssignmentRepository.findUniqueOrThrow({
             where: { id: props.assignment, realm: props.realm },
             options: { populate: this.populate[props.view] },
@@ -24,13 +24,13 @@ export class RolePermissionAssignmentQueries implements Queries.RolePermissionAs
     }
 
     public findMany(
-        props: Queries.RolePermissionAssignment.FindMany,
-    ): Promise<[Queries.RolePermissionAssignment.Entity[], number]> {
+        props: Queries.RolePermissionAssignment.FindMany.Props,
+    ): Promise<Queries.RolePermissionAssignment.FindMany.Result> {
         return this.rolePermissionAssignmentRepository.findMany({
             options: { populate: this.populate[props.view] },
+            prefilter: { realm: props.realm },
             pagination: props.pagination,
             filters: props.filters,
-            realm: props.realm,
             sort: props.sort,
         });
     }

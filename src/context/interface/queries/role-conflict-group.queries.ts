@@ -6,30 +6,42 @@ declare global {
             type Entity = Repositories.RoleConflictGroup.Entity;
 
             interface Contract {
-                findMany: (props: FindMany) => Promise<[Entity[], number]>;
-                findUnique: (props: FindUnique) => Promise<Entity>;
-                findViolationDetails: (props: FindViolationDetails) => Promise<Entity[]>;
+                findViolationDetails: (props: FindViolationDetails.Props) => Promise<FindViolationDetails.Result>;
+                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
+                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
             }
 
-            type FindMany = {
-                filters: Repositories.RoleConflictGroup.Filters;
-                sort: Repositories.RoleConflictGroup.Sort;
-                view: ResponseViewType;
-                pagination: Pagination;
-                realm: string;
-            };
+            namespace FindMany {
+                type Props = {
+                    filters: Adapters.RoleConflictGroup.Filters;
+                    sort: Adapters.RoleConflictGroup.Sort;
+                    view: ResponseViewType;
+                    pagination: Pagination;
+                    realm: string;
+                };
 
-            type FindUnique = {
-                view: ResponseViewType;
-                group: string;
-                realm: string;
-            };
+                type Result = [Entity[], number];
+            }
 
-            type FindViolationDetails = {
-                account: string;
-                roles: string[];
-                realm: string;
-            };
+            namespace FindUnique {
+                type Props = {
+                    view: ResponseViewType;
+                    group: string;
+                    realm: string;
+                };
+
+                type Result = Entity;
+            }
+
+            namespace FindViolationDetails {
+                type Props = {
+                    account: string;
+                    roles: string[];
+                    realm: string;
+                };
+
+                type Result = Entity[];
+            }
         }
     }
 }

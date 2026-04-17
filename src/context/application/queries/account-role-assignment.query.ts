@@ -14,7 +14,9 @@ export class AccountRoleAssignmentQueries implements Queries.AccountRoleAssignme
         private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.ExternalContract,
     ) {}
 
-    public findUnique(props: Queries.AccountRoleAssignment.FindUnique): Promise<Queries.AccountRoleAssignment.Entity> {
+    public findUnique(
+        props: Queries.AccountRoleAssignment.FindUnique.Props,
+    ): Promise<Queries.AccountRoleAssignment.FindUnique.Result> {
         return this.accountRoleAssignmentRepository.findUniqueOrThrow({
             where: { id: props.assignment, realm: props.realm },
             options: { populate: this.populate[props.view] },
@@ -22,13 +24,13 @@ export class AccountRoleAssignmentQueries implements Queries.AccountRoleAssignme
     }
 
     public findMany(
-        props: Queries.AccountRoleAssignment.FindMany,
-    ): Promise<[Queries.AccountRoleAssignment.Entity[], number]> {
+        props: Queries.AccountRoleAssignment.FindMany.Props,
+    ): Promise<Queries.AccountRoleAssignment.FindMany.Result> {
         return this.accountRoleAssignmentRepository.findMany({
             options: { populate: this.populate[props.view] },
+            prefilter: { realm: props.realm },
             pagination: props.pagination,
             filters: props.filters,
-            realm: props.realm,
             sort: props.sort,
         });
     }

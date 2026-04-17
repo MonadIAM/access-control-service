@@ -8,42 +8,58 @@ declare global {
             type Entity = Repositories.Permission.Entity;
 
             interface Contract {
-                findEffective: (props: FindEffective) => Promise<[Entity[], number]>;
-                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
-                findMany: (props: FindMany) => Promise<[Entity[], number]>;
-                findUnique: (props: FindUnique) => Promise<Entity>;
+                findEffective: (props: FindEffective.Props) => Promise<FindEffective.Result>;
+                getLookupList: (props: GetLookupList.Props) => Promise<GetLookupList.Result>;
+                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
+                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
             }
 
-            type FindEffective = {
-                permissions?: string[];
-                filters: Repositories.Permission.Filters;
-                sort: Repositories.Permission.Sort;
-                pagination: Pagination;
-                account?: string;
-                realm: string;
-                actor: string;
-            };
+            namespace FindEffective {
+                type Props = {
+                    permissions?: string[];
+                    filters: Adapters.Permission.Filters;
+                    sort: Adapters.Permission.Sort;
+                    pagination: Pagination;
+                    account?: string;
+                    realm: string;
+                    actor: string;
+                };
 
-            type GetLookupList = {
-                options?: FindOptions<Entity>;
-                pagination: Pagination;
-                realm: string;
-                term: string;
-            };
+                type Result = [Entity[], number];
+            }
 
-            type FindMany = {
-                filters: Repositories.Permission.Filters;
-                sort: Repositories.Permission.Sort;
-                view: ResponseViewType;
-                pagination: Pagination;
-                realm: string;
-            };
+            namespace GetLookupList {
+                type Props = {
+                    options?: FindOptions<Entity>;
+                    pagination: Pagination;
+                    realm: string;
+                    term: string;
+                };
 
-            type FindUnique = {
-                view: ResponseViewType;
-                permission: string;
-                realm: string;
-            };
+                type Result = [Entity[], number];
+            }
+
+            namespace FindMany {
+                type Props = {
+                    filters: Adapters.Permission.Filters;
+                    sort: Adapters.Permission.Sort;
+                    view: ResponseViewType;
+                    pagination: Pagination;
+                    realm: string;
+                };
+
+                type Result = [Entity[], number];
+            }
+
+            namespace FindUnique {
+                type Props = {
+                    view: ResponseViewType;
+                    permission: string;
+                    realm: string;
+                };
+
+                type Result = Entity;
+            }
         }
     }
 }

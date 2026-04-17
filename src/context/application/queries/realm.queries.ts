@@ -4,7 +4,6 @@ import { PERMISSION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { PublicStringOperator } from "~infrastructure/database";
 import { CommandException } from "~common/exceptions";
-import { Realm } from "~context/domain/entities";
 import { PermissionCode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -23,7 +22,7 @@ export class RealmQueries implements Queries.Realm.Contract {
         private readonly realmRepository: Repositories.Realm.ExternalContract,
     ) {}
 
-    public async findUnique(props: Queries.Realm.FindUnique): Promise<Realm> {
+    public async findUnique(props: Queries.Realm.FindUnique.Props): Promise<Queries.Realm.FindUnique.Result> {
         if (!props.permissions?.includes(PermissionCode.REALM_READ_ABSOLUTE)) {
             const hasRealmRelation = await this.permissionCacheService.hasRealm({
                 account: props.account,
@@ -39,7 +38,7 @@ export class RealmQueries implements Queries.Realm.Contract {
         });
     }
 
-    public async findMany(props: Queries.Realm.FindMany): Promise<[Realm[], number]> {
+    public async findMany(props: Queries.Realm.FindMany.Props): Promise<Queries.Realm.FindMany.Result> {
         const filters = { ...props.filters };
         if (!props.permissions?.includes(PermissionCode.REALM_READ_ABSOLUTE)) {
             const realms = await this.permissionCacheService.getRealms({ account: props.account });
@@ -57,7 +56,7 @@ export class RealmQueries implements Queries.Realm.Contract {
         });
     }
 
-    public async getLookupList(props: Queries.Realm.GetLookupList): Promise<[Realm[], number]> {
+    public async getLookupList(props: Queries.Realm.GetLookupList.Props): Promise<Queries.Realm.GetLookupList.Result> {
         let realms: string[] = [];
         if (!props.permissions?.includes(PermissionCode.REALM_READ_ABSOLUTE)) {
             realms = await this.permissionCacheService.getRealms({ account: props.account });

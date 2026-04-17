@@ -33,7 +33,7 @@ export class RoleCommands implements Commands.Role.Contract {
         private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    public async create(props: Commands.Role.Create): Promise<MessageResult> {
+    public async create(props: Commands.Role.Create.Props): Promise<Commands.Role.Create.Result> {
         const { input, realm } = props;
 
         const entity = await this.transactional.run({
@@ -69,7 +69,7 @@ export class RoleCommands implements Commands.Role.Contract {
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async update(props: Commands.Role.Update): Promise<MessageResult> {
+    public async update(props: Commands.Role.Update.Props): Promise<Commands.Role.Update.Result> {
         const { input, realm, id } = props;
 
         await this.transactional.run({
@@ -95,7 +95,7 @@ export class RoleCommands implements Commands.Role.Contract {
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
-    public async purge(props: Commands.Role.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.Role.Purge.Props): Promise<Commands.Role.Purge.Result> {
         const { realm, id } = props;
 
         await this.transactional.run({
@@ -125,7 +125,7 @@ export class RoleCommands implements Commands.Role.Contract {
         return { message: `${this.dictionaryPath}.PURGED` };
     }
 
-    public async purgeSubtree(props: Commands.Role.PurgeSubtree): Promise<MessageResult> {
+    public async purgeSubtree(props: Commands.Role.PurgeSubtree.Props): Promise<Commands.Role.PurgeSubtree.Result> {
         const { realm, id } = props;
 
         const count = await this.transactional.run({
@@ -155,7 +155,7 @@ export class RoleCommands implements Commands.Role.Contract {
         return { message: `${this.dictionaryPath}.SUBTREE_PURGED_COUNT`, params: { count } };
     }
 
-    public async revoke(props: Commands.Role.Revoke): Promise<MessageResult> {
+    public async revoke(props: Commands.Role.Revoke.Props): Promise<Commands.Role.Revoke.Result> {
         const { input, realm } = props;
 
         const { entities, affected } = await this.transactional.run({
@@ -202,7 +202,7 @@ export class RoleCommands implements Commands.Role.Contract {
         }
     }
 
-    public async restore(props: Commands.Role.Restore): Promise<MessageResult> {
+    public async restore(props: Commands.Role.Restore.Props): Promise<Commands.Role.Restore.Result> {
         const { input, realm } = props;
 
         const { entities, affected } = await this.transactional.run({

@@ -3,18 +3,26 @@ declare namespace Queries {
         type Entity = Repositories.ChangeLog.Entity;
 
         interface Contract {
-            findMany: (props: FindMany) => Promise<[Entity[], number]>;
-            findUnique: (props: FindUnique) => Promise<Entity>;
+            findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
+            findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
         }
 
-        type FindMany = {
-            filters: Repositories.ChangeLog.Filters;
-            sort: Repositories.ChangeLog.Sort;
-            pagination: Pagination;
-        };
+        namespace FindUnique {
+            type Props = {
+                log: string;
+            };
 
-        type FindUnique = {
-            log: string;
-        };
+            type Result = Entity;
+        }
+
+        namespace FindMany {
+            type Props = {
+                filters: Adapters.ChangeLog.Filters;
+                sort: Adapters.ChangeLog.Sort;
+                pagination: Pagination;
+            };
+
+            type Result = [Entity[], number];
+        }
     }
 }

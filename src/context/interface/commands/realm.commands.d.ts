@@ -1,58 +1,78 @@
 declare namespace Commands {
     namespace Realm {
         interface Contract {
-            create: (props: Create) => Promise<MessageResult>;
-            update: (props: Update) => Promise<MessageResult>;
-            purge: (props: Purge) => Promise<MessageResult>;
-            revoke: (props: Revoke) => Promise<MessageResult>;
-            restore: (props: Restore) => Promise<MessageResult>;
+            restore: (props: Restore.Props) => Promise<Restore.Result>;
+            create: (props: Create.Props) => Promise<Create.Result>;
+            update: (props: Update.Props) => Promise<Update.Result>;
+            revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
+            purge: (props: Purge.Props) => Promise<Purge.Result>;
         }
 
-        type Create = {
-            actor: string;
-            input: {
-                code: string;
-                name: string;
-                description?: string;
+        namespace Create {
+            type Props = {
+                actor: string;
+                input: {
+                    code: string;
+                    name: string;
+                    description?: string;
+                };
+                context: RequestContext;
             };
-            context: RequestContext;
-        };
 
-        type Update = {
-            id: string;
-            actor: string;
-            input: {
-                patch: Partial<Entities.Realm.MutableFields>;
-                reason: string;
-            };
-            context: RequestContext;
-        };
+            type Result = MessageResult;
+        }
 
-        type Purge = {
-            actor: string;
-            input: {
-                identifiers: string[];
-                reason: string;
+        namespace Update {
+            type Props = {
+                id: string;
+                actor: string;
+                input: {
+                    patch: Partial<Entities.Realm.MutableFields>;
+                    reason: string;
+                };
+                context: RequestContext;
             };
-            context: RequestContext;
-        };
 
-        type Revoke = {
-            actor: string;
-            input: {
-                identifiers: string[];
-                reason: string;
-            };
-            context: RequestContext;
-        };
+            type Result = MessageResult;
+        }
 
-        type Restore = {
-            actor: string;
-            input: {
-                identifiers: string[];
-                reason: string;
+        namespace Purge {
+            type Props = {
+                actor: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: RequestContext;
             };
-            context: RequestContext;
-        };
+
+            type Result = MessageResult;
+        }
+
+        namespace Revoke {
+            type Props = {
+                actor: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: RequestContext;
+            };
+
+            type Result = MessageResult;
+        }
+
+        namespace Restore {
+            type Props = {
+                actor: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: RequestContext;
+            };
+
+            type Result = MessageResult;
+        }
     }
 }

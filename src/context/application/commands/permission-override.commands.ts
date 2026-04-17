@@ -37,7 +37,9 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    public async create(props: Commands.PermissionOverride.Create): Promise<MessageResult> {
+    public async create(
+        props: Commands.PermissionOverride.Create.Props,
+    ): Promise<Commands.PermissionOverride.Create.Result> {
         const { input, realm } = props;
 
         await this.transactional.run({
@@ -80,7 +82,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async purge(props: Commands.PermissionOverride.Purge): Promise<MessageResult> {
+    public async purge(props: Commands.PermissionOverride.Purge.Props): Promise<Commands.PermissionOverride.Purge.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({
@@ -116,7 +118,9 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         }
     }
 
-    public async revoke(props: Commands.PermissionOverride.Revoke): Promise<MessageResult> {
+    public async revoke(
+        props: Commands.PermissionOverride.Revoke.Props,
+    ): Promise<Commands.PermissionOverride.Revoke.Result> {
         const { input } = props;
 
         const entities = await this.transactional.run({
@@ -158,7 +162,9 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         }
     }
 
-    public async restore(props: Commands.PermissionOverride.Restore): Promise<MessageResult> {
+    public async restore(
+        props: Commands.PermissionOverride.Restore.Props,
+    ): Promise<Commands.PermissionOverride.Restore.Result> {
         const { input } = props;
 
         const entities = await this.transactional.run({

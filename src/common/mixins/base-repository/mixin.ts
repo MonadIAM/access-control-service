@@ -1,0 +1,82 @@
+import { AnyEntity, EntityManager, Loaded } from "@mikro-orm/postgresql";
+
+import { RepositoryException } from "~common/exceptions";
+
+export function BaseRepository<
+    E extends AnyEntity,
+    A extends Adapters.Meta,
+    C extends Class<Adapters.Contract<E, A>> = Class<Adapters.Contract<E, A>>,
+>({ Entity, Adapter }: Repositories.Base.Mixin.Props<E, A, C>): Repositories.Base.Mixin.Result<E, A, C> {
+    return class Mixin extends Adapter implements Repositories.Base.Contract<E, A> {
+        declare protected readonly readManager: EntityManager;
+        declare protected readonly dictionaryPath: string;
+
+        public constructor(...args: AnyArray) {
+            super(...args);
+        }
+
+        public async findUnique<P extends string = never, F extends string = "*">({
+            transaction,
+            options,
+            where,
+        }: Repositories.Base.FindUnique<E, P, F>): Promise<Nullable<Loaded<E, P, F>>> {
+            try {
+                const entityManager = transaction ?? this.readManager.fork();
+                return await entityManager.findOne(Entity, where, options);
+            } catch (error) {
+                throw RepositoryException.fromOrmError(error, this.constructor.name);
+            }
+        }
+
+        public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
+            transaction,
+            options,
+            where,
+        }: Repositories.Base.FindUniqueOrThrow<E, P, F>): Promise<Loaded<E, P, F>> {
+            try {
+                const entityManager = transaction ?? this.readManager.fork();
+                const result = await entityManager.findOne(Entity, where, options);
+                if (result) {
+                    return result;
+                } else {
+                    throw RepositoryException.notFound(`${this.dictionaryPath}.NOT_FOUND`);
+                }
+            } catch (error) {
+                throw RepositoryException.fromOrmError(error, this.constructor.name);
+            }
+        }
+
+        public async find<P extends string = never, F extends string = "*">({
+            transaction,
+            options,
+            where,
+        }: Repositories.Base.Find<E, P, F>): Promise<Loaded<E, P, F>[]> {
+            try {
+                const entityManager = transaction ?? this.readManager.fork();
+                return await entityManager.find(Entity, where, options);
+            } catch (error) {
+                throw RepositoryException.fromOrmError(error, this.constructor.name);
+            }
+        }
+
+        public async findMany<P extends string = never, F extends string = "*">(
+            props: Repositories.Base.FindMany<E, A, P, F>,
+        ): Promise<[Loaded<E, P, F>[], number]> {
+            try {
+                if ("where" in props) {
+                    const { transaction, options, where } = props;
+                    const entityManager = transaction ?? this.readManager.fork();
+                    return await entityManager.findAndCount(Entity, where, options);
+                } else {
+                    const { pagination, filters, sort, options, prefilter } = props;
+                    const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
+                    const where = super.buildWhereORM(filters, prefilter);
+                    const entityManager = this.readManager.fork();
+                    return await entityManager.findAndCount(Entity, where, opts);
+                }
+            } catch (error) {
+                throw RepositoryException.fromOrmError(error, this.constructor.name);
+            }
+        }
+    };
+}

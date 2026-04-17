@@ -37,7 +37,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         private readonly eventEmitter: EventEmitter2,
     ) {}
 
-    public async create(props: Commands.AccountRoleAssignment.Create): Promise<MessageResult> {
+    public async create(
+        props: Commands.AccountRoleAssignment.Create.Props,
+    ): Promise<Commands.AccountRoleAssignment.Create.Result> {
         const { input, actor, realm } = props;
 
         await this.transactional.run({
@@ -81,7 +83,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async purge(props: Commands.AccountRoleAssignment.Purge): Promise<MessageResult> {
+    public async purge(
+        props: Commands.AccountRoleAssignment.Purge.Props,
+    ): Promise<Commands.AccountRoleAssignment.Purge.Result> {
         const { input } = props;
 
         const count = await this.transactional.run({
@@ -120,7 +124,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         }
     }
 
-    public async revoke(props: Commands.AccountRoleAssignment.Revoke): Promise<MessageResult> {
+    public async revoke(
+        props: Commands.AccountRoleAssignment.Revoke.Props,
+    ): Promise<Commands.AccountRoleAssignment.Revoke.Result> {
         const { input } = props;
 
         const entities = await this.transactional.run({
@@ -162,7 +168,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         }
     }
 
-    public async restore(props: Commands.AccountRoleAssignment.Restore): Promise<MessageResult> {
+    public async restore(
+        props: Commands.AccountRoleAssignment.Restore.Props,
+    ): Promise<Commands.AccountRoleAssignment.Restore.Result> {
         const { input } = props;
 
         const entities = await this.transactional.run({

@@ -14,7 +14,9 @@ export class RoleDelegationPolicyQueries implements Queries.RoleDelegationPolicy
         private readonly roleConflictGroupRepository: Repositories.RoleDelegationPolicy.ExternalContract,
     ) {}
 
-    public findUnique(props: Queries.RoleDelegationPolicy.FindUnique): Promise<Queries.RoleDelegationPolicy.Entity> {
+    public findUnique(
+        props: Queries.RoleDelegationPolicy.FindUnique.Props,
+    ): Promise<Queries.RoleDelegationPolicy.FindUnique.Result> {
         return this.roleConflictGroupRepository.findUniqueOrThrow({
             options: { populate: this.populate[props.view] },
             where: { id: props.policy, realm: props.realm },
@@ -22,13 +24,13 @@ export class RoleDelegationPolicyQueries implements Queries.RoleDelegationPolicy
     }
 
     public findMany(
-        props: Queries.RoleDelegationPolicy.FindMany,
-    ): Promise<[Queries.RoleDelegationPolicy.Entity[], number]> {
+        props: Queries.RoleDelegationPolicy.FindMany.Props,
+    ): Promise<Queries.RoleDelegationPolicy.FindMany.Result> {
         return this.roleConflictGroupRepository.findMany({
             options: { populate: this.populate[props.view] },
+            prefilter: { realm: props.realm },
             pagination: props.pagination,
             filters: props.filters,
-            realm: props.realm,
             sort: props.sort,
         });
     }

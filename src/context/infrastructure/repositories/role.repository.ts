@@ -1,4 +1,4 @@
-import { EntityDictionary, EntityManager, FilterQuery, Knex, Loaded, QueryOrder, raw } from "@mikro-orm/postgresql";
+import { EntityDictionary, EntityManager, FilterQuery, Knex, QueryOrder, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -7,80 +7,25 @@ import { RoleAdapter } from "~context/infrastructure/adapters";
 import { Role, RoleClosure } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
 import { MikroAdapter } from "~infrastructure/database";
+import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleRepository
-    extends RoleAdapter
+    extends BaseRepository<Role, Adapters.Role.Types>({
+        Adapter: RoleAdapter,
+        Entity: Role,
+    })
     implements Repositories.Role.ExternalContract, Repositories.Role.InternalContract
 {
-    private readonly resource = "Role";
-    private readonly roleLimit: number;
+    protected readonly roleLimit: number;
 
     public constructor(
         @InjectEntityManager("read")
-        private readonly readManager: EntityManager,
-        private readonly configService: ConfigService,
+        protected readonly readManager: EntityManager,
+        protected readonly configService: ConfigService,
     ) {
         super();
         this.roleLimit = this.configService.getOrThrow<number>("ROLE_PER_REALM_LIMIT");
-    }
-
-    public async findUnique<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.Role.FindUnique<P, F>): Promise<Nullable<Loaded<Role, P, F>>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOne(Role, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findUniqueOrThrow<P extends string = never, F extends string = "*">({
-        transaction,
-        options,
-        where,
-    }: Repositories.Role.FindUniqueOrThrow<P, F>): Promise<Loaded<Role, P, F>> {
-        try {
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.findOneOrFail(Role, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async find<P extends string = never, F extends string = "*">(
-        props: Repositories.Role.Find<P, F>,
-    ): Promise<Loaded<Role, P, F>[]> {
-        try {
-            const { transaction, options, where } = props;
-            const entityManager = transaction ?? this.readManager.fork();
-            return await entityManager.find(Role, where, options);
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
-    }
-
-    public async findMany<P extends string = never, F extends string = "*">(
-        props: Repositories.Role.FindMany<P, F>,
-    ): Promise<[Loaded<Role, P, F>[], number]> {
-        try {
-            if ("where" in props) {
-                const { transaction, options, where } = props;
-                const entityManager = transaction ?? this.readManager.fork();
-                return await entityManager.findAndCount(Role, where, options);
-            } else {
-                const { pagination, filters, sort, options, realm } = props;
-                const opts = super.buildOptionsORM<P, F>(sort, pagination, options);
-                const where = super.buildWhereORM(filters, { realm });
-                const entityManager = this.readManager.fork();
-                return await entityManager.findAndCount(Role, where, opts);
-            }
-        } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
-        }
     }
 
     public async getAncestors(props: Repositories.Role.GetAncestors): Promise<Role[]> {
@@ -98,7 +43,7 @@ export class RoleRepository
                 })
                 .then((relations) => relations.map(({ ancestor }) => ancestor));
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -123,7 +68,7 @@ export class RoleRepository
                     total,
                 ]);
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -144,7 +89,7 @@ export class RoleRepository
                     return relations.map(({ descendant }) => descendant);
                 });
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -171,7 +116,7 @@ export class RoleRepository
                     total,
                 ]);
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -196,7 +141,7 @@ export class RoleRepository
 
             return await builder.getResultAndCount();
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -234,11 +179,11 @@ export class RoleRepository
                 knex.from({ R: "access_control.role" }).where("R.realm_id", realm).whereIn("R.id", allowedIdsSubquery);
 
             const dataQuery = baseQuery().distinct("R.id").select("R.*");
-            super.buildWhereKnex(dataQuery, filters, "R");
-            super.buildOptionsKnex(dataQuery, sort, pagination, "R");
+            super.buildWhereKnex?.(dataQuery, filters, "R");
+            super.buildOptionsKnex?.(dataQuery, sort, pagination, "R");
 
             const countQuery = baseQuery().countDistinct("R.id as total");
-            super.buildWhereKnex(countQuery, filters, "R");
+            super.buildWhereKnex?.(countQuery, filters, "R");
 
             const [rawRows, countResult] = await Promise.all([dataQuery, countQuery.first<{ total: string }>()]);
 
@@ -247,7 +192,7 @@ export class RoleRepository
 
             return [mappedRoles, total];
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -271,11 +216,11 @@ export class RoleRepository
                     .andWhere("ARM.is_revoked", false);
 
             const dataQuery = baseQuery().distinct("R.id").select("R.*");
-            super.buildWhereKnex(dataQuery, filters, "R");
-            super.buildOptionsKnex(dataQuery, sort, pagination, "R");
+            super.buildWhereKnex!(dataQuery, filters, "R");
+            super.buildOptionsKnex!(dataQuery, sort, pagination, "R");
 
             const countQuery = baseQuery().countDistinct("R.id as total");
-            super.buildWhereKnex(countQuery, filters, "R");
+            super.buildWhereKnex!(countQuery, filters, "R");
 
             const [rawRows, countResult] = await Promise.all([dataQuery, countQuery.first<{ total: string }>()]);
 
@@ -284,7 +229,7 @@ export class RoleRepository
 
             return [roles, total];
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -329,7 +274,7 @@ export class RoleRepository
                 edges: result?.edges ?? [],
             };
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -361,7 +306,7 @@ export class RoleRepository
 
             return Number(total) + (count ?? 1) > this.roleLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 }

@@ -1,50 +1,66 @@
 declare namespace Commands {
     namespace AccountRoleAssignment {
         interface Contract {
-            create: (props: Create) => Promise<MessageResult>;
-            purge: (props: Purge) => Promise<MessageResult>;
-            revoke: (props: Revoke) => Promise<MessageResult>;
-            restore: (props: Restore) => Promise<MessageResult>;
+            restore: (props: Restore.Props) => Promise<Restore.Result>;
+            create: (props: Create.Props) => Promise<Create.Result>;
+            revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
+            purge: (props: Purge.Props) => Promise<Purge.Result>;
         }
 
-        type Create = {
-            actor: string;
-            realm: string;
-            input: {
-                account: string;
-                roles: string[];
+        namespace Create {
+            type Props = {
+                actor: string;
+                realm: string;
+                input: {
+                    account: string;
+                    roles: string[];
+                };
+                context: RequestContext;
             };
-            context: RequestContext;
-        };
 
-        type Purge = {
-            actor: string;
-            realm: string;
-            input: {
-                identifiers: string[];
-                reason: string;
-            };
-            context: RequestContext;
-        };
+            type Result = MessageResult;
+        }
 
-        type Revoke = {
-            actor: string;
-            realm: string;
-            input: {
-                identifiers: string[];
-                reason: string;
+        namespace Purge {
+            type Props = {
+                actor: string;
+                realm: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: RequestContext;
             };
-            context: RequestContext;
-        };
 
-        type Restore = {
-            actor: string;
-            realm: string;
-            input: {
-                identifiers: string[];
-                reason: string;
+            type Result = MessageResult;
+        }
+
+        namespace Revoke {
+            type Props = {
+                actor: string;
+                realm: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: RequestContext;
             };
-            context: RequestContext;
-        };
+
+            type Result = MessageResult;
+        }
+
+        namespace Restore {
+            type Props = {
+                actor: string;
+                realm: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: RequestContext;
+            };
+
+            type Result = MessageResult;
+        }
     }
 }

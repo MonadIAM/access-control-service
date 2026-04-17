@@ -5,8 +5,6 @@ import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleClosureRepository implements Repositories.RoleClosure.Contract {
-    private readonly resource = "RoleClosure";
-
     public async insertNewHierarchy({
         transaction,
         descendant,
@@ -40,7 +38,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                         ),
                 );
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -96,7 +94,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                         .andWhere("new_parent_paths.realm_id", realm);
                 });
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 
@@ -129,7 +127,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                     depth: knex.raw("depth - 1"),
                 });
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.resource);
+            throw RepositoryException.fromOrmError(error, this.constructor.name);
         }
     }
 }
