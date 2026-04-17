@@ -29,9 +29,9 @@ export class FormatResponseInterceptor implements NestInterceptor {
     }
 
     private async formatResponse<T>({ pagination, lang, data, DTO }: FormatResponse<T>): Promise<T> {
-        const isPaginated = Array.isArray(data) && typeof data[1] === "number";
-        const resultData = isPaginated ? data[0] : data;
-        const count = isPaginated ? data[1] : 0;
+        const isTuple = Array.isArray(data) && typeof data[1] === "number";
+        const resultData = isTuple ? data[0] : data;
+        const count = isTuple ? data[1] : 0;
 
         if (isString(resultData.message)) {
             resultData.message = await this.i18n.translate(resultData.message, {
@@ -45,13 +45,23 @@ export class FormatResponseInterceptor implements NestInterceptor {
             ? {
                   data: resultData,
                   meta: {
-                      totalPages: Math.ceil(count / (pagination.elementsPerPage ?? 10)),
-                      elementsPerPage: pagination.elementsPerPage ?? 10,
-                      currentPage: pagination.currentPage ?? 1,
+                      totalPages: Math.ceil(count / pagination.elementsPerPage),
+                      elementsPerPage: pagination.elementsPerPage,
+                      currentPage: pagination.currentPage,
                       totalElements: count,
                   },
               }
-            : resultData;
+            : isTuple
+              ? {
+                    data: resultData,
+                    meta: {
+                        totalPages: 1,
+                        elementsPerPage: count,
+                        currentPage: 1,
+                        totalElements: count,
+                    },
+                }
+              : resultData;
 
         return plainToInstance(DTO, response, {
             enableImplicitConversion: true,
