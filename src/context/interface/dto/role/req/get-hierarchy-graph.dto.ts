@@ -7,5 +7,5 @@ export class GetRoleHierarchyGraphQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

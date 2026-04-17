@@ -10,17 +10,17 @@ export class RevokeRoleConflictGroupBodyDTO {
     @Validator.ArrayMaxSize(Number(process.env.BULK_OPERATION_LIMIT))
     @Validator.IsUUID("4", { each: true })
     @ApiProperty({ required: true, type: [String], format: "uuid" })
-    public identifiers!: string[];
+    declare public identifiers: string[];
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public reason!: string;
+    declare public reason: string;
 }
 
 export class RevokeRoleConflictGroupQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

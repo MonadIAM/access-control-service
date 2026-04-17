@@ -8,10 +8,10 @@ export class GetRoleDelegationPolicyByIdQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public policy!: string;
+    declare public policy: string;
 }

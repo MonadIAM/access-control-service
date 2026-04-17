@@ -15,7 +15,7 @@ export class GetPermissionOverridesListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 
     @Expose()
     @ValidateIf(({ filters }) => filters)
@@ -23,7 +23,7 @@ export class GetPermissionOverridesListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PermissionOverridesFiltersDTO)
     @ApiProperty({ required: true, type: PermissionOverridesFiltersDTO })
-    public filters!: PermissionOverridesFiltersDTO;
+    declare public filters: PermissionOverridesFiltersDTO;
 
     @Expose()
     @ValidateIf(({ sort }) => sort)
@@ -31,12 +31,12 @@ export class GetPermissionOverridesListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PermissionOverridesSortDTO)
     @ApiProperty({ required: true, type: PermissionOverridesSortDTO })
-    public sort!: PermissionOverridesSortDTO;
+    declare public sort: PermissionOverridesSortDTO;
 }
 
 export class GetPermissionOverridesListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

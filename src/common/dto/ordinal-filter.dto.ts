@@ -9,7 +9,7 @@ export class OrdinalFilterDTO<T extends Ordinal> {
     @Expose()
     @Validator.IsEnum(PublicOrdinalOperator)
     @ApiProperty({ required: true, enum: PublicOrdinalOperator, enumName: "PublicOrdinalOperator" })
-    public operator!: PublicOrdinalOperator;
+    declare public operator: PublicOrdinalOperator;
 
     @Expose()
     @Validator.IsOrdinal()
@@ -17,5 +17,5 @@ export class OrdinalFilterDTO<T extends Ordinal> {
         required: true,
         oneOf: [{ type: "Date" }, { type: "number" }, { type: "array", oneOf: [{ type: "Date" }, { type: "number" }] }],
     })
-    public value!: T | [T, T] | T[];
+    declare public value: T | [T, T] | T[];
 }

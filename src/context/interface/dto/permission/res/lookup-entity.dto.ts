@@ -7,15 +7,15 @@ export class PermissionLookupDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public code!: string;
+    declare public code: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public name!: string;
+    declare public name: string;
 }

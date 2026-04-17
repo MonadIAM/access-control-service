@@ -8,22 +8,22 @@ export class CreatePermissionOverrideBodyDTO {
     @Expose()
     @Validator.IsEnum(PermissionOverrideEffect)
     @ApiProperty({ required: true, enum: PermissionOverrideEffect, enumName: "PermissionOverrideEffect" })
-    public effect!: PermissionOverrideEffect;
+    declare public effect: PermissionOverrideEffect;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public permission!: string;
+    declare public permission: string;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public account!: string;
+    declare public account: string;
 }
 
 export class CreatePermissionOverrideQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

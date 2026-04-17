@@ -8,22 +8,22 @@ export class CreatePermissionBodyDTO {
     @Validator.IsString()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: String })
-    public description?: string;
+    declare public description?: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public code!: string;
+    declare public code: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public name!: string;
+    declare public name: string;
 }
 
 export class CreatePermissionQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

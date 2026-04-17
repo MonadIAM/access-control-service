@@ -15,7 +15,7 @@ export class GetDelegableRolesListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 
     @Expose()
     @ValidateIf(({ filters }) => filters)
@@ -23,7 +23,7 @@ export class GetDelegableRolesListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => RolesFiltersDTO)
     @ApiProperty({ required: true, type: RolesFiltersDTO })
-    public filters!: RolesFiltersDTO;
+    declare public filters: RolesFiltersDTO;
 
     @Expose()
     @ValidateIf(({ sort }) => sort)
@@ -31,30 +31,30 @@ export class GetDelegableRolesListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => RolesSortDTO)
     @ApiProperty({ required: true, type: RolesSortDTO })
-    public sort!: RolesSortDTO;
+    declare public sort: RolesSortDTO;
 }
 
 export class GetDelegableRolesListByAccountQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 
     @Expose()
     @Validator.IsUUID()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: String, format: "uuid" })
-    public id?: string;
+    declare public id?: string;
 }
 
 export class GetDelegableRolesListByRoleQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 }

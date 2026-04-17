@@ -9,17 +9,17 @@ export class GetViolationDetailsBodyDTO {
     @Validator.ArrayMinSize(1)
     @Validator.IsUUID("4", { each: true })
     @ApiProperty({ required: true, type: [String], format: "uuid" })
-    public roles!: string[];
+    declare public roles: string[];
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public account!: string;
+    declare public account: string;
 }
 
 export class GetViolationDetailsQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

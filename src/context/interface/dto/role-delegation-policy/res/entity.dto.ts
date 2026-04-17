@@ -10,59 +10,59 @@ export class RoleDelegationPolicyDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public isSystemManaged!: boolean;
+    declare public isSystemManaged: boolean;
 
     @Expose()
     @Validator.IsPositiveInt()
     @ApiProperty({ required: true, type: Number })
-    public depthLimit!: number;
+    declare public depthLimit: number;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public description!: string;
+    declare public description: string;
 
     @Expose()
     @Validator.ValidateNested()
     @Type(() => RealmLookupDTO)
     @ApiProperty({ required: true, type: RealmLookupDTO })
-    public realm!: RealmLookupDTO;
+    declare public realm: RealmLookupDTO;
 
     @Expose()
     @Validator.ValidateNested()
     @Type(() => RoleLookupDTO)
     @ApiProperty({ required: true, type: RoleLookupDTO })
-    public delegator!: RoleLookupDTO;
+    declare public delegator: RoleLookupDTO;
 
     @Expose()
     @Validator.ValidateNested()
     @Type(() => RoleLookupDTO)
     @ApiProperty({ required: true, type: RoleLookupDTO })
-    public target!: RoleLookupDTO;
+    declare public target: RoleLookupDTO;
 
     @Expose()
     @Validator.IsDate()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: Date })
-    public updatedAt?: Date;
+    declare public updatedAt?: Date;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: true, type: Date })
-    public createdAt!: Date;
+    declare public createdAt: Date;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public isRevoked!: boolean;
+    declare public isRevoked: boolean;
 
     @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
-    public version!: number;
+    declare public version: number;
 }

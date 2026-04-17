@@ -9,5 +9,5 @@ export class RoleHierarchyDTO extends RoleDTO {
     @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
-    public depth!: number;
+    declare public depth: number;
 }

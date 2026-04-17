@@ -9,10 +9,10 @@ export class StringFilterDTO {
     @Expose()
     @Validator.IsEnum(PublicStringOperator)
     @ApiProperty({ required: true, enum: PublicStringOperator, enumName: "PublicStringOperator" })
-    public operator!: PublicStringOperator;
+    declare public operator: PublicStringOperator;
 
     @Expose()
     @Validator.IsListOrSingleString()
     @ApiProperty({ required: true, oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }] })
-    public value!: string | string[];
+    declare public value: string | string[];
 }

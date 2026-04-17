@@ -8,31 +8,31 @@ class RealmPatchDTO {
     @Validator.IsString()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: String })
-    public name?: string;
+    declare public name?: string;
 
     @Expose()
     @Validator.IsString()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: String })
-    public description?: string;
+    declare public description?: string;
 }
 
 export class UpdateRealmBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public reason!: string;
+    declare public reason: string;
 
     @Expose()
     @Type(() => RealmPatchDTO)
     @Validator.ValidateNested()
     @ApiProperty({ required: true, type: RealmPatchDTO })
-    public patch!: RealmPatchDTO;
+    declare public patch: RealmPatchDTO;
 }
 
 export class UpdateRealmQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 }

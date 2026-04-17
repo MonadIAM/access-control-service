@@ -10,17 +10,17 @@ export class CreateRolePermissionAssignmentBodyDTO {
     @Validator.ArrayMaxSize(Number(process.env.BULK_OPERATION_LIMIT))
     @Validator.IsUUID("4", { each: true })
     @ApiProperty({ required: true, type: [String], format: "uuid" })
-    public permissions!: string[];
+    declare public permissions: string[];
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public role!: string;
+    declare public role: string;
 }
 
 export class CreateRolePermissionAssignmentQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

@@ -7,5 +7,5 @@ export class SuccessMessageDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public message!: string;
+    declare public message: string;
 }

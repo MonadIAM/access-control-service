@@ -15,7 +15,7 @@ export class GetEffectivePermissionsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 
     @Expose()
     @ValidateIf(({ filters }) => filters)
@@ -23,7 +23,7 @@ export class GetEffectivePermissionsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PermissionsFiltersDTO)
     @ApiProperty({ required: true, type: PermissionsFiltersDTO })
-    public filters!: PermissionsFiltersDTO;
+    declare public filters: PermissionsFiltersDTO;
 
     @Expose()
     @ValidateIf(({ sort }) => sort)
@@ -31,18 +31,18 @@ export class GetEffectivePermissionsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PermissionsSortDTO)
     @ApiProperty({ required: true, type: PermissionsSortDTO })
-    public sort!: PermissionsSortDTO;
+    declare public sort: PermissionsSortDTO;
 }
 
 export class GetEffectivePermissionsListQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 
     @Expose()
     @Validator.IsUUID()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: String, format: "uuid" })
-    public account?: string;
+    declare public account?: string;
 }

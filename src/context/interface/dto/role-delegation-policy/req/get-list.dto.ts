@@ -15,7 +15,7 @@ export class GetRoleDelegationPoliciesListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 
     @Expose()
     @ValidateIf(({ filters }) => filters)
@@ -23,7 +23,7 @@ export class GetRoleDelegationPoliciesListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => RoleDelegationPoliciesFiltersDTO)
     @ApiProperty({ required: true, type: RoleDelegationPoliciesFiltersDTO })
-    public filters!: RoleDelegationPoliciesFiltersDTO;
+    declare public filters: RoleDelegationPoliciesFiltersDTO;
 
     @Expose()
     @ValidateIf(({ sort }) => sort)
@@ -31,12 +31,12 @@ export class GetRoleDelegationPoliciesListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => RoleDelegationPoliciesSortDTO)
     @ApiProperty({ required: true, type: RoleDelegationPoliciesSortDTO })
-    public sort!: RoleDelegationPoliciesSortDTO;
+    declare public sort: RoleDelegationPoliciesSortDTO;
 }
 
 export class GetRoleDelegationPoliciesListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

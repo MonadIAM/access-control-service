@@ -8,12 +8,12 @@ export class PaginationDTO {
     @Type(() => Number)
     @Validator.IsPositive()
     @ApiProperty({ required: true, type: Number })
-    public currentPage!: number;
+    declare public currentPage: number;
 
     @Expose()
     @Type(() => Number)
     @Validator.IsInt()
     @Validator.IsIn([10, 25, 50, 100])
     @ApiProperty({ required: true, type: Number })
-    public elementsPerPage!: number;
+    declare public elementsPerPage: number;
 }

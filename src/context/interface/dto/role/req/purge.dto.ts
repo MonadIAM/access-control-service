@@ -7,17 +7,17 @@ export class PurgeRoleBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public reason!: string;
+    declare public reason: string;
 }
 
 export class PurgeRoleQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

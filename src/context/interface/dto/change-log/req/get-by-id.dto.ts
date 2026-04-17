@@ -8,5 +8,5 @@ export class GetChangeLogByIdQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public log!: string;
+    declare public log: string;
 }

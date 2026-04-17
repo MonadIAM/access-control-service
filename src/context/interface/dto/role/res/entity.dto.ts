@@ -10,68 +10,68 @@ export class RoleDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsEnum(RoleActorType)
     @ApiProperty({ required: true, enum: RoleActorType, enumName: "RoleActorType" })
-    public actorType!: RoleActorType;
+    declare public actorType: RoleActorType;
 
     @Expose()
     @Validator.IsEnum(RoleProtoType)
     @ApiProperty({ required: true, enum: RoleProtoType, enumName: "RoleProtoType" })
-    public protoType!: RoleProtoType;
+    declare public protoType: RoleProtoType;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public isSystemManaged!: boolean;
+    declare public isSystemManaged: boolean;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public nonDelegable!: boolean;
+    declare public nonDelegable: boolean;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public code!: string;
+    declare public code: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public name!: string;
+    declare public name: string;
 
     @Expose()
     @Validator.IsString()
     @Validator.IsOptional()
     @ApiProperty({ required: true, type: String })
-    public description?: string;
+    declare public description?: string;
 
     @Expose()
     @Validator.ValidateNested()
     @Type(() => RealmLookupDTO)
     @ApiProperty({ required: true, type: RealmLookupDTO })
-    public realm!: RealmLookupDTO;
+    declare public realm: RealmLookupDTO;
 
     @Expose()
     @Validator.IsDate()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: Date })
-    public updatedAt?: Date;
+    declare public updatedAt?: Date;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: true, type: Date })
-    public createdAt!: Date;
+    declare public createdAt: Date;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public isRevoked!: boolean;
+    declare public isRevoked: boolean;
 
     @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
-    public version!: number;
+    declare public version: number;
 }

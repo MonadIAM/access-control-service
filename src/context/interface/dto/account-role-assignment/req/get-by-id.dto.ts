@@ -8,10 +8,10 @@ export class GetAccountRoleAssignmentByIdQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public assignment!: string;
+    declare public assignment: string;
 }

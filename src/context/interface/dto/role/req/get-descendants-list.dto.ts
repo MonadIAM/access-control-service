@@ -14,7 +14,7 @@ export class GetRoleDescendantsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 
     @Expose()
     @ValidateIf(({ filters }) => filters)
@@ -22,17 +22,17 @@ export class GetRoleDescendantsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => RolesFiltersDTO)
     @ApiProperty({ required: true, type: RolesFiltersDTO })
-    public filters!: RolesFiltersDTO;
+    declare public filters: RolesFiltersDTO;
 }
 
 export class GetRoleDescendantsListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public ancestor!: string;
+    declare public ancestor: string;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

@@ -12,17 +12,17 @@ export class GetPermissionsLookupListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 }
 
 export class GetPermissionsLookupListQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public term!: string;
+    declare public term: string;
 }

@@ -9,44 +9,44 @@ export class AuditLogDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public actor!: string;
+    declare public actor: string;
 
     @Expose()
     @ApiProperty({ required: true, type: UnknownType })
-    public input!: UnknownType;
+    declare public input: UnknownType;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public ip!: string;
+    declare public ip: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public userAgent!: string;
+    declare public userAgent: string;
 
     @Expose()
     @Validator.IsEnum(AccessControlActionType)
     @ApiProperty({ required: true, enum: AccessControlActionType, enumName: "AccessControlActionType" })
-    public actionType!: AccessControlActionType;
+    declare public actionType: AccessControlActionType;
 
     @Expose()
     @Validator.IsEnum(AccessControlEntityType)
     @ApiProperty({ required: true, enum: AccessControlEntityType, enumName: "AccessControlEntityType" })
-    public entityType!: AccessControlEntityType;
+    declare public entityType: AccessControlEntityType;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: true, type: Date })
-    public createdAt!: Date;
+    declare public createdAt: Date;
 }

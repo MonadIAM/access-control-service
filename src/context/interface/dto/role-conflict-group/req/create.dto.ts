@@ -9,32 +9,32 @@ export class CreateRoleConflictGroupBodyDTO {
     @Validator.ArrayMaxSize(Number(process.env.BULK_OPERATION_LIMIT))
     @Validator.IsUUID("4", { each: true })
     @ApiProperty({ required: true, type: [String], format: "uuid" })
-    public members!: string[];
+    declare public members: string[];
 
     @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
-    public maxAllowed!: number;
+    declare public maxAllowed: number;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public description!: string;
+    declare public description: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public code!: string;
+    declare public code: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public name!: string;
+    declare public name: string;
 }
 
 export class CreateRoleConflictGroupQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

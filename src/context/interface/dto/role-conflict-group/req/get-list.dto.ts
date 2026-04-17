@@ -15,7 +15,7 @@ export class GetRoleConflictGroupsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 
     @Expose()
     @ValidateIf(({ filters }) => filters)
@@ -23,7 +23,7 @@ export class GetRoleConflictGroupsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => RoleConflictGroupsFiltersDTO)
     @ApiProperty({ required: true, type: RoleConflictGroupsFiltersDTO })
-    public filters!: RoleConflictGroupsFiltersDTO;
+    declare public filters: RoleConflictGroupsFiltersDTO;
 
     @Expose()
     @ValidateIf(({ sort }) => sort)
@@ -31,12 +31,12 @@ export class GetRoleConflictGroupsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => RoleConflictGroupsSortDTO)
     @ApiProperty({ required: true, type: RoleConflictGroupsSortDTO })
-    public sort!: RoleConflictGroupsSortDTO;
+    declare public sort: RoleConflictGroupsSortDTO;
 }
 
 export class GetRoleConflictGroupsListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

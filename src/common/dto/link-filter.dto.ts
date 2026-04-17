@@ -9,10 +9,10 @@ export class LinkFilterDTO {
     @Expose()
     @Validator.IsEnum(PublicLinkOperator)
     @ApiProperty({ required: true, enum: PublicLinkOperator, enumName: "PublicLinkOperator" })
-    public operator!: PublicLinkOperator;
+    declare public operator: PublicLinkOperator;
 
     @Expose()
     @Validator.IsListOrSingleString()
     @ApiProperty({ required: true, oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }] })
-    public value!: string | string[];
+    declare public value: string | string[];
 }

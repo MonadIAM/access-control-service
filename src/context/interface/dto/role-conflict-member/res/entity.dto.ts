@@ -10,43 +10,43 @@ export class RoleConflictMemberDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public isSystemManaged!: boolean;
+    declare public isSystemManaged: boolean;
 
     @Expose()
     @Validator.ValidateNested()
     @Type(() => RoleConflictGroupLookupDTO)
     @ApiProperty({ required: true, type: RoleConflictGroupLookupDTO })
-    public group!: RoleConflictGroupLookupDTO;
+    declare public group: RoleConflictGroupLookupDTO;
 
     @Expose()
     @Validator.ValidateNested()
     @Type(() => RoleLookupDTO)
     @ApiProperty({ required: true, type: RoleLookupDTO })
-    public role!: RoleLookupDTO;
+    declare public role: RoleLookupDTO;
 
     @Expose()
     @Validator.IsDate()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: Date })
-    public updatedAt?: Date;
+    declare public updatedAt?: Date;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: true, type: Date })
-    public createdAt!: Date;
+    declare public createdAt: Date;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public isRevoked!: boolean;
+    declare public isRevoked: boolean;
 
     @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
-    public version!: number;
+    declare public version: number;
 }

@@ -7,29 +7,29 @@ export class CreateRoleDelegationPolicyBodyDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public delegator!: string;
+    declare public delegator: string;
 
     @Expose()
     @Validator.IsUUID()
     @Validator.NotEqualTo("delegator")
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public target!: string;
+    declare public target: string;
 
     @Expose()
     @Validator.IsOptional()
     @Validator.IsPositiveInt()
     @ApiProperty({ required: false, type: Number })
-    public depthLimit?: number;
+    declare public depthLimit?: number;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public description!: string;
+    declare public description: string;
 }
 
 export class CreateRoleDelegationPolicyQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

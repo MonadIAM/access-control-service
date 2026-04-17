@@ -15,7 +15,7 @@ export class GetChangeLogsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 
     @Expose()
     @ValidateIf(({ filters }) => filters)
@@ -23,7 +23,7 @@ export class GetChangeLogsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => ChangeLogsFiltersDTO)
     @ApiProperty({ required: true, type: ChangeLogsFiltersDTO })
-    public filters!: ChangeLogsFiltersDTO;
+    declare public filters: ChangeLogsFiltersDTO;
 
     @Expose()
     @ValidateIf(({ sort }) => sort)
@@ -31,5 +31,5 @@ export class GetChangeLogsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => ChangeLogsSortDTO)
     @ApiProperty({ required: true, type: ChangeLogsSortDTO })
-    public sort!: ChangeLogsSortDTO;
+    declare public sort: ChangeLogsSortDTO;
 }

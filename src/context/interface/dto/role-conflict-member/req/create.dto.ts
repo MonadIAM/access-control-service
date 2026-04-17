@@ -10,17 +10,17 @@ export class CreateRoleConflictMemberBodyDTO {
     @Validator.ArrayMaxSize(Number(process.env.BULK_OPERATION_LIMIT))
     @Validator.IsUUID("4", { each: true })
     @ApiProperty({ required: true, type: [String], format: "uuid" })
-    public roles!: string[];
+    declare public roles: string[];
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public group!: string;
+    declare public group: string;
 }
 
 export class CreateRoleConflictMemberQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

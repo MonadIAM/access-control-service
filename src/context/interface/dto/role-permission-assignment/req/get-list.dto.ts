@@ -15,7 +15,7 @@ export class GetRolePermissionAssignmentsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 
     @Expose()
     @ValidateIf(({ filters }) => filters)
@@ -23,7 +23,7 @@ export class GetRolePermissionAssignmentsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => RolePermissionAssignmentsFiltersDTO)
     @ApiProperty({ required: true, type: RolePermissionAssignmentsFiltersDTO })
-    public filters!: RolePermissionAssignmentsFiltersDTO;
+    declare public filters: RolePermissionAssignmentsFiltersDTO;
 
     @Expose()
     @ValidateIf(({ sort }) => sort)
@@ -31,12 +31,12 @@ export class GetRolePermissionAssignmentsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => RolePermissionAssignmentsSortDTO)
     @ApiProperty({ required: true, type: RolePermissionAssignmentsSortDTO })
-    public sort!: RolePermissionAssignmentsSortDTO;
+    declare public sort: RolePermissionAssignmentsSortDTO;
 }
 
 export class GetRolePermissionAssignmentsListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public realm!: string;
+    declare public realm: string;
 }

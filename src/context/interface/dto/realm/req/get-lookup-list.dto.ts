@@ -12,12 +12,12 @@ export class GetRealmsLookupListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 }
 
 export class GetRealmsLookupListQueryDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public term!: string;
+    declare public term: string;
 }

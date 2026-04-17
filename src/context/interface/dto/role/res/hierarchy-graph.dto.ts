@@ -8,52 +8,52 @@ class NodeAttributesDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ type: String })
-    public code!: string;
+    declare public code: string;
 
     @Expose()
     @Validator.IsEnum(RoleProtoType)
     @ApiProperty({ required: true, enum: RoleProtoType, enumName: "RoleProtoType" })
-    public protoType!: RoleProtoType;
+    declare public protoType: RoleProtoType;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ type: Boolean })
-    public isRevoked!: boolean;
+    declare public isRevoked: boolean;
 }
 
 class NodeDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ type: String })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ type: String })
-    public label!: string;
+    declare public label: string;
 
     @Expose()
     @Validator.ValidateNested()
     @Type(() => NodeAttributesDTO)
     @ApiProperty({ type: NodeAttributesDTO })
-    public attributes!: NodeAttributesDTO;
+    declare public attributes: NodeAttributesDTO;
 }
 
 class EdgeDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ type: String })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ type: String, format: "uuid" })
-    public source!: string;
+    declare public source: string;
 
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ type: String, format: "uuid" })
-    public target!: string;
+    declare public target: string;
 }
 
 export class RoleHierarchyGraphDTO {
@@ -62,12 +62,12 @@ export class RoleHierarchyGraphDTO {
     @Validator.ValidateNested({ each: true })
     @Type(() => NodeDTO)
     @ApiProperty({ type: [NodeDTO] })
-    public nodes!: NodeDTO[];
+    declare public nodes: NodeDTO[];
 
     @Expose()
     @Validator.IsArray()
     @Validator.ValidateNested({ each: true })
     @Type(() => EdgeDTO)
     @ApiProperty({ type: [EdgeDTO] })
-    public edges!: EdgeDTO[];
+    declare public edges: EdgeDTO[];
 }

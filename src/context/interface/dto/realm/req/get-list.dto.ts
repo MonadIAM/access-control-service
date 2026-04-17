@@ -15,7 +15,7 @@ export class GetRealmsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 
     @Expose()
     @ValidateIf(({ filters }) => filters)
@@ -23,7 +23,7 @@ export class GetRealmsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => RealmsFiltersDTO)
     @ApiProperty({ required: true, type: RealmsFiltersDTO })
-    public filters!: RealmsFiltersDTO;
+    declare public filters: RealmsFiltersDTO;
 
     @Expose()
     @ValidateIf(({ sort }) => sort)
@@ -31,5 +31,5 @@ export class GetRealmsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => RealmsSortDTO)
     @ApiProperty({ required: true, type: RealmsSortDTO })
-    public sort!: RealmsSortDTO;
+    declare public sort: RealmsSortDTO;
 }

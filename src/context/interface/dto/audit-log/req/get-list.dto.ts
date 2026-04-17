@@ -15,7 +15,7 @@ export class GetAuditLogsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
     @ApiProperty({ required: true, type: PaginationDTO })
-    public pagination!: PaginationDTO;
+    declare public pagination: PaginationDTO;
 
     @Expose()
     @ValidateIf(({ filters }) => filters)
@@ -23,7 +23,7 @@ export class GetAuditLogsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => AuditLogsFiltersDTO)
     @ApiProperty({ required: true, type: AuditLogsFiltersDTO })
-    public filters!: AuditLogsFiltersDTO;
+    declare public filters: AuditLogsFiltersDTO;
 
     @Expose()
     @ValidateIf(({ sort }) => sort)
@@ -31,5 +31,5 @@ export class GetAuditLogsListBodyDTO {
     @Validator.ValidateNested()
     @Type(() => AuditLogsSortDTO)
     @ApiProperty({ required: true, type: AuditLogsSortDTO })
-    public sort!: AuditLogsSortDTO;
+    declare public sort: AuditLogsSortDTO;
 }

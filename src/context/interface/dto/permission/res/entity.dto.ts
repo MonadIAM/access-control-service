@@ -9,53 +9,53 @@ export class PermissionDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
-    public id!: string;
+    declare public id: string;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public isSystemManaged!: boolean;
+    declare public isSystemManaged: boolean;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public code!: string;
+    declare public code: string;
 
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    public name!: string;
+    declare public name: string;
 
     @Expose()
     @Validator.IsString()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: String })
-    public description?: string;
+    declare public description?: string;
 
     @Expose()
     @Validator.ValidateNested()
     @Type(() => RealmLookupDTO)
     @ApiProperty({ required: true, type: RealmLookupDTO })
-    public realm!: RealmLookupDTO;
+    declare public realm: RealmLookupDTO;
 
     @Expose()
     @Validator.IsDate()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: Date })
-    public updatedAt?: Date;
+    declare public updatedAt?: Date;
 
     @Expose()
     @Validator.IsDate()
     @ApiProperty({ required: true, type: Date })
-    public createdAt!: Date;
+    declare public createdAt: Date;
 
     @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
-    public isRevoked!: boolean;
+    declare public isRevoked: boolean;
 
     @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
-    public version!: number;
+    declare public version: number;
 }

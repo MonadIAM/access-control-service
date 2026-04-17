@@ -7,79 +7,79 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public SERVICE_NAME!: string;
+    declare public SERVICE_NAME: string;
 
     @Validator.IsEnum(NodeEnv)
-    public NODE_ENV!: NodeEnv;
+    declare public NODE_ENV: NodeEnv;
 
     @Validator.IsPositiveInt()
-    public API_VERSION!: number;
+    declare public API_VERSION: number;
 
     @Validator.IsString()
-    public APP_BASE_IMAGE!: string;
+    declare public APP_BASE_IMAGE: string;
 
     @Validator.IsString()
-    public APP_HOST!: string;
+    declare public APP_HOST: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public APP_PORT!: number;
+    declare public APP_PORT: number;
 
     @Validator.IsPositiveInt()
-    public THROTTLE_LIMIT!: number;
+    declare public THROTTLE_LIMIT: number;
 
     @Validator.IsPositiveInt()
-    public THROTTLE_TTL!: number;
+    declare public THROTTLE_TTL: number;
 
     @Validator.IsString()
-    public JWT_SECRET!: string;
+    declare public JWT_SECRET: string;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - common
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public POSTGRES_IMAGE!: string;
+    declare public POSTGRES_IMAGE: string;
 
     @Validator.IsString()
-    public POSTGRES_DB!: string;
+    declare public POSTGRES_DB: string;
 
     @Validator.IsString()
-    public POSTGRES_USER!: string;
+    declare public POSTGRES_USER: string;
 
     @Validator.IsString()
-    public POSTGRES_PASSWORD!: string;
+    declare public POSTGRES_PASSWORD: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public POSTGRES_PORT!: number;
+    declare public POSTGRES_PORT: number;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public POSTGRES_REPLICA_PORT!: number;
+    declare public POSTGRES_REPLICA_PORT: number;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public POSTGRES_CONTAINER_PORT!: number;
+    declare public POSTGRES_CONTAINER_PORT: number;
 
     @Validator.IsBoolean()
-    public POSTGRES_SSL!: boolean;
+    declare public POSTGRES_SSL: boolean;
 
     @Validator.IsBoolean()
-    public POSTGRES_SSL_REJECT_UNAUTHORIZED!: boolean;
+    declare public POSTGRES_SSL_REJECT_UNAUTHORIZED: boolean;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public POSTGRES_POOL_IDLE_MS!: number;
+    declare public POSTGRES_POOL_IDLE_MS: number;
 
     @Validator.IsPositiveInt()
-    public POSTGRES_POOL_MAX!: number;
+    declare public POSTGRES_POOL_MAX: number;
 
     @Validator.IsBoolean()
-    public POSTGRES_LOGGING!: boolean;
+    declare public POSTGRES_LOGGING: boolean;
 
     @Validator.IsBoolean()
-    public POSTGRES_CQRS_ENABLED!: boolean;
+    declare public POSTGRES_CQRS_ENABLED: boolean;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - write-side
@@ -87,23 +87,23 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     @Validator.IsOptional()
-    public POSTGRES_HOST?: string;
+    declare public POSTGRES_HOST?: string;
 
     @Validator.IsString()
     @Validator.IsOptional()
-    public POSTGRES_WRITE_HOST?: string;
+    declare public POSTGRES_WRITE_HOST?: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     @Validator.IsOptional()
-    public POSTGRES_WRITE_PORT?: number;
+    declare public POSTGRES_WRITE_PORT?: number;
 
     @Validator.IsPositiveInt()
-    public POSTGRES_WRITE_POOL_MAX!: number;
+    declare public POSTGRES_WRITE_POOL_MAX: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public POSTGRES_WRITE_POOL_IDLE_MS!: number;
+    declare public POSTGRES_WRITE_POOL_IDLE_MS: number;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - read-side
@@ -111,132 +111,132 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     @Validator.IsOptional()
-    public POSTGRES_READ_HOST?: string;
+    declare public POSTGRES_READ_HOST?: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     @Validator.IsOptional()
-    public POSTGRES_READ_PORT?: number;
+    declare public POSTGRES_READ_PORT?: number;
 
     @Validator.IsPositiveInt()
-    public POSTGRES_READ_POOL_MAX!: number;
+    declare public POSTGRES_READ_POOL_MAX: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public POSTGRES_READ_POOL_IDLE_MS!: number;
+    declare public POSTGRES_READ_POOL_IDLE_MS: number;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - replication
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public POSTGRES_REPLICATION_USER!: string;
+    declare public POSTGRES_REPLICATION_USER: string;
 
     @Validator.IsString()
-    public POSTGRES_REPLICATION_PASSWORD!: string;
+    declare public POSTGRES_REPLICATION_PASSWORD: string;
 
     @Validator.IsString()
-    public POSTGRES_REPLICATION_SLOT!: string;
+    declare public POSTGRES_REPLICATION_SLOT: string;
 
     // ---------------------------------------------------------------------------
     // Redis
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public REDIS_IMAGE!: string;
+    declare public REDIS_IMAGE: string;
 
     @Validator.IsString()
     @Validator.IsOptional()
-    public REDIS_HOST?: string;
+    declare public REDIS_HOST?: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public REDIS_PORT!: number;
+    declare public REDIS_PORT: number;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    public REDIS_CONTAINER_PORT!: number;
+    declare public REDIS_CONTAINER_PORT: number;
 
     @Validator.IsString()
-    public REDIS_PASSWORD!: string;
+    declare public REDIS_PASSWORD: string;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public REDIS_DB_CACHE!: number;
+    declare public REDIS_DB_CACHE: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public REDIS_DB_LIMITER!: number;
+    declare public REDIS_DB_LIMITER: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public REDIS_DB_QUEUE!: number;
+    declare public REDIS_DB_QUEUE: number;
 
     // ---------------------------------------------------------------------------
     // Redis - services
     // ---------------------------------------------------------------------------
 
     @Validator.IsPositiveInt()
-    public PERMISSION_CACHE_TTL!: number;
+    declare public PERMISSION_CACHE_TTL: number;
 
     // ---------------------------------------------------------------------------
     // Kafka
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    public KAFKA_BROKER!: string;
+    declare public KAFKA_BROKER: string;
 
     @Validator.IsPositiveInt()
-    public KAFKA_RETRY_ATTEMPTS!: number;
+    declare public KAFKA_RETRY_ATTEMPTS: number;
 
     @Validator.IsInt()
     @Validator.Min(0)
-    public KAFKA_RETRY_INITIAL_TIME!: number;
+    declare public KAFKA_RETRY_INITIAL_TIME: number;
 
     @Validator.IsString()
-    public DOCKER_NETWORK_NAME!: string;
+    declare public DOCKER_NETWORK_NAME: string;
 
     // ---------------------------------------------------------------------------
     // Domain-specific limits
     // ---------------------------------------------------------------------------
 
     @Validator.IsPositiveInt()
-    public REALM_LIMIT!: number;
+    declare public REALM_LIMIT: number;
 
     @Validator.IsPositiveInt()
-    public ROLE_PER_REALM_LIMIT!: number;
+    declare public ROLE_PER_REALM_LIMIT: number;
 
     @Validator.IsPositiveInt()
-    public ROLE_PER_ACCOUNT_LIMIT!: number;
+    declare public ROLE_PER_ACCOUNT_LIMIT: number;
 
     @Validator.IsPositiveInt()
-    public PERMISSION_PER_REALM_LIMIT!: number;
+    declare public PERMISSION_PER_REALM_LIMIT: number;
 
     @Validator.IsPositiveInt()
-    public PERMISSION_PER_ROLE_LIMIT!: number;
+    declare public PERMISSION_PER_ROLE_LIMIT: number;
 
     @Validator.IsPositiveInt()
-    public PERMISSION_OVERRIDE_PER_ACCOUNT_LIMIT!: number;
+    declare public PERMISSION_OVERRIDE_PER_ACCOUNT_LIMIT: number;
 
     @Validator.IsPositiveInt()
-    public CONFLICT_GROUP_PER_REALM_LIMIT!: number;
+    declare public CONFLICT_GROUP_PER_REALM_LIMIT: number;
 
     @Validator.IsPositiveInt()
-    public MAX_CONFLICT_MEMBERS_COUNT!: number;
+    declare public MAX_CONFLICT_MEMBERS_COUNT: number;
 
     @Validator.IsPositiveInt()
-    public DELEGATION_POLICY_PER_ROLE_LIMIT!: number;
+    declare public DELEGATION_POLICY_PER_ROLE_LIMIT: number;
 
     @Validator.IsPositiveInt()
-    public MAX_ROLE_SUBTREE_SIZE_FOR_PURGE!: number;
+    declare public MAX_ROLE_SUBTREE_SIZE_FOR_PURGE: number;
 
     @Validator.IsPositiveInt()
-    public BULK_OPERATION_LIMIT!: number;
+    declare public BULK_OPERATION_LIMIT: number;
 
     // ---------------------------------------------------------------------------
     // BullMQ
     // ---------------------------------------------------------------------------
 
     @Validator.IsPositiveInt()
-    public PERMISSION_CACHE_INVALIDATION_CHUNK_SIZE!: number;
+    declare public PERMISSION_CACHE_INVALIDATION_CHUNK_SIZE: number;
 }
