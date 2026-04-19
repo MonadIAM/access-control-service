@@ -13,7 +13,7 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
+import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { ROLE_DELEGATION_POLICY_COMMANDS } from "~context/application/commands";
 import { ROLE_DELEGATION_POLICY_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
@@ -75,7 +75,7 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_READ_COMMON)
     @ApiResponse({ status: OK, type: RoleDelegationPolicyDTO })
     @ApiOperation({ summary: "Returns a role delegation policy by identifier" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
         @Query() { policy, realm, view }: GetRoleDelegationPolicyByIdQueryDTO,
     ): Promise<Queries.RoleDelegationPolicy.Entity> {
@@ -88,7 +88,7 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_READ_COMMON)
     @ApiOperation({ summary: "Returns a paginated list of role delegation policies" })
     @ApiResponse({ status: OK, type: RoleDelegationPolicyListDTO })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public findMany(
         @Body() { pagination, filters, sort }: GetRoleDelegationPoliciesListBodyDTO,
         @Query() { realm, view }: GetRoleDelegationPoliciesListQueryDTO,
@@ -102,12 +102,12 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_CREATE)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Creates a new role delegation policy" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
         @Query() { realm }: CreateRoleDelegationPolicyQueryDTO,
         @Body() input: CreateRoleDelegationPolicyBodyDTO,
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleDelegationPolicyCommands.create({ actor, context, input, realm });
     }
@@ -118,12 +118,12 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_UPDATE)
     @ApiOperation({ summary: "Updates role delegation policy data" })
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public updateMetadata(
         @Query() { realm, id }: UpdateRoleDelegationPolicyQueryDTO,
         @Body() input: UpdateRoleDelegationPolicyBodyDTO,
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleDelegationPolicyCommands.update({ actor, context, input, realm, id });
     }
@@ -134,12 +134,12 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Revokes one or more non-system role delegation policies" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public revoke(
         @Query() { realm }: RevokeRoleDelegationPolicyQueryDTO,
         @Body() input: RevokeRoleDelegationPolicyBodyDTO,
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleDelegationPolicyCommands.revoke({ actor, context, input, realm });
     }
@@ -150,12 +150,12 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_RESTORE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Restores one or more non-system role delegation policies" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public restore(
         @Query() { realm }: RestoreRoleDelegationPolicyQueryDTO,
         @Body() input: RestoreRoleDelegationPolicyBodyDTO,
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleDelegationPolicyCommands.restore({ actor, context, input, realm });
     }
@@ -165,13 +165,13 @@ export class RoleDelegationPolicyController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_DELEGATION_POLICY_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     @ApiOperation({ summary: "Permanently deletes one or more revoked non-system role delegation policies" })
     public purge(
         @Query() { realm }: PurgeRoleDelegationPolicyQueryDTO,
-        @ExtractActor() { account: actor }: ActorContext,
         @Body() input: PurgeRoleDelegationPolicyBodyDTO,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleDelegationPolicyCommands.purge({ actor, context, input, realm });
     }

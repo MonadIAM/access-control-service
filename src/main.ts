@@ -3,6 +3,7 @@ import { MicroserviceOptions } from "@nestjs/microservices";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { Logger } from "nestjs-pino";
+import cookie from "@fastify/cookie";
 
 import { KAFKA_MICROSERVICE_CONFIG } from "~infrastructure/kafka";
 import { BootstrapSecurity } from "~bootstrap/security.bootstrap";
@@ -20,8 +21,10 @@ async function bootstrap(): Promise<void> {
     });
 
     const application = await NestFactory.create<NestFastifyApplication>(MainModule, fastifyAdapter, { bufferLogs: true });
-    application.useLogger(application.get(Logger));
 
+    await application.register(cookie);
+
+    application.useLogger(application.get(Logger));
     const configService = application.get(ConfigService);
 
     const version: number = configService.getOrThrow<number>("API_VERSION");

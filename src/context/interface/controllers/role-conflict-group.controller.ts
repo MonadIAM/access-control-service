@@ -13,7 +13,7 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
+import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { ROLE_CONFLICT_GROUP_COMMANDS } from "~context/application/commands";
 import { ROLE_CONFLICT_GROUP_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
@@ -78,7 +78,7 @@ export class RoleConflictGroupController {
     @RequirePermission(ROLE_CONFLICT_GROUP_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: RoleConflictGroupDTO })
     @ApiOperation({ summary: "Returns a role conflict group by identifier" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
         @Query() { group, realm, view }: GetRoleConflictGroupByIdQueryDTO,
     ): Promise<Queries.RoleConflictGroup.Entity> {
@@ -91,7 +91,7 @@ export class RoleConflictGroupController {
     @RequirePermission(ROLE_CONFLICT_GROUP_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: RoleConflictGroupPaginatedListDTO })
     @ApiOperation({ summary: "Returns a paginated list of role conflict groups" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public findMany(
         @Body() { pagination, filters, sort }: GetRoleConflictGroupsListBodyDTO,
         @Query() { realm, view }: GetRoleConflictGroupsListQueryDTO,
@@ -105,7 +105,7 @@ export class RoleConflictGroupController {
     @RequirePermission(ROLE_CONFLICT_GROUP_CREATE)
     @ApiResponse({ status: OK, type: RoleConflictGroupListDTO })
     @ApiOperation({ summary: "Returns a list of SoD violation details" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public findViolationDetails(
         @Body() { account, roles }: GetViolationDetailsBodyDTO,
         @Query() { realm }: GetViolationDetailsQueryDTO,
@@ -119,12 +119,12 @@ export class RoleConflictGroupController {
     @RequirePermission(ROLE_CONFLICT_GROUP_CREATE)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Creates a new role conflict group" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
         @Query() { realm }: CreateRoleConflictGroupQueryDTO,
-        @ExtractActor() { account: actor }: ActorContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Body() input: CreateRoleConflictGroupBodyDTO,
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleConflictGroupCommands.create({ context, realm, actor, input });
     }
@@ -135,12 +135,12 @@ export class RoleConflictGroupController {
     @RequirePermission(ROLE_CONFLICT_GROUP_UPDATE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Updates role conflict group metadata" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public updateMetadata(
         @Query() { realm, id }: UpdateRoleConflictGroupQueryDTO,
-        @ExtractActor() { account: actor }: ActorContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Body() input: UpdateRoleConflictGroupBodyDTO,
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleConflictGroupCommands.update({ context, realm, actor, input, id });
     }
@@ -151,12 +151,12 @@ export class RoleConflictGroupController {
     @RequirePermission(ROLE_CONFLICT_GROUP_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Revokes a non-system role conflict group(s)" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public revoke(
         @Query() { realm }: RevokeRoleConflictGroupQueryDTO,
-        @ExtractActor() { account: actor }: ActorContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Body() input: RevokeRoleConflictGroupBodyDTO,
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleConflictGroupCommands.revoke({ context, realm, actor, input });
     }
@@ -167,12 +167,12 @@ export class RoleConflictGroupController {
     @RequirePermission(ROLE_CONFLICT_GROUP_RESTORE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Restores a non-system role conflict group(s)" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public restore(
         @Query() { realm }: RestoreRoleConflictGroupQueryDTO,
-        @ExtractActor() { account: actor }: ActorContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Body() input: RestoreRoleConflictGroupBodyDTO,
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleConflictGroupCommands.restore({ context, realm, actor, input });
     }
@@ -183,12 +183,12 @@ export class RoleConflictGroupController {
     @RequirePermission(ROLE_CONFLICT_GROUP_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role conflict group(s)" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public purge(
         @Query() { realm }: PurgeRoleConflictGroupQueryDTO,
-        @ExtractActor() { account: actor }: ActorContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Body() input: PurgeRoleConflictGroupBodyDTO,
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleConflictGroupCommands.purge({ context, realm, actor, input });
     }

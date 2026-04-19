@@ -19,7 +19,7 @@ declare global {
                         permission: string;
                         account: string;
                     };
-                    context: RequestContext;
+                    context: Extract.Meta;
                 };
 
                 type Result = MessageResult;
@@ -33,7 +33,7 @@ declare global {
                         identifiers: string[];
                         reason: string;
                     };
-                    context: RequestContext;
+                    context: Extract.Meta;
                 };
 
                 type Result = MessageResult;
@@ -47,7 +47,7 @@ declare global {
                         identifiers: string[];
                         reason: string;
                     };
-                    context: RequestContext;
+                    context: Extract.Meta;
                 };
 
                 type Result = MessageResult;
@@ -61,7 +61,7 @@ declare global {
                         identifiers: string[];
                         reason: string;
                     };
-                    context: RequestContext;
+                    context: Extract.Meta;
                 };
 
                 type Result = MessageResult;

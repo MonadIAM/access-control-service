@@ -1,7 +1,7 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import { EndpointExceptions, FormatResponse, RequirePermission } from "~common/decorators";
+import { RequirePermission, FormatResponse, Swagger } from "~common/decorators";
 import { CHANGE_LOG_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
@@ -26,7 +26,7 @@ export class ChangeLogController {
     @RequirePermission(CHANGE_LOG_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ChangeLogDTO })
     @ApiOperation({ summary: "Returns a change log by identifier" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
     public findUnique(@Query() { log }: GetChangeLogByIdQueryDTO): Promise<Queries.ChangeLog.Entity> {
         return this.changeLogQueries.findUnique({ log });
     }
@@ -37,7 +37,7 @@ export class ChangeLogController {
     @RequirePermission(CHANGE_LOG_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ChangeLogListDTO })
     @ApiOperation({ summary: "Returns a paginated list of change logs" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getList(
         @Body() { pagination, filters, sort }: GetChangeLogsListBodyDTO,
     ): Promise<[Queries.ChangeLog.Entity[], number]> {

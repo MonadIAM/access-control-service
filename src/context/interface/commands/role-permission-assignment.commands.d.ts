@@ -15,7 +15,7 @@ declare namespace Commands {
                     permissions: string[];
                     role: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -29,7 +29,7 @@ declare namespace Commands {
                     identifiers: string[];
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -43,7 +43,7 @@ declare namespace Commands {
                     identifiers: string[];
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -57,7 +57,7 @@ declare namespace Commands {
                     identifiers: string[];
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;

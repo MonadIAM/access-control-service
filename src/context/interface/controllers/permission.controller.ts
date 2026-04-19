@@ -13,19 +13,12 @@ import {
     Get,
 } from "@nestjs/common";
 
+import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { PERMISSION_COMMANDS } from "~context/application/commands";
 import { PERMISSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
-import {
-    ExtractPermissions,
-    EndpointExceptions,
-    RequirePermission,
-    ExtractContext,
-    FormatResponse,
-    ExtractActor,
-} from "~common/decorators";
 
 import {
     GetEffectivePermissionsListQueryDTO,
@@ -89,7 +82,7 @@ export class PermissionController {
     @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: PermissionDTO })
     @ApiOperation({ summary: "Returns a permission by identifier" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(@Query() { realm, permission, view }: GetPermissionByIdQueryDTO): Promise<Queries.Permission.Entity> {
         return this.permissionQueries.findUnique({ permission, realm, view });
     }
@@ -100,7 +93,7 @@ export class PermissionController {
     @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: PermissionListDTO })
     @ApiOperation({ summary: "Returns a paginated list of permissions" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getList(
         @Body() { pagination, filters, sort }: GetPermissionsListBodyDTO,
         @Query() { realm, view }: GetPermissionsListQueryDTO,
@@ -114,12 +107,12 @@ export class PermissionController {
     @ApiResponse({ status: OK, type: PermissionListDTO })
     @RequirePermission(PERMISSION_READ_ABSOLUTE, PERMISSION_READ_PERSONAL)
     @ApiOperation({ summary: "Returns a paginated list of effective permissions for the account" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getEffectiveList(
         @Body() { pagination, filters, sort }: GetEffectivePermissionsListBodyDTO,
         @Query() { account, realm }: GetEffectivePermissionsListQueryDTO,
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractPermissions() permissions?: string[],
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Permissions() permissions?: string[],
     ): Promise<[Queries.Permission.Entity[], number]> {
         return this.permissionQueries.findEffective({ permissions, pagination, filters, account, realm, actor, sort });
     }
@@ -130,7 +123,7 @@ export class PermissionController {
     @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: PermissionLookupListDTO })
     @ApiOperation({ summary: "Returns a lookup list of permissions" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getLookupList(
         @Query() { realm, term }: GetPermissionsLookupListQueryDTO,
         @Body() { pagination }: GetPermissionsLookupListBodyDTO,
@@ -144,11 +137,11 @@ export class PermissionController {
     @RequirePermission(PERMISSION_CREATE)
     @ApiOperation({ summary: "Creates a new permission" })
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
-        @ExtractActor() { account: actor }: ActorContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: CreatePermissionQueryDTO,
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: CreatePermissionBodyDTO,
     ): Promise<MessageResult> {
         return this.permissionCommands.create({ context, realm, actor, input });
@@ -160,11 +153,11 @@ export class PermissionController {
     @RequirePermission(PERMISSION_UPDATE)
     @ApiOperation({ summary: "Updates permission metadata" })
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public updateMetadata(
-        @ExtractActor() { account: actor }: ActorContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm, id }: UpdatePermissionQueryDTO,
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: UpdatePermissionBodyDTO,
     ): Promise<MessageResult> {
         return this.permissionCommands.update({ context, realm, actor, input, id });
@@ -176,11 +169,11 @@ export class PermissionController {
     @RequirePermission(PERMISSION_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Revokes a non-system permission(s)" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public revoke(
-        @ExtractActor() { account: actor }: ActorContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: RevokePermissionQueryDTO,
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: RevokePermissionBodyDTO,
     ): Promise<MessageResult> {
         return this.permissionCommands.revoke({ context, realm, actor, input });
@@ -192,11 +185,11 @@ export class PermissionController {
     @RequirePermission(PERMISSION_RESTORE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Restores a non-system permission(s)" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public restore(
-        @ExtractActor() { account: actor }: ActorContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: RestorePermissionQueryDTO,
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: RestorePermissionBodyDTO,
     ): Promise<MessageResult> {
         return this.permissionCommands.restore({ context, realm, actor, input });
@@ -208,11 +201,11 @@ export class PermissionController {
     @RequirePermission(PERMISSION_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Permanently deletes a revoked non-system permission(s)" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public purge(
-        @ExtractActor() { account: actor }: ActorContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: PurgePermissionQueryDTO,
-        @ExtractContext() context: RequestContext,
+        @Extract.Meta() context: Extract.Meta,
         @Body() input: PurgePermissionBodyDTO,
     ): Promise<MessageResult> {
         return this.permissionCommands.purge({ context, realm, actor, input });

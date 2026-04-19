@@ -18,7 +18,7 @@ declare namespace Commands {
                     depthLimit?: number;
                     description: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -33,7 +33,7 @@ declare namespace Commands {
                     patch: Partial<Entities.RoleDelegationPolicy.MutableFields>;
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -47,7 +47,7 @@ declare namespace Commands {
                     identifiers: string[];
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -60,7 +60,7 @@ declare namespace Commands {
                     identifiers: string[];
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -74,7 +74,7 @@ declare namespace Commands {
                     identifiers: string[];
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;

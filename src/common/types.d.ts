@@ -6,22 +6,15 @@ declare global {
         elementsPerPage: number;
     };
 
-    type RequestContext = {
-        userAgent: string;
-        ip: string;
-    };
-
     type MessageResult = {
         message: string;
-        params?: UnknownObject;
+        params?: Record<string, unknown>;
     };
 
     type Req<T extends RouteGenericInterface = RouteGenericInterface> = FastifyRequest<T> & {
-        metadata: Record<string, unknown>;
-        actorContext: ActorContext;
-    };
-
-    type ActorContext = {
-        account: string;
+        session: Extract.Session.Public | Extract.Session.Auth;
+        metadata: {
+            permissions?: string[];
+        };
     };
 }

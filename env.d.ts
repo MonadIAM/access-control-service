@@ -13,7 +13,8 @@ declare namespace NodeJS {
         APP_PORT: `${number}`;
         THROTTLE_LIMIT: `${number}`;
         THROTTLE_TTL: `${number}`;
-        JWT_SECRET: string;
+        JWT_ISSUER: string;
+        JWT_JWKS_URL: string;
 
         // ---------------------------------------------------------------------------
         // PostgreSQL - common

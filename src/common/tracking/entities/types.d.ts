@@ -11,7 +11,7 @@ declare global {
                 actor: string;
                 realm?: string;
                 input?: UnknownObject;
-                context: RequestContext;
+                context: Extract.Meta;
             };
         }
 

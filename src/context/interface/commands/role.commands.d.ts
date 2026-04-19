@@ -26,7 +26,7 @@ declare global {
                         parent: string;
                         children: string[];
                     };
-                    context: RequestContext;
+                    context: Extract.Meta;
                 };
 
                 type Result = MessageResult;
@@ -41,7 +41,7 @@ declare global {
                         patch: Partial<Entities.Role.MutableFields>;
                         reason: string;
                     };
-                    context: RequestContext;
+                    context: Extract.Meta;
                 };
 
                 type Result = MessageResult;
@@ -55,7 +55,7 @@ declare global {
                     input: {
                         reason: string;
                     };
-                    context: RequestContext;
+                    context: Extract.Meta;
                 };
 
                 type Result = MessageResult;
@@ -69,7 +69,7 @@ declare global {
                     input: {
                         reason: string;
                     };
-                    context: RequestContext;
+                    context: Extract.Meta;
                 };
 
                 type Result = MessageResult;
@@ -83,7 +83,7 @@ declare global {
                         identifiers: string[];
                         reason: string;
                     };
-                    context: RequestContext;
+                    context: Extract.Meta;
                 };
 
                 type Result = MessageResult;
@@ -97,7 +97,7 @@ declare global {
                         identifiers: string[];
                         reason: string;
                     };
-                    context: RequestContext;
+                    context: Extract.Meta;
                 };
 
                 type Result = MessageResult;

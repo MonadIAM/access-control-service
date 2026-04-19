@@ -13,7 +13,7 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { EndpointExceptions, ExtractActor, ExtractContext, FormatResponse, RequirePermission } from "~common/decorators";
+import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { ROLE_PERMISSION_ASSIGNMENT_COMMANDS } from "~context/application/commands";
 import { ROLE_PERMISSION_ASSIGNMENT_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
@@ -72,7 +72,7 @@ export class RolePermissionAssignmentController {
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_READ_COMMON)
     @ApiResponse({ status: OK, type: RolePermissionAssignmentDTO })
     @ApiOperation({ summary: "Returns a role-permission assignment by identifier" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
         @Query() { assignment, realm, view }: GetRolePermissionAssignmentByIdQueryDTO,
     ): Promise<Queries.RolePermissionAssignment.Entity> {
@@ -85,7 +85,7 @@ export class RolePermissionAssignmentController {
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_READ_COMMON)
     @ApiResponse({ status: OK, type: RolePermissionAssignmentListDTO })
     @ApiOperation({ summary: "Returns a paginated list of role-permission assignments" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public findMany(
         @Body() { pagination, filters, sort }: GetRolePermissionAssignmentsListBodyDTO,
         @Query() { realm, view }: GetRolePermissionAssignmentsListQueryDTO,
@@ -99,12 +99,12 @@ export class RolePermissionAssignmentController {
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_CREATE)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Creates a new role-permission assignment" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
         @Query() { realm }: CreateRolePermissionAssignmentQueryDTO,
         @Body() input: CreateRolePermissionAssignmentBodyDTO,
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.rolePermissionAssignmentCommands.create({ actor, context, input, realm });
     }
@@ -115,12 +115,12 @@ export class RolePermissionAssignmentController {
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Revokes a non-system role-permission assignment(s)" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public revoke(
         @Query() { realm }: RevokeRolePermissionAssignmentQueryDTO,
         @Body() input: RevokeRolePermissionAssignmentBodyDTO,
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.rolePermissionAssignmentCommands.revoke({ actor, context, input, realm });
     }
@@ -131,12 +131,12 @@ export class RolePermissionAssignmentController {
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_RESTORE)
     @ApiOperation({ summary: "Restores a non-system role-permission assignment(s)" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public restore(
         @Query() { realm }: RestoreRolePermissionAssignmentQueryDTO,
         @Body() input: RestoreRolePermissionAssignmentBodyDTO,
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.rolePermissionAssignmentCommands.restore({ actor, context, input, realm });
     }
@@ -147,12 +147,12 @@ export class RolePermissionAssignmentController {
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role-permission assignment(s)" })
-    @EndpointExceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public purge(
         @Query() { realm }: PurgeRolePermissionAssignmentQueryDTO,
         @Body() input: PurgeRolePermissionAssignmentBodyDTO,
-        @ExtractActor() { account: actor }: ActorContext,
-        @ExtractContext() context: RequestContext,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.rolePermissionAssignmentCommands.purge({ actor, context, input, realm });
     }

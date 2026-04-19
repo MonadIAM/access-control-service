@@ -3,6 +3,7 @@ import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 
 import { FormatResponseInterceptor } from "~common/interceptors";
+import { COMMON_SERVICES } from "~common/services";
 import { TrackingModule } from "~common/tracking";
 
 import { PermissionGuard, AuthGuard } from "./infrastructure/guards";
@@ -20,6 +21,7 @@ import { QUERIES } from "./application/queries";
     providers: [
         ...INFRASTRUCTURE_SERVICES,
         ...DOMAIN_SERVICES,
+        ...COMMON_SERVICES,
         ...EVENT_HANDLERS,
         ...REPOSITORIES,
         ...PROCESSORS,

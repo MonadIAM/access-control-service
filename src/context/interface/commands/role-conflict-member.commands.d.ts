@@ -13,7 +13,7 @@ declare namespace Commands {
                     roles: string[];
                     group: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -27,7 +27,7 @@ declare namespace Commands {
                     identifiers: string[];
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;

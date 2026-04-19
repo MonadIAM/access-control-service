@@ -19,7 +19,7 @@ declare namespace Commands {
                     code: string;
                     name: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -34,7 +34,7 @@ declare namespace Commands {
                     patch: Partial<Entities.RoleConflictGroup.MutableFields>;
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -48,7 +48,7 @@ declare namespace Commands {
                     identifiers: string[];
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -62,7 +62,7 @@ declare namespace Commands {
                     identifiers: string[];
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;
@@ -76,7 +76,7 @@ declare namespace Commands {
                     identifiers: string[];
                     reason: string;
                 };
-                context: RequestContext;
+                context: Extract.Meta;
             };
 
             type Result = MessageResult;

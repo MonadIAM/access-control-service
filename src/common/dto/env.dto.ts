@@ -32,7 +32,10 @@ export class EnvironmentVariablesDTO {
     declare public THROTTLE_TTL: number;
 
     @Validator.IsString()
-    declare public JWT_SECRET: string;
+    declare public JWT_ISSUER: string;
+
+    @Validator.IsString()
+    declare public JWT_JWKS_URL: string;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - common
