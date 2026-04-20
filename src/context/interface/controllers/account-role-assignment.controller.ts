@@ -21,19 +21,19 @@ import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
-    GetAccountRoleAssignmentsListQueryDTO,
-    GetAccountRoleAssignmentsListBodyDTO,
-    GetAccountRoleAssignmentByIdQueryDTO,
-    RestoreAccountRoleAssignmentQueryDTO,
-    RestoreAccountRoleAssignmentBodyDTO,
-    RevokeAccountRoleAssignmentQueryDTO,
-    RevokeAccountRoleAssignmentBodyDTO,
-    CreateAccountRoleAssignmentQueryDTO,
-    CreateAccountRoleAssignmentBodyDTO,
-    PurgeAccountRoleAssignmentQueryDTO,
-    PurgeAccountRoleAssignmentBodyDTO,
-    AccountRoleAssignmentListDTO,
     AccountRoleAssignmentDTO,
+    GetListQueryDTO,
+    GetByIdQueryDTO,
+    RestoreQueryDTO,
+    GetListBodyDTO,
+    RestoreBodyDTO,
+    RevokeQueryDTO,
+    CreateQueryDTO,
+    RevokeBodyDTO,
+    CreateBodyDTO,
+    PurgeQueryDTO,
+    PurgeBodyDTO,
+    ListDTO,
 } from "../dto/account-role-assignment";
 
 const {
@@ -74,21 +74,21 @@ export class AccountRoleAssignmentController {
     @ApiOperation({ summary: "Returns a account role assignment by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
-        @Query() { assignment, realm, view }: GetAccountRoleAssignmentByIdQueryDTO,
+        @Query() { assignment, realm, view }: GetByIdQueryDTO,
     ): Promise<Queries.AccountRoleAssignment.Entity> {
         return this.accountRoleAssignmentQueries.findUnique({ assignment, realm, view });
     }
 
     @Post("list")
     @HttpCode(OK)
-    @FormatResponse(AccountRoleAssignmentListDTO)
+    @FormatResponse(ListDTO)
     @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON)
-    @ApiResponse({ status: OK, type: AccountRoleAssignmentListDTO })
+    @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({ summary: "Returns a paginated list of account role assignments" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public findMany(
-        @Body() { pagination, filters, sort }: GetAccountRoleAssignmentsListBodyDTO,
-        @Query() { realm, view }: GetAccountRoleAssignmentsListQueryDTO,
+        @Body() { pagination, filters, sort }: GetListBodyDTO,
+        @Query() { realm, view }: GetListQueryDTO,
     ): Promise<[Queries.AccountRoleAssignment.Entity[], number]> {
         return this.accountRoleAssignmentQueries.findMany({ pagination, filters, realm, sort, view });
     }
@@ -101,8 +101,8 @@ export class AccountRoleAssignmentController {
     @ApiOperation({ summary: "Creates a new account role assignment" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
-        @Query() { realm }: CreateAccountRoleAssignmentQueryDTO,
-        @Body() input: CreateAccountRoleAssignmentBodyDTO,
+        @Query() { realm }: CreateQueryDTO,
+        @Body() input: CreateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -117,8 +117,8 @@ export class AccountRoleAssignmentController {
     @ApiOperation({ summary: "Revokes a non-system account role assignment(s)" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public revoke(
-        @Query() { realm }: RevokeAccountRoleAssignmentQueryDTO,
-        @Body() input: RevokeAccountRoleAssignmentBodyDTO,
+        @Query() { realm }: RevokeQueryDTO,
+        @Body() input: RevokeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -133,8 +133,8 @@ export class AccountRoleAssignmentController {
     @ApiOperation({ summary: "Restores a non-system account role assignment(s)" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public restore(
-        @Query() { realm }: RestoreAccountRoleAssignmentQueryDTO,
-        @Body() input: RestoreAccountRoleAssignmentBodyDTO,
+        @Query() { realm }: RestoreQueryDTO,
+        @Body() input: RestoreBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -149,8 +149,8 @@ export class AccountRoleAssignmentController {
     @ApiOperation({ summary: "Permanently deletes a revoked non-system account role assignment(s)" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public purge(
-        @Query() { realm }: PurgeAccountRoleAssignmentQueryDTO,
-        @Body() input: PurgeAccountRoleAssignmentBodyDTO,
+        @Query() { realm }: PurgeQueryDTO,
+        @Body() input: PurgeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {

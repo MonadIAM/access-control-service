@@ -1,9 +1,10 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 
-class RealmPatchDTO {
+@ApiSchema({ name: "RealmPatch" })
+class PatchDTO {
     @Expose()
     @Validator.IsString()
     @Validator.IsOptional()
@@ -17,20 +18,22 @@ class RealmPatchDTO {
     declare public description?: string;
 }
 
-export class UpdateRealmBodyDTO {
+@ApiSchema({ name: "RealmUpdateBody" })
+export class UpdateBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
     declare public reason: string;
 
     @Expose()
-    @Type(() => RealmPatchDTO)
+    @Type(() => PatchDTO)
     @Validator.ValidateNested()
-    @ApiProperty({ required: true, type: RealmPatchDTO })
-    declare public patch: RealmPatchDTO;
+    @ApiProperty({ required: true, type: PatchDTO })
+    declare public patch: PatchDTO;
 }
 
-export class UpdateRealmQueryDTO {
+@ApiSchema({ name: "RealmUpdateQuery" })
+export class UpdateQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

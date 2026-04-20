@@ -1,10 +1,11 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { PublicOrdinalOperator } from "~infrastructure/database";
 
 import { Validator } from "../validator";
 
+@ApiSchema({ name: "OrdinalFilter" })
 export class OrdinalFilterDTO<T extends Ordinal> {
     @Expose()
     @Validator.IsEnum(PublicOrdinalOperator)

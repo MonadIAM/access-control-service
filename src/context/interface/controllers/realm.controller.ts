@@ -21,19 +21,19 @@ import { REALM_QUERIES } from "~context/application/queries";
 import { PermissionCode } from "~context/enums";
 
 import {
-    GetRealmsLookupListQueryDTO,
-    GetRealmsLookupListBodyDTO,
-    GetRealmByIdQueryDTO,
-    GetRealmsListBodyDTO,
-    UpdateRealmQueryDTO,
-    RestoreRealmBodyDTO,
-    RealmLookupListDTO,
-    CreateRealmBodyDTO,
-    UpdateRealmBodyDTO,
-    RevokeRealmBodyDTO,
-    PurgeRealmBodyDTO,
-    RealmListDTO,
+    GetLookupListQueryDTO,
+    GetLookupListBodyDTO,
+    GetByIdQueryDTO,
+    GetListBodyDTO,
+    UpdateQueryDTO,
+    RestoreBodyDTO,
+    LookupListDTO,
+    CreateBodyDTO,
+    UpdateBodyDTO,
+    RevokeBodyDTO,
+    PurgeBodyDTO,
     RealmDTO,
+    ListDTO,
 } from "../dto/realm";
 
 const { REALM_READ_PERSONAL, REALM_READ_ABSOLUTE, REALM_RESTORE, REALM_CREATE, REALM_UPDATE, REALM_REVOKE, REALM_PURGE } =
@@ -69,7 +69,7 @@ export class RealmController {
     @RequirePermission(REALM_READ_ABSOLUTE, REALM_READ_PERSONAL)
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
-        @Query() { realm, view }: GetRealmByIdQueryDTO,
+        @Query() { realm, view }: GetByIdQueryDTO,
         @Extract.Session() { account }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
     ): Promise<Queries.Realm.Entity> {
@@ -78,13 +78,13 @@ export class RealmController {
 
     @Post("list")
     @HttpCode(OK)
-    @FormatResponse(RealmListDTO)
-    @ApiResponse({ status: OK, type: RealmListDTO })
+    @FormatResponse(ListDTO)
+    @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(REALM_READ_ABSOLUTE, REALM_READ_PERSONAL)
     @ApiOperation({ summary: "Returns a paginated list of realms" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public findMany(
-        @Body() { pagination, filters, sort }: GetRealmsListBodyDTO,
+        @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Extract.Session() { account }: Extract.Session.Auth,
         @Query() { view }: BaseReadQueryDTO,
         @Extract.Permissions() permissions?: string[],
@@ -94,14 +94,14 @@ export class RealmController {
 
     @HttpCode(OK)
     @Post("list/lookup")
-    @FormatResponse(RealmLookupListDTO)
-    @ApiResponse({ status: OK, type: RealmLookupListDTO })
+    @FormatResponse(LookupListDTO)
+    @ApiResponse({ status: OK, type: LookupListDTO })
     @RequirePermission(REALM_READ_ABSOLUTE, REALM_READ_PERSONAL)
     @ApiOperation({ summary: "Returns a lookup list of realms" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getLookupList(
-        @Body() { pagination }: GetRealmsLookupListBodyDTO,
-        @Query() { term }: GetRealmsLookupListQueryDTO,
+        @Body() { pagination }: GetLookupListBodyDTO,
+        @Query() { term }: GetLookupListQueryDTO,
         @Extract.Session() { account }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
     ): Promise<[Queries.Realm.Entity[], number]> {
@@ -118,7 +118,7 @@ export class RealmController {
     public create(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: CreateRealmBodyDTO,
+        @Body() input: CreateBodyDTO,
     ): Promise<MessageResult> {
         return this.realmCommands.create({ context, actor, input });
     }
@@ -133,8 +133,8 @@ export class RealmController {
     public updateMetadata(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Query() { id }: UpdateRealmQueryDTO,
-        @Body() input: UpdateRealmBodyDTO,
+        @Query() { id }: UpdateQueryDTO,
+        @Body() input: UpdateBodyDTO,
     ): Promise<MessageResult> {
         return this.realmCommands.update({ context, actor, input, id });
     }
@@ -149,7 +149,7 @@ export class RealmController {
     public revoke(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: RevokeRealmBodyDTO,
+        @Body() input: RevokeBodyDTO,
     ): Promise<MessageResult> {
         return this.realmCommands.revoke({ context, actor, input });
     }
@@ -164,7 +164,7 @@ export class RealmController {
     public restore(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: RestoreRealmBodyDTO,
+        @Body() input: RestoreBodyDTO,
     ): Promise<MessageResult> {
         return this.realmCommands.restore({ context, actor, input });
     }
@@ -179,7 +179,7 @@ export class RealmController {
     public purge(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: PurgeRealmBodyDTO,
+        @Body() input: PurgeBodyDTO,
     ): Promise<MessageResult> {
         return this.realmCommands.purge({ context, actor, input });
     }

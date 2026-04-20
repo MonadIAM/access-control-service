@@ -1,5 +1,5 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 
@@ -7,6 +7,7 @@ import { PermissionLookupDTO } from "../../permission";
 import { RealmLookupDTO } from "../../realm";
 import { RoleLookupDTO } from "../../role";
 
+@ApiSchema({ name: "RolePermissionAssignment" })
 export class RolePermissionAssignmentDTO {
     @Expose()
     @Validator.IsUUID()

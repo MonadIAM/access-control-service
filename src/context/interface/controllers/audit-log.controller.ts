@@ -2,11 +2,11 @@ import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseIntercepto
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger } from "~common/decorators";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { AUDIT_LOG_QUERIES } from "~context/application/queries";
+import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
-import { GetAuditLogsListBodyDTO, GetAuditLogByIdQueryDTO, AuditLogListDTO, AuditLogDTO } from "../dto/audit-log";
+import { GetListBodyDTO, GetByIdQueryDTO, AuditLogDTO, ListDTO } from "../dto/audit-log";
 
 const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, OK } = HttpStatus;
 const { AUDIT_LOG_READ_ABSOLUTE } = PermissionCode;
@@ -27,20 +27,18 @@ export class AuditLogController {
     @ApiResponse({ status: OK, type: AuditLogDTO })
     @ApiOperation({ summary: "Returns a audit log by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
-    public findUnique(@Query() { log }: GetAuditLogByIdQueryDTO): Promise<Queries.AuditLog.Entity> {
+    public findUnique(@Query() { log }: GetByIdQueryDTO): Promise<Queries.AuditLog.Entity> {
         return this.auditLogQueries.findUnique({ log });
     }
 
     @Post("list")
     @HttpCode(OK)
-    @FormatResponse(AuditLogListDTO)
+    @FormatResponse(ListDTO)
+    @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(AUDIT_LOG_READ_ABSOLUTE)
-    @ApiResponse({ status: OK, type: AuditLogListDTO })
     @ApiOperation({ summary: "Returns a paginated list of audit logs" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
-    public getList(
-        @Body() { pagination, filters, sort }: GetAuditLogsListBodyDTO,
-    ): Promise<[Queries.AuditLog.Entity[], number]> {
+    public getList(@Body() { pagination, filters, sort }: GetListBodyDTO): Promise<[Queries.AuditLog.Entity[], number]> {
         return this.auditLogQueries.findMany({ pagination, filters, sort });
     }
 }

@@ -1,12 +1,14 @@
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class ChangeLogsFiltersDTO implements Adapters.ChangeLog.Filters {
+@ApiSchema({ name: "ChangeLogFilters" })
+export class FiltersDTO implements Adapters.ChangeLog.Filters {
     @Expose()
     @Validator.IsOptional()
+    @Validator.ValidateNested()
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
     public id?: StringFilterDTO;
@@ -27,12 +29,14 @@ export class ChangeLogsFiltersDTO implements Adapters.ChangeLog.Filters {
 
     @Expose()
     @Validator.IsOptional()
+    @Validator.ValidateNested()
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
     public changeType?: StringFilterDTO;
 
     @Expose()
     @Validator.IsOptional()
+    @Validator.ValidateNested()
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
     public entityType?: StringFilterDTO;

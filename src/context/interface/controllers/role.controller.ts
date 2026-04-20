@@ -21,37 +21,36 @@ import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
-    GetDelegableRolesListByAccountQueryDTO,
-    GetDelegableRolesListByRoleQueryDTO,
-    GetRoleDescendantsListQueryDTO,
-    GetRoleDescendantsListBodyDTO,
-    GetRoleHierarchyGraphQueryDTO,
-    GetEffectiveRolesListQueryDTO,
-    GetDelegableRolesListBodyDTO,
-    GetEffectiveRolesListBodyDTO,
-    GetRoleAncestorsListQueryDTO,
-    GetRoleAncestorsListBodyDTO,
-    GetRolesLookupListQueryDTO,
-    GetRolesLookupListBodyDTO,
-    PurgeRoleSubtreeQueryDTO,
-    PurgeRoleSubtreeBodyDTO,
+    GetDescendantsListQueryDTO,
+    GetDescendantsListBodyDTO,
+    GetHierarchyGraphQueryDTO,
+    GetEffectiveListQueryDTO,
+    GetAncestorsListQueryDTO,
+    GetDelegableListQueryDTO,
+    GetDelegableListBodyDTO,
+    GetEffectiveListBodyDTO,
+    GetAncestorsListBodyDTO,
     RoleHierarchyGraphDTO,
-    RoleHierarchyListDTO,
-    GetRolesListQueryDTO,
-    RestoreRoleQueryDTO,
-    GetRoleByIdQueryDTO,
-    GetRolesListBodyDTO,
-    CreateRoleQueryDTO,
-    RevokeRoleQueryDTO,
-    UpdateRoleQueryDTO,
-    RestoreRoleBodyDTO,
-    CreateRoleBodyDTO,
-    RevokeRoleBodyDTO,
-    UpdateRoleBodyDTO,
-    PurgeRoleQueryDTO,
-    RoleLookupListDTO,
-    PurgeRoleBodyDTO,
-    RoleListDTO,
+    GetLookupListQueryDTO,
+    GetLookupListBodyDTO,
+    PurgeSubtreeQueryDTO,
+    PurgeSubtreeBodyDTO,
+    HierarchyListDTO,
+    GetListQueryDTO,
+    RestoreQueryDTO,
+    GetByIdQueryDTO,
+    GetListBodyDTO,
+    CreateQueryDTO,
+    RevokeQueryDTO,
+    UpdateQueryDTO,
+    RestoreBodyDTO,
+    CreateBodyDTO,
+    RevokeBodyDTO,
+    UpdateBodyDTO,
+    PurgeQueryDTO,
+    LookupListDTO,
+    PurgeBodyDTO,
+    ListDTO,
     RoleDTO,
 } from "../dto/role";
 
@@ -96,20 +95,20 @@ export class RoleController {
     @ApiResponse({ status: OK, type: RoleDTO })
     @ApiOperation({ summary: "Returns a role by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public findUnique(@Query() { realm, role, view }: GetRoleByIdQueryDTO): Promise<Queries.Role.Entity> {
+    public findUnique(@Query() { realm, role, view }: GetByIdQueryDTO): Promise<Queries.Role.Entity> {
         return this.roleQueries.findUnique({ realm, role, view });
     }
 
     @HttpCode(OK)
     @Post("list")
-    @FormatResponse(RoleListDTO)
+    @FormatResponse(ListDTO)
     @RequirePermission(ROLE_READ_COMMON)
-    @ApiResponse({ status: OK, type: RoleListDTO })
+    @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({ summary: "Returns a paginated list of roles" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public findMany(
-        @Query() { realm, view }: GetRolesListQueryDTO,
-        @Body() { pagination, filters, sort }: GetRolesListBodyDTO,
+        @Query() { realm, view }: GetListQueryDTO,
+        @Body() { pagination, filters, sort }: GetListBodyDTO,
     ): Promise<[Queries.Role.Entity[], number]> {
         return this.roleQueries.findMany({ pagination, filters, realm, sort, view });
     }
@@ -117,13 +116,13 @@ export class RoleController {
     @HttpCode(OK)
     @Post("list/ancestors")
     @RequirePermission(ROLE_READ_COMMON)
-    @FormatResponse(RoleHierarchyListDTO)
-    @ApiResponse({ status: OK, type: RoleHierarchyListDTO })
+    @FormatResponse(HierarchyListDTO)
+    @ApiResponse({ status: OK, type: HierarchyListDTO })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     @ApiOperation({ summary: "Returns a paginated list of ancestor roles of the specified role, including itself" })
     public findAncestors(
-        @Query() { descendant, realm, view }: GetRoleAncestorsListQueryDTO,
-        @Body() { pagination, filters }: GetRoleAncestorsListBodyDTO,
+        @Query() { descendant, realm, view }: GetAncestorsListQueryDTO,
+        @Body() { pagination, filters }: GetAncestorsListBodyDTO,
     ): Promise<[Queries.Role.DepthEntity[], number]> {
         return this.roleQueries.findAncestors({ descendant, pagination, filters, realm, view });
     }
@@ -131,27 +130,27 @@ export class RoleController {
     @HttpCode(OK)
     @Post("list/descendants")
     @RequirePermission(ROLE_READ_COMMON)
-    @FormatResponse(RoleHierarchyListDTO)
-    @ApiResponse({ status: OK, type: RoleHierarchyListDTO })
+    @FormatResponse(HierarchyListDTO)
+    @ApiResponse({ status: OK, type: HierarchyListDTO })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     @ApiOperation({ summary: "Returns a paginated list of descendant roles of the specified role, including itself" })
     public findDescendants(
-        @Query() { ancestor, realm, view }: GetRoleDescendantsListQueryDTO,
-        @Body() { pagination, filters }: GetRoleDescendantsListBodyDTO,
+        @Query() { ancestor, realm, view }: GetDescendantsListQueryDTO,
+        @Body() { pagination, filters }: GetDescendantsListBodyDTO,
     ): Promise<[Queries.Role.DepthEntity[], number]> {
         return this.roleQueries.findDescendants({ pagination, ancestor, filters, realm, view });
     }
 
     @HttpCode(OK)
-    @FormatResponse(RoleListDTO)
+    @FormatResponse(ListDTO)
     @Post("list/delegable/by-account")
-    @ApiResponse({ status: OK, type: RoleListDTO })
+    @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(ROLE_READ_PERSONAL, ROLE_READ_ABSOLUTE)
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     @ApiOperation({ summary: "Returns a paginated list of roles that can be delegated by the specified account" })
     public findDelegableByAccount(
-        @Body() { pagination, filters, sort }: GetDelegableRolesListBodyDTO,
-        @Query() { realm, id }: GetDelegableRolesListByAccountQueryDTO,
+        @Body() { pagination, filters, sort }: GetDelegableListBodyDTO,
+        @Query() { realm, id }: GetDelegableListQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
     ): Promise<[Queries.Role.Entity[], number]> {
@@ -159,29 +158,29 @@ export class RoleController {
     }
 
     @HttpCode(OK)
-    @FormatResponse(RoleListDTO)
+    @FormatResponse(ListDTO)
     @Post("list/delegable/by-role")
     @RequirePermission(ROLE_READ_COMMON)
-    @ApiResponse({ status: OK, type: RoleListDTO })
+    @ApiResponse({ status: OK, type: ListDTO })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     @ApiOperation({ summary: "Returns a paginated list of roles that can be delegated from the specified role" })
     public findDelegableByRole(
-        @Body() { pagination, filters, sort }: GetDelegableRolesListBodyDTO,
-        @Query() { realm, id }: GetDelegableRolesListByRoleQueryDTO,
+        @Body() { pagination, filters, sort }: GetDelegableListBodyDTO,
+        @Query() { realm, id }: GetDelegableListQueryDTO,
     ): Promise<[Queries.Role.Entity[], number]> {
         return this.roleQueries.findDelegableByRole({ pagination, filters, sort, realm, id });
     }
 
     @HttpCode(OK)
     @Post("list/effective")
-    @FormatResponse(RoleListDTO)
-    @ApiResponse({ status: OK, type: RoleListDTO })
+    @FormatResponse(ListDTO)
+    @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(ROLE_READ_PERSONAL, ROLE_READ_ABSOLUTE)
     @ApiOperation({ summary: "Returns a paginated list of effective roles for the account" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public findEffective(
-        @Body() { pagination, filters, sort }: GetEffectiveRolesListBodyDTO,
-        @Query() { realm, account }: GetEffectiveRolesListQueryDTO,
+        @Body() { pagination, filters, sort }: GetEffectiveListBodyDTO,
+        @Query() { realm, account }: GetEffectiveListQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
     ): Promise<[Queries.Role.Entity[], number]> {
@@ -190,14 +189,14 @@ export class RoleController {
 
     @HttpCode(OK)
     @Post("list/lookup")
-    @FormatResponse(RoleLookupListDTO)
+    @FormatResponse(LookupListDTO)
     @RequirePermission(ROLE_READ_COMMON)
-    @ApiResponse({ status: OK, type: RoleLookupListDTO })
+    @ApiResponse({ status: OK, type: LookupListDTO })
     @ApiOperation({ summary: "Returns a lookup list of roles" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getLookupList(
-        @Query() { realm, term }: GetRolesLookupListQueryDTO,
-        @Body() { pagination }: GetRolesLookupListBodyDTO,
+        @Query() { realm, term }: GetLookupListQueryDTO,
+        @Body() { pagination }: GetLookupListBodyDTO,
     ): Promise<[Queries.Role.Entity[], number]> {
         return this.roleQueries.getLookupList({ pagination, realm, term });
     }
@@ -209,7 +208,7 @@ export class RoleController {
     @ApiResponse({ status: OK, type: RoleHierarchyGraphDTO })
     @ApiOperation({ summary: "Returns the role hierarchy graph (nodes and edges)" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
-    public getHierarchyGraph(@Query() { realm }: GetRoleHierarchyGraphQueryDTO): Promise<Queries.Role.Graph> {
+    public getHierarchyGraph(@Query() { realm }: GetHierarchyGraphQueryDTO): Promise<Queries.Role.Graph> {
         return this.roleQueries.getHierarchyGraph({ realm });
     }
 
@@ -221,8 +220,8 @@ export class RoleController {
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
-        @Query() { realm }: CreateRoleQueryDTO,
-        @Body() input: CreateRoleBodyDTO,
+        @Query() { realm }: CreateQueryDTO,
+        @Body() input: CreateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -237,8 +236,8 @@ export class RoleController {
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public updateMetadata(
-        @Query() { realm, id }: UpdateRoleQueryDTO,
-        @Body() input: UpdateRoleBodyDTO,
+        @Query() { realm, id }: UpdateQueryDTO,
+        @Body() input: UpdateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -253,8 +252,8 @@ export class RoleController {
     @ApiOperation({ summary: "Revokes a non-system role" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public revoke(
-        @Query() { realm }: RevokeRoleQueryDTO,
-        @Body() input: RevokeRoleBodyDTO,
+        @Query() { realm }: RevokeQueryDTO,
+        @Body() input: RevokeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -269,8 +268,8 @@ export class RoleController {
     @ApiOperation({ summary: "Restores a non-system role" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public restore(
-        @Query() { realm }: RestoreRoleQueryDTO,
-        @Body() input: RestoreRoleBodyDTO,
+        @Query() { realm }: RestoreQueryDTO,
+        @Body() input: RestoreBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -285,8 +284,8 @@ export class RoleController {
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public purge(
-        @Query() { realm, id }: PurgeRoleQueryDTO,
-        @Body() input: PurgeRoleBodyDTO,
+        @Query() { realm, id }: PurgeQueryDTO,
+        @Body() input: PurgeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -301,8 +300,8 @@ export class RoleController {
     @ApiOperation({ summary: "Permanently deletes a role and its entire subtree" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public purgeSubtree(
-        @Query() { realm, id }: PurgeRoleSubtreeQueryDTO,
-        @Body() input: PurgeRoleSubtreeBodyDTO,
+        @Query() { realm, id }: PurgeSubtreeQueryDTO,
+        @Body() input: PurgeSubtreeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {

@@ -1,16 +1,16 @@
-export { GetRealmsLookupListQueryDTO, GetRealmsLookupListBodyDTO } from "./req/get-lookup-list.dto";
-export { UpdateRealmQueryDTO, UpdateRealmBodyDTO } from "./req/update.dto";
-export { GetRealmByIdQueryDTO } from "./req/get-by-id.dto";
-export { GetRealmsListBodyDTO } from "./req/get-list.dto";
-export { RestoreRealmBodyDTO } from "./req/restore.dto";
-export { RevokeRealmBodyDTO } from "./req/revoke.dto";
-export { CreateRealmBodyDTO } from "./req/create.dto";
-export { PurgeRealmBodyDTO } from "./req/purge.dto";
+export { GetLookupListQueryDTO, GetLookupListBodyDTO } from "./req/get-lookup-list.dto";
+export { UpdateQueryDTO, UpdateBodyDTO } from "./req/update.dto";
+export { GetByIdQueryDTO } from "./req/get-by-id.dto";
+export { GetListBodyDTO } from "./req/get-list.dto";
+export { RestoreBodyDTO } from "./req/restore.dto";
+export { RevokeBodyDTO } from "./req/revoke.dto";
+export { CreateBodyDTO } from "./req/create.dto";
+export { PurgeBodyDTO } from "./req/purge.dto";
 
-export { RealmLookupListDTO } from "./res/lookup-list.dto";
 export { RealmLookupDTO } from "./res/lookup-entity.dto";
-export { RealmListDTO } from "./res/list.dto";
+export { LookupListDTO } from "./res/lookup-list.dto";
 export { RealmDTO } from "./res/entity.dto";
+export { ListDTO } from "./res/list.dto";
 
-export { RealmsFiltersDTO } from "./utils/filters.dto";
-export { RealmsSortDTO } from "./utils/sort.dto";
+export { FiltersDTO } from "./utils/filters.dto";
+export { SortDTO } from "./utils/sort.dto";

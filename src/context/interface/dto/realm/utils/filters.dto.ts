@@ -1,10 +1,11 @@
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class RealmsFiltersDTO implements Adapters.Realm.Filters {
+@ApiSchema({ name: "RealmFilters" })
+export class FiltersDTO implements Adapters.Realm.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

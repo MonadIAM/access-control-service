@@ -1,11 +1,12 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
 
 import { RoleActorType, RoleProtoType } from "~context/enums";
 import { Validator } from "~common/validator";
 
 import { RealmLookupDTO } from "../../realm";
 
+@ApiSchema({ name: "Role" })
 export class RoleDTO {
     @Expose()
     @Validator.IsUUID()
@@ -45,7 +46,7 @@ export class RoleDTO {
     @Expose()
     @Validator.IsString()
     @Validator.IsOptional()
-    @ApiProperty({ required: true, type: String })
+    @ApiProperty({ required: false, type: String })
     declare public description?: string;
 
     @Expose()

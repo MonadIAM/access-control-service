@@ -1,9 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class CreateRolePermissionAssignmentBodyDTO {
+@ApiSchema({ name: "RolePermissionAssignmentCreateBody" })
+export class CreateBodyDTO {
     @Expose()
     @Validator.IsUniqueArray()
     @Validator.ArrayMinSize(1)
@@ -18,7 +19,8 @@ export class CreateRolePermissionAssignmentBodyDTO {
     declare public role: string;
 }
 
-export class CreateRolePermissionAssignmentQueryDTO {
+@ApiSchema({ name: "RolePermissionAssignmentCreateQuery" })
+export class CreateQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

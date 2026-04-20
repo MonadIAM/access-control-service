@@ -21,21 +21,21 @@ import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
-    GetRoleDelegationPoliciesListQueryDTO,
-    GetRoleDelegationPoliciesListBodyDTO,
-    GetRoleDelegationPolicyByIdQueryDTO,
-    RestoreRoleDelegationPolicyQueryDTO,
-    RestoreRoleDelegationPolicyBodyDTO,
-    RevokeRoleDelegationPolicyQueryDTO,
-    CreateRoleDelegationPolicyQueryDTO,
-    UpdateRoleDelegationPolicyQueryDTO,
-    UpdateRoleDelegationPolicyBodyDTO,
-    RevokeRoleDelegationPolicyBodyDTO,
-    CreateRoleDelegationPolicyBodyDTO,
-    PurgeRoleDelegationPolicyQueryDTO,
-    PurgeRoleDelegationPolicyBodyDTO,
-    RoleDelegationPolicyListDTO,
     RoleDelegationPolicyDTO,
+    GetListQueryDTO,
+    GetByIdQueryDTO,
+    RestoreQueryDTO,
+    GetListBodyDTO,
+    RestoreBodyDTO,
+    RevokeQueryDTO,
+    CreateQueryDTO,
+    UpdateQueryDTO,
+    UpdateBodyDTO,
+    RevokeBodyDTO,
+    CreateBodyDTO,
+    PurgeQueryDTO,
+    PurgeBodyDTO,
+    ListDTO,
 } from "../dto/role-delegation-policy";
 
 const {
@@ -76,22 +76,20 @@ export class RoleDelegationPolicyController {
     @ApiResponse({ status: OK, type: RoleDelegationPolicyDTO })
     @ApiOperation({ summary: "Returns a role delegation policy by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public findUnique(
-        @Query() { policy, realm, view }: GetRoleDelegationPolicyByIdQueryDTO,
-    ): Promise<Queries.RoleDelegationPolicy.Entity> {
+    public findUnique(@Query() { policy, realm, view }: GetByIdQueryDTO): Promise<Queries.RoleDelegationPolicy.Entity> {
         return this.roleDelegationPolicyQueries.findUnique({ policy, realm, view });
     }
 
     @Post("list")
     @HttpCode(OK)
-    @FormatResponse(RoleDelegationPolicyListDTO)
+    @FormatResponse(ListDTO)
     @RequirePermission(ROLE_DELEGATION_POLICY_READ_COMMON)
     @ApiOperation({ summary: "Returns a paginated list of role delegation policies" })
-    @ApiResponse({ status: OK, type: RoleDelegationPolicyListDTO })
+    @ApiResponse({ status: OK, type: ListDTO })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public findMany(
-        @Body() { pagination, filters, sort }: GetRoleDelegationPoliciesListBodyDTO,
-        @Query() { realm, view }: GetRoleDelegationPoliciesListQueryDTO,
+        @Body() { pagination, filters, sort }: GetListBodyDTO,
+        @Query() { realm, view }: GetListQueryDTO,
     ): Promise<[Queries.RoleDelegationPolicy.Entity[], number]> {
         return this.roleDelegationPolicyQueries.findMany({ pagination, filters, realm, sort, view });
     }
@@ -104,8 +102,8 @@ export class RoleDelegationPolicyController {
     @ApiOperation({ summary: "Creates a new role delegation policy" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
-        @Query() { realm }: CreateRoleDelegationPolicyQueryDTO,
-        @Body() input: CreateRoleDelegationPolicyBodyDTO,
+        @Query() { realm }: CreateQueryDTO,
+        @Body() input: CreateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -120,8 +118,8 @@ export class RoleDelegationPolicyController {
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public updateMetadata(
-        @Query() { realm, id }: UpdateRoleDelegationPolicyQueryDTO,
-        @Body() input: UpdateRoleDelegationPolicyBodyDTO,
+        @Query() { realm, id }: UpdateQueryDTO,
+        @Body() input: UpdateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -136,8 +134,8 @@ export class RoleDelegationPolicyController {
     @ApiOperation({ summary: "Revokes one or more non-system role delegation policies" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public revoke(
-        @Query() { realm }: RevokeRoleDelegationPolicyQueryDTO,
-        @Body() input: RevokeRoleDelegationPolicyBodyDTO,
+        @Query() { realm }: RevokeQueryDTO,
+        @Body() input: RevokeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -152,8 +150,8 @@ export class RoleDelegationPolicyController {
     @ApiOperation({ summary: "Restores one or more non-system role delegation policies" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public restore(
-        @Query() { realm }: RestoreRoleDelegationPolicyQueryDTO,
-        @Body() input: RestoreRoleDelegationPolicyBodyDTO,
+        @Query() { realm }: RestoreQueryDTO,
+        @Body() input: RestoreBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -168,8 +166,8 @@ export class RoleDelegationPolicyController {
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     @ApiOperation({ summary: "Permanently deletes one or more revoked non-system role delegation policies" })
     public purge(
-        @Query() { realm }: PurgeRoleDelegationPolicyQueryDTO,
-        @Body() input: PurgeRoleDelegationPolicyBodyDTO,
+        @Query() { realm }: PurgeQueryDTO,
+        @Body() input: PurgeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {

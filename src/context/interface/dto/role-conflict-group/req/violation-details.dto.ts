@@ -1,9 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class GetViolationDetailsBodyDTO {
+@ApiSchema({ name: "ViolationDetailsBody" })
+export class GetDetailsBodyDTO {
     @Expose()
     @Validator.IsUniqueArray()
     @Validator.ArrayMinSize(1)
@@ -17,7 +18,8 @@ export class GetViolationDetailsBodyDTO {
     declare public account: string;
 }
 
-export class GetViolationDetailsQueryDTO {
+@ApiSchema({ name: "ViolationDetailsQuery" })
+export class GetDetailsQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

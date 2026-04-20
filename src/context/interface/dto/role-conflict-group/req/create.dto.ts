@@ -1,9 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class CreateRoleConflictGroupBodyDTO {
+@ApiSchema({ name: "RoleConflictGroupCreateBody" })
+export class CreateBodyDTO {
     @Expose()
     @Validator.IsUniqueArray()
     @Validator.ArrayMaxSize(Number(process.env.BULK_OPERATION_LIMIT))
@@ -32,7 +33,8 @@ export class CreateRoleConflictGroupBodyDTO {
     declare public name: string;
 }
 
-export class CreateRoleConflictGroupQueryDTO {
+@ApiSchema({ name: "RoleConflictGroupCreateQuery" })
+export class CreateQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

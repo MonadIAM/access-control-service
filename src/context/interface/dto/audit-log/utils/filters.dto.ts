@@ -1,12 +1,14 @@
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
-import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
+import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class AuditLogsFiltersDTO implements Adapters.AuditLog.Filters {
+@ApiSchema({ name: "AuditLogFilters" })
+export class FiltersDTO implements Adapters.AuditLog.Filters {
     @Expose()
     @Validator.IsOptional()
+    @Validator.ValidateNested()
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
     public id?: StringFilterDTO;
@@ -27,24 +29,28 @@ export class AuditLogsFiltersDTO implements Adapters.AuditLog.Filters {
 
     @Expose()
     @Validator.IsOptional()
+    @Validator.ValidateNested()
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
     public ip?: StringFilterDTO;
 
     @Expose()
     @Validator.IsOptional()
+    @Validator.ValidateNested()
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
     public userAgent?: StringFilterDTO;
 
     @Expose()
     @Validator.IsOptional()
+    @Validator.ValidateNested()
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
     public actionType?: StringFilterDTO;
 
     @Expose()
     @Validator.IsOptional()
+    @Validator.ValidateNested()
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
     public entityType?: StringFilterDTO;

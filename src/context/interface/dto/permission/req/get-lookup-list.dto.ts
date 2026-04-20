@@ -1,13 +1,13 @@
-import { IsNotEmptyObject, ValidateIf } from "class-validator";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import { IsNotEmptyObject } from "class-validator";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 import { PaginationDTO } from "~common/dto";
 
-export class GetPermissionsLookupListBodyDTO {
+@ApiSchema({ name: "PermissionLookupListBody" })
+export class GetLookupListBodyDTO {
     @Expose()
-    @ValidateIf(({ pagination }) => pagination)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
@@ -15,7 +15,8 @@ export class GetPermissionsLookupListBodyDTO {
     declare public pagination: PaginationDTO;
 }
 
-export class GetPermissionsLookupListQueryDTO {
+@ApiSchema({ name: "PermissionLookupListQuery" })
+export class GetLookupListQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

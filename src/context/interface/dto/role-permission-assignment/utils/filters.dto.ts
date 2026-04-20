@@ -1,10 +1,11 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
 
-import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
+import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class RolePermissionAssignmentsFiltersDTO implements Adapters.RolePermissionAssignment.Filters {
+@ApiSchema({ name: "RolePermissionAssignmentFilters" })
+export class FiltersDTO implements Adapters.RolePermissionAssignment.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

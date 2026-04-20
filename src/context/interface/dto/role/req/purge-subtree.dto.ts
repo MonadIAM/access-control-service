@@ -1,16 +1,18 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class PurgeRoleSubtreeBodyDTO {
+@ApiSchema({ name: "RoleSubtreePurgeBody" })
+export class PurgeSubtreeBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
     declare public reason: string;
 }
 
-export class PurgeRoleSubtreeQueryDTO {
+@ApiSchema({ name: "RoleSubtreePurgeQuery" })
+export class PurgeSubtreeQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

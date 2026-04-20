@@ -1,10 +1,11 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class PermissionsSortDTO implements Adapters.Permission.Sort {
+@ApiSchema({ name: "PermissionSort" })
+export class SortDTO implements Adapters.Permission.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

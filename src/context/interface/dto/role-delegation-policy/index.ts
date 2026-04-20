@@ -1,13 +1,13 @@
-export { GetRoleDelegationPoliciesListQueryDTO, GetRoleDelegationPoliciesListBodyDTO } from "./req/get-list.dto";
-export { RestoreRoleDelegationPolicyQueryDTO, RestoreRoleDelegationPolicyBodyDTO } from "./req/restore.dto";
-export { RevokeRoleDelegationPolicyQueryDTO, RevokeRoleDelegationPolicyBodyDTO } from "./req/revoke.dto";
-export { CreateRoleDelegationPolicyQueryDTO, CreateRoleDelegationPolicyBodyDTO } from "./req/create.dto";
-export { UpdateRoleDelegationPolicyQueryDTO, UpdateRoleDelegationPolicyBodyDTO } from "./req/update.dto";
-export { PurgeRoleDelegationPolicyQueryDTO, PurgeRoleDelegationPolicyBodyDTO } from "./req/purge.dto";
-export { GetRoleDelegationPolicyByIdQueryDTO } from "./req/get-by-id.dto";
+export { GetListQueryDTO, GetListBodyDTO } from "./req/get-list.dto";
+export { RestoreQueryDTO, RestoreBodyDTO } from "./req/restore.dto";
+export { RevokeQueryDTO, RevokeBodyDTO } from "./req/revoke.dto";
+export { CreateQueryDTO, CreateBodyDTO } from "./req/create.dto";
+export { UpdateQueryDTO, UpdateBodyDTO } from "./req/update.dto";
+export { PurgeQueryDTO, PurgeBodyDTO } from "./req/purge.dto";
+export { GetByIdQueryDTO } from "./req/get-by-id.dto";
 
-export { RoleDelegationPolicyListDTO } from "./res/list.dto";
 export { RoleDelegationPolicyDTO } from "./res/entity.dto";
+export { ListDTO } from "./res/list.dto";
 
-export { RoleDelegationPoliciesFiltersDTO } from "./utils/filters.dto";
-export { RoleDelegationPoliciesSortDTO } from "./utils/sort.dto";
+export { FiltersDTO } from "./utils/filters.dto";
+export { SortDTO } from "./utils/sort.dto";

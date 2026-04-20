@@ -1,9 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class PurgeRoleConflictMemberBodyDTO {
+@ApiSchema({ name: "RoleConflictMemberPurgeBody" })
+export class PurgeBodyDTO {
     @Expose()
     @Validator.IsUniqueArray()
     @Validator.ArrayMinSize(1)
@@ -18,7 +19,8 @@ export class PurgeRoleConflictMemberBodyDTO {
     declare public reason: string;
 }
 
-export class PurgeRoleConflictMemberQueryDTO {
+@ApiSchema({ name: "RoleConflictMemberPurgeQuery" })
+export class PurgeQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

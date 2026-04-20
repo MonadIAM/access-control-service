@@ -1,10 +1,11 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { RoleActorType, RoleProtoType } from "~context/enums";
 import { Validator } from "~common/validator";
 
-export class CreateRoleBodyDTO {
+@ApiSchema({ name: "RoleCreateBody" })
+export class CreateBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
@@ -48,7 +49,8 @@ export class CreateRoleBodyDTO {
     declare public children: string[];
 }
 
-export class CreateRoleQueryDTO {
+@ApiSchema({ name: "RoleCreateQuery" })
+export class CreateQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

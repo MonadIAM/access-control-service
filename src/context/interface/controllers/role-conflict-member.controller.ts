@@ -9,15 +9,15 @@ import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
-    GetRoleConflictMembersListQueryDTO,
-    GetRoleConflictMembersListBodyDTO,
-    GetRoleConflictMemberByIdQueryDTO,
-    CreateRoleConflictMemberQueryDTO,
-    CreateRoleConflictMemberBodyDTO,
-    PurgeRoleConflictMemberQueryDTO,
-    PurgeRoleConflictMemberBodyDTO,
-    RoleConflictMemberListDTO,
     RoleConflictMemberDTO,
+    GetListQueryDTO,
+    GetByIdQueryDTO,
+    GetListBodyDTO,
+    CreateQueryDTO,
+    CreateBodyDTO,
+    PurgeQueryDTO,
+    PurgeBodyDTO,
+    ListDTO,
 } from "../dto/role-conflict-member";
 
 const { ROLE_CONFLICT_MEMBER_READ_ABSOLUTE, ROLE_CONFLICT_MEMBER_CREATE, ROLE_CONFLICT_MEMBER_PURGE } = PermissionCode;
@@ -52,21 +52,21 @@ export class RoleConflictMemberController {
     @ApiOperation({ summary: "Returns a role conflict member by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
-        @Query() { member, group, realm, view }: GetRoleConflictMemberByIdQueryDTO,
+        @Query() { member, group, realm, view }: GetByIdQueryDTO,
     ): Promise<Queries.RoleConflictMember.Entity> {
         return this.roleConflictMemberQueries.findUnique({ member, group, realm, view });
     }
 
     @Post("list")
     @HttpCode(OK)
-    @FormatResponse(RoleConflictMemberListDTO)
+    @FormatResponse(ListDTO)
     @RequirePermission(ROLE_CONFLICT_MEMBER_READ_ABSOLUTE)
     @ApiOperation({ summary: "Returns a paginated list of role conflict members" })
-    @ApiResponse({ status: OK, type: RoleConflictMemberListDTO })
+    @ApiResponse({ status: OK, type: ListDTO })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public findMany(
-        @Body() { pagination, filters, sort }: GetRoleConflictMembersListBodyDTO,
-        @Query() { group, realm, view }: GetRoleConflictMembersListQueryDTO,
+        @Body() { pagination, filters, sort }: GetListBodyDTO,
+        @Query() { group, realm, view }: GetListQueryDTO,
     ): Promise<[Queries.RoleConflictMember.Entity[], number]> {
         return this.roleConflictMemberQueries.findMany({ pagination, filters, group, realm, sort, view });
     }
@@ -79,8 +79,8 @@ export class RoleConflictMemberController {
     @ApiOperation({ summary: "Creates a new role conflict member(s)" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
-        @Query() { realm }: CreateRoleConflictMemberQueryDTO,
-        @Body() input: CreateRoleConflictMemberBodyDTO,
+        @Query() { realm }: CreateQueryDTO,
+        @Body() input: CreateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
@@ -95,9 +95,9 @@ export class RoleConflictMemberController {
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role conflict member(s)" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public purge(
-        @Query() { realm }: PurgeRoleConflictMemberQueryDTO,
+        @Query() { realm }: PurgeQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Body() input: PurgeRoleConflictMemberBodyDTO,
+        @Body() input: PurgeBodyDTO,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleConflictMemberCommands.purge({ actor, context, input, realm });

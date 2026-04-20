@@ -21,19 +21,19 @@ import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
-    GetPermissionOverridesListQueryDTO,
-    GetPermissionOverridesListBodyDTO,
-    GetPermissionOverrideByIdQueryDTO,
-    RestorePermissionOverrideQueryDTO,
-    RestorePermissionOverrideBodyDTO,
-    RevokePermissionOverrideQueryDTO,
-    CreatePermissionOverrideQueryDTO,
-    RevokePermissionOverrideBodyDTO,
-    CreatePermissionOverrideBodyDTO,
-    PurgePermissionOverrideQueryDTO,
-    PurgePermissionOverrideBodyDTO,
-    PermissionOverrideListDTO,
     PermissionOverrideDTO,
+    GetListQueryDTO,
+    GetByIdQueryDTO,
+    RestoreQueryDTO,
+    GetListBodyDTO,
+    RestoreBodyDTO,
+    RevokeQueryDTO,
+    CreateQueryDTO,
+    RevokeBodyDTO,
+    CreateBodyDTO,
+    PurgeQueryDTO,
+    PurgeBodyDTO,
+    ListDTO,
 } from "../dto/permission-override";
 
 const {
@@ -75,7 +75,7 @@ export class PermissionOverrideController {
     @RequirePermission(PERMISSION_OVERRIDE_READ_ABSOLUTE, PERMISSION_OVERRIDE_READ_PERSONAL)
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public getById(
-        @Query() { override, realm, view }: GetPermissionOverrideByIdQueryDTO,
+        @Query() { override, realm, view }: GetByIdQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
     ): Promise<Queries.PermissionOverride.Entity> {
@@ -84,14 +84,14 @@ export class PermissionOverrideController {
 
     @Post("list")
     @HttpCode(OK)
-    @FormatResponse(PermissionOverrideListDTO)
-    @ApiResponse({ status: OK, type: PermissionOverrideListDTO })
+    @FormatResponse(ListDTO)
+    @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({ summary: "Returns a paginated list of permission overrides" })
     @RequirePermission(PERMISSION_OVERRIDE_READ_ABSOLUTE, PERMISSION_OVERRIDE_READ_PERSONAL)
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
     public getList(
-        @Body() { pagination, filters, sort }: GetPermissionOverridesListBodyDTO,
-        @Query() { realm, view }: GetPermissionOverridesListQueryDTO,
+        @Body() { pagination, filters, sort }: GetListBodyDTO,
+        @Query() { realm, view }: GetListQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
     ): Promise<[Queries.PermissionOverride.Entity[], number]> {
@@ -106,9 +106,9 @@ export class PermissionOverrideController {
     @ApiOperation({ summary: "Creates a new permission override" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
     public create(
-        @Query() { realm }: CreatePermissionOverrideQueryDTO,
+        @Query() { realm }: CreateQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Body() input: CreatePermissionOverrideBodyDTO,
+        @Body() input: CreateBodyDTO,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionOverrideCommands.create({ context, realm, actor, input });
@@ -122,9 +122,9 @@ export class PermissionOverrideController {
     @ApiOperation({ summary: "Revokes a non-system permission override(s)" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public revoke(
-        @Query() { realm }: RevokePermissionOverrideQueryDTO,
+        @Query() { realm }: RevokeQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Body() input: RevokePermissionOverrideBodyDTO,
+        @Body() input: RevokeBodyDTO,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionOverrideCommands.revoke({ context, realm, actor, input });
@@ -138,9 +138,9 @@ export class PermissionOverrideController {
     @ApiOperation({ summary: "Restores a non-system permission override(s)" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public restore(
-        @Query() { realm }: RestorePermissionOverrideQueryDTO,
+        @Query() { realm }: RestoreQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Body() input: RestorePermissionOverrideBodyDTO,
+        @Body() input: RestoreBodyDTO,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionOverrideCommands.restore({ context, realm, actor, input });
@@ -154,9 +154,9 @@ export class PermissionOverrideController {
     @ApiOperation({ summary: "Permanently deletes a revoked non-system permission override(s)" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
     public purge(
-        @Query() { realm }: PurgePermissionOverrideQueryDTO,
+        @Query() { realm }: PurgeQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Body() input: PurgePermissionOverrideBodyDTO,
+        @Body() input: PurgeBodyDTO,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionOverrideCommands.purge({ context, realm, actor, input });

@@ -1,9 +1,10 @@
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 
-class RoleConflictGroupPatchDTO {
+@ApiSchema({ name: "RoleConflictGroupPatch" })
+class PatchDTO {
     @Expose()
     @Validator.IsString()
     @Validator.IsOptional()
@@ -17,20 +18,22 @@ class RoleConflictGroupPatchDTO {
     declare public description?: string;
 }
 
-export class UpdateRoleConflictGroupBodyDTO {
+@ApiSchema({ name: "RoleConflictGroupUpdateBody" })
+export class UpdateBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
     declare public reason: string;
 
     @Expose()
-    @Type(() => RoleConflictGroupPatchDTO)
+    @Type(() => PatchDTO)
     @Validator.ValidateNested()
-    @ApiProperty({ required: true, type: RoleConflictGroupPatchDTO })
-    declare public patch: RoleConflictGroupPatchDTO;
+    @ApiProperty({ required: true, type: PatchDTO })
+    declare public patch: PatchDTO;
 }
 
-export class UpdateRoleConflictGroupQueryDTO {
+@ApiSchema({ name: "RoleConflictGroupUpdateQuery" })
+export class UpdateQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

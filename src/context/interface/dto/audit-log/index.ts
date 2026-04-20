@@ -1,8 +1,8 @@
-export { GetAuditLogsListBodyDTO } from "./req/get-list.dto";
-export { GetAuditLogByIdQueryDTO } from "./req/get-by-id.dto";
+export { GetByIdQueryDTO } from "./req/get-by-id.dto";
+export { GetListBodyDTO } from "./req/get-list.dto";
 
-export { AuditLogListDTO } from "./res/list.dto";
 export { AuditLogDTO } from "./res/entity.dto";
+export { ListDTO } from "./res/list.dto";
 
-export { AuditLogsFiltersDTO } from "./utils/filters.dto";
-export { AuditLogsSortDTO } from "./utils/sort.dto";
+export { FiltersDTO } from "./utils/filters.dto";
+export { SortDTO } from "./utils/sort.dto";

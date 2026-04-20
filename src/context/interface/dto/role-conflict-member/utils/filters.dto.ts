@@ -1,10 +1,11 @@
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
-import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
+import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-export class RoleConflictMembersFiltersDTO implements Adapters.RoleConflictMember.Filters {
+@ApiSchema({ name: "RoleConflictMemberFilters" })
+export class FiltersDTO implements Adapters.RoleConflictMember.Filters {
     @Expose()
     @Validator.IsOptional()
     @Type(() => StringFilterDTO)

@@ -1,16 +1,16 @@
-import { IsNotEmptyObject, ValidateIf } from "class-validator";
+import { IsNotEmptyObject } from "class-validator";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
-import { Validator } from "~common/validator";
 import { PaginationDTO } from "~common/dto";
+import { Validator } from "~common/validator";
 
-import { RolesFiltersDTO } from "../utils/filters.dto";
-import { RolesSortDTO } from "../utils/sort.dto";
+import { FiltersDTO } from "../utils/filters.dto";
+import { SortDTO } from "../utils/sort.dto";
 
-export class GetDelegableRolesListBodyDTO {
+@ApiSchema({ name: "RoleDelegableListBody" })
+export class GetDelegableListBodyDTO {
     @Expose()
-    @ValidateIf(({ pagination }) => pagination)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
@@ -18,23 +18,22 @@ export class GetDelegableRolesListBodyDTO {
     declare public pagination: PaginationDTO;
 
     @Expose()
-    @ValidateIf(({ filters }) => filters)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => RolesFiltersDTO)
-    @ApiProperty({ required: true, type: RolesFiltersDTO })
-    declare public filters: RolesFiltersDTO;
+    @Type(() => FiltersDTO)
+    @ApiProperty({ required: true, type: FiltersDTO })
+    declare public filters: FiltersDTO;
 
     @Expose()
-    @ValidateIf(({ sort }) => sort)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => RolesSortDTO)
-    @ApiProperty({ required: true, type: RolesSortDTO })
-    declare public sort: RolesSortDTO;
+    @Type(() => SortDTO)
+    @ApiProperty({ required: true, type: SortDTO })
+    declare public sort: SortDTO;
 }
 
-export class GetDelegableRolesListByAccountQueryDTO {
+@ApiSchema({ name: "RoleDelegableListQuery" })
+export class GetDelegableListQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
@@ -42,19 +41,6 @@ export class GetDelegableRolesListByAccountQueryDTO {
 
     @Expose()
     @Validator.IsUUID()
-    @Validator.IsOptional()
     @ApiProperty({ required: false, type: String, format: "uuid" })
-    declare public id?: string;
-}
-
-export class GetDelegableRolesListByRoleQueryDTO {
-    @Expose()
-    @Validator.IsUUID()
-    @ApiProperty({ required: true, type: String, format: "uuid" })
-    declare public realm: string;
-
-    @Expose()
-    @Validator.IsUUID()
-    @ApiProperty({ required: true, type: String, format: "uuid" })
     declare public id: string;
 }

@@ -1,5 +1,5 @@
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { PermissionOverrideEffect } from "~context/enums";
 import { Validator } from "~common/validator";
@@ -7,6 +7,7 @@ import { Validator } from "~common/validator";
 import { PermissionLookupDTO } from "../../permission";
 import { RealmLookupDTO } from "../../realm";
 
+@ApiSchema({ name: "PermissionOverride" })
 export class PermissionOverrideDTO {
     @Expose()
     @Validator.IsUUID()

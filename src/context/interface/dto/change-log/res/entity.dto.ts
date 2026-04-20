@@ -1,10 +1,11 @@
 import { ChangeSetType, UnknownType } from "@mikro-orm/postgresql";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { AccessControlEntityType } from "~context/enums";
 import { Validator } from "~common/validator";
 
+@ApiSchema({ name: "ChangeLog" })
 export class ChangeLogDTO {
     @Expose()
     @Validator.IsUUID()
@@ -32,7 +33,11 @@ export class ChangeLogDTO {
     declare public entity: string;
 
     @Expose()
-    @ApiProperty({ required: true, type: UnknownType })
+    @ApiProperty({
+        type: Object,
+        required: true,
+        additionalProperties: true,
+    })
     declare public delta: UnknownType;
 
     @Expose()

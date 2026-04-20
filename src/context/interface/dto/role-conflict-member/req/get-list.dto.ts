@@ -1,16 +1,16 @@
-import { IsNotEmptyObject, ValidateIf } from "class-validator";
+import { IsNotEmptyObject } from "class-validator";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { BaseReadQueryDTO, PaginationDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-import { RoleConflictMembersFiltersDTO } from "../utils/filters.dto";
-import { RoleConflictMembersSortDTO } from "../utils/sort.dto";
+import { FiltersDTO } from "../utils/filters.dto";
+import { SortDTO } from "../utils/sort.dto";
 
-export class GetRoleConflictMembersListBodyDTO {
+@ApiSchema({ name: "RoleConflictMembersListBody" })
+export class GetListBodyDTO {
     @Expose()
-    @ValidateIf(({ pagination }) => pagination)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
@@ -18,23 +18,22 @@ export class GetRoleConflictMembersListBodyDTO {
     declare public pagination: PaginationDTO;
 
     @Expose()
-    @ValidateIf(({ filters }) => filters)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => RoleConflictMembersFiltersDTO)
-    @ApiProperty({ required: true, type: RoleConflictMembersFiltersDTO })
-    declare public filters: RoleConflictMembersFiltersDTO;
+    @Type(() => FiltersDTO)
+    @ApiProperty({ required: true, type: FiltersDTO })
+    declare public filters: FiltersDTO;
 
     @Expose()
-    @ValidateIf(({ sort }) => sort)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => RoleConflictMembersSortDTO)
-    @ApiProperty({ required: true, type: RoleConflictMembersSortDTO })
-    declare public sort: RoleConflictMembersSortDTO;
+    @Type(() => SortDTO)
+    @ApiProperty({ required: true, type: SortDTO })
+    declare public sort: SortDTO;
 }
 
-export class GetRoleConflictMembersListQueryDTO extends BaseReadQueryDTO {
+@ApiSchema({ name: "RoleConflictMembersListQuery" })
+export class GetListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

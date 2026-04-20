@@ -1,16 +1,16 @@
-import { IsNotEmptyObject, ValidateIf } from "class-validator";
+import { IsNotEmptyObject } from "class-validator";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
-import { Validator } from "~common/validator";
 import { PaginationDTO } from "~common/dto";
+import { Validator } from "~common/validator";
 
-import { RealmsFiltersDTO } from "../utils/filters.dto";
-import { RealmsSortDTO } from "../utils/sort.dto";
+import { FiltersDTO } from "../utils/filters.dto";
+import { SortDTO } from "../utils/sort.dto";
 
-export class GetRealmsListBodyDTO {
+@ApiSchema({ name: "RealmListBody" })
+export class GetListBodyDTO {
     @Expose()
-    @ValidateIf(({ pagination }) => pagination)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
@@ -18,18 +18,16 @@ export class GetRealmsListBodyDTO {
     declare public pagination: PaginationDTO;
 
     @Expose()
-    @ValidateIf(({ filters }) => filters)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => RealmsFiltersDTO)
-    @ApiProperty({ required: true, type: RealmsFiltersDTO })
-    declare public filters: RealmsFiltersDTO;
+    @Type(() => FiltersDTO)
+    @ApiProperty({ required: true, type: FiltersDTO })
+    declare public filters: FiltersDTO;
 
     @Expose()
-    @ValidateIf(({ sort }) => sort)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => RealmsSortDTO)
-    @ApiProperty({ required: true, type: RealmsSortDTO })
-    declare public sort: RealmsSortDTO;
+    @Type(() => SortDTO)
+    @ApiProperty({ required: true, type: SortDTO })
+    declare public sort: SortDTO;
 }

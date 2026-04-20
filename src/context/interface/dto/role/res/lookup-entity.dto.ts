@@ -1,8 +1,9 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
+@ApiSchema({ name: "RoleLookup" })
 export class RoleLookupDTO {
     @Expose()
     @Validator.IsUUID()

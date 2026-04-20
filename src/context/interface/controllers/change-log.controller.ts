@@ -6,7 +6,7 @@ import { CHANGE_LOG_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
-import { GetChangeLogsListBodyDTO, GetChangeLogByIdQueryDTO, ChangeLogListDTO, ChangeLogDTO } from "../dto/change-log";
+import { GetListBodyDTO, GetByIdQueryDTO, ChangeLogDTO, ListDTO } from "../dto/change-log";
 
 const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, OK } = HttpStatus;
 const { CHANGE_LOG_READ_ABSOLUTE } = PermissionCode;
@@ -27,20 +27,18 @@ export class ChangeLogController {
     @ApiResponse({ status: OK, type: ChangeLogDTO })
     @ApiOperation({ summary: "Returns a change log by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
-    public findUnique(@Query() { log }: GetChangeLogByIdQueryDTO): Promise<Queries.ChangeLog.Entity> {
+    public findUnique(@Query() { log }: GetByIdQueryDTO): Promise<Queries.ChangeLog.Entity> {
         return this.changeLogQueries.findUnique({ log });
     }
 
     @Post("list")
     @HttpCode(OK)
-    @FormatResponse(ChangeLogListDTO)
+    @FormatResponse(ListDTO)
+    @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(CHANGE_LOG_READ_ABSOLUTE)
-    @ApiResponse({ status: OK, type: ChangeLogListDTO })
     @ApiOperation({ summary: "Returns a paginated list of change logs" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
-    public getList(
-        @Body() { pagination, filters, sort }: GetChangeLogsListBodyDTO,
-    ): Promise<[Queries.ChangeLog.Entity[], number]> {
+    public getList(@Body() { pagination, filters, sort }: GetListBodyDTO): Promise<[Queries.ChangeLog.Entity[], number]> {
         return this.changeLogQueries.findMany({ pagination, filters, sort });
     }
 }

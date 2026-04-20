@@ -1,10 +1,11 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { UnknownType } from "@mikro-orm/core";
-import { ApiProperty } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
 import { Validator } from "~common/validator";
 
+@ApiSchema({ name: "AuditLog" })
 export class AuditLogDTO {
     @Expose()
     @Validator.IsUUID()
@@ -22,7 +23,11 @@ export class AuditLogDTO {
     declare public actor: string;
 
     @Expose()
-    @ApiProperty({ required: true, type: UnknownType })
+    @ApiProperty({
+        type: Object,
+        required: true,
+        additionalProperties: true,
+    })
     declare public input: UnknownType;
 
     @Expose()

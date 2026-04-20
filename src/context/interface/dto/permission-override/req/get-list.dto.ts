@@ -1,40 +1,39 @@
-import { IsNotEmptyObject, ValidateIf } from "class-validator";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import { IsNotEmptyObject } from "class-validator";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
 
 import { BaseReadQueryDTO, PaginationDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-import { PermissionOverridesFiltersDTO } from "../utils/filters.dto";
-import { PermissionOverridesSortDTO } from "../utils/sort.dto";
+import { FiltersDTO } from "../utils/filters.dto";
+import { SortDTO } from "../utils/sort.dto";
 
-export class GetPermissionOverridesListBodyDTO {
+@ApiSchema({ name: "PermissionOverrideListBody" })
+export class GetListBodyDTO {
     @Expose()
-    @ValidateIf(({ pagination }) => pagination)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
-    @ApiProperty({ required: true, type: PaginationDTO })
+    @ApiProperty({ required: false, type: PaginationDTO })
     declare public pagination: PaginationDTO;
 
     @Expose()
-    @ValidateIf(({ filters }) => filters)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => PermissionOverridesFiltersDTO)
-    @ApiProperty({ required: true, type: PermissionOverridesFiltersDTO })
-    declare public filters: PermissionOverridesFiltersDTO;
+    @Type(() => FiltersDTO)
+    @ApiProperty({ required: false, type: FiltersDTO })
+    declare public filters: FiltersDTO;
 
     @Expose()
-    @ValidateIf(({ sort }) => sort)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => PermissionOverridesSortDTO)
-    @ApiProperty({ required: true, type: PermissionOverridesSortDTO })
-    declare public sort: PermissionOverridesSortDTO;
+    @Type(() => SortDTO)
+    @ApiProperty({ required: false, type: SortDTO })
+    declare public sort: SortDTO;
 }
 
-export class GetPermissionOverridesListQueryDTO extends BaseReadQueryDTO {
+@ApiSchema({ name: "PermissionOverrideListQuery" })
+export class GetListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

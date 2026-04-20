@@ -1,9 +1,10 @@
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { RoleProtoType } from "~context/enums";
 import { Validator } from "~common/validator";
 
+@ApiSchema({ name: "GraphNodeAttributes" })
 class NodeAttributesDTO {
     @Expose()
     @Validator.IsString()
@@ -21,6 +22,7 @@ class NodeAttributesDTO {
     declare public isRevoked: boolean;
 }
 
+@ApiSchema({ name: "GraphNode" })
 class NodeDTO {
     @Expose()
     @Validator.IsString()
@@ -39,6 +41,7 @@ class NodeDTO {
     declare public attributes: NodeAttributesDTO;
 }
 
+@ApiSchema({ name: "GraphEdge" })
 class EdgeDTO {
     @Expose()
     @Validator.IsString()
@@ -56,6 +59,7 @@ class EdgeDTO {
     declare public target: string;
 }
 
+@ApiSchema({ name: "RoleHierarchyGraph" })
 export class RoleHierarchyGraphDTO {
     @Expose()
     @Validator.IsArray()

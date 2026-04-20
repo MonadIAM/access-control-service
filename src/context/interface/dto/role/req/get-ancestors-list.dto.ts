@@ -1,15 +1,15 @@
-import { IsNotEmptyObject, ValidateIf } from "class-validator";
+import { IsNotEmptyObject } from "class-validator";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { BaseReadQueryDTO, PaginationDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
-import { RolesFiltersDTO } from "../utils/filters.dto";
+import { FiltersDTO } from "../utils/filters.dto";
 
-export class GetRoleAncestorsListBodyDTO {
+@ApiSchema({ name: "RoleAncestorsListBody" })
+export class GetAncestorsListBodyDTO {
     @Expose()
-    @ValidateIf(({ pagination }) => pagination)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
     @Type(() => PaginationDTO)
@@ -17,15 +17,15 @@ export class GetRoleAncestorsListBodyDTO {
     declare public pagination: PaginationDTO;
 
     @Expose()
-    @ValidateIf(({ filters }) => filters)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => RolesFiltersDTO)
-    @ApiProperty({ required: true, type: RolesFiltersDTO })
-    declare public filters: RolesFiltersDTO;
+    @Type(() => FiltersDTO)
+    @ApiProperty({ required: true, type: FiltersDTO })
+    declare public filters: FiltersDTO;
 }
 
-export class GetRoleAncestorsListQueryDTO extends BaseReadQueryDTO {
+@ApiSchema({ name: "RoleAncestorsListQuery" })
+export class GetAncestorsListQueryDTO extends BaseReadQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

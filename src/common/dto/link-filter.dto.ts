@@ -1,10 +1,11 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { PublicLinkOperator } from "~infrastructure/database/enums";
 
 import { Validator } from "../validator";
 
+@ApiSchema({ name: "LinkFilter" })
 export class LinkFilterDTO {
     @Expose()
     @Validator.IsEnum(PublicLinkOperator)

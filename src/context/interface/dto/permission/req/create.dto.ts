@@ -1,9 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class CreatePermissionBodyDTO {
+@ApiSchema({ name: "PermissionCreateBody" })
+export class CreateBodyDTO {
     @Expose()
     @Validator.IsString()
     @Validator.IsOptional()
@@ -21,7 +22,8 @@ export class CreatePermissionBodyDTO {
     declare public name: string;
 }
 
-export class CreatePermissionQueryDTO {
+@ApiSchema({ name: "PermissionCreateQuery" })
+export class CreateQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

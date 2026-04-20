@@ -1,9 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class RevokeAccountRoleAssignmentBodyDTO {
+@ApiSchema({ name: "AccountRoleAssignmentRevokeBody" })
+export class RevokeBodyDTO {
     @Expose()
     @Validator.IsUniqueArray()
     @Validator.ArrayMinSize(1)
@@ -18,7 +19,8 @@ export class RevokeAccountRoleAssignmentBodyDTO {
     declare public reason: string;
 }
 
-export class RevokeAccountRoleAssignmentQueryDTO {
+@ApiSchema({ name: "AccountRoleAssignmentRevokeQuery" })
+export class RevokeQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

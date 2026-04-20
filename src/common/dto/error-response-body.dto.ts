@@ -1,14 +1,25 @@
 import { UnknownType } from "@mikro-orm/postgresql";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 
-class ValidationErrorDetailDTO {
+@ApiSchema({ name: "ValidationErrorDetails" })
+class ValidationErrorDetailsDTO {
     @Expose()
     @Validator.IsOptional()
-    @ApiProperty({ required: false, type: UnknownType })
-    declare public invalidValue?: unknown;
+    @ApiProperty({
+        required: false,
+        nullable: true,
+        oneOf: [
+            { type: "object", additionalProperties: true },
+            { type: "array", items: {} },
+            { type: "boolean" },
+            { type: "string" },
+            { type: "number" },
+        ],
+    })
+    declare public invalidValue?: UnknownType;
 
     @Expose()
     @Validator.IsString()
@@ -26,6 +37,7 @@ class ValidationErrorDetailDTO {
     declare public path: string;
 }
 
+@ApiSchema({ name: "ErrorResponseBody" })
 export class ErrorResponseBodyDTO {
     @Expose()
     @Validator.IsString()
@@ -56,8 +68,8 @@ export class ErrorResponseBodyDTO {
 
     @Expose()
     @Validator.IsOptional()
-    @Type(() => ValidationErrorDetailDTO)
+    @Type(() => ValidationErrorDetailsDTO)
     @Validator.IsArray()
-    @ApiProperty({ required: false, type: [ValidationErrorDetailDTO] })
-    declare public details?: ValidationErrorDetailDTO[];
+    @ApiProperty({ required: false, type: [ValidationErrorDetailsDTO] })
+    declare public details?: ValidationErrorDetailsDTO[];
 }

@@ -1,8 +1,9 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 
+@ApiSchema({ name: "ListMeta" })
 class ListMetaDTO {
     @Expose()
     @Validator.IsInt()
@@ -26,6 +27,7 @@ class ListMetaDTO {
     declare public currentPage: number;
 }
 
+@ApiSchema({ name: "BaseList" })
 export class BaseListDTO<T> {
     @Expose()
     @Validator.IsArray()

@@ -1,9 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
 
-export class RestoreRolePermissionAssignmentBodyDTO {
+@ApiSchema({ name: "RolePermissionAssignmentRestoreBody" })
+export class RestoreBodyDTO {
     @Expose()
     @Validator.IsUniqueArray()
     @Validator.ArrayMinSize(1)
@@ -18,7 +19,8 @@ export class RestoreRolePermissionAssignmentBodyDTO {
     declare public reason: string;
 }
 
-export class RestoreRolePermissionAssignmentQueryDTO {
+@ApiSchema({ name: "RolePermissionAssignmentRestoreQuery" })
+export class RestoreQueryDTO {
     @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })

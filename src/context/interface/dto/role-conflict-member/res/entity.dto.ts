@@ -1,11 +1,12 @@
 import { Expose, Type } from "class-transformer";
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 
 import { RoleConflictGroupLookupDTO } from "../../role-conflict-group";
 import { RoleLookupDTO } from "../../role";
 
+@ApiSchema({ name: "RoleConflictMember" })
 export class RoleConflictMemberDTO {
     @Expose()
     @Validator.IsUUID()
