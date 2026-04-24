@@ -72,7 +72,7 @@ services:
     image: ${KAFKA_CONNECT_IMAGE:?}
     container_name: ${SERVICE_NAME}-kafka-connect
     ports:
-      - "8084:8083"
+      - "${KAFKA_CONNECT_PORT}:8083"
     env_file:
       - .env
     environment:
@@ -95,7 +95,7 @@ services:
       start_period: 30s
 
   debezium-init:
-    image: alpine:3.21
+    image: ${DEBEZIUM_INIT_IMAGE:?}
     container_name: ${SERVICE_NAME}-debezium-init
     env_file:
       - .env
@@ -104,7 +104,7 @@ services:
     depends_on:
       kafka-connect:
         condition: service_healthy
-    entrypoint: ["sh", "-c", "apk add --no-cache curl gettext && envsubst < /connector.json.tpl | curl -f -X POST http://${SERVICE_NAME}-kafka-connect:8083/connectors -H 'Content-Type: application/json' --data-binary @-"]
+    entrypoint: ["sh", "-c", "apk add --no-cache curl gettext jq && envsubst < /connector.json.tpl | jq .config | curl -s -X PUT http://${SERVICE_NAME}-kafka-connect:8083/connectors/outbox-connector/config -H 'Content-Type: application/json' --data-binary @-"]
     networks:
       - internal
 

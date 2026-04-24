@@ -85,7 +85,7 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_CQRS_ENABLED: boolean;
 
     // ---------------------------------------------------------------------------
-    // PostgreSQL - write-side
+    // PostgreSQL - write
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
@@ -109,7 +109,7 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_WRITE_POOL_IDLE_MS: number;
 
     // ---------------------------------------------------------------------------
-    // PostgreSQL - read-side
+    // PostgreSQL - read
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
@@ -202,8 +202,16 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public KAFKA_CONNECT_IMAGE: string;
 
+    @Validator.IsInt()
+    @Validator.Min(0)
+    declare public KAFKA_CONNECT_PORT: number;
+
+    // ---------------------------------------------------------------------------
+    // Debezium
+    // ---------------------------------------------------------------------------
+
     @Validator.IsString()
-    declare public KAFKA_TOPIC_PREFIX: string;
+    declare public DEBEZIUM_INIT_IMAGE: string;
 
     // ---------------------------------------------------------------------------
     // Domain-specific limits
