@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
-import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { EventType, EntityType } from "~context/enums";
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
@@ -25,7 +25,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
         private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.InternalContract,
         @Inject(REALM_REPOSITORY)
@@ -42,11 +42,11 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     ): Promise<Commands.AccountRoleAssignment.Create.Result> {
         const { input, actor, realm } = props;
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.ROLE_ASSIGNMENT,
-                actionType: AccessControlActionType.CREATE,
+                entityType: EntityType.ROLE_ASSIGNMENT,
+                actionType: EventType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -88,11 +88,11 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     ): Promise<Commands.AccountRoleAssignment.Purge.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.ROLE_ASSIGNMENT,
-                actionType: AccessControlActionType.DELETE,
+                entityType: EntityType.ROLE_ASSIGNMENT,
+                actionType: EventType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -107,7 +107,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 } else {
                     this.accountRoleAssignmentService.purge({ transaction, entities });
 
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });
@@ -129,11 +129,11 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     ): Promise<Commands.AccountRoleAssignment.Revoke.Result> {
         const { input } = props;
 
-        const entities = await this.transactional.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.ROLE_ASSIGNMENT,
-                actionType: AccessControlActionType.REVOKE,
+                entityType: EntityType.ROLE_ASSIGNMENT,
+                actionType: EventType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -173,11 +173,11 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     ): Promise<Commands.AccountRoleAssignment.Restore.Result> {
         const { input } = props;
 
-        const entities = await this.transactional.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.ROLE_ASSIGNMENT,
-                actionType: AccessControlActionType.RESTORE,
+                entityType: EntityType.ROLE_ASSIGNMENT,
+                actionType: EventType.RESTORE,
                 ...props,
             },
             changeLog: true,

@@ -1,8 +1,8 @@
 import { ChangeSetType, FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
-import { AccessControlEntityType } from "~context/enums";
+import { EntityType } from "~context/enums";
 import { MikroAdapter } from "~infrastructure/database/utils";
-import { ChangeLog } from "~common/tracking";
+import { ChangeLog } from "~common/transaction-manager";
 
 export class ChangeLogAdapter implements Adapters.Contract<ChangeLog, Adapters.ChangeLog.Types> {
     public buildWhereORM(filters: Adapters.ChangeLog.Filters, basic: ObjectQuery<ChangeLog> = {}): ObjectQuery<ChangeLog> {
@@ -21,7 +21,7 @@ export class ChangeLogAdapter implements Adapters.Contract<ChangeLog, Adapters.C
             where.changeType = MikroAdapter.applyStringFilter<ChangeSetType>(filters.changeType);
         }
         if (filters.entityType) {
-            where.entityType = MikroAdapter.applyStringFilter<AccessControlEntityType>(filters.entityType);
+            where.entityType = MikroAdapter.applyStringFilter<EntityType>(filters.entityType);
         }
         if (filters.createdAt) {
             where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);

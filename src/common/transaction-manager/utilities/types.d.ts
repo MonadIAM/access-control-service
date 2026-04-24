@@ -1,4 +1,4 @@
-declare namespace Tracking {
+declare namespace TransactionManager {
     type OperationContextData = {
         changeLogEnabled: boolean;
         auditEntry: string;

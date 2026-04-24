@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
-import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { EventType, EntityType } from "~context/enums";
 import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 import {
     PERMISSION_OVERRIDE_REPOSITORY,
@@ -25,7 +25,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(PERMISSION_OVERRIDE_REPOSITORY)
         private readonly permissionOverrideRepository: Repositories.PermissionOverride.InternalContract,
         @Inject(PERMISSION_REPOSITORY)
@@ -42,11 +42,11 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     ): Promise<Commands.PermissionOverride.Create.Result> {
         const { input, realm } = props;
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
-                actionType: AccessControlActionType.CREATE,
+                entityType: EntityType.PERMISSION_OVERRIDE,
+                actionType: EventType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -85,11 +85,11 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     public async purge(props: Commands.PermissionOverride.Purge.Props): Promise<Commands.PermissionOverride.Purge.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
-                actionType: AccessControlActionType.DELETE,
+                entityType: EntityType.PERMISSION_OVERRIDE,
+                actionType: EventType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -104,7 +104,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 } else {
                     this.permissionOverrideService.purge({ transaction, entities });
 
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });
@@ -123,11 +123,11 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     ): Promise<Commands.PermissionOverride.Revoke.Result> {
         const { input } = props;
 
-        const entities = await this.transactional.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
-                actionType: AccessControlActionType.REVOKE,
+                entityType: EntityType.PERMISSION_OVERRIDE,
+                actionType: EventType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -167,11 +167,11 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     ): Promise<Commands.PermissionOverride.Restore.Result> {
         const { input } = props;
 
-        const entities = await this.transactional.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION_OVERRIDE,
-                actionType: AccessControlActionType.RESTORE,
+                entityType: EntityType.PERMISSION_OVERRIDE,
+                actionType: EventType.RESTORE,
                 ...props,
             },
             changeLog: true,

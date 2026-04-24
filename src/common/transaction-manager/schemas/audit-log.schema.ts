@@ -1,11 +1,11 @@
 import { EntitySchema } from "@mikro-orm/core";
 
-import { AuditLog } from "~common/tracking/entities";
+import { AuditLog } from "~common/transaction-manager/entities";
 
 export const AuditLogSchema = new EntitySchema<AuditLog>({
     class: AuditLog,
     tableName: "audit_log",
-    schema: "tracking",
+    schema: "system",
 
     indexes: [
         {

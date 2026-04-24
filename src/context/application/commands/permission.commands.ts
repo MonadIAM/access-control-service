@@ -2,9 +2,9 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
-import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { EventType, EntityType } from "~context/enums";
 import { PERMISSION_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 
 import {
@@ -22,7 +22,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(PERMISSION_REPOSITORY)
         private readonly permissionRepository: Repositories.Permission.InternalContract,
         @Inject(REALM_REPOSITORY)
@@ -35,11 +35,11 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public async create(props: Commands.Permission.Create.Props): Promise<Commands.Permission.Create.Result> {
         const { input, realm } = props;
 
-        const entity = await this.transactional.run({
+        const entity = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION,
-                actionType: AccessControlActionType.CREATE,
+                entityType: EntityType.PERMISSION,
+                actionType: EventType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -65,11 +65,11 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public async update(props: Commands.Permission.Update.Props): Promise<Commands.Permission.Update.Result> {
         const { input, realm, id } = props;
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION,
-                actionType: AccessControlActionType.UPDATE,
+                entityType: EntityType.PERMISSION,
+                actionType: EventType.UPDATE,
                 ...props,
             },
             changeLog: true,
@@ -91,11 +91,11 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public async purge(props: Commands.Permission.Purge.Props): Promise<Commands.Permission.Purge.Result> {
         const { input, realm } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION,
-                actionType: AccessControlActionType.DELETE,
+                entityType: EntityType.PERMISSION,
+                actionType: EventType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -109,8 +109,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
                     throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 } else {
                     this.permissionService.purge({ transaction, entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });
@@ -127,11 +126,11 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public async revoke(props: Commands.Permission.Revoke.Props): Promise<Commands.Permission.Revoke.Result> {
         const { input, realm } = props;
 
-        const { entities, affected } = await this.transactional.run({
+        const { entities, affected } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION,
-                actionType: AccessControlActionType.REVOKE,
+                entityType: EntityType.PERMISSION,
+                actionType: EventType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -174,11 +173,11 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public async restore(props: Commands.Permission.Restore.Props): Promise<Commands.Permission.Restore.Result> {
         const { input, realm } = props;
 
-        const { entities, affected } = await this.transactional.run({
+        const { entities, affected } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION,
-                actionType: AccessControlActionType.RESTORE,
+                entityType: EntityType.PERMISSION,
+                actionType: EventType.RESTORE,
                 ...props,
             },
             changeLog: true,

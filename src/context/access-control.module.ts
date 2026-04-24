@@ -2,9 +2,9 @@ import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 
+import { TransactionManagerModule } from "~common/transaction-manager";
 import { FormatResponseInterceptor } from "~common/interceptors";
 import { COMMON_SERVICES } from "~common/services";
-import { TrackingModule } from "~common/tracking";
 
 import { PermissionGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
@@ -17,7 +17,7 @@ import { COMMANDS } from "./application/commands";
 import { QUERIES } from "./application/queries";
 
 @Module({
-    imports: [TrackingModule, BullModule.registerQueue({ name: "permission-cache-invalidation" })],
+    imports: [TransactionManagerModule, BullModule.registerQueue({ name: "permission-cache-invalidation" })],
     providers: [
         ...INFRASTRUCTURE_SERVICES,
         ...DOMAIN_SERVICES,

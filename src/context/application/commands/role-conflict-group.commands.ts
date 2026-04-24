@@ -2,9 +2,9 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { ROLE_CONFLICT_GROUP_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { EventType, EntityType } from "~context/enums";
 import { ROLE_CONFLICT_GROUP_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 
 import {
@@ -22,7 +22,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
         private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.InternalContract,
         @Inject(REALM_REPOSITORY)
@@ -37,11 +37,11 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
     public async create(props: Commands.RoleConflictGroup.Create.Props): Promise<Commands.RoleConflictGroup.Create.Result> {
         const { input, realm } = props;
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.CONFLICT_GROUP,
-                actionType: AccessControlActionType.CREATE,
+                entityType: EntityType.CONFLICT_GROUP,
+                actionType: EventType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -80,11 +80,11 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
     public async update(props: Commands.RoleConflictGroup.Update.Props): Promise<Commands.RoleConflictGroup.Update.Result> {
         const { input, realm, id } = props;
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.CONFLICT_GROUP,
-                actionType: AccessControlActionType.UPDATE,
+                entityType: EntityType.CONFLICT_GROUP,
+                actionType: EventType.UPDATE,
                 ...props,
             },
             changeLog: true,
@@ -106,11 +106,11 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
     public async purge(props: Commands.RoleConflictGroup.Purge.Props): Promise<Commands.RoleConflictGroup.Purge.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.CONFLICT_GROUP,
-                actionType: AccessControlActionType.DELETE,
+                entityType: EntityType.CONFLICT_GROUP,
+                actionType: EventType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -124,8 +124,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                     throw CommandException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                 } else {
                     this.roleConflictGroupService.purge({ transaction, entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });
@@ -142,11 +141,11 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
     public async revoke(props: Commands.RoleConflictGroup.Revoke.Props): Promise<Commands.RoleConflictGroup.Revoke.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.CONFLICT_GROUP,
-                actionType: AccessControlActionType.REVOKE,
+                entityType: EntityType.CONFLICT_GROUP,
+                actionType: EventType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -160,8 +159,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                     throw CommandException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                 } else {
                     this.roleConflictGroupService.revoke({ entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });
@@ -180,11 +178,11 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
     ): Promise<Commands.RoleConflictGroup.Restore.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.CONFLICT_GROUP,
-                actionType: AccessControlActionType.RESTORE,
+                entityType: EntityType.CONFLICT_GROUP,
+                actionType: EventType.RESTORE,
                 ...props,
             },
             changeLog: true,
@@ -198,8 +196,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                     throw CommandException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                 } else {
                     this.roleConflictGroupService.restore({ entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });

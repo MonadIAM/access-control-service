@@ -2,8 +2,8 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { EventType, EntityType } from "~context/enums";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ROLE_SERVICE } from "~context/domain/services";
 import { CommandException } from "~common/exceptions";
 
@@ -23,7 +23,7 @@ export class RoleCommands implements Commands.Role.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(ROLE_REPOSITORY)
@@ -36,11 +36,11 @@ export class RoleCommands implements Commands.Role.Contract {
     public async create(props: Commands.Role.Create.Props): Promise<Commands.Role.Create.Result> {
         const { input, realm } = props;
 
-        const entity = await this.transactional.run({
+        const entity = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: AccessControlActionType.CREATE,
-                entityType: AccessControlEntityType.ROLE,
+                actionType: EventType.CREATE,
+                entityType: EntityType.ROLE,
                 ...props,
             },
             changeLog: true,
@@ -72,11 +72,11 @@ export class RoleCommands implements Commands.Role.Contract {
     public async update(props: Commands.Role.Update.Props): Promise<Commands.Role.Update.Result> {
         const { input, realm, id } = props;
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: AccessControlActionType.UPDATE,
-                entityType: AccessControlEntityType.ROLE,
+                actionType: EventType.UPDATE,
+                entityType: EntityType.ROLE,
                 ...props,
             },
             changeLog: true,
@@ -98,11 +98,11 @@ export class RoleCommands implements Commands.Role.Contract {
     public async purge(props: Commands.Role.Purge.Props): Promise<Commands.Role.Purge.Result> {
         const { realm, id } = props;
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: AccessControlActionType.DELETE,
-                entityType: AccessControlEntityType.ROLE,
+                actionType: EventType.DELETE,
+                entityType: EntityType.ROLE,
                 ...props,
             },
             changeLog: true,
@@ -128,11 +128,11 @@ export class RoleCommands implements Commands.Role.Contract {
     public async purgeSubtree(props: Commands.Role.PurgeSubtree.Props): Promise<Commands.Role.PurgeSubtree.Result> {
         const { realm, id } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: AccessControlActionType.DELETE,
-                entityType: AccessControlEntityType.ROLE,
+                actionType: EventType.DELETE,
+                entityType: EntityType.ROLE,
                 ...props,
             },
             changeLog: true,
@@ -142,11 +142,13 @@ export class RoleCommands implements Commands.Role.Contract {
                     transaction,
                 });
 
-                return await this.roleService.purgeSubtree({
+                const count = await this.roleService.purgeSubtree({
                     transaction,
                     entity,
                     realm,
                 });
+
+                return { count };
             },
         });
 
@@ -158,11 +160,11 @@ export class RoleCommands implements Commands.Role.Contract {
     public async revoke(props: Commands.Role.Revoke.Props): Promise<Commands.Role.Revoke.Result> {
         const { input, realm } = props;
 
-        const { entities, affected } = await this.transactional.run({
+        const { entities, affected } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: AccessControlActionType.REVOKE,
-                entityType: AccessControlEntityType.ROLE,
+                actionType: EventType.REVOKE,
+                entityType: EntityType.ROLE,
                 ...props,
             },
             changeLog: true,
@@ -205,11 +207,11 @@ export class RoleCommands implements Commands.Role.Contract {
     public async restore(props: Commands.Role.Restore.Props): Promise<Commands.Role.Restore.Result> {
         const { input, realm } = props;
 
-        const { entities, affected } = await this.transactional.run({
+        const { entities, affected } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: AccessControlActionType.RESTORE,
-                entityType: AccessControlEntityType.ROLE,
+                actionType: EventType.RESTORE,
+                entityType: EntityType.ROLE,
                 ...props,
             },
             changeLog: true,

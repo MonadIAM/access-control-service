@@ -1,4 +1,4 @@
-import { AuditLog as AuditLogEntity } from "~common/tracking";
+import { AuditLog as AuditLogEntity } from "~common/transaction-manager";
 
 declare global {
     namespace Repositories {

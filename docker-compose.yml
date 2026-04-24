@@ -67,6 +67,47 @@ services:
       retries: 10
       start_period: 20s
 
+  kafka-connect:
+    <<: *base
+    image: ${KAFKA_CONNECT_IMAGE:?}
+    container_name: ${SERVICE_NAME}-kafka-connect
+    ports:
+      - "8084:8083"
+    env_file:
+      - .env
+    environment:
+      BOOTSTRAP_SERVERS: ${KAFKA_BROKER}
+      GROUP_ID: ${SERVICE_NAME}-connect
+      CONFIG_STORAGE_TOPIC: ${SERVICE_NAME}-connect-configs
+      OFFSET_STORAGE_TOPIC: ${SERVICE_NAME}-connect-offsets
+      STATUS_STORAGE_TOPIC: ${SERVICE_NAME}-connect-status
+    depends_on:
+      postgresql-primary:
+        condition: service_healthy
+    networks:
+      - internal
+      - kafka_net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  debezium-init:
+    image: alpine:3.21
+    container_name: ${SERVICE_NAME}-debezium-init
+    env_file:
+      - .env
+    volumes:
+      - ./docker/debezium/connector.json.tpl:/connector.json.tpl:ro
+    depends_on:
+      kafka-connect:
+        condition: service_healthy
+    entrypoint: ["sh", "-c", "apk add --no-cache curl gettext && envsubst < /connector.json.tpl | curl -f -X POST http://${SERVICE_NAME}-kafka-connect:8083/connectors -H 'Content-Type: application/json' --data-binary @-"]
+    networks:
+      - internal
+
   redis:
     <<: *base
     image: ${REDIS_IMAGE:?}

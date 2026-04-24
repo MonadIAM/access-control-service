@@ -2,7 +2,7 @@ import { ChangeSetType, UnknownType } from "@mikro-orm/postgresql";
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
-import { AccessControlEntityType } from "~context/enums";
+import { EntityType } from "~context/enums";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "ChangeLog" })
@@ -23,9 +23,9 @@ export class ChangeLogDTO {
     declare public changeType: ChangeSetType;
 
     @Expose()
-    @Validator.IsEnum(AccessControlEntityType)
-    @ApiProperty({ required: true, enum: AccessControlEntityType, enumName: "AccessControlEntityType" })
-    declare public entityType: AccessControlEntityType;
+    @Validator.IsEnum(EntityType)
+    @ApiProperty({ required: true, enum: EntityType, enumName: "EntityType" })
+    declare public entityType: EntityType;
 
     @Expose()
     @Validator.IsString()

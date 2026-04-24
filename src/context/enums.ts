@@ -20,7 +20,7 @@ export enum PermissionOverrideEffect {
     /* eslint-enable prettier/prettier */
 }
 
-export enum AccessControlEntityType {
+export enum EntityType {
     /* eslint-disable prettier/prettier */
     PERMISSION_ASSIGNMENT = "PERMISSION_ASSIGNMENT",
     PERMISSION_OVERRIDE   = "PERMISSION_OVERRIDE",
@@ -34,13 +34,23 @@ export enum AccessControlEntityType {
     /* eslint-enable prettier/prettier */
 }
 
-export enum AccessControlActionType {
+export const AggregateType = EntityType;
+export type AggregateType = EntityType;
+
+export enum EventType {
     /* eslint-disable prettier/prettier */
     RESTORE = "RESTORE",
     REVOKE  = "REVOKE",
     CREATE  = "CREATE",
     UPDATE  = "UPDATE",
     DELETE  = "DELETE",
+    /* eslint-enable prettier/prettier */
+}
+
+export enum OutboxTopic {
+    /* eslint-disable prettier/prettier */
+    BLACKLIST = "BLACKLIST",
+    ASSIGN    = "ASSIGN",
     /* eslint-enable prettier/prettier */
 }
 

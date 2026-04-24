@@ -88,6 +88,8 @@ declare namespace NodeJS {
         KAFKA_RETRY_ATTEMPTS: `${number}`;
         KAFKA_RETRY_INITIAL_TIME: `${number}`;
         DOCKER_NETWORK_NAME: string;
+        KAFKA_CONNECT_IMAGE: string;
+        KAFKA_TOPIC_PREFIX: string;
 
         // ---------------------------------------------------------------------------
         // Domain-specific limits

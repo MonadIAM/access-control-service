@@ -41,7 +41,7 @@ export const KAFKA_MICROSERVICE_CONFIG = Symbol("KAFKA_MICROSERVICE_CONFIG");
                     },
                     consumer: {
                         groupId: `${config.getOrThrow("SERVICE_NAME")}-consumer-server`,
-                        allowAutoTopicCreation: true,
+                        allowAutoTopicCreation: false,
                     },
                 },
             }),

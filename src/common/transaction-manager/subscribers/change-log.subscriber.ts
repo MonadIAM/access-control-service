@@ -1,11 +1,10 @@
 import { EventSubscriber, FlushEventArgs, ChangeSetType } from "@mikro-orm/core";
 import { Injectable } from "@nestjs/common";
 
-import { ChangeLog, AuditLog } from "~common/tracking/entities";
-import { OperationContext } from "~common/tracking/utilities";
-import { RoleClosure } from "~context/domain/entities";
+import { ChangeLog, AuditLog } from "~common/transaction-manager/entities";
+import { OperationContext } from "~common/transaction-manager/utilities";
 
-const EXCLUDED_ENTITIES = new Set([AuditLog.name, ChangeLog.name, RoleClosure.name]);
+const EXCLUDED_ENTITIES = new Set([AuditLog.name, ChangeLog.name]);
 
 @Injectable()
 export class ChangeLogSubscriber implements EventSubscriber {
@@ -36,7 +35,7 @@ export class ChangeLogSubscriber implements EventSubscriber {
         }
     }
 
-    private buildDelta(changeSet: Tracking.ChangeLogSubscriber.BuildDelta): DeltaChanges {
+    private buildDelta(changeSet: TransactionManager.ChangeLogSubscriber.BuildDelta): DeltaChanges {
         const delta: DeltaChanges = {};
 
         switch (changeSet.type) {

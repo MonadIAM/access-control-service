@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
-import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { EventType, EntityType } from "~context/enums";
 import { ROLE_CONFLICT_MEMBER_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 import {
     ROLE_CONFLICT_MEMBER_REPOSITORY,
@@ -20,7 +20,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
         private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.InternalContract,
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
@@ -37,11 +37,11 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
     ): Promise<Commands.RoleConflictMember.Create.Result> {
         const { input, realm } = props;
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.CONFLICT_MEMBER,
-                actionType: AccessControlActionType.CREATE,
+                entityType: EntityType.CONFLICT_MEMBER,
+                actionType: EventType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -79,11 +79,11 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
     public async purge(props: Commands.RoleConflictMember.Purge.Props): Promise<Commands.RoleConflictMember.Purge.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.CONFLICT_MEMBER,
-                actionType: AccessControlActionType.DELETE,
+                entityType: EntityType.CONFLICT_MEMBER,
+                actionType: EventType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -97,8 +97,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
                     throw CommandException.notFound(`${this.dictionaryPath}.MEMBERS_NOT_FOUND`);
                 } else {
                     this.roleConflictMemberService.purge({ transaction, entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });

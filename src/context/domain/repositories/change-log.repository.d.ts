@@ -1,4 +1,4 @@
-import { ChangeLog as ChangeLogEntity } from "~common/tracking";
+import { ChangeLog as ChangeLogEntity } from "~common/transaction-manager";
 
 declare global {
     namespace Repositories {

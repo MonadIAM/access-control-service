@@ -1,11 +1,11 @@
 import { EntitySchema } from "@mikro-orm/core";
 
-import { ChangeLog } from "~common/tracking/entities";
+import { ChangeLog } from "~common/transaction-manager/entities";
 
 export const ChangeLogSchema = new EntitySchema<ChangeLog>({
     class: ChangeLog,
     tableName: "change_log",
-    schema: "tracking",
+    schema: "system",
 
     indexes: [
         {

@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
-import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { EventType, EntityType } from "~context/enums";
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { REALM_SERVICE } from "~context/domain/services";
 import { CommandException } from "~common/exceptions";
 
@@ -22,7 +22,7 @@ export class RealmCommands implements Commands.Realm.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(REALM_SERVICE)
@@ -33,11 +33,11 @@ export class RealmCommands implements Commands.Realm.Contract {
     public async create(props: Commands.Realm.Create.Props): Promise<Commands.Realm.Create.Result> {
         const { input, actor } = props;
 
-        const entity = await this.transactional.run({
+        const entity = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: AccessControlActionType.CREATE,
-                entityType: AccessControlEntityType.REALM,
+                actionType: EventType.CREATE,
+                entityType: EntityType.REALM,
                 ...props,
             },
             changeLog: true,
@@ -58,11 +58,11 @@ export class RealmCommands implements Commands.Realm.Contract {
     public async update(props: Commands.Realm.Update.Props): Promise<Commands.Realm.Update.Result> {
         const { input, id } = props;
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: AccessControlActionType.UPDATE,
-                entityType: AccessControlEntityType.REALM,
+                actionType: EventType.UPDATE,
+                entityType: EntityType.REALM,
                 ...props,
             },
             changeLog: true,
@@ -84,11 +84,11 @@ export class RealmCommands implements Commands.Realm.Contract {
     public async purge(props: Commands.Realm.Purge.Props): Promise<Commands.Realm.Purge.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: AccessControlActionType.DELETE,
-                entityType: AccessControlEntityType.REALM,
+                actionType: EventType.DELETE,
+                entityType: EntityType.REALM,
                 ...props,
             },
             changeLog: true,
@@ -102,8 +102,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                     throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 } else {
                     this.realmService.purge({ transaction, entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });
@@ -120,11 +119,11 @@ export class RealmCommands implements Commands.Realm.Contract {
     public async revoke(props: Commands.Realm.Revoke.Props): Promise<Commands.Realm.Revoke.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: AccessControlActionType.REVOKE,
-                entityType: AccessControlEntityType.REALM,
+                actionType: EventType.REVOKE,
+                entityType: EntityType.REALM,
                 ...props,
             },
             changeLog: true,
@@ -138,8 +137,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                     throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 } else {
                     this.realmService.revoke({ entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });
@@ -156,11 +154,11 @@ export class RealmCommands implements Commands.Realm.Contract {
     public async restore(props: Commands.Realm.Restore.Props): Promise<Commands.Realm.Restore.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: AccessControlActionType.RESTORE,
-                entityType: AccessControlEntityType.REALM,
+                actionType: EventType.RESTORE,
+                entityType: EntityType.REALM,
                 ...props,
             },
             changeLog: true,
@@ -174,8 +172,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                     throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 } else {
                     this.realmService.restore({ entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });

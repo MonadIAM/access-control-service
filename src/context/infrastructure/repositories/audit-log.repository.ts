@@ -4,7 +4,7 @@ import { Injectable, Scope } from "@nestjs/common";
 
 import { AuditLogAdapter } from "~context/infrastructure/adapters";
 import { BaseRepository } from "~common/mixins";
-import { AuditLog } from "~common/tracking";
+import { AuditLog } from "~common/transaction-manager";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuditLogRepository

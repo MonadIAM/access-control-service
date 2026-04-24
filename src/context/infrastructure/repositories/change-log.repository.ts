@@ -4,7 +4,7 @@ import { Injectable, Scope } from "@nestjs/common";
 
 import { ChangeLogAdapter } from "~context/infrastructure/adapters";
 import { BaseRepository } from "~common/mixins";
-import { ChangeLog } from "~common/tracking";
+import { ChangeLog } from "~common/transaction-manager";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ChangeLogRepository

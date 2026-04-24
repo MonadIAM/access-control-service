@@ -1,7 +1,7 @@
 import { ChangeSetType } from "@mikro-orm/postgresql";
 
 declare global {
-    namespace Tracking {
+    namespace TransactionManager {
         namespace ChangeLogSubscriber {
             type BuildDelta = {
                 originalEntity?: UnknownObject;

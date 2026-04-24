@@ -1,6 +1,6 @@
 {
   "namespaces": [
-    "tracking",
+    "system",
     "access_control"
   ],
   "name": "public",
@@ -94,7 +94,7 @@
         }
       },
       "name": "audit_log",
-      "schema": "tracking",
+      "schema": "system",
       "indexes": [
         {
           "keyName": "audit_log_realm_idx",
@@ -213,7 +213,7 @@
         }
       },
       "name": "change_log",
-      "schema": "tracking",
+      "schema": "system",
       "indexes": [
         {
           "keyName": "change_log_audit_entry_idx",
@@ -238,6 +238,143 @@
         },
         {
           "keyName": "change_log_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "sequence_number": {
+          "name": "sequence_number",
+          "type": "bigserial",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "bigint"
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 64,
+          "mappedType": "string"
+        },
+        "aggregate_type": {
+          "name": "aggregate_type",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 64,
+          "mappedType": "string"
+        },
+        "destination_topic": {
+          "name": "destination_topic",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 128,
+          "mappedType": "string"
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "json"
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 3,
+          "mappedType": "datetime"
+        },
+        "ttl_expires_at": {
+          "name": "ttl_expires_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "outbox",
+      "schema": "system",
+      "indexes": [
+        {
+          "keyName": "outbox_sequence_number_idx",
+          "columnNames": [
+            "sequence_number"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "outbox_aggregate_idx",
+          "columnNames": [
+            "aggregate_type"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "outbox_ttl_expires_at_idx",
+          "columnNames": [
+            "ttl_expires_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "outbox_pkey",
           "columnNames": [
             "id"
           ],

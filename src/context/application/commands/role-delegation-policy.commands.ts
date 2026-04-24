@@ -2,9 +2,9 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { ROLE_DELEGATION_POLICY_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { EventType, EntityType } from "~context/enums";
 import { ROLE_DELEGATION_POLICY_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 
 import {
@@ -22,7 +22,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
         private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.InternalContract,
         @Inject(REALM_REPOSITORY)
@@ -39,11 +39,11 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
     ): Promise<Commands.RoleDelegationPolicy.Create.Result> {
         const { input, realm } = props;
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.DELEGATION_POLICY,
-                actionType: AccessControlActionType.CREATE,
+                entityType: EntityType.DELEGATION_POLICY,
+                actionType: EventType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -98,11 +98,11 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
     ): Promise<Commands.RoleDelegationPolicy.Update.Result> {
         const { input, realm, id } = props;
 
-        await this.transactional.run({
+        await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.DELEGATION_POLICY,
-                actionType: AccessControlActionType.UPDATE,
+                entityType: EntityType.DELEGATION_POLICY,
+                actionType: EventType.UPDATE,
                 ...props,
             },
             changeLog: true,
@@ -126,11 +126,11 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
     ): Promise<Commands.RoleDelegationPolicy.Purge.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.DELEGATION_POLICY,
-                actionType: AccessControlActionType.DELETE,
+                entityType: EntityType.DELEGATION_POLICY,
+                actionType: EventType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -144,8 +144,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
                     throw CommandException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 } else {
                     this.roleDelegationPolicyService.purge({ transaction, entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });
@@ -167,11 +166,11 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
     ): Promise<Commands.RoleDelegationPolicy.Revoke.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.DELEGATION_POLICY,
-                actionType: AccessControlActionType.REVOKE,
+                entityType: EntityType.DELEGATION_POLICY,
+                actionType: EventType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -185,8 +184,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
                     throw CommandException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 } else {
                     this.roleDelegationPolicyService.revoke({ entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });
@@ -208,11 +206,11 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
     ): Promise<Commands.RoleDelegationPolicy.Restore.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.DELEGATION_POLICY,
-                actionType: AccessControlActionType.REVOKE,
+                entityType: EntityType.DELEGATION_POLICY,
+                actionType: EventType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -226,8 +224,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
                     throw CommandException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 } else {
                     this.roleDelegationPolicyService.restore({ entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });

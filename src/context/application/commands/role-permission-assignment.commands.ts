@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
-import { AccessControlActionType, AccessControlEntityType } from "~context/enums";
+import { EventType, EntityType } from "~context/enums";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/tracking";
+import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
 import {
     ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
@@ -26,7 +26,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactional: Tracking.Transactional.Contract,
+        private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
         private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.InternalContract,
         @Inject(PERMISSION_REPOSITORY)
@@ -45,11 +45,11 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ): Promise<Commands.RolePermissionAssignment.Create.Result> {
         const { input, realm } = props;
 
-        const { affected } = await this.transactional.run({
+        const { affected } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
-                actionType: AccessControlActionType.CREATE,
+                entityType: EntityType.PERMISSION_ASSIGNMENT,
+                actionType: EventType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -104,11 +104,11 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ): Promise<Commands.RolePermissionAssignment.Purge.Result> {
         const { input } = props;
 
-        const count = await this.transactional.run({
+        const { count } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
-                actionType: AccessControlActionType.DELETE,
+                entityType: EntityType.PERMISSION_ASSIGNMENT,
+                actionType: EventType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -122,8 +122,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                     throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 } else {
                     this.rolePermissionAssignmentService.purge({ transaction, entities });
-
-                    return entities.length;
+                    return { count: entities.length };
                 }
             },
         });
@@ -145,11 +144,11 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ): Promise<Commands.RolePermissionAssignment.Revoke.Result> {
         const { input } = props;
 
-        const { entities, affected } = await this.transactional.run({
+        const { entities, affected } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
-                actionType: AccessControlActionType.REVOKE,
+                entityType: EntityType.PERMISSION_ASSIGNMENT,
+                actionType: EventType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -193,11 +192,11 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ): Promise<Commands.RolePermissionAssignment.Restore.Result> {
         const { input } = props;
 
-        const { entities, affected } = await this.transactional.run({
+        const { entities, affected } = await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                entityType: AccessControlEntityType.PERMISSION_ASSIGNMENT,
-                actionType: AccessControlActionType.REVOKE,
+                entityType: EntityType.PERMISSION_ASSIGNMENT,
+                actionType: EventType.REVOKE,
                 ...props,
             },
             changeLog: true,
