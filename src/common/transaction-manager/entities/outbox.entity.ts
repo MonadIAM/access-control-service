@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { OutboxTopic, AggregateType, EventType } from "~context/enums";
+import { KafkaTopic, AggregateType, EventType } from "~context/enums";
 
 export class Outbox {
     declare public sequenceNumber: number;
@@ -10,7 +10,7 @@ export class Outbox {
 
     public eventType: EventType;
     public aggregateType: AggregateType;
-    public destinationTopic: OutboxTopic;
+    public destinationTopic: KafkaTopic;
 
     public payload: UnknownObject;
     public metadata?: UnknownObject;

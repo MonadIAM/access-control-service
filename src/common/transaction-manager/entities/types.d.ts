@@ -1,6 +1,6 @@
 import { ChangeSetType } from "@mikro-orm/postgresql";
 
-import { AggregateType, EventType, OutboxTopic } from "~context/enums";
+import { AggregateType, EventType, KafkaTopic } from "~context/enums";
 
 declare global {
     type DeltaChanges = Record<string, { old: unknown; new: unknown }>;
@@ -29,7 +29,7 @@ declare global {
 
         namespace Outbox {
             type ConstructorProps = {
-                destinationTopic: OutboxTopic;
+                destinationTopic: KafkaTopic;
                 aggregateType: AggregateType;
                 eventType: EventType;
                 metadata?: UnknownObject;

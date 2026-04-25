@@ -1,8 +1,10 @@
 declare namespace Consumers {
     namespace Blacklist {
         interface Contract {
-            handle: (props: Handle) => Promise<void>;
+            handle: (props: Prosp) => Promise<void>;
         }
+
+        type Prosp = { payload: string };
 
         type Handle = {
             sessionId: string;

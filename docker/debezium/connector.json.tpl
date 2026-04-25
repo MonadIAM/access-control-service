@@ -15,7 +15,8 @@
     "transforms": "outbox",
     "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
     "transforms.outbox.table.field.event.type": "event_type",
-    "transforms.outbox.route.topic.replacement": "{{routedByValue}}",
-    "transforms.outbox.table.field.event.key": "id"
+    "transforms.outbox.route.topic.replacement": "ROUTEDBYVALUE",
+    "transforms.outbox.table.field.event.key": "id",
+    "transforms.outbox.route.by.field": "destination_topic"
   }
 }

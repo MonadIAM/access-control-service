@@ -47,10 +47,10 @@ export enum EventType {
     /* eslint-enable prettier/prettier */
 }
 
-export enum OutboxTopic {
+export enum KafkaTopic {
     /* eslint-disable prettier/prettier */
-    BLACKLIST = "BLACKLIST",
-    ASSIGN    = "ASSIGN",
+    BLACKLIST = "blacklist",
+    ASSIGN    = "assign",
     /* eslint-enable prettier/prettier */
 }
 
