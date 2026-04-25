@@ -1,4 +1,4 @@
-declare namespace Services {
+declare namespace InfrastructureServices {
     namespace PermissionCache {
         interface Contract {
             has: (props: Has) => Promise<string[]>;
@@ -42,6 +42,22 @@ declare namespace Services {
 
         type Invalidate = {
             accounts: string[];
+        };
+    }
+
+    namespace BlacklistCache {
+        interface Contract {
+            exists: (props: Exists) => Promise<boolean>;
+            set: (props: Set) => Promise<void>;
+        }
+
+        type Set = {
+            sessionId: string;
+            ttl: number;
+        };
+
+        type Exists = {
+            sessionId: string;
         };
     }
 }

@@ -17,7 +17,7 @@ export class RealmQueries implements Queries.Realm.Contract {
 
     public constructor(
         @Inject(PERMISSION_CACHE_SERVICE)
-        private readonly permissionCacheService: Services.PermissionCache.Contract,
+        private readonly permissionCacheService: InfrastructureServices.PermissionCache.Contract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.ExternalContract,
     ) {}

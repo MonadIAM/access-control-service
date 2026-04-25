@@ -19,7 +19,6 @@ declare global {
                           aggregateType: AggregateType;
                           eventType: EventType;
                           metadata?: UnknownObject;
-                          ttlExpiresAt?: Date;
                       };
                       changeLog?: boolean;
                       resource?: string;

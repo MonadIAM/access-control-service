@@ -328,16 +328,6 @@
           "nullable": false,
           "length": 3,
           "mappedType": "datetime"
-        },
-        "ttl_expires_at": {
-          "name": "ttl_expires_at",
-          "type": "timestamptz(3)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "length": 3,
-          "mappedType": "datetime"
         }
       },
       "name": "outbox",
@@ -357,16 +347,6 @@
           "keyName": "outbox_aggregate_idx",
           "columnNames": [
             "aggregate_type"
-          ],
-          "composite": false,
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
-          "keyName": "outbox_ttl_expires_at_idx",
-          "columnNames": [
-            "ttl_expires_at"
           ],
           "composite": false,
           "constraint": false,

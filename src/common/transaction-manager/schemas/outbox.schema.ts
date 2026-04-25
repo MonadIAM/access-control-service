@@ -16,10 +16,6 @@ export const OutboxSchema = new EntitySchema<Outbox>({
             name: "outbox_aggregate_idx",
             properties: ["aggregateType"],
         },
-        {
-            name: "outbox_ttl_expires_at_idx",
-            properties: ["ttlExpiresAt"],
-        },
     ],
 
     properties: {
@@ -35,6 +31,5 @@ export const OutboxSchema = new EntitySchema<Outbox>({
         metadata: { type: "jsonb", nullable: true },
 
         createdAt: { type: "timestamptz", length: 3 },
-        ttlExpiresAt: { type: "timestamptz", length: 3, nullable: true },
     },
 });

@@ -15,7 +15,7 @@ import {
 export class PermissionCacheDirectInvalidationHandler {
     public constructor(
         @Inject(PERMISSION_CACHE_SERVICE)
-        private readonly permissionCacheService: Services.PermissionCache.Contract,
+        private readonly permissionCacheService: InfrastructureServices.PermissionCache.Contract,
     ) {}
 
     @OnEvent(PermissionOverrideCreatedEvent.TOKEN)

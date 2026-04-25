@@ -6,7 +6,7 @@ import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/redis.tokens";
 import { AssignmentScope } from "~context/enums";
 
 @Injectable()
-export class PermissionCacheService implements Services.PermissionCache.Contract {
+export class PermissionCacheService implements InfrastructureServices.PermissionCache.Contract {
     private readonly cacheTTL: number;
     private readonly namespace = "cache";
     private readonly global = "*";
@@ -30,7 +30,7 @@ export class PermissionCacheService implements Services.PermissionCache.Contract
         this.cacheTTL = this.configService.getOrThrow<number>("PERMISSION_CACHE_TTL");
     }
 
-    public async has({ permissions, account, realm }: Services.PermissionCache.Has): Promise<string[]> {
+    public async has({ permissions, account, realm }: InfrastructureServices.PermissionCache.Has): Promise<string[]> {
         const [globalHits, realmHits] = await Promise.all([
             this.redis.smismember(this.permissionKey(account, this.global), ...permissions),
             this.redis.smismember(this.permissionKey(account, realm), ...permissions),
@@ -39,25 +39,25 @@ export class PermissionCacheService implements Services.PermissionCache.Contract
         return permissions.filter((_, i) => globalHits[i] === 1 || realmHits[i] === 1);
     }
 
-    public async hasGlobal({ permissions, account }: Services.PermissionCache.HasGlobal): Promise<string[]> {
+    public async hasGlobal({ permissions, account }: InfrastructureServices.PermissionCache.HasGlobal): Promise<string[]> {
         const hits = await this.redis.smismember(this.permissionKey(account, this.global), ...permissions);
 
         return permissions.filter((_, i) => hits[i] === 1);
     }
 
-    public async hasRealm({ account, realm }: Services.PermissionCache.HasRealm): Promise<boolean> {
+    public async hasRealm({ account, realm }: InfrastructureServices.PermissionCache.HasRealm): Promise<boolean> {
         return (await this.redis.sismember(this.realmKey(account), realm)) === 1;
     }
 
-    public async getRealms({ account }: Services.PermissionCache.GetRealms): Promise<string[]> {
+    public async getRealms({ account }: InfrastructureServices.PermissionCache.GetRealms): Promise<string[]> {
         return await this.redis.smembers(this.realmKey(account));
     }
 
-    public async exists({ account }: Services.PermissionCache.Exists): Promise<boolean> {
+    public async exists({ account }: InfrastructureServices.PermissionCache.Exists): Promise<boolean> {
         return (await this.redis.exists(this.markerKey(account))) === 1;
     }
 
-    public async populate({ account, rows, realms }: Services.PermissionCache.Populate): Promise<void> {
+    public async populate({ account, rows, realms }: InfrastructureServices.PermissionCache.Populate): Promise<void> {
         const pipeline = this.redis.pipeline();
         const permissionKeys = new Set<string>();
         const memberRealmKey = this.realmKey(account);
@@ -84,7 +84,7 @@ export class PermissionCacheService implements Services.PermissionCache.Contract
         await pipeline.exec();
     }
 
-    public async invalidate({ accounts }: Services.PermissionCache.Invalidate): Promise<void> {
+    public async invalidate({ accounts }: InfrastructureServices.PermissionCache.Invalidate): Promise<void> {
         const deletePipeline = this.redis.pipeline();
 
         for (const account of accounts) {

@@ -16,7 +16,7 @@ export class PermissionGuard implements CanActivate {
         @Inject(PERMISSION_REPOSITORY)
         private readonly permissionRepository: Repositories.Permission.InternalContract,
         @Inject(PERMISSION_CACHE_SERVICE)
-        private readonly permissionCacheService: Services.PermissionCache.Contract,
+        private readonly permissionCacheService: InfrastructureServices.PermissionCache.Contract,
         private readonly reflector: Reflector,
     ) {}
 

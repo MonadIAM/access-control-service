@@ -34,7 +34,6 @@ declare global {
                 eventType: EventType;
                 metadata?: UnknownObject;
                 payload: UnknownObject;
-                ttlExpiresAt?: Date;
             };
         }
     }

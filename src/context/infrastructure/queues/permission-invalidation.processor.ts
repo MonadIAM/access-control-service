@@ -13,7 +13,7 @@ export class PermissionCacheInvalidationProcessor extends WorkerHost {
 
     public constructor(
         @Inject(PERMISSION_CACHE_SERVICE)
-        private readonly permissionCacheService: Services.PermissionCache.Contract,
+        private readonly permissionCacheService: InfrastructureServices.PermissionCache.Contract,
         @InjectQueue("permission-cache-invalidation")
         private readonly queue: Queue,
         private readonly configService: ConfigService,

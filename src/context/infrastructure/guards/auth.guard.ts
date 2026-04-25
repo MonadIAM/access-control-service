@@ -3,6 +3,8 @@ import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/commo
 import { GuardException } from "~common/exceptions";
 import { JWT_SERVICE } from "~common/services";
 
+import { BLACKLIST_CACHE_SERVICE } from "../services";
+
 @Injectable()
 export class AuthGuard implements CanActivate {
     private readonly dictionaryPath = "guard.auth";
@@ -10,20 +12,31 @@ export class AuthGuard implements CanActivate {
     public constructor(
         @Inject(JWT_SERVICE)
         private readonly jwtService: CommonServices.JWT.Contract,
+        @Inject(BLACKLIST_CACHE_SERVICE)
+        private readonly blacklistCacheService: InfrastructureServices.BlacklistCache.Contract,
     ) {}
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
-        const request = context.switchToHttp().getRequest<Req>();
-        const token = this.extractToken(request);
-
-        if (!token) {
-            throw GuardException.unauthorized(`${this.dictionaryPath}.TOKEN_MISSING`);
-        }
-
         try {
+            const request = context.switchToHttp().getRequest<Req>();
+            const token = this.extractToken(request);
+
+            if (!token) {
+                throw GuardException.unauthorized(`${this.dictionaryPath}.TOKEN_MISSING`);
+            }
+
             const payload = await this.jwtService.verify(token);
+
             if (!payload.sub) {
                 throw GuardException.unauthorized(`${this.dictionaryPath}.INVALID_TOKEN`);
+            }
+
+            const isBlacklisted = await this.blacklistCacheService.exists({
+                sessionId: payload.sid as string,
+            });
+
+            if (isBlacklisted) {
+                throw GuardException.unauthorized(`${this.dictionaryPath}.SESSION_REVOKED`);
             }
 
             request.session = {

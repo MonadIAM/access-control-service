@@ -13,6 +13,7 @@ import { PROCESSORS, QUEUES } from "./infrastructure/queues";
 import { REPOSITORIES } from "./infrastructure/repositories";
 import { CONTROLLERS } from "./interface/controllers";
 import { DOMAIN_SERVICES } from "./domain/services";
+import { CONSUMERS } from "./interface/consumers";
 import { COMMANDS } from "./application/commands";
 import { QUERIES } from "./application/queries";
 
@@ -43,6 +44,6 @@ import { QUERIES } from "./application/queries";
             useExisting: PermissionGuard,
         },
     ],
-    controllers: [...CONTROLLERS],
+    controllers: [...CONTROLLERS, ...CONSUMERS],
 })
 export class AccessControlModule {}

@@ -15,8 +15,6 @@ export class Outbox {
     public payload: UnknownObject;
     public metadata?: UnknownObject;
 
-    public ttlExpiresAt?: Date;
-
     public constructor(props: Entities.Outbox.ConstructorProps) {
         this.id = randomUUID();
         this.createdAt = new Date();
@@ -27,7 +25,5 @@ export class Outbox {
 
         this.payload = props.payload;
         this.metadata = props.metadata;
-
-        this.ttlExpiresAt = props.ttlExpiresAt;
     }
 }
