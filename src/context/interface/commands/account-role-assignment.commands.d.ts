@@ -1,11 +1,18 @@
 declare namespace Commands {
     namespace AccountRoleAssignment {
-        interface Contract {
+        interface ControllerContract {
             restore: (props: Restore.Props) => Promise<Restore.Result>;
             create: (props: Create.Props) => Promise<Create.Result>;
             revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
             purge: (props: Purge.Props) => Promise<Purge.Result>;
         }
+
+        interface ConsumerContract {
+            assign: (props: Assign.Props) => Promise<Assign.Result>;
+            clean: (props: Clean.Props) => Promise<Clean.Result>;
+        }
+
+        interface Contract extends ControllerContract, ConsumerContract {}
 
         namespace Create {
             type Props = {
@@ -61,6 +68,22 @@ declare namespace Commands {
             };
 
             type Result = MessageResult;
+        }
+
+        namespace Assign {
+            type Props = {
+                account: string;
+            };
+
+            type Result = void;
+        }
+
+        namespace Clean {
+            type Props = {
+                account: string;
+            };
+
+            type Result = void;
         }
     }
 }

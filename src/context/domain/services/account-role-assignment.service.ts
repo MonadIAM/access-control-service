@@ -83,4 +83,8 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
             entity.restore();
         }
     }
+
+    public assign({ transaction, input }: Services.AccountRoleAssignment.Assign): void {
+        transaction.persist(new AccountRoleAssignment(input));
+    }
 }

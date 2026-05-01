@@ -12,11 +12,14 @@ import {
 } from "~context/infrastructure/repositories";
 
 import {
+    AccountRoleAssignmentRestoredEvent,
+    AccountRoleAssignmentRevokedEvent,
     AccountRoleAssignmentCreatedEvent,
     AccountRoleAssignmentPurgedEvent,
-    AccountRoleAssignmentRevokedEvent,
-    AccountRoleAssignmentRestoredEvent,
 } from "../events/account-role-assignment.events";
+
+const SYSTEM_REALM = "00000001-0000-4000-8000-100000000001";
+const SYSTEM_USER_ROLE = "00000002-0000-4000-8000-100000000002";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssignment.Contract {
@@ -210,5 +213,50 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
+    }
+
+    public async assign(
+        props: Commands.AccountRoleAssignment.Assign.Props,
+    ): Promise<Commands.AccountRoleAssignment.Assign.Result> {
+        await this.transactionalService.run({
+            resource: this.resource,
+            execute: async (transaction) => {
+                const [realmEntity, roleEntity] = await Promise.all([
+                    this.realmRepository.findUniqueOrThrow({
+                        where: { id: SYSTEM_REALM },
+                        transaction,
+                    }),
+                    this.roleRepository.findUniqueOrThrow({
+                        where: { id: SYSTEM_USER_ROLE },
+                        transaction,
+                    }),
+                ]);
+
+                await this.accountRoleAssignmentService.assign({
+                    transaction,
+                    input: {
+                        account: props.account,
+                        realm: realmEntity,
+                        role: roleEntity,
+                    },
+                });
+            },
+        });
+    }
+
+    public async clean(
+        props: Commands.AccountRoleAssignment.Clean.Props,
+    ): Promise<Commands.AccountRoleAssignment.Clean.Result> {
+        await this.transactionalService.run({
+            resource: this.resource,
+            execute: async (transaction) => {
+                const entities = await this.accountRoleAssignmentRepository.find({
+                    where: { account: props.account },
+                    transaction,
+                });
+
+                this.accountRoleAssignmentService.purge({ transaction, entities });
+            },
+        });
     }
 }

@@ -1,10 +1,30 @@
 declare namespace Consumers {
-    namespace Blacklist {
+    type Props = { payload: string };
+
+    namespace Account {
         interface Contract {
-            handle: (props: Prosp) => Promise<void>;
+            handle: (message: Consumers.Props) => Promise<void>;
         }
 
-        type Prosp = { payload: string };
+        type Register = {
+            eventType: "ACCOUNT_REGISTERED";
+            accountId: string;
+        };
+
+        type Purge = {
+            eventType: "ACCOUNT_PURGED";
+            accountId: string;
+        };
+
+        type Handlers<T extends Register | Purge = Register | Purge> = {
+            [K in T["eventType"]]: (payload: Extract<T, { eventType: K }>) => Promise<void>;
+        };
+    }
+
+    namespace Blacklist {
+        interface Contract {
+            handle: (props: Consumers.Props) => Promise<void>;
+        }
 
         type Handle = {
             sessionId: string;

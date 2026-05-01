@@ -61,7 +61,7 @@ const {
 export class AccountRoleAssignmentController {
     public constructor(
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_COMMANDS)
-        private readonly accountRoleAssignmentCommands: Commands.AccountRoleAssignment.Contract,
+        private readonly accountRoleAssignmentCommands: Commands.AccountRoleAssignment.ControllerContract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_QUERIES)
         private readonly accountRoleAssignmentQueries: Queries.AccountRoleAssignment.Contract,
     ) {}

@@ -3,12 +3,18 @@ import { PermissionOverrideEffect } from "~context/enums";
 declare global {
     namespace Commands {
         namespace PermissionOverride {
-            interface Contract {
+            interface ControllerContract {
                 restore: (props: Restore.Props) => Promise<Restore.Result>;
                 create: (props: Create.Props) => Promise<Create.Result>;
                 revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
                 purge: (props: Purge.Props) => Promise<Purge.Result>;
             }
+
+            interface ConsumerContract {
+                clean: (props: Clean.Props) => Promise<Clean.Result>;
+            }
+
+            interface Contract extends ControllerContract, ConsumerContract {}
 
             namespace Create {
                 type Props = {
@@ -65,6 +71,14 @@ declare global {
                 };
 
                 type Result = MessageResult;
+            }
+
+            namespace Clean {
+                type Props = {
+                    account: string;
+                };
+
+                type Result = void;
             }
         }
     }

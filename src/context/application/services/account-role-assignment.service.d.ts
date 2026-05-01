@@ -13,6 +13,7 @@ declare global {
                 create: (props: Create) => Promise<void>;
                 restore: (props: Restore) => void;
                 revoke: (props: Revoke) => void;
+                assign: (props: Assign) => void;
                 purge: (props: Purge) => void;
             }
 
@@ -37,6 +38,15 @@ declare global {
 
             type Restore = {
                 entities: AccountRoleAssignmentEntity[];
+            };
+
+            type Assign = {
+                transaction: EntityManager;
+                input: {
+                    realm: RealmEntity;
+                    role: RoleEntity;
+                    account: string;
+                };
             };
         }
     }

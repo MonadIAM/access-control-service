@@ -12,7 +12,7 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract {
     ) {}
 
     @EventPattern(KafkaTopic.BLACKLIST)
-    public async handle(@Payload() message: Consumers.Blacklist.Prosp): Promise<void> {
+    public async handle(@Payload() message: Consumers.Props): Promise<void> {
         const payload: Consumers.Blacklist.Handle = JSON.parse(message.payload);
 
         await this.blacklistCacheService.set({

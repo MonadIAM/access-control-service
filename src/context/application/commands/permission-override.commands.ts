@@ -205,4 +205,18 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
     }
+
+    public async clean(props: Commands.PermissionOverride.Clean.Props): Promise<Commands.PermissionOverride.Clean.Result> {
+        await this.transactionalService.run({
+            resource: this.resource,
+            execute: async (transaction) => {
+                const entities = await this.permissionOverrideRepository.find({
+                    where: { account: props.account },
+                    transaction,
+                });
+
+                this.permissionOverrideService.purge({ transaction, entities });
+            },
+        });
+    }
 }

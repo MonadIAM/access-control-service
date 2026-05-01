@@ -62,7 +62,7 @@ const {
 export class PermissionOverrideController {
     public constructor(
         @Inject(PERMISSION_OVERRIDE_COMMANDS)
-        private readonly permissionOverrideCommands: Commands.PermissionOverride.Contract,
+        private readonly permissionOverrideCommands: Commands.PermissionOverride.ControllerContract,
         @Inject(PERMISSION_OVERRIDE_QUERIES)
         private readonly permissionOverrideQueries: Queries.PermissionOverride.Contract,
     ) {}

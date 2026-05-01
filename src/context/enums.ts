@@ -50,7 +50,7 @@ export enum EventType {
 export enum KafkaTopic {
     /* eslint-disable prettier/prettier */
     BLACKLIST = "blacklist",
-    ASSIGN    = "assign",
+    ACCOUNT   = "account",
     /* eslint-enable prettier/prettier */
 }
 
