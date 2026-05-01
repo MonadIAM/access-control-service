@@ -3,11 +3,12 @@ import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { HealthCheck } from "@nestjs/terminus";
 
 import { MonitoringInterceptor } from "~common/interceptors/monitoring.interceptor";
-import { Public } from "~common/decorators";
+import { SkipInterceptors, Public } from "~common/decorators";
 
 import { HealthService } from "./health.service";
 
 @ApiTags("Health")
+@SkipInterceptors()
 @Controller("health")
 @UseInterceptors(MonitoringInterceptor)
 export class HealthController {

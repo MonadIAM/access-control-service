@@ -90,6 +90,7 @@ declare namespace NodeJS {
         DOCKER_NETWORK_NAME: string;
         KAFKA_CONNECT_IMAGE: string;
         KAFKA_CONNECT_PORT: `${number}`;
+        KAFKAJS_NO_PARTITIONER_WARNING: `${number}`;
 
         // ---------------------------------------------------------------------------
         // Debezium

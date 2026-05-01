@@ -3,10 +3,11 @@ import { ApiExcludeController } from "@nestjs/swagger";
 import { Controller, Get, Res } from "@nestjs/common";
 import { SkipThrottle } from "@nestjs/throttler";
 
-import { Public } from "~common/decorators";
+import { SkipInterceptors, Public } from "~common/decorators";
 
 @Controller()
 @SkipThrottle()
+@SkipInterceptors()
 @ApiExcludeController()
 export class MetricsController extends PrometheusController {
     @Get()
