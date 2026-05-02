@@ -1,14 +1,16 @@
 import { ClientsModule, Transport, MicroserviceOptions } from "@nestjs/microservices";
+import { Global, Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Module } from "@nestjs/common";
 
 export const KAFKA_MICROSERVICE_CONFIG = Symbol("KAFKA_MICROSERVICE_CONFIG");
+export const KAFKA_SERVICE = Symbol("KAFKA_SERVICE");
 
+@Global()
 @Module({
     imports: [
         ClientsModule.registerAsync([
             {
-                name: "KAFKA_SERVICE",
+                name: KAFKA_SERVICE,
                 inject: [ConfigService],
                 useFactory: (config: ConfigService) => ({
                     transport: Transport.KAFKA,

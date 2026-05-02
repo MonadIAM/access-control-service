@@ -49,8 +49,9 @@ export enum EventType {
 
 export enum KafkaTopic {
     /* eslint-disable prettier/prettier */
-    BLACKLIST = "blacklist",
-    ACCOUNT   = "account",
+    ACCOUNT_DLQ   = "account-dlq",
+    BLACKLIST     = "blacklist",
+    ACCOUNT       = "account",
     /* eslint-enable prettier/prettier */
 }
 

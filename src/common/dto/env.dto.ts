@@ -209,6 +209,18 @@ export class EnvironmentVariablesDTO {
     @Validator.IsInt()
     declare public KAFKAJS_NO_PARTITIONER_WARNING: number;
 
+    @Validator.IsInt()
+    declare public KAFKA_DLQ_MAX_RETRIES: number;
+
+    @Validator.IsInt()
+    declare public KAFKA_DLQ_RETRY_BASE_DELAY: number;
+
+    @Validator.IsInt()
+    declare public KAFKA_DLQ_RETRY_MAX_DELAY: number;
+
+    @Validator.IsInt()
+    declare public KAFKA_DLQ_RETRY_JITTER: number;
+
     // ---------------------------------------------------------------------------
     // Debezium
     // ---------------------------------------------------------------------------

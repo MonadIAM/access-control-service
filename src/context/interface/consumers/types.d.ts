@@ -1,6 +1,16 @@
 declare namespace Consumers {
     type Props = { payload: string };
 
+    namespace DLQ {
+        type Message = {
+            originalTopic: string;
+            retryCount: number;
+            timestamp: string;
+            payload: string;
+            error: string;
+        };
+    }
+
     namespace Account {
         interface Contract {
             handle: (message: Consumers.Props) => Promise<void>;

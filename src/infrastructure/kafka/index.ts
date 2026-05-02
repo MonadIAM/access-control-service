@@ -1,1 +1,1 @@
-export { KafkaModule, KAFKA_MICROSERVICE_CONFIG } from "./kafka.module";
+export { KAFKA_MICROSERVICE_CONFIG, KAFKA_SERVICE, KafkaModule } from "./kafka.module";

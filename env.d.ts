@@ -91,6 +91,10 @@ declare namespace NodeJS {
         KAFKA_CONNECT_IMAGE: string;
         KAFKA_CONNECT_PORT: `${number}`;
         KAFKAJS_NO_PARTITIONER_WARNING: `${number}`;
+        KAFKA_DLQ_MAX_RETRIES: `${number}`;
+        KAFKA_DLQ_RETRY_BASE_DELAY: `${number}`;
+        KAFKA_DLQ_RETRY_MAX_DELAY: `${number}`;
+        KAFKA_DLQ_RETRY_JITTER: `${number}`;
 
         // ---------------------------------------------------------------------------
         // Debezium
