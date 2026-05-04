@@ -1,3 +1,5 @@
+export * from "@liam/contracts";
+
 export enum RoleActorType {
     /* eslint-disable prettier/prettier */
     SERVICE = "SERVICE",
@@ -44,14 +46,6 @@ export enum EventType {
     CREATE  = "CREATE",
     UPDATE  = "UPDATE",
     DELETE  = "DELETE",
-    /* eslint-enable prettier/prettier */
-}
-
-export enum KafkaTopic {
-    /* eslint-disable prettier/prettier */
-    ACCOUNT_DLQ   = "account-dlq",
-    BLACKLIST     = "blacklist",
-    ACCOUNT       = "account",
     /* eslint-enable prettier/prettier */
 }
 
