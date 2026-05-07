@@ -2,9 +2,9 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { ROLE_CLOSURE_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
+import { RoleProtoType, MoveMode } from "~context/enums";
 import { ServiceException } from "~common/exceptions";
 import { Role } from "~context/domain/entities";
-import { RoleProtoType } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleService implements Services.Role.Contract {
@@ -113,6 +113,85 @@ export class RoleService implements Services.Role.Contract {
         for (const entity of entities) {
             entity.restore();
         }
+    }
+
+    public async move({ transaction, targetParent, target, realm, mode }: Services.Role.Move): Promise<void> {
+        if (targetParent.protoType === RoleProtoType.ATOMIC) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_NO_INHERITANCE`);
+        }
+
+        if (targetParent.id === target.id) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_IS_SELF`);
+        }
+
+        const [[currentParent], wouldFormCycle] = await Promise.all([
+            this.roleRepository.getAncestors({
+                descendant: target.id,
+                transaction,
+                depth: 1,
+            }),
+            this.roleClosureRepository.existsTransitivePath({
+                descendant: targetParent.id,
+                ancestor: target.id,
+                transaction,
+                realm,
+            }),
+        ]);
+
+        if (!currentParent) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_ROOT_NOT_ALLOWED`);
+        }
+
+        if (mode !== MoveMode.LINEAR && currentParent.id === targetParent.id) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_ALREADY_PARENT`);
+        }
+
+        if (wouldFormCycle) {
+            throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_IN_SUBTREE`);
+        }
+
+        if (mode !== MoveMode.SUBTREE) {
+            const directChildren = await this.roleRepository.getDescendants({
+                ancestor: target.id,
+                transaction,
+                depth: 1,
+            });
+
+            if (directChildren.length) {
+                await this.roleClosureRepository.moveSubtrees({
+                    children: directChildren.map(({ id }) => id),
+                    newParent: currentParent.id,
+                    oldParent: target.id,
+                    transaction,
+                    realm,
+                });
+            }
+        }
+
+        if (mode === MoveMode.LINEAR) {
+            const displacedChildren = await this.roleRepository.getDescendants({
+                ancestor: targetParent.id,
+                transaction,
+                depth: 1,
+            });
+
+            if (displacedChildren.length) {
+                await this.roleClosureRepository.moveSubtrees({
+                    children: displacedChildren.map(({ id }) => id).filter((id) => id !== target.id),
+                    oldParent: targetParent.id,
+                    newParent: target.id,
+                    transaction,
+                    realm,
+                });
+            }
+        }
+
+        await this.roleClosureRepository.move({
+            newParent: targetParent.id,
+            target: target.id,
+            transaction,
+            realm,
+        });
     }
 
     private async buildHierarchy({

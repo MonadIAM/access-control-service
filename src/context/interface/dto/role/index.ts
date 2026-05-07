@@ -4,13 +4,14 @@ export { GetAncestorsListQueryDTO, GetAncestorsListBodyDTO } from "./req/get-anc
 export { GetDelegableListQueryDTO, GetDelegableListBodyDTO } from "./req/get-delegable-list.dto";
 export { GetLookupListQueryDTO, GetLookupListBodyDTO } from "./req/get-lookup-list.dto";
 export { PurgeSubtreeQueryDTO, PurgeSubtreeBodyDTO } from "./req/purge-subtree.dto";
-export { GetListQueryDTO, GetListBodyDTO } from "./req/get-list.dto";
 export { GetHierarchyGraphQueryDTO } from "./req/get-hierarchy-graph.dto";
+export { GetListQueryDTO, GetListBodyDTO } from "./req/get-list.dto";
 export { RestoreQueryDTO, RestoreBodyDTO } from "./req/restore.dto";
 export { RevokeQueryDTO, RevokeBodyDTO } from "./req/revoke.dto";
 export { CreateQueryDTO, CreateBodyDTO } from "./req/create.dto";
 export { UpdateQueryDTO, UpdateBodyDTO } from "./req/update.dto";
 export { PurgeQueryDTO, PurgeBodyDTO } from "./req/purge.dto";
+export { MoveQueryDTO, MoveBodyDTO } from "./req/move.dto";
 export { GetByIdQueryDTO } from "./req/get-by-id.dto";
 
 export { RoleHierarchyGraphDTO } from "./res/hierarchy-graph.dto";

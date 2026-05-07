@@ -1,10 +1,11 @@
-import { RoleActorType, RoleProtoType } from "~context/enums";
+import { MoveMode, RoleActorType, RoleProtoType } from "~context/enums";
 
 declare global {
     namespace Commands {
         namespace Role {
             interface Contract {
                 purgeSubtree: (props: PurgeSubtree.Props) => Promise<PurgeSubtree.Result>;
+                move: (props: Move.Props) => Promise<Move.Result>;
                 restore: (props: Restore.Props) => Promise<Restore.Result>;
                 create: (props: Create.Props) => Promise<Create.Result>;
                 update: (props: Update.Props) => Promise<Update.Result>;
@@ -98,6 +99,21 @@ declare global {
                         reason: string;
                     };
                     context: Extract.Meta;
+                };
+
+                type Result = MessageResult;
+            }
+
+            namespace Move {
+                type Props = {
+                    input: {
+                        targetParent: string;
+                        mode: MoveMode;
+                        target: string;
+                    };
+                    context: Extract.Meta;
+                    actor: string;
+                    realm: string;
                 };
 
                 type Result = MessageResult;

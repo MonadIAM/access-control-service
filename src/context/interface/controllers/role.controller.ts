@@ -35,10 +35,12 @@ import {
     GetLookupListBodyDTO,
     PurgeSubtreeQueryDTO,
     PurgeSubtreeBodyDTO,
+    MoveQueryDTO,
     HierarchyListDTO,
     GetListQueryDTO,
     RestoreQueryDTO,
     GetByIdQueryDTO,
+    MoveBodyDTO,
     GetListBodyDTO,
     CreateQueryDTO,
     RevokeQueryDTO,
@@ -274,6 +276,22 @@ export class RoleController {
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleCommands.restore({ actor, context, input, realm });
+    }
+
+    @HttpCode(OK)
+    @Patch("move")
+    @FormatResponse(SuccessMessageDTO)
+    // @RequirePermission(ROLE_HIERARCHY_UPDATE)
+    @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({ summary: "Move a non-system role/subtree within the hierarchy" })
+    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    public move(
+        @Query() { realm }: MoveQueryDTO,
+        @Body() input: MoveBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
+    ): Promise<MessageResult> {
+        return this.roleCommands.move({ actor, context, input, realm });
     }
 
     @HttpCode(OK)

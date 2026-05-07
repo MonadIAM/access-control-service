@@ -14,6 +14,7 @@ import {
     RoleUpdatedEvent,
     RoleCreatedEvent,
     RolePurgedEvent,
+    RoleMovedEvent,
 } from "../events/role.events";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -249,5 +250,38 @@ export class RoleCommands implements Commands.Role.Contract {
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
+    }
+
+    public async move(props: Commands.Role.Move.Props): Promise<Commands.Role.Move.Result> {
+        const { input, realm } = props;
+
+        const { target } = await this.transactionalService.run({
+            resource: this.resource,
+            audit: {
+                actionType: EventType.REPARENT,
+                entityType: EntityType.ROLE,
+                ...props,
+            },
+            execute: async (transaction) => {
+                const [target, targetParent] = await Promise.all([
+                    this.roleRepository.findUniqueOrThrow({
+                        where: { id: input.target, realm, isSystemManaged: false },
+                        transaction,
+                    }),
+                    this.roleRepository.findUniqueOrThrow({
+                        where: { id: input.targetParent, realm },
+                        transaction,
+                    }),
+                ]);
+
+                await this.roleService.move({ ...input, transaction, targetParent, target, realm });
+
+                return { target };
+            },
+        });
+
+        this.eventEmitter.emit(RoleMovedEvent.TOKEN, new RoleMovedEvent([target.id], realm));
+
+        return { message: `${this.dictionaryPath}.REPARENTED` };
     }
 }

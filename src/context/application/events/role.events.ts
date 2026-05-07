@@ -49,3 +49,11 @@ export class RoleRestoredEvent {
         public readonly affectedAccounts: string[],
     ) {}
 }
+
+export class RoleMovedEvent {
+    public static TOKEN = "role.moveed" as const;
+    public constructor(
+        public readonly roles: string[],
+        public readonly realm: string,
+    ) {}
+}

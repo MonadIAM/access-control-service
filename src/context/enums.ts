@@ -1,5 +1,11 @@
 export * from "@liam/contracts";
 
+export enum MoveMode {
+    PARALLEL = "PARALLEL",
+    SUBTREE = "SUBTREE",
+    LINEAR = "LINEAR",
+}
+
 export enum RoleActorType {
     /* eslint-disable prettier/prettier */
     SERVICE = "SERVICE",
@@ -41,11 +47,12 @@ export type AggregateType = EntityType;
 
 export enum EventType {
     /* eslint-disable prettier/prettier */
-    RESTORE = "RESTORE",
-    REVOKE  = "REVOKE",
-    CREATE  = "CREATE",
-    UPDATE  = "UPDATE",
-    DELETE  = "DELETE",
+    REPARENT = "REPARENT",
+    RESTORE  = "RESTORE",
+    REVOKE   = "REVOKE",
+    CREATE   = "CREATE",
+    UPDATE   = "UPDATE",
+    DELETE   = "DELETE",
     /* eslint-enable prettier/prettier */
 }
 
