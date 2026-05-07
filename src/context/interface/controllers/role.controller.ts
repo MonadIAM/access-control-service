@@ -35,12 +35,10 @@ import {
     GetLookupListBodyDTO,
     PurgeSubtreeQueryDTO,
     PurgeSubtreeBodyDTO,
-    MoveQueryDTO,
     HierarchyListDTO,
     GetListQueryDTO,
     RestoreQueryDTO,
     GetByIdQueryDTO,
-    MoveBodyDTO,
     GetListBodyDTO,
     CreateQueryDTO,
     RevokeQueryDTO,
@@ -52,6 +50,8 @@ import {
     PurgeQueryDTO,
     LookupListDTO,
     PurgeBodyDTO,
+    MoveQueryDTO,
+    MoveBodyDTO,
     ListDTO,
     RoleDTO,
 } from "../dto/role";
@@ -68,6 +68,7 @@ const {
     OK,
 } = HttpStatus;
 const {
+    ROLE_HIERARCHY_UPDATE,
     ROLE_PURGE_SUBTREE,
     ROLE_READ_PERSONAL,
     ROLE_READ_ABSOLUTE,
@@ -281,7 +282,7 @@ export class RoleController {
     @HttpCode(OK)
     @Patch("move")
     @FormatResponse(SuccessMessageDTO)
-    // @RequirePermission(ROLE_HIERARCHY_UPDATE)
+    @RequirePermission(ROLE_HIERARCHY_UPDATE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Move a non-system role/subtree within the hierarchy" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)

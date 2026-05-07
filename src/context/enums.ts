@@ -96,6 +96,7 @@ export enum PermissionCode {
     ROLE_RESTORE          = "role.restore",
     ROLE_PURGE            = "role.purge",
     ROLE_PURGE_SUBTREE    = "role.purge_subtree",
+    ROLE_HIERARCHY_UPDATE = "role.hierarchy_update",
 
     PERMISSION_READ_COMMON   = "permission.read_common",
     PERMISSION_READ_PERSONAL = "permission.read_personal",
