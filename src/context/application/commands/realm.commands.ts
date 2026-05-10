@@ -1,5 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
@@ -28,31 +29,30 @@ export class RealmCommands implements Commands.Realm.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.REALM_CREATE,
-                payloadMapper: (result: Services.Realm.Create.Result) => ({
+                payloadMapper: ({ assignments, paths, realm, roles }: Services.Realm.Create.Result) => ({
+                    permissionRealm: SystemRealm.id,
                     realm: {
-                        version: result.realm.version,
-                        realm: result.realm.id,
+                        version: realm.version,
+                        realm: realm.id,
                     },
-                    roles: result.roles.map(({ id, version }) => ({
+                    roles: roles.map(({ id, version }) => ({
                         role: id,
                         version,
                     })),
-                    paths: result.paths.map(({ ancestor, descendant, depth }) => ({
+                    paths: paths.map(({ ancestor, descendant, depth }) => ({
                         descendant: descendant.id,
                         ancestor: ancestor.id,
                         version: 1,
                         depth,
                     })),
-                    rolePermissionAssignments: result.assignments.permission.map(
-                        ({ id, role, permission, scope, version }) => ({
-                            permission: permission.id,
-                            assignment: id,
-                            role: role.id,
-                            version,
-                            scope,
-                        }),
-                    ),
-                    accountRoleAssignments: result.assignments.role.map(({ id, account, role, version }) => ({
+                    rolePermissionAssignments: assignments.permission.map(({ id, role, permission, scope, version }) => ({
+                        permission: permission.id,
+                        assignment: id,
+                        role: role.id,
+                        version,
+                        scope,
+                    })),
+                    accountRoleAssignments: assignments.role.map(({ id, account, role, version }) => ({
                         assignment: id,
                         role: role.id,
                         account,

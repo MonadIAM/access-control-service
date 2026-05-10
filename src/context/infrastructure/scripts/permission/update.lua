@@ -14,6 +14,11 @@ local function is_active_entity(key)
     return redis.call("HGET", key, "isRevoked") == "0"
 end
 
+local function parse_pair(value)
+    local first, second = string.match(value, "^([^:]+):([^:]+)$")
+    return first, second
+end
+
 local function remove_active_override(realm_id, account_id, permission_id)
     redis.call("SREM", make_key("account-overrides-allow", realm_id, account_id), permission_id)
     redis.call("SREM", make_key("account-overrides-deny", realm_id, account_id), permission_id)
@@ -38,70 +43,86 @@ local function schedule_cleanup(realm_id, account_id)
 end
 
 local is_revoked = payload.isRevoked == true
-local realm_id = tostring(payload.realm)
+local permission_realm_id = tostring(payload.realm)
 
 for _, item in ipairs(payload.permissions or {}) do
     local permission_id = tostring(item.permission)
     local version = tonumber(item.version) or 1
 
-    redis.call("HSET", make_key("permission", realm_id, permission_id),
+    redis.call("HSET", make_key("permission", permission_realm_id, permission_id),
         "isRevoked", redis_bool(is_revoked),
         "version", version
     )
 
-    local role_ids = redis.call("SMEMBERS", make_key("role-permission-assignments", "by-permission", realm_id, permission_id))
-    local account_ids = redis.call("SMEMBERS", make_key("permission-overrides", "by-permission", realm_id, permission_id))
+    local role_usage_ids = redis.call("SMEMBERS", make_key("permission-usages", "role-assignments", permission_realm_id, permission_id))
+    local override_usage_ids = redis.call("SMEMBERS", make_key("permission-usages", "overrides", permission_realm_id, permission_id))
 
     if is_revoked then
-        for _, role_id in ipairs(role_ids) do
-            redis.call("SREM", make_key("role-permissions", realm_id, role_id), permission_id)
-            redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
+        for _, usage_id in ipairs(role_usage_ids) do
+            local target_realm_id, role_id = parse_pair(usage_id)
+
+            if target_realm_id and role_id then
+                redis.call("SREM", make_key("role-permissions", target_realm_id, role_id), permission_id)
+                redis.call("SREM", make_key("permission-roles", target_realm_id, permission_id), role_id)
+            end
         end
 
-        for _, account_id in ipairs(account_ids) do
-            remove_active_override(realm_id, account_id, permission_id)
-            schedule_cleanup(realm_id, account_id)
+        for _, usage_id in ipairs(override_usage_ids) do
+            local target_realm_id, account_id = parse_pair(usage_id)
+
+            if target_realm_id and account_id then
+                remove_active_override(target_realm_id, account_id, permission_id)
+                schedule_cleanup(target_realm_id, account_id)
+            end
         end
     else
-        if is_active_entity(make_key("realm", realm_id)) then
-            for _, role_id in ipairs(role_ids) do
-                local assignment_key = make_key("role-permission-assignment", realm_id, role_id, permission_id)
+        for _, usage_id in ipairs(role_usage_ids) do
+            local target_realm_id, role_id = parse_pair(usage_id)
 
-                if is_active_entity(make_key("role", realm_id, role_id))
+            if target_realm_id and role_id then
+                local assignment_key = make_key("role-permission-assignment", target_realm_id, role_id, permission_id)
+
+                if is_active_entity(make_key("realm", target_realm_id))
+                    and is_active_entity(make_key("role", target_realm_id, role_id))
                     and redis.call("HGET", assignment_key, "isRevoked") == "0" then
-                    redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
-                    redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+                    redis.call("SADD", make_key("role-permissions", target_realm_id, role_id), permission_id)
+                    redis.call("SADD", make_key("permission-roles", target_realm_id, permission_id), role_id)
                 else
-                    redis.call("SREM", make_key("role-permissions", realm_id, role_id), permission_id)
-                    redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
+                    redis.call("SREM", make_key("role-permissions", target_realm_id, role_id), permission_id)
+                    redis.call("SREM", make_key("permission-roles", target_realm_id, permission_id), role_id)
                 end
             end
+        end
 
-            for _, account_id in ipairs(account_ids) do
-                local override_key = make_key("permission-override", realm_id, account_id, permission_id)
+        for _, usage_id in ipairs(override_usage_ids) do
+            local target_realm_id, account_id = parse_pair(usage_id)
+
+            if target_realm_id and account_id then
+                local override_key = make_key("permission-override", target_realm_id, account_id, permission_id)
                 local override_is_revoked = redis.call("HGET", override_key, "isRevoked")
                 local effect = redis.call("HGET", override_key, "effect")
 
-                if override_is_revoked == "0" then
+                if is_active_entity(make_key("realm", target_realm_id))
+                    and override_is_revoked == "0" then
                     if effect == "ALLOW" then
-                        redis.call("SADD", make_key("account-overrides-allow", realm_id, account_id), permission_id)
-                        redis.call("SREM", make_key("account-overrides-deny", realm_id, account_id), permission_id)
+                        redis.call("SADD", make_key("account-overrides-allow", target_realm_id, account_id), permission_id)
+                        redis.call("SREM", make_key("account-overrides-deny", target_realm_id, account_id), permission_id)
                     elseif effect == "DENY" then
-                        redis.call("SADD", make_key("account-overrides-deny", realm_id, account_id), permission_id)
-                        redis.call("SREM", make_key("account-overrides-allow", realm_id, account_id), permission_id)
+                        redis.call("SADD", make_key("account-overrides-deny", target_realm_id, account_id), permission_id)
+                        redis.call("SREM", make_key("account-overrides-allow", target_realm_id, account_id), permission_id)
                     else
-                        remove_active_override(realm_id, account_id, permission_id)
-                        schedule_cleanup(realm_id, account_id)
+                        remove_active_override(target_realm_id, account_id, permission_id)
+                        schedule_cleanup(target_realm_id, account_id)
                     end
 
                     if effect == "ALLOW" or effect == "DENY" then
-                        redis.call("SADD", make_key("permission-override-accounts", realm_id, permission_id), account_id)
-                        redis.call("SADD", make_key("realm-accounts", realm_id), account_id)
-                        redis.call("SADD", make_key("account-realms", account_id), realm_id)
+                        redis.call("SADD", make_key("permission-override-accounts", target_realm_id, permission_id), account_id)
+                        redis.call("SADD", make_key("realm-accounts", target_realm_id), account_id)
+                        redis.call("SADD", make_key("account-realms", account_id), target_realm_id)
                     end
                 else
-                    remove_active_override(realm_id, account_id, permission_id)
-                    schedule_cleanup(realm_id, account_id)
+                    remove_active_override(target_realm_id, account_id, permission_id)
+                    schedule_cleanup(target_realm_id, account_id)
                 end
             end
         end

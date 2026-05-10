@@ -38,17 +38,14 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.PERMISSION_OVERRIDE_CREATE,
-                payloadMapper: (entity: Entities.PermissionOverride) => ({
-                    items: [
-                        {
-                            permission: entity.permission.id,
-                            account: entity.account,
-                            version: entity.version,
-                            effect: entity.effect,
-                            override: entity.id,
-                            realm,
-                        },
-                    ],
+                payloadMapper: ({ permission, account, version, effect, id }: Entities.PermissionOverride) => ({
+                    permissionRealm: permission.realm.id,
+                    permission: permission.id,
+                    override: id,
+                    account,
+                    version,
+                    effect,
+                    realm,
                 }),
             },
             audit: {
@@ -93,6 +90,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 operationType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
                 payloadMapper: (entities: Entities.PermissionOverride[]) => ({
                     items: entities.map(({ realm, account, permission }) => ({
+                        permissionRealm: permission.realm.id,
                         permission: permission.id,
                         realm: realm.id,
                         account,
@@ -139,6 +137,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 operationType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
                 payloadMapper: (entities: Entities.PermissionOverride[]) => ({
                     items: entities.map(({ id, realm, account, permission, effect, version }) => ({
+                        permissionRealm: permission.realm.id,
                         permission: permission.id,
                         realm: realm.id,
                         override: id,
@@ -157,6 +156,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
+                    options: { populate: ["permission.realm"] },
                     where: { id: { $in: input.identifiers } },
                     transaction,
                 });
@@ -189,6 +189,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 operationType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
                 payloadMapper: (entities: Entities.PermissionOverride[]) => ({
                     items: entities.map(({ id, realm, account, permission, effect, version }) => ({
+                        permissionRealm: permission.realm.id,
                         permission: permission.id,
                         realm: realm.id,
                         override: id,
@@ -207,6 +208,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
+                    options: { populate: ["permission.realm"] },
                     where: { id: { $in: input.identifiers } },
                     transaction,
                 });
@@ -235,6 +237,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 operationType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
                 payloadMapper: (entities: Entities.PermissionOverride[]) => ({
                     items: entities.map(({ realm, account, permission }) => ({
+                        permissionRealm: permission.realm.id,
                         permission: permission.id,
                         realm: realm.id,
                         account,
@@ -243,6 +246,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             },
             execute: async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
+                    options: { populate: ["permission.realm"] },
                     where: { account: props.account },
                     transaction,
                 });

@@ -14,6 +14,7 @@ end
 
 for _, realm in ipairs(payload.realms or {}) do
     local realm_id = tostring(realm)
+    accounts = {}
 
     local active_account_ids = redis.call("SMEMBERS", make_key("realm-accounts", realm_id))
     for _, account_id in ipairs(active_account_ids) do
@@ -37,9 +38,13 @@ for _, realm in ipairs(payload.realms or {}) do
 
         local assigned_permission_ids = redis.call("SMEMBERS", make_key("role-permission-assignments", "by-role", realm_id, role_id))
         for _, permission_id in ipairs(assigned_permission_ids) do
-            redis.call("UNLINK", make_key("role-permission-assignment", realm_id, role_id, permission_id))
+            local assignment_key = make_key("role-permission-assignment", realm_id, role_id, permission_id)
+            local permission_realm_id = redis.call("HGET", assignment_key, "permissionRealm") or realm_id
+
+            redis.call("UNLINK", assignment_key)
             redis.call("SREM", make_key("role-permission-assignments", "by-role", realm_id, role_id), permission_id)
             redis.call("SREM", make_key("role-permission-assignments", "by-permission", realm_id, permission_id), role_id)
+            redis.call("SREM", make_key("permission-usages", "role-assignments", permission_realm_id, permission_id), realm_id .. ":" .. role_id)
             redis.call("SREM", make_key("role-permissions", realm_id, role_id), permission_id)
             redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
         end
@@ -65,33 +70,32 @@ for _, realm in ipairs(payload.realms or {}) do
         redis.call("UNLINK", make_key("role-permission-assignments", "by-role", realm_id, role_id))
     end
 
-    for _, permission_id in ipairs(permission_ids) do
-        local role_ids_by_permission = redis.call("SMEMBERS", make_key("role-permission-assignments", "by-permission", realm_id, permission_id))
-        for _, role_id in ipairs(role_ids_by_permission) do
-            redis.call("UNLINK", make_key("role-permission-assignment", realm_id, role_id, permission_id))
-            redis.call("SREM", make_key("role-permission-assignments", "by-role", realm_id, role_id), permission_id)
-            redis.call("SREM", make_key("role-permissions", realm_id, role_id), permission_id)
-            redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
-        end
+    for _, account_id in ipairs(active_account_ids) do
+        local override_permission_ids = redis.call("SMEMBERS", make_key("permission-overrides", "by-account", realm_id, account_id))
 
-        local account_ids = redis.call("SMEMBERS", make_key("permission-overrides", "by-permission", realm_id, permission_id))
-        for _, account_id in ipairs(account_ids) do
-            remember_account(account_id)
+        for _, permission_id in ipairs(override_permission_ids) do
+            local override_key = make_key("permission-override", realm_id, account_id, permission_id)
+            local permission_realm_id = redis.call("HGET", override_key, "permissionRealm") or realm_id
 
-            redis.call("UNLINK", make_key("permission-override", realm_id, account_id, permission_id))
+            redis.call("UNLINK", override_key)
             redis.call("SREM", make_key("permission-overrides", "by-account", realm_id, account_id), permission_id)
             redis.call("SREM", make_key("permission-overrides", "by-permission", realm_id, permission_id), account_id)
+            redis.call("SREM", make_key("permission-usages", "overrides", permission_realm_id, permission_id), realm_id .. ":" .. account_id)
             redis.call("SREM", make_key("account-overrides-allow", realm_id, account_id), permission_id)
             redis.call("SREM", make_key("account-overrides-deny", realm_id, account_id), permission_id)
             redis.call("SREM", make_key("permission-override-accounts", realm_id, permission_id), account_id)
         end
+    end
 
+    for _, permission_id in ipairs(permission_ids) do
         redis.call("UNLINK", make_key("permission", realm_id, permission_id))
         redis.call("HDEL", make_key("permission-code-by-id", realm_id), permission_id)
         redis.call("UNLINK", make_key("permission-roles", realm_id, permission_id))
         redis.call("UNLINK", make_key("permission-override-accounts", realm_id, permission_id))
         redis.call("UNLINK", make_key("role-permission-assignments", "by-permission", realm_id, permission_id))
         redis.call("UNLINK", make_key("permission-overrides", "by-permission", realm_id, permission_id))
+        redis.call("UNLINK", make_key("permission-usages", "role-assignments", realm_id, permission_id))
+        redis.call("UNLINK", make_key("permission-usages", "overrides", realm_id, permission_id))
     end
 
     for account_id, _ in pairs(accounts) do

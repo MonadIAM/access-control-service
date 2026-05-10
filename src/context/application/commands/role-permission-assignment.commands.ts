@@ -42,14 +42,15 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_CREATE,
                 payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
-                    realm,
-                    role: input.role,
                     assignments: entities.map(({ id, permission, version, scope }) => ({
-                        assignment: id,
+                        permissionRealm: permission.realm.id,
                         permission: permission.id,
+                        assignment: id,
                         version,
                         scope,
                     })),
+                    role: input.role,
+                    realm,
                 }),
             },
             audit: {
@@ -103,6 +104,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_PURGE,
                 payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
                     items: entities.map(({ realm, role, permission }) => ({
+                        permissionRealm: permission.realm.id,
                         permission: permission.id,
                         realm: realm.id,
                         role: role.id,
@@ -117,6 +119,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.rolePermissionAssignmentRepository.find({
+                    options: { populate: ["permission.realm"] },
                     where: { id: { $in: input.identifiers } },
                     transaction,
                 });
@@ -148,6 +151,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
                 payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
                     items: entities.map(({ id, realm, role, permission, version }) => ({
+                        permissionRealm: permission.realm.id,
                         permission: permission.id,
                         realm: realm.id,
                         assignment: id,
@@ -165,6 +169,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.rolePermissionAssignmentRepository.find({
+                    options: { populate: ["permission.realm"] },
                     where: { id: { $in: input.identifiers } },
                     transaction,
                 });
@@ -196,6 +201,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
                 payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
                     items: entities.map(({ id, realm, role, permission, version }) => ({
+                        permissionRealm: permission.realm.id,
                         permission: permission.id,
                         realm: realm.id,
                         assignment: id,
@@ -207,12 +213,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
-                actionType: EventType.REVOKE,
+                actionType: EventType.RESTORE,
                 ...props,
             },
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.rolePermissionAssignmentRepository.find({
+                    options: { populate: ["permission.realm"] },
                     where: { id: { $in: input.identifiers } },
                     transaction,
                 });

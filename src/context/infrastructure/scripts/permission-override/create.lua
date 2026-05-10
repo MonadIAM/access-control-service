@@ -26,28 +26,29 @@ local function activate_override(realm_id, account_id, permission_id, effect)
     redis.call("SADD", make_key("account-realms", account_id), realm_id)
 end
 
-for _, item in ipairs(payload.items or {}) do
-    local permission_id = tostring(item.permission)
-    local version = tonumber(item.version) or 1
-    local override_id = tostring(item.override)
-    local effect = tostring(item.effect or "")
-    local account_id = tostring(item.account)
-    local realm_id = tostring(item.realm)
+local permission_id = tostring(payload.permission)
+local permission_realm_id = tostring(payload.permissionRealm or payload.permission_realm or payload.realm)
+local version = tonumber(payload.version) or 1
+local override_id = tostring(payload.override)
+local effect = tostring(payload.effect or "")
+local account_id = tostring(payload.account)
+local realm_id = tostring(payload.realm)
 
-    redis.call("HSET", make_key("permission-override", realm_id, account_id, permission_id),
-        "overrideId", override_id,
-        "isRevoked", "0",
-        "version", version,
-        "effect", effect
-    )
+redis.call("HSET", make_key("permission-override", realm_id, account_id, permission_id),
+    "overrideId", override_id,
+    "isRevoked", "0",
+    "version", version,
+    "effect", effect,
+    "permissionRealm", permission_realm_id
+)
 
-    redis.call("SADD", make_key("permission-overrides", "by-account", realm_id, account_id), permission_id)
-    redis.call("SADD", make_key("permission-overrides", "by-permission", realm_id, permission_id), account_id)
+redis.call("SADD", make_key("permission-overrides", "by-account", realm_id, account_id), permission_id)
+redis.call("SADD", make_key("permission-overrides", "by-permission", realm_id, permission_id), account_id)
+redis.call("SADD", make_key("permission-usages", "overrides", permission_realm_id, permission_id), realm_id .. ":" .. account_id)
 
-    if is_active_entity(make_key("realm", realm_id))
-        and is_active_entity(make_key("permission", realm_id, permission_id)) then
-        activate_override(realm_id, account_id, permission_id, effect)
-    end
+if is_active_entity(make_key("realm", realm_id))
+    and is_active_entity(make_key("permission", permission_realm_id, permission_id)) then
+    activate_override(realm_id, account_id, permission_id, effect)
 end
 
 return "OK"

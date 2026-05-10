@@ -96,6 +96,7 @@ end
 
 for _, assignment in ipairs(payload.rolePermissionAssignments or {}) do
     local permission_id = tostring(assignment.permission_id)
+    local permission_realm_id = tostring(assignment.permission_realm_id or assignment.permissionRealm or assignment.realm_id)
     local version = tonumber(assignment.version) or 1
     local scope = tostring(assignment.scope or "")
     local realm_id = tostring(assignment.realm_id)
@@ -107,15 +108,17 @@ for _, assignment in ipairs(payload.rolePermissionAssignments or {}) do
         "assignmentId", assignment_id,
         "isRevoked", to_redis_bool(is_revoked),
         "version", version,
-        "scope", scope
+        "scope", scope,
+        "permissionRealm", permission_realm_id
     )
 
     redis.call("SADD", make_key("role-permission-assignments", "by-role", realm_id, role_id), permission_id)
     redis.call("SADD", make_key("role-permission-assignments", "by-permission", realm_id, permission_id), role_id)
+    redis.call("SADD", make_key("permission-usages", "role-assignments", permission_realm_id, permission_id), realm_id .. ":" .. role_id)
 
     if active_entities.realms[realm_id]
         and is_active_entity(active_entities.roles, realm_id, role_id)
-        and is_active_entity(active_entities.permissions, realm_id, permission_id)
+        and is_active_entity(active_entities.permissions, permission_realm_id, permission_id)
         and not is_revoked then
         redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
         redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
@@ -151,6 +154,7 @@ end
 
 for _, override in ipairs(payload.permissionOverrides or {}) do
     local permission_id = tostring(override.permission_id)
+    local permission_realm_id = tostring(override.permission_realm_id or override.permissionRealm or override.realm_id)
     local version = tonumber(override.version) or 1
     local effect = tostring(override.effect or "")
     local account_id = tostring(override.account)
@@ -162,14 +166,16 @@ for _, override in ipairs(payload.permissionOverrides or {}) do
         "overrideId", override_id,
         "isRevoked", to_redis_bool(is_revoked),
         "version", version,
-        "effect", effect
+        "effect", effect,
+        "permissionRealm", permission_realm_id
     )
 
     redis.call("SADD", make_key("permission-overrides", "by-account", realm_id, account_id), permission_id)
     redis.call("SADD", make_key("permission-overrides", "by-permission", realm_id, permission_id), account_id)
+    redis.call("SADD", make_key("permission-usages", "overrides", permission_realm_id, permission_id), realm_id .. ":" .. account_id)
 
     if active_entities.realms[realm_id]
-        and is_active_entity(active_entities.permissions, realm_id, permission_id)
+        and is_active_entity(active_entities.permissions, permission_realm_id, permission_id)
         and not is_revoked then
         if effect == "ALLOW" then
             redis.call("SADD", make_key("account-overrides-allow", realm_id, account_id), permission_id)
