@@ -10,6 +10,15 @@ local function make_key(...)
     return table.concat({"projection", ...}, ":")
 end
 
+local function mark_active_entity(bucket, realm_id, entity_id)
+    bucket[realm_id] = bucket[realm_id] or {}
+    bucket[realm_id][entity_id] = true
+end
+
+local function is_active_entity(bucket, realm_id, entity_id)
+    return bucket[realm_id] ~= nil and bucket[realm_id][entity_id] == true
+end
+
 local active_entities = {
     permissions = {},
     realms = {},
@@ -42,8 +51,10 @@ for _, role in ipairs(payload.roles or {}) do
         "version", version
     )
 
+    redis.call("SADD", make_key("realm-roles", realm_id), role_id)
+
     if active_entities.realms[realm_id] and not is_revoked then
-        active_entities.roles[role_id] = true
+        mark_active_entity(active_entities.roles, realm_id, role_id)
     end
 end
 
@@ -63,7 +74,7 @@ for _, permission in ipairs(payload.permissions or {}) do
     redis.call("HSET", make_key("permission-code-by-id", realm_id), permission_id, code)
 
     if active_entities.realms[realm_id] and not is_revoked then
-        active_entities.permissions[permission_id] = true
+        mark_active_entity(active_entities.permissions, realm_id, permission_id)
     end
 end
 
@@ -99,11 +110,13 @@ for _, assignment in ipairs(payload.rolePermissionAssignments or {}) do
         "scope", scope
     )
 
-    local is_active_chain = active_entities.realms[realm_id]
-                            and active_entities.roles[role_id]
-                            and active_entities.permissions[permission_id]
+    redis.call("SADD", make_key("role-permission-assignments", "by-role", realm_id, role_id), permission_id)
+    redis.call("SADD", make_key("role-permission-assignments", "by-permission", realm_id, permission_id), role_id)
 
-    if is_active_chain and not is_revoked then
+    if active_entities.realms[realm_id]
+        and is_active_entity(active_entities.roles, realm_id, role_id)
+        and is_active_entity(active_entities.permissions, realm_id, permission_id)
+        and not is_revoked then
         redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
         redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
     end
@@ -123,7 +136,12 @@ for _, assignment in ipairs(payload.accountRoleAssignments or {}) do
         "version", version
     )
 
-    if active_entities.realms[realm_id] and active_entities.roles[role_id] and not is_revoked then
+    redis.call("SADD", make_key("account-role-assignments", "by-account", realm_id, account_id), role_id)
+    redis.call("SADD", make_key("account-role-assignments", "by-role", realm_id, role_id), account_id)
+
+    if active_entities.realms[realm_id]
+        and is_active_entity(active_entities.roles, realm_id, role_id)
+        and not is_revoked then
         redis.call("SADD", make_key("account-roles", realm_id, account_id), role_id)
         redis.call("SADD", make_key("role-accounts", realm_id, role_id), account_id)
         redis.call("SADD", make_key("realm-accounts", realm_id), account_id)
@@ -147,16 +165,23 @@ for _, override in ipairs(payload.permissionOverrides or {}) do
         "effect", effect
     )
 
-    if active_entities.realms[realm_id] and active_entities.permissions[permission_id] and not is_revoked then
+    redis.call("SADD", make_key("permission-overrides", "by-account", realm_id, account_id), permission_id)
+    redis.call("SADD", make_key("permission-overrides", "by-permission", realm_id, permission_id), account_id)
+
+    if active_entities.realms[realm_id]
+        and is_active_entity(active_entities.permissions, realm_id, permission_id)
+        and not is_revoked then
         if effect == "ALLOW" then
             redis.call("SADD", make_key("account-overrides-allow", realm_id, account_id), permission_id)
         elseif effect == "DENY" then
             redis.call("SADD", make_key("account-overrides-deny", realm_id, account_id), permission_id)
         end
 
-        redis.call("SADD", make_key("permission-override-accounts", realm_id, permission_id), account_id)
-        redis.call("SADD", make_key("realm-accounts", realm_id), account_id)
-        redis.call("SADD", make_key("account-realms", account_id), realm_id)
+        if effect == "ALLOW" or effect == "DENY" then
+            redis.call("SADD", make_key("permission-override-accounts", realm_id, permission_id), account_id)
+            redis.call("SADD", make_key("realm-accounts", realm_id), account_id)
+            redis.call("SADD", make_key("account-realms", account_id), realm_id)
+        end
     end
 end
 

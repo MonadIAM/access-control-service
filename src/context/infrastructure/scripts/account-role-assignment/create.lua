@@ -2,18 +2,18 @@
 
 local payload = cjson.decode(ARGV[1])
 
-local function to_redis_bool(value)
-    return value and "1" or "0"
-end
-
 local function make_key(...)
     return table.concat({"projection", ...}, ":")
+end
+
+local function is_active_entity(key)
+    return redis.call("HGET", key, "isRevoked") == "0"
 end
 
 local account_id = tostring(payload.account)
 local realm_id = tostring(payload.realm)
 
-local realm_is_revoked = redis.call("HGET", make_key("realm", realm_id), "isRevoked")
+local realm_active = is_active_entity(make_key("realm", realm_id))
 
 for _, assignment in ipairs(payload.assignments or {}) do
     local assignment_id = tostring(assignment.assignment)
@@ -22,13 +22,14 @@ for _, assignment in ipairs(payload.assignments or {}) do
 
     redis.call("HSET", make_key("account-role-assignment", realm_id, account_id, role_id),
         "assignmentId", assignment_id,
-        "isRevoked", to_redis_bool(false),
+        "isRevoked", "0",
         "version", version
     )
 
-    local role_is_revoked = redis.call("HGET", make_key("role", realm_id, role_id), "isRevoked")
+    redis.call("SADD", make_key("account-role-assignments", "by-account", realm_id, account_id), role_id)
+    redis.call("SADD", make_key("account-role-assignments", "by-role", realm_id, role_id), account_id)
 
-    if realm_is_revoked == "0" and role_is_revoked == "0" then
+    if realm_active and is_active_entity(make_key("role", realm_id, role_id)) then
         redis.call("SADD", make_key("account-roles", realm_id, account_id), role_id)
         redis.call("SADD", make_key("role-accounts", realm_id, role_id), account_id)
         redis.call("SADD", make_key("realm-accounts", realm_id), account_id)

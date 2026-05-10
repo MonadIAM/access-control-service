@@ -24,7 +24,6 @@ export enum ProjectionScript {
     ROLE_CREATE = "role/create",
     ROLE_UPDATE = "role/update",
     ROLE_PURGE = "role/purge",
-    ROLE_PURGE_SUBTREE = "role/purge-subtree",
 }
 
 export const PROJECTION_SCRIPT_FILES: Record<ProjectionScript, string> = {
@@ -53,5 +52,4 @@ export const PROJECTION_SCRIPT_FILES: Record<ProjectionScript, string> = {
     [ProjectionScript.ROLE_CREATE]: "role/create.lua",
     [ProjectionScript.ROLE_UPDATE]: "role/update.lua",
     [ProjectionScript.ROLE_PURGE]: "role/purge.lua",
-    [ProjectionScript.ROLE_PURGE_SUBTREE]: "role/purge-subtree.lua",
 };

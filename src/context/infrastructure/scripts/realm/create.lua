@@ -2,19 +2,19 @@
 
 local payload = cjson.decode(ARGV[1])
 
-local function to_redis_bool(value)
-    return value and "1" or "0"
-end
-
 local function make_key(...)
     return table.concat({"projection", ...}, ":")
+end
+
+local function is_active_entity(key)
+    return redis.call("HGET", key, "isRevoked") == "0"
 end
 
 local realm_version = tonumber(payload.realm.version) or 1
 local realm_id = tostring(payload.realm.realm)
 
 redis.call("HSET", make_key("realm", realm_id),
-    "isRevoked", to_redis_bool(false),
+    "isRevoked", "0",
     "version", realm_version
 )
 
@@ -23,9 +23,11 @@ for _, item in ipairs(payload.roles or {}) do
     local version = tonumber(item.version) or 1
 
     redis.call("HSET", make_key("role", realm_id, role_id),
-        "isRevoked", to_redis_bool(false),
+        "isRevoked", "0",
         "version", version
     )
+
+    redis.call("SADD", make_key("realm-roles", realm_id), role_id)
 end
 
 for _, item in ipairs(payload.paths or {}) do
@@ -52,13 +54,18 @@ for _, item in ipairs(payload.rolePermissionAssignments or {}) do
 
     redis.call("HSET", make_key("role-permission-assignment", realm_id, role_id, permission_id),
         "assignmentId", assignment_id,
-        "isRevoked", to_redis_bool(false),
+        "isRevoked", "0",
         "version", version,
         "scope", scope
     )
 
-    redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
-    redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+    redis.call("SADD", make_key("role-permission-assignments", "by-role", realm_id, role_id), permission_id)
+    redis.call("SADD", make_key("role-permission-assignments", "by-permission", realm_id, permission_id), role_id)
+
+    if is_active_entity(make_key("permission", realm_id, permission_id)) then
+        redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
+        redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+    end
 end
 
 for _, item in ipairs(payload.accountRoleAssignments or {}) do
@@ -69,9 +76,12 @@ for _, item in ipairs(payload.accountRoleAssignments or {}) do
 
     redis.call("HSET", make_key("account-role-assignment", realm_id, account_id, role_id),
         "assignmentId", assignment_id,
-        "isRevoked", to_redis_bool(false),
+        "isRevoked", "0",
         "version", version
     )
+
+    redis.call("SADD", make_key("account-role-assignments", "by-account", realm_id, account_id), role_id)
+    redis.call("SADD", make_key("account-role-assignments", "by-role", realm_id, role_id), account_id)
 
     redis.call("SADD", make_key("account-roles", realm_id, account_id), role_id)
     redis.call("SADD", make_key("role-accounts", realm_id, role_id), account_id)

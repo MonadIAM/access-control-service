@@ -133,7 +133,7 @@ export class RoleCommands implements Commands.Role.Contract {
         const entities = await this.transactionalService.run({
             resource: this.resource,
             projectionJournal: {
-                operationType: ProjectionScript.ROLE_PURGE_SUBTREE,
+                operationType: ProjectionScript.ROLE_PURGE,
                 payloadMapper: () => ({
                     role: id,
                     realm,
