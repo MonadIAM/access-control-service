@@ -1,19 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 
-import { EventType, EntityType } from "~context/enums";
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { ProjectionScript } from "~context/infrastructure/scripts";
 import { REALM_SERVICE } from "~context/domain/services";
+import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
-
-import {
-    RealmRestoredEvent,
-    RealmCreatedEvent,
-    RealmUpdatedEvent,
-    RealmRevokedEvent,
-    RealmPurgedEvent,
-} from "../events/realm.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmCommands implements Commands.Realm.Contract {
@@ -27,14 +19,47 @@ export class RealmCommands implements Commands.Realm.Contract {
         private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(REALM_SERVICE)
         private readonly realmService: Services.Realm.Contract,
-        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(props: Commands.Realm.Create.Props): Promise<Commands.Realm.Create.Result> {
         const { input, actor } = props;
 
-        const entity = await this.transactionalService.run({
+        await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.REALM_CREATE,
+                payloadMapper: (result: Services.Realm.Create.Result) => ({
+                    realm: {
+                        version: result.realm.version,
+                        realm: result.realm.id,
+                    },
+                    roles: result.roles.map(({ id, version }) => ({
+                        role: id,
+                        version,
+                    })),
+                    paths: result.paths.map(({ ancestor, descendant, depth }) => ({
+                        descendant: descendant.id,
+                        ancestor: ancestor.id,
+                        version: 1,
+                        depth,
+                    })),
+                    rolePermissionAssignments: result.assignments.permission.map(
+                        ({ id, role, permission, scope, version }) => ({
+                            permission: permission.id,
+                            assignment: id,
+                            role: role.id,
+                            version,
+                            scope,
+                        }),
+                    ),
+                    accountRoleAssignments: result.assignments.role.map(({ id, account, role, version }) => ({
+                        assignment: id,
+                        role: role.id,
+                        account,
+                        version,
+                    })),
+                }),
+            },
             audit: {
                 actionType: EventType.CREATE,
                 entityType: EntityType.REALM,
@@ -49,8 +74,6 @@ export class RealmCommands implements Commands.Realm.Contract {
                 });
             },
         });
-
-        this.eventEmitter.emit(RealmCreatedEvent.TOKEN, new RealmCreatedEvent(entity.id, actor));
 
         return { message: `${this.dictionaryPath}.CREATED` };
     }
@@ -76,16 +99,20 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
         });
 
-        this.eventEmitter.emit(RealmUpdatedEvent.TOKEN, new RealmUpdatedEvent(id));
-
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
     public async purge(props: Commands.Realm.Purge.Props): Promise<Commands.Realm.Purge.Result> {
         const { input } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.REALM_PURGE,
+                payloadMapper: (entities: Entities.Realm[]) => ({
+                    realms: entities.map(({ id }) => id),
+                }),
+            },
             audit: {
                 actionType: EventType.DELETE,
                 entityType: EntityType.REALM,
@@ -102,15 +129,13 @@ export class RealmCommands implements Commands.Realm.Contract {
                     throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 } else {
                     this.realmService.purge({ transaction, entities });
-                    return { count: entities.length };
+                    return entities;
                 }
             },
         });
 
-        this.eventEmitter.emit(RealmPurgedEvent.TOKEN, new RealmPurgedEvent(input.identifiers));
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
         }
@@ -119,8 +144,18 @@ export class RealmCommands implements Commands.Realm.Contract {
     public async revoke(props: Commands.Realm.Revoke.Props): Promise<Commands.Realm.Revoke.Result> {
         const { input } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.REALM_UPDATE,
+                payloadMapper: (entities: Entities.Realm[]) => ({
+                    isRevoked: true,
+                    realms: entities.map(({ id, version }) => ({
+                        realm: id,
+                        version,
+                    })),
+                }),
+            },
             audit: {
                 actionType: EventType.REVOKE,
                 entityType: EntityType.REALM,
@@ -137,15 +172,13 @@ export class RealmCommands implements Commands.Realm.Contract {
                     throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 } else {
                     this.realmService.revoke({ entities });
-                    return { count: entities.length };
+                    return entities;
                 }
             },
         });
 
-        this.eventEmitter.emit(RealmRevokedEvent.TOKEN, new RealmRevokedEvent(input.identifiers));
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count } };
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.REVOKED` };
         }
@@ -154,8 +187,18 @@ export class RealmCommands implements Commands.Realm.Contract {
     public async restore(props: Commands.Realm.Restore.Props): Promise<Commands.Realm.Restore.Result> {
         const { input } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.REALM_UPDATE,
+                payloadMapper: (entities: Entities.Realm[]) => ({
+                    isRevoked: false,
+                    realms: entities.map(({ id, version }) => ({
+                        realm: id,
+                        version,
+                    })),
+                }),
+            },
             audit: {
                 actionType: EventType.RESTORE,
                 entityType: EntityType.REALM,
@@ -172,15 +215,13 @@ export class RealmCommands implements Commands.Realm.Contract {
                     throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
                 } else {
                     this.realmService.restore({ entities });
-                    return { count: entities.length };
+                    return entities;
                 }
             },
         });
 
-        this.eventEmitter.emit(RealmRestoredEvent.TOKEN, new RealmRestoredEvent(input.identifiers));
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count } };
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }

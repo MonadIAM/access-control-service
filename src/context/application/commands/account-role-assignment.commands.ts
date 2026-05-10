@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 
-import { EventType, EntityType } from "~context/enums";
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { ProjectionScript } from "~context/infrastructure/scripts";
+import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
@@ -11,15 +11,8 @@ import {
     ROLE_REPOSITORY,
 } from "~context/infrastructure/repositories";
 
-import {
-    AccountRoleAssignmentRestoredEvent,
-    AccountRoleAssignmentRevokedEvent,
-    AccountRoleAssignmentCreatedEvent,
-    AccountRoleAssignmentPurgedEvent,
-} from "../events/account-role-assignment.events";
-
-const SYSTEM_REALM = "00000001-0000-4000-8000-100000000001";
 const SYSTEM_USER_ROLE = "00000002-0000-4000-8000-100000000002";
+const SYSTEM_REALM = "00000001-0000-4000-8000-100000000001";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssignment.Contract {
@@ -37,7 +30,6 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_SERVICE)
         private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.Contract,
-        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(
@@ -47,6 +39,18 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
 
         await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
+                    assignments: entities.map(({ id, role, version }) => ({
+                        assignment: id,
+                        role: role.id,
+                        version,
+                    })),
+                    account: input.account,
+                    realm,
+                }),
+            },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: EventType.CREATE,
@@ -68,7 +72,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 if (roleEntities.length < input.roles.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 } else {
-                    await this.accountRoleAssignmentService.create({
+                    return this.accountRoleAssignmentService.create({
                         input: { account: input.account, roles: roleEntities },
                         realm: realmEntity,
                         transaction,
@@ -78,11 +82,6 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             },
         });
 
-        this.eventEmitter.emit(
-            AccountRoleAssignmentCreatedEvent.TOKEN,
-            new AccountRoleAssignmentCreatedEvent(input.account, realm, input.roles, [input.account]),
-        );
-
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
@@ -91,8 +90,18 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     ): Promise<Commands.AccountRoleAssignment.Purge.Result> {
         const { input } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
+                    items: entities.map(({ realm, account, role }) => ({
+                        realm: realm.id,
+                        role: role.id,
+                        account,
+                    })),
+                }),
+            },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: EventType.DELETE,
@@ -110,18 +119,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 } else {
                     this.accountRoleAssignmentService.purge({ transaction, entities });
 
-                    return { count: entities.length };
+                    return entities;
                 }
             },
         });
 
-        this.eventEmitter.emit(
-            AccountRoleAssignmentPurgedEvent.TOKEN,
-            new AccountRoleAssignmentPurgedEvent(input.identifiers),
-        );
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
         }
@@ -134,6 +138,19 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
+                    isRevoked: true,
+                    items: entities.map(({ id, realm, account, role, version }) => ({
+                        realm: realm.id,
+                        assignment: id,
+                        role: role.id,
+                        account,
+                        version,
+                    })),
+                }),
+            },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: EventType.REVOKE,
@@ -156,14 +173,6 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             },
         });
 
-        this.eventEmitter.emit(
-            AccountRoleAssignmentRevokedEvent.TOKEN,
-            new AccountRoleAssignmentRevokedEvent(
-                entities.map(({ id }) => id),
-                entities.map(({ account }) => account),
-            ),
-        );
-
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
         } else {
@@ -178,6 +187,19 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
+                    isRevoked: false,
+                    items: entities.map(({ id, realm, account, role, version }) => ({
+                        realm: realm.id,
+                        assignment: id,
+                        role: role.id,
+                        account,
+                        version,
+                    })),
+                }),
+            },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: EventType.RESTORE,
@@ -200,14 +222,6 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             },
         });
 
-        this.eventEmitter.emit(
-            AccountRoleAssignmentRestoredEvent.TOKEN,
-            new AccountRoleAssignmentRestoredEvent(
-                entities.map(({ id }) => id),
-                entities.map(({ account }) => account),
-            ),
-        );
-
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
         } else {
@@ -220,6 +234,20 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     ): Promise<Commands.AccountRoleAssignment.Assign.Result> {
         await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
+                payloadMapper: (entity: Entities.AccountRoleAssignment) => ({
+                    realm: SYSTEM_REALM,
+                    account: props.account,
+                    assignments: [
+                        {
+                            version: entity.version,
+                            assignment: entity.id,
+                            role: SYSTEM_USER_ROLE,
+                        },
+                    ],
+                }),
+            },
             execute: async (transaction) => {
                 const [realmEntity, roleEntity] = await Promise.all([
                     this.realmRepository.findUniqueOrThrow({
@@ -232,7 +260,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     }),
                 ]);
 
-                await this.accountRoleAssignmentService.assign({
+                return this.accountRoleAssignmentService.assign({
                     transaction,
                     input: {
                         account: props.account,
@@ -249,6 +277,16 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     ): Promise<Commands.AccountRoleAssignment.Clean.Result> {
         await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
+                    items: entities.map(({ realm, account, role }) => ({
+                        realm: realm.id,
+                        role: role.id,
+                        account,
+                    })),
+                }),
+            },
             execute: async (transaction) => {
                 const entities = await this.accountRoleAssignmentRepository.find({
                     where: { account: props.account },
@@ -256,6 +294,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 });
 
                 this.accountRoleAssignmentService.purge({ transaction, entities });
+                return entities;
             },
         });
     }

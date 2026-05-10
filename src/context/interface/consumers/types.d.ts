@@ -1,6 +1,4 @@
 declare namespace Consumers {
-    type Props = { payload: string };
-
     namespace DLQ {
         type Message = {
             originalTopic: string;
@@ -13,32 +11,42 @@ declare namespace Consumers {
 
     namespace Account {
         interface Contract {
-            handle: (message: Consumers.Props) => Promise<void>;
+            handle: (message: Payload) => Promise<void>;
         }
 
+        type Event = "ACCOUNT_REGISTERED" | "ACCOUNT_PURGED";
+
         type Register = {
-            eventType: "ACCOUNT_REGISTERED";
             accountId: string;
         };
 
         type Purge = {
-            eventType: "ACCOUNT_PURGED";
             accountId: string;
         };
 
-        type Handlers<T extends Register | Purge = Register | Purge> = {
-            [K in T["eventType"]]: (payload: Extract<T, { eventType: K }>) => Promise<void>;
+        type Payload = {
+            payload: Register | Purge;
+            eventType: Event;
+        };
+
+        type Handlers = {
+            [K in Event]: (payload: Register | Purge) => Promise<void>;
         };
     }
 
     namespace Blacklist {
         interface Contract {
-            handle: (props: Consumers.Props) => Promise<void>;
+            handle: (props: Payload) => Promise<void>;
         }
 
-        type Handle = {
-            sessionId: string;
-            ttl: number;
+        type Event = "SESSION_REVOKED";
+
+        type Payload = {
+            eventType: Event;
+            payload: {
+                sessionId: string;
+                ttl: number;
+            };
         };
     }
 }

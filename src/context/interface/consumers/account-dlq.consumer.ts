@@ -18,9 +18,9 @@ export class AccountDLQConsumer {
         private readonly dlqRetryQueue: Queue,
         private readonly configService: ConfigService,
     ) {
-        this.maxRetries = this.configService.getOrThrow<number>("KAFKA_DLQ_MAX_RETRIES");
         this.baseDelay = this.configService.getOrThrow<number>("KAFKA_DLQ_RETRY_BASE_DELAY");
         this.maxDelay = this.configService.getOrThrow<number>("KAFKA_DLQ_RETRY_MAX_DELAY");
+        this.maxRetries = this.configService.getOrThrow<number>("KAFKA_DLQ_MAX_RETRIES");
         this.jitter = this.configService.getOrThrow<number>("KAFKA_DLQ_RETRY_JITTER");
     }
 

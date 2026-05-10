@@ -10,7 +10,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmRepository
-    extends BaseRepository<Realm, Adapters.Realm.Types>({
+    extends BaseRepository<Entities.Realm, Adapters.Realm.Types>({
         Adapter: RealmAdapter,
         Entity: Realm,
     })
@@ -27,7 +27,11 @@ export class RealmRepository
         this.realmLimit = this.configService.getOrThrow<number>("REALM_LIMIT");
     }
 
-    public async getLookupList({ pagination, realms, term }: Repositories.Realm.GetLookupList): Promise<[Realm[], number]> {
+    public async getLookupList({
+        pagination,
+        realms,
+        term,
+    }: Repositories.Realm.GetLookupList): Promise<[Entities.Realm[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const builder = entityManager.createQueryBuilder(Realm, "r");

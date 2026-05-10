@@ -13,7 +13,11 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
         private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.InternalContract,
     ) {}
 
-    public async create({ transaction, realm, input }: Services.RolePermissionAssignment.Create): Promise<void> {
+    public async create({
+        transaction,
+        realm,
+        input,
+    }: Services.RolePermissionAssignment.Create): Promise<Entities.RolePermissionAssignment[]> {
         const limitExceeded = await this.rolePermissionAssignmentRepository.wouldExceedPermissionLimit({
             permissions: input.permissions.map(({ id }) => id!),
             role: input.role.id,
@@ -23,6 +27,8 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
         if (limitExceeded) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.ROLE_PERMISSION_LIMIT_EXCEEDED`);
         } else {
+            const entities: Entities.RolePermissionAssignment[] = [];
+
             for (const permission of input.permissions) {
                 const entity = new RolePermissionAssignment({
                     role: input.role,
@@ -31,8 +37,11 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
                 });
 
                 entity.canAssign();
+                entities.push(entity);
                 transaction.persist(entity);
             }
+
+            return entities;
         }
     }
 

@@ -1,7 +1,12 @@
 import { PermissionOverrideEffect, RoleActorType, RoleProtoType } from "~context/enums";
 
+import { RolePermissionAssignment as RolePermissionAssignmentEntity } from "./role-permission-assignment.entity";
+import { AccountRoleAssignment as AccountRoleAssignmentEntity } from "./account-role-assignment.entity";
 import { RoleDelegationPolicy as RoleDelegationPolicyEntity } from "./role-delegation-policy.entity";
+import { RoleConflictMember as RoleConflictMemberEntity } from "./role-conflict-member.entity";
+import { PermissionOverride as PermissionOverrideEntity } from "./permission-override.entity";
 import { RoleConflictGroup as RoleConflictGroupEntity } from "./role-conflict-group.entity";
+import { RoleClosure as RoleClosureEntity } from "./role-closure.entity";
 import { Permission as PermissionEntity } from "./permission.entity";
 import { Realm as RealmEntity } from "./realm.entity";
 import { Role as RoleEntity } from "./role.entity";
@@ -28,6 +33,8 @@ declare global {
             };
         }
 
+        type Role = RoleEntity;
+
         namespace RolePermissionAssignment {
             type ConstructorProps = {
                 isSystemManaged?: boolean;
@@ -37,6 +44,8 @@ declare global {
                 role: RoleEntity;
             };
         }
+
+        type RolePermissionAssignment = RolePermissionAssignmentEntity;
 
         namespace RoleDelegationPolicy {
             type MutableFields = Pick<RoleDelegationPolicyEntity, "depthLimit" | "description">;
@@ -56,6 +65,8 @@ declare global {
             };
         }
 
+        type RoleDelegationPolicy = RoleDelegationPolicyEntity;
+
         namespace RoleConflictMember {
             type ConstructorProps = {
                 isSystemManaged?: boolean;
@@ -64,6 +75,8 @@ declare global {
                 role: RoleEntity;
             };
         }
+
+        type RoleConflictMember = RoleConflictMemberEntity;
 
         namespace RoleConflictGroup {
             type MutableFields = Pick<RoleConflictGroupEntity, "name" | "description" | "maxAllowed">;
@@ -83,6 +96,8 @@ declare global {
             };
         }
 
+        type RoleConflictGroup = RoleConflictGroupEntity;
+
         namespace RoleClosure {
             type ConstructorProps = {
                 depth: number;
@@ -92,8 +107,10 @@ declare global {
             };
         }
 
+        type RoleClosure = RoleClosureEntity;
+
         namespace Realm {
-            type MutableFields = Pick<PermissionEntity, "name" | "description">;
+            type MutableFields = Pick<RealmEntity, "name" | "description">;
 
             type ConstructorProps = {
                 owner: string;
@@ -108,6 +125,8 @@ declare global {
                 patch: Partial<MutableFields>;
             };
         }
+
+        type Realm = RealmEntity;
 
         namespace Permission {
             type MutableFields = Pick<PermissionEntity, "name" | "description">;
@@ -126,6 +145,8 @@ declare global {
             };
         }
 
+        type Permission = PermissionEntity;
+
         namespace PermissionOverride {
             type ConstructorProps = {
                 account: string;
@@ -136,6 +157,8 @@ declare global {
             };
         }
 
+        type PermissionOverride = PermissionOverrideEntity;
+
         namespace AccountRoleAssignment {
             type ConstructorProps = {
                 account: string;
@@ -145,5 +168,7 @@ declare global {
                 role: RoleEntity;
             };
         }
+
+        type AccountRoleAssignment = AccountRoleAssignmentEntity;
     }
 }

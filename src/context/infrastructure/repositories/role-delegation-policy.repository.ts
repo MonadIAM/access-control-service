@@ -10,7 +10,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyRepository
-    extends BaseRepository<RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types>({
+    extends BaseRepository<Entities.RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types>({
         Adapter: RoleDelegationPolicyAdapter,
         Entity: RoleDelegationPolicy,
     })

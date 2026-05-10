@@ -10,7 +10,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupRepository
-    extends BaseRepository<RoleConflictGroup, Adapters.RoleConflictGroup.Types>({
+    extends BaseRepository<Entities.RoleConflictGroup, Adapters.RoleConflictGroup.Types>({
         Adapter: RoleConflictGroupAdapter,
         Entity: RoleConflictGroup,
     })
@@ -29,7 +29,7 @@ export class RoleConflictGroupRepository
 
     public async findViolationDetails(
         props: Repositories.RoleConflictGroup.FindViolationDetails,
-    ): Promise<RoleConflictGroup[]> {
+    ): Promise<Entities.RoleConflictGroup[]> {
         try {
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();

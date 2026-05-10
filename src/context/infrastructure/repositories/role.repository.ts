@@ -4,14 +4,14 @@ import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { RoleAdapter } from "~context/infrastructure/adapters";
-import { Role, RoleClosure } from "~context/domain/entities";
+import { RoleClosure, Role } from "~context/domain/entities";
 import { RepositoryException } from "~common/exceptions";
 import { MikroAdapter } from "~infrastructure/database";
 import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleRepository
-    extends BaseRepository<Role, Adapters.Role.Types>({
+    extends BaseRepository<Entities.Role, Adapters.Role.Types>({
         Adapter: RoleAdapter,
         Entity: Role,
     })
@@ -28,9 +28,9 @@ export class RoleRepository
         this.roleLimit = this.configService.getOrThrow<number>("ROLE_PER_REALM_LIMIT");
     }
 
-    public async getAncestors(props: Repositories.Role.GetAncestors): Promise<Role[]> {
+    public async getAncestors(props: Repositories.Role.GetAncestors): Promise<Entities.Role[]> {
         try {
-            const where: FilterQuery<RoleClosure> = {
+            const where: FilterQuery<Entities.RoleClosure> = {
                 ...(props.depth ? { depth: props.depth } : {}),
                 descendant: props.descendant,
                 ancestor: props.where ?? {},
@@ -72,9 +72,9 @@ export class RoleRepository
         }
     }
 
-    public async getDescendants(props: Repositories.Role.GetDescendants): Promise<Role[]> {
+    public async getDescendants(props: Repositories.Role.GetDescendants): Promise<Entities.Role[]> {
         try {
-            const where: FilterQuery<RoleClosure> = {
+            const where: FilterQuery<Entities.RoleClosure> = {
                 ...(props.depth ? { depth: props.depth } : {}),
                 descendant: props.where ?? {},
                 ancestor: props.ancestor,
@@ -120,7 +120,11 @@ export class RoleRepository
         }
     }
 
-    public async getLookupList({ pagination, realm, term }: Repositories.Role.GetLookupList): Promise<[Role[], number]> {
+    public async getLookupList({
+        pagination,
+        realm,
+        term,
+    }: Repositories.Role.GetLookupList): Promise<[Entities.Role[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const builder = entityManager.createQueryBuilder(Role, "r");
@@ -150,7 +154,7 @@ export class RoleRepository
         pagination,
         filters,
         sort,
-    }: Repositories.Role.FindDelegateable): Promise<[Role[], number]> {
+    }: Repositories.Role.FindDelegateable): Promise<[Entities.Role[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
@@ -188,7 +192,9 @@ export class RoleRepository
             const [rawRows, countResult] = await Promise.all([dataQuery, countQuery.first<{ total: string }>()]);
 
             const total = Number(countResult?.total ?? 0);
-            const mappedRoles = rawRows.map((roleData: EntityDictionary<Role>) => entityManager.map(Role, roleData));
+            const mappedRoles = rawRows.map((roleData: EntityDictionary<Entities.Role>) =>
+                entityManager.map(Role, roleData),
+            );
 
             return [mappedRoles, total];
         } catch (error) {
@@ -201,7 +207,7 @@ export class RoleRepository
         pagination,
         filters,
         sort,
-    }: Repositories.Role.FindEffective): Promise<[Role[], number]> {
+    }: Repositories.Role.FindEffective): Promise<[Entities.Role[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
@@ -225,7 +231,7 @@ export class RoleRepository
             const [rawRows, countResult] = await Promise.all([dataQuery, countQuery.first<{ total: string }>()]);
 
             const total = Number(countResult?.total ?? 0);
-            const roles = rawRows.map((roleData: EntityDictionary<Role>) => entityManager.map(Role, roleData));
+            const roles = rawRows.map((roleData: EntityDictionary<Entities.Role>) => entityManager.map(Role, roleData));
 
             return [roles, total];
         } catch (error) {

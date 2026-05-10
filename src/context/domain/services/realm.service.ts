@@ -1,85 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { RolePermissionAssignment, AccountRoleAssignment, Realm, Role, RoleClosure } from "~context/domain/entities";
+import { RolePermissionAssignment, AccountRoleAssignment, RoleClosure, Realm, Role } from "~context/domain/entities";
+import { ADMIN_PERMISSION_CODES, USER_PERMISSION_CODES } from "~infrastructure/datasets/bootstrap";
 import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
-import { PermissionCode, RoleActorType, RoleProtoType } from "~context/enums";
+import { RoleActorType, RoleProtoType } from "~context/enums";
 import { ServiceException } from "~common/exceptions";
-
-const USER_PERMISSION_CODES: string[] = [
-    PermissionCode.ROLE_READ_COMMON,
-    PermissionCode.ROLE_READ_PERSONAL,
-
-    PermissionCode.PERMISSION_READ_COMMON,
-    PermissionCode.PERMISSION_READ_PERSONAL,
-
-    PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON,
-    PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
-    PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_REVOKE,
-    PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_RESTORE,
-    PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
-
-    PermissionCode.PERMISSION_OVERRIDE_READ_PERSONAL,
-
-    PermissionCode.ROLE_PERMISSION_ASSIGNMENT_READ_COMMON,
-
-    PermissionCode.ROLE_DELEGATION_POLICY_READ_COMMON,
-];
-
-const ADMIN_PERMISSION_CODES: string[] = [
-    ...USER_PERMISSION_CODES,
-
-    PermissionCode.REALM_READ_ABSOLUTE,
-    PermissionCode.REALM_UPDATE,
-    PermissionCode.REALM_REVOKE,
-    PermissionCode.REALM_RESTORE,
-    PermissionCode.REALM_PURGE,
-
-    PermissionCode.ROLE_READ_ABSOLUTE,
-    PermissionCode.ROLE_CREATE,
-    PermissionCode.ROLE_UPDATE,
-    PermissionCode.ROLE_REVOKE,
-    PermissionCode.ROLE_RESTORE,
-    PermissionCode.ROLE_PURGE,
-    PermissionCode.ROLE_PURGE_SUBTREE,
-
-    PermissionCode.PERMISSION_READ_ABSOLUTE,
-    PermissionCode.PERMISSION_CREATE,
-    PermissionCode.PERMISSION_UPDATE,
-    PermissionCode.PERMISSION_REVOKE,
-    PermissionCode.PERMISSION_RESTORE,
-    PermissionCode.PERMISSION_PURGE,
-
-    PermissionCode.ROLE_PERMISSION_ASSIGNMENT_CREATE,
-    PermissionCode.ROLE_PERMISSION_ASSIGNMENT_REVOKE,
-    PermissionCode.ROLE_PERMISSION_ASSIGNMENT_RESTORE,
-    PermissionCode.ROLE_PERMISSION_ASSIGNMENT_PURGE,
-
-    PermissionCode.PERMISSION_OVERRIDE_READ_ABSOLUTE,
-    PermissionCode.PERMISSION_OVERRIDE_CREATE,
-    PermissionCode.PERMISSION_OVERRIDE_REVOKE,
-    PermissionCode.PERMISSION_OVERRIDE_RESTORE,
-    PermissionCode.PERMISSION_OVERRIDE_PURGE,
-
-    PermissionCode.ROLE_DELEGATION_POLICY_CREATE,
-    PermissionCode.ROLE_DELEGATION_POLICY_UPDATE,
-    PermissionCode.ROLE_DELEGATION_POLICY_REVOKE,
-    PermissionCode.ROLE_DELEGATION_POLICY_RESTORE,
-    PermissionCode.ROLE_DELEGATION_POLICY_PURGE,
-
-    PermissionCode.ROLE_CONFLICT_GROUP_READ_ABSOLUTE,
-    PermissionCode.ROLE_CONFLICT_GROUP_CREATE,
-    PermissionCode.ROLE_CONFLICT_GROUP_UPDATE,
-    PermissionCode.ROLE_CONFLICT_GROUP_REVOKE,
-    PermissionCode.ROLE_CONFLICT_GROUP_RESTORE,
-    PermissionCode.ROLE_CONFLICT_GROUP_PURGE,
-
-    PermissionCode.ROLE_CONFLICT_MEMBER_READ_ABSOLUTE,
-    PermissionCode.ROLE_CONFLICT_MEMBER_CREATE,
-    PermissionCode.ROLE_CONFLICT_MEMBER_PURGE,
-
-    PermissionCode.AUDIT_LOG_READ_ABSOLUTE,
-    PermissionCode.CHANGE_LOG_READ_ABSOLUTE,
-];
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmService implements Services.Realm.Contract {
@@ -105,13 +30,20 @@ export class RealmService implements Services.Realm.Contract {
 
             transaction.persist(realm);
 
-            const roles = this.createBaseRoles({ transaction, input, realm });
+            const { paths, roles } = this.createBaseRoles({ transaction, input, realm });
 
-            await this.assignBasePermissions({ transaction, roles, realm });
+            const permissionAssignments = await this.assignBasePermissions({ transaction, roles, realm });
+            const roleAssignments = this.assignBaseRoles({ transaction, roles, realm, actor });
 
-            transaction.persist(new AccountRoleAssignment({ account: actor, role: roles.admin, realm }));
-
-            return realm;
+            return {
+                roles: Object.values(roles),
+                assignments: {
+                    permission: permissionAssignments,
+                    role: roleAssignments,
+                },
+                realm,
+                paths,
+            };
         }
     }
 
@@ -173,20 +105,29 @@ export class RealmService implements Services.Realm.Contract {
         transaction.persist(user);
         transaction.persist(admin);
 
-        transaction.persist(new RoleClosure({ realm, ancestor: root, descendant: root, depth: 0 }));
-        transaction.persist(new RoleClosure({ realm, ancestor: user, descendant: user, depth: 0 }));
-        transaction.persist(new RoleClosure({ realm, ancestor: root, descendant: user, depth: 1 }));
-        transaction.persist(new RoleClosure({ realm, ancestor: admin, descendant: admin, depth: 0 }));
-        transaction.persist(new RoleClosure({ realm, ancestor: root, descendant: admin, depth: 1 }));
+        const paths: Entities.RoleClosure[] = [
+            new RoleClosure({ realm, ancestor: root, descendant: root, depth: 0 }),
+            new RoleClosure({ realm, ancestor: user, descendant: user, depth: 0 }),
+            new RoleClosure({ realm, ancestor: root, descendant: user, depth: 1 }),
+            new RoleClosure({ realm, ancestor: admin, descendant: admin, depth: 0 }),
+            new RoleClosure({ realm, ancestor: root, descendant: admin, depth: 1 }),
+        ];
 
-        return { root, admin, user };
+        for (const path of paths) {
+            transaction.persist(path);
+        }
+
+        return {
+            roles: { root, admin, user },
+            paths,
+        };
     }
 
     private async assignBasePermissions({
         transaction,
         roles,
         realm,
-    }: Services.Realm.AssignBasePermissions): Promise<void> {
+    }: Services.Realm.AssignBasePermissions.Props): Promise<Services.Realm.AssignBasePermissions.Result> {
         const permissions = await this.permissionRepository.find({
             where: { code: { $in: ADMIN_PERMISSION_CODES } },
             transaction,
@@ -196,11 +137,36 @@ export class RealmService implements Services.Realm.Contract {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.MISSING_SYSTEM_PERMISSIONS`);
         }
 
+        const assignments: Entities.RolePermissionAssignment[] = [];
+
         for (const permission of permissions) {
-            transaction.persist(new RolePermissionAssignment({ role: roles.admin, permission, realm }));
+            const adminAssignment = new RolePermissionAssignment({ role: roles.admin, permission, realm });
+            transaction.persist(adminAssignment);
+            assignments.push(adminAssignment);
             if (USER_PERMISSION_CODES.includes(permission.code)) {
-                transaction.persist(new RolePermissionAssignment({ role: roles.user, permission, realm }));
+                const userAssignment = new RolePermissionAssignment({ role: roles.user, permission, realm });
+                transaction.persist(userAssignment);
+                assignments.push(userAssignment);
             }
         }
+
+        return assignments;
+    }
+
+    private assignBaseRoles({
+        transaction,
+        roles,
+        actor,
+        realm,
+    }: Services.Realm.AssignBaseRoles.Props): Services.Realm.AssignBaseRoles.Result {
+        const assignments: Entities.AccountRoleAssignment[] = [
+            new AccountRoleAssignment({ account: actor, role: roles.admin, realm }),
+        ];
+
+        for (const assignment of assignments) {
+            transaction.persist(assignment);
+        }
+
+        return assignments;
     }
 }

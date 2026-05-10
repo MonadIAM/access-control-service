@@ -10,7 +10,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentRepository
-    extends BaseRepository<AccountRoleAssignment, Adapters.AccountRoleAssignment.Types>({
+    extends BaseRepository<Entities.AccountRoleAssignment, Adapters.AccountRoleAssignment.Types>({
         Adapter: AccountRoleAssignmentAdapter,
         Entity: AccountRoleAssignment,
     })

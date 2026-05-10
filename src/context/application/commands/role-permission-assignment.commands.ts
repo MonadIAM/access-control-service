@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 
-import { EventType, EntityType } from "~context/enums";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { ProjectionScript } from "~context/infrastructure/scripts";
+import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 import {
     ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
@@ -11,13 +11,6 @@ import {
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
 } from "~context/infrastructure/repositories";
-
-import {
-    RolePermissionAssignmentRestoredEvent,
-    RolePermissionAssignmentCreatedEvent,
-    RolePermissionAssignmentRevokedEvent,
-    RolePermissionAssignmentPurgedEvent,
-} from "../events/role-permission-assignment.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RolePermissionAssignmentCommands implements Commands.RolePermissionAssignment.Contract {
@@ -37,7 +30,6 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
         private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_SERVICE)
         private readonly rolePermissionAssignmentService: Services.RolePermissionAssignment.Contract,
-        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(
@@ -45,8 +37,21 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ): Promise<Commands.RolePermissionAssignment.Create.Result> {
         const { input, realm } = props;
 
-        const { affected } = await this.transactionalService.run({
+        await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_CREATE,
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
+                    realm,
+                    role: input.role,
+                    assignments: entities.map(({ id, permission, version, scope }) => ({
+                        assignment: id,
+                        permission: permission.id,
+                        version,
+                        scope,
+                    })),
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
                 actionType: EventType.CREATE,
@@ -72,7 +77,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 if (permissionEntities.length < input.permissions.length) {
                     throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 } else {
-                    await this.rolePermissionAssignmentService.create({
+                    return this.rolePermissionAssignmentService.create({
                         input: {
                             permissions: permissionEntities,
                             role: roleEntity,
@@ -80,21 +85,9 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                         realm: realmEntity,
                         transaction,
                     });
-
-                    const affected = await this.roleRepository.findAccountsByRoles({
-                        roles: [roleEntity.id],
-                        transaction,
-                    });
-
-                    return { affected };
                 }
             },
         });
-
-        this.eventEmitter.emit(
-            RolePermissionAssignmentCreatedEvent.TOKEN,
-            new RolePermissionAssignmentCreatedEvent(input.role, realm, input.permissions, affected),
-        );
 
         return { message: `${this.dictionaryPath}.CREATED` };
     }
@@ -104,8 +97,18 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ): Promise<Commands.RolePermissionAssignment.Purge.Result> {
         const { input } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_PURGE,
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
+                    items: entities.map(({ realm, role, permission }) => ({
+                        permission: permission.id,
+                        realm: realm.id,
+                        role: role.id,
+                    })),
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
                 actionType: EventType.DELETE,
@@ -122,18 +125,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                     throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 } else {
                     this.rolePermissionAssignmentService.purge({ transaction, entities });
-                    return { count: entities.length };
+                    return entities;
                 }
             },
         });
 
-        this.eventEmitter.emit(
-            RolePermissionAssignmentPurgedEvent.TOKEN,
-            new RolePermissionAssignmentPurgedEvent(input.identifiers),
-        );
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
         }
@@ -144,8 +142,21 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ): Promise<Commands.RolePermissionAssignment.Revoke.Result> {
         const { input } = props;
 
-        const { entities, affected } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
+                    items: entities.map(({ id, realm, role, permission, version }) => ({
+                        permission: permission.id,
+                        realm: realm.id,
+                        assignment: id,
+                        role: role.id,
+                        version,
+                    })),
+                    isRevoked: true,
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
                 actionType: EventType.REVOKE,
@@ -162,23 +173,10 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                     throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 } else {
                     this.rolePermissionAssignmentService.revoke({ entities });
-
-                    const affected = await this.roleRepository.findAccountsByRoles({
-                        roles: entities.map(({ role: { id } }) => id),
-                    });
-
-                    return { entities, affected };
+                    return entities;
                 }
             },
         });
-
-        this.eventEmitter.emit(
-            RolePermissionAssignmentRevokedEvent.TOKEN,
-            new RolePermissionAssignmentRevokedEvent(
-                entities.map(({ id }) => id),
-                affected,
-            ),
-        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -192,8 +190,21 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ): Promise<Commands.RolePermissionAssignment.Restore.Result> {
         const { input } = props;
 
-        const { entities, affected } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
+                    items: entities.map(({ id, realm, role, permission, version }) => ({
+                        permission: permission.id,
+                        realm: realm.id,
+                        assignment: id,
+                        role: role.id,
+                        version,
+                    })),
+                    isRevoked: false,
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
                 actionType: EventType.REVOKE,
@@ -210,23 +221,10 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                     throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
                 } else {
                     this.rolePermissionAssignmentService.restore({ entities });
-
-                    const affected = await this.roleRepository.findAccountsByRoles({
-                        roles: entities.map(({ role: { id } }) => id),
-                    });
-
-                    return { entities, affected };
+                    return entities;
                 }
             },
         });
-
-        this.eventEmitter.emit(
-            RolePermissionAssignmentRestoredEvent.TOKEN,
-            new RolePermissionAssignmentRestoredEvent(
-                entities.map(({ id }) => id),
-                affected,
-            ),
-        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };

@@ -98,7 +98,8 @@ services:
     env_file:
       - .env
     volumes:
-      - ./docker/debezium/connector.json.tpl:/connector.json.tpl:ro
+      - ./docker/debezium/connector.projection-journal.json.tpl:/connector.projection-journal.json.tpl:ro
+      - ./docker/debezium/connector.outbox.json.tpl:/connector.outbox.json.tpl:ro
       - ./docker/debezium/init.sh:/init.sh:ro
     depends_on:
       kafka-connect:

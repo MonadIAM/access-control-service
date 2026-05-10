@@ -1,0 +1,77 @@
+import { PermissionCode } from "~context/enums";
+
+export const USER_PERMISSION_CODES: string[] = [
+    PermissionCode.ROLE_READ_COMMON,
+    PermissionCode.ROLE_READ_PERSONAL,
+
+    PermissionCode.PERMISSION_READ_COMMON,
+    PermissionCode.PERMISSION_READ_PERSONAL,
+
+    PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON,
+    PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
+    PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_REVOKE,
+    PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_RESTORE,
+    PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
+
+    PermissionCode.PERMISSION_OVERRIDE_READ_PERSONAL,
+
+    PermissionCode.ROLE_PERMISSION_ASSIGNMENT_READ_COMMON,
+
+    PermissionCode.ROLE_DELEGATION_POLICY_READ_COMMON,
+];
+
+export const ADMIN_PERMISSION_CODES: string[] = [
+    ...USER_PERMISSION_CODES,
+
+    PermissionCode.REALM_READ_ABSOLUTE,
+    PermissionCode.REALM_UPDATE,
+    PermissionCode.REALM_REVOKE,
+    PermissionCode.REALM_RESTORE,
+    PermissionCode.REALM_PURGE,
+
+    PermissionCode.ROLE_READ_ABSOLUTE,
+    PermissionCode.ROLE_CREATE,
+    PermissionCode.ROLE_UPDATE,
+    PermissionCode.ROLE_REVOKE,
+    PermissionCode.ROLE_RESTORE,
+    PermissionCode.ROLE_PURGE,
+    PermissionCode.ROLE_PURGE_SUBTREE,
+
+    PermissionCode.PERMISSION_READ_ABSOLUTE,
+    PermissionCode.PERMISSION_CREATE,
+    PermissionCode.PERMISSION_UPDATE,
+    PermissionCode.PERMISSION_REVOKE,
+    PermissionCode.PERMISSION_RESTORE,
+    PermissionCode.PERMISSION_PURGE,
+
+    PermissionCode.ROLE_PERMISSION_ASSIGNMENT_CREATE,
+    PermissionCode.ROLE_PERMISSION_ASSIGNMENT_REVOKE,
+    PermissionCode.ROLE_PERMISSION_ASSIGNMENT_RESTORE,
+    PermissionCode.ROLE_PERMISSION_ASSIGNMENT_PURGE,
+
+    PermissionCode.PERMISSION_OVERRIDE_READ_ABSOLUTE,
+    PermissionCode.PERMISSION_OVERRIDE_CREATE,
+    PermissionCode.PERMISSION_OVERRIDE_REVOKE,
+    PermissionCode.PERMISSION_OVERRIDE_RESTORE,
+    PermissionCode.PERMISSION_OVERRIDE_PURGE,
+
+    PermissionCode.ROLE_DELEGATION_POLICY_CREATE,
+    PermissionCode.ROLE_DELEGATION_POLICY_UPDATE,
+    PermissionCode.ROLE_DELEGATION_POLICY_REVOKE,
+    PermissionCode.ROLE_DELEGATION_POLICY_RESTORE,
+    PermissionCode.ROLE_DELEGATION_POLICY_PURGE,
+
+    PermissionCode.ROLE_CONFLICT_GROUP_READ_ABSOLUTE,
+    PermissionCode.ROLE_CONFLICT_GROUP_CREATE,
+    PermissionCode.ROLE_CONFLICT_GROUP_UPDATE,
+    PermissionCode.ROLE_CONFLICT_GROUP_REVOKE,
+    PermissionCode.ROLE_CONFLICT_GROUP_RESTORE,
+    PermissionCode.ROLE_CONFLICT_GROUP_PURGE,
+
+    PermissionCode.ROLE_CONFLICT_MEMBER_READ_ABSOLUTE,
+    PermissionCode.ROLE_CONFLICT_MEMBER_CREATE,
+    PermissionCode.ROLE_CONFLICT_MEMBER_PURGE,
+
+    PermissionCode.AUDIT_LOG_READ_ABSOLUTE,
+    PermissionCode.CHANGE_LOG_READ_ABSOLUTE,
+];

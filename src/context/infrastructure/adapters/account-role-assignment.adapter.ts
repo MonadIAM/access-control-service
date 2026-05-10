@@ -1,16 +1,15 @@
 import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
-import { AccountRoleAssignment } from "~context/domain/entities";
 import { MikroAdapter } from "~infrastructure/database/utils";
 
 export class AccountRoleAssignmentAdapter
-    implements Adapters.Contract<AccountRoleAssignment, Adapters.AccountRoleAssignment.Types>
+    implements Adapters.Contract<Entities.AccountRoleAssignment, Adapters.AccountRoleAssignment.Types>
 {
     public buildWhereORM(
         filters: Adapters.AccountRoleAssignment.Filters,
-        basic: ObjectQuery<AccountRoleAssignment> = {},
-    ): ObjectQuery<AccountRoleAssignment> {
-        const where: ObjectQuery<AccountRoleAssignment> = basic;
+        basic: ObjectQuery<Entities.AccountRoleAssignment> = {},
+    ): ObjectQuery<Entities.AccountRoleAssignment> {
+        const where: ObjectQuery<Entities.AccountRoleAssignment> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -43,11 +42,11 @@ export class AccountRoleAssignmentAdapter
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.AccountRoleAssignment.Sort,
         pagination: Pagination,
-        basic: FindOptions<AccountRoleAssignment, P, F> = {},
-    ): FindOptions<AccountRoleAssignment, P, F> {
+        basic: FindOptions<Entities.AccountRoleAssignment, P, F> = {},
+    ): FindOptions<Entities.AccountRoleAssignment, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<AccountRoleAssignment>(sort, { createdAt: QueryOrder.ASC }),
+            orderBy: MikroAdapter.orderBy<Entities.AccountRoleAssignment>(sort, { createdAt: QueryOrder.ASC }),
             ...MikroAdapter.pagination(pagination),
         };
     }

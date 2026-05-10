@@ -1,11 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import {
-    RoleDelegationPolicy as RoleDelegationPolicyEntity,
-    Realm as RealmEntity,
-    Role as RoleEntity,
-} from "~context/domain/entities";
-
 declare global {
     namespace Services {
         namespace RoleDelegationPolicy {
@@ -20,30 +14,30 @@ declare global {
             type Create = {
                 transaction: EntityManager;
                 input: {
-                    delegator: RoleEntity;
+                    delegator: Entities.Role;
+                    target: Entities.Role;
                     description: string;
                     depthLimit?: number;
-                    target: RoleEntity;
                 };
-                realm: RealmEntity;
+                realm: Entities.Realm;
             };
 
             type Update = {
                 patch: Partial<Entities.RoleConflictGroup.MutableFields>;
-                entity: RoleDelegationPolicyEntity;
+                entity: Entities.RoleDelegationPolicy;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                entities: RoleDelegationPolicyEntity[];
+                entities: Entities.RoleDelegationPolicy[];
             };
 
             type Revoke = {
-                entities: RoleDelegationPolicyEntity[];
+                entities: Entities.RoleDelegationPolicy[];
             };
 
             type Restore = {
-                entities: RoleDelegationPolicyEntity[];
+                entities: Entities.RoleDelegationPolicy[];
             };
         }
     }

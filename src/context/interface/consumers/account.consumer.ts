@@ -26,17 +26,16 @@ export class AccountConsumer implements Consumers.Account.Contract, OnModuleInit
     };
 
     @EventPattern(KafkaTopic.ACCOUNT)
-    public async handle(@Payload() message: Consumers.Props): Promise<void> {
+    public async handle(@Payload() { eventType, payload }: Consumers.Account.Payload): Promise<void> {
         try {
-            const payload = JSON.parse(message.payload);
-            await this.handlers[payload.eventType as keyof Consumers.Account.Handlers]?.(payload);
+            await this.handlers[eventType](payload);
         } catch (error) {
             this.kafkaClient.emit(KafkaTopic.ACCOUNT_DLQ, {
                 timestamp: new Date().toISOString(),
                 originalTopic: KafkaTopic.ACCOUNT,
-                payload: message.payload,
                 error: String(error),
                 retryCount: 0,
+                payload,
             });
         }
     }

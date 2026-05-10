@@ -1,7 +1,7 @@
 import { EventPattern, Payload } from "@nestjs/microservices";
 import { Controller, Inject } from "@nestjs/common";
 
-import { BLACKLIST_CACHE_SERVICE } from "~context/infrastructure/services";
+import { BLACKLIST_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { KafkaTopic } from "~context/enums";
 
 @Controller()
@@ -12,9 +12,7 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract {
     ) {}
 
     @EventPattern(KafkaTopic.BLACKLIST)
-    public async handle(@Payload() message: Consumers.Props): Promise<void> {
-        const payload: Consumers.Blacklist.Handle = JSON.parse(message.payload);
-
+    public async handle(@Payload() { payload }: Consumers.Blacklist.Payload): Promise<void> {
         await this.blacklistCacheService.set({
             sessionId: payload.sessionId,
             ttl: payload.ttl,

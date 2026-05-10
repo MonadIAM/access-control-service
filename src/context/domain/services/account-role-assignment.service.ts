@@ -21,7 +21,12 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.InternalContract,
     ) {}
 
-    public async create({ transaction, input, realm, actor }: Services.AccountRoleAssignment.Create): Promise<void> {
+    public async create({
+        transaction,
+        input,
+        realm,
+        actor,
+    }: Services.AccountRoleAssignment.Create): Promise<Entities.AccountRoleAssignment[]> {
         const roleIds = input.roles.map(({ id }) => id!);
         const [isDelegationAllowed, limitExceeded, hasSoDViolations] = await Promise.all([
             this.roleDelegationPolicyRepository.isDelegationAllowed({
@@ -50,6 +55,7 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         } else if (hasSoDViolations) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.HAS_SoD_VIOLATIONS`);
         } else {
+            const entities: Entities.AccountRoleAssignment[] = [];
             for (const role of input.roles) {
                 const entity = new AccountRoleAssignment({
                     account: input.account,
@@ -58,9 +64,10 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
                 });
 
                 entity.canAssign();
-
+                entities.push(entity);
                 transaction.persist(entity);
             }
+            return entities;
         }
     }
 
@@ -84,7 +91,9 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         }
     }
 
-    public assign({ transaction, input }: Services.AccountRoleAssignment.Assign): void {
-        transaction.persist(new AccountRoleAssignment(input));
+    public assign({ transaction, input }: Services.AccountRoleAssignment.Assign): Entities.AccountRoleAssignment {
+        const entity = new AccountRoleAssignment(input);
+        transaction.persist(entity);
+        return entity;
     }
 }

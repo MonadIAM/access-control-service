@@ -1,14 +1,15 @@
 import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
-import { RoleConflictGroup } from "~context/domain/entities";
 
-export class RoleConflictGroupAdapter implements Adapters.Contract<RoleConflictGroup, Adapters.RoleConflictGroup.Types> {
+export class RoleConflictGroupAdapter
+    implements Adapters.Contract<Entities.RoleConflictGroup, Adapters.RoleConflictGroup.Types>
+{
     public buildWhereORM(
         filters: Adapters.RoleConflictGroup.Filters,
-        basic: ObjectQuery<RoleConflictGroup> = {},
-    ): ObjectQuery<RoleConflictGroup> {
-        const where: ObjectQuery<RoleConflictGroup> = basic;
+        basic: ObjectQuery<Entities.RoleConflictGroup> = {},
+    ): ObjectQuery<Entities.RoleConflictGroup> {
+        const where: ObjectQuery<Entities.RoleConflictGroup> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -44,11 +45,11 @@ export class RoleConflictGroupAdapter implements Adapters.Contract<RoleConflictG
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.RoleConflictGroup.Sort,
         pagination: Pagination,
-        basic: FindOptions<RoleConflictGroup, P, F> = {},
-    ): FindOptions<RoleConflictGroup, P, F> {
+        basic: FindOptions<Entities.RoleConflictGroup, P, F> = {},
+    ): FindOptions<Entities.RoleConflictGroup, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<RoleConflictGroup>(sort, { createdAt: QueryOrder.ASC }),
+            orderBy: MikroAdapter.orderBy<Entities.RoleConflictGroup>(sort, { createdAt: QueryOrder.ASC }),
             ...MikroAdapter.pagination(pagination),
         };
     }

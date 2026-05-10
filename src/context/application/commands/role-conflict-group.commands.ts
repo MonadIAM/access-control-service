@@ -1,19 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { ROLE_CONFLICT_GROUP_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { EventType, EntityType } from "~context/enums";
 import { ROLE_CONFLICT_GROUP_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
-
-import {
-    RoleConflictGroupCreatedEvent,
-    RoleConflictGroupUpdatedEvent,
-    RoleConflictGroupPurgedEvent,
-    RoleConflictGroupRevokedEvent,
-    RoleConflictGroupRestoredEvent,
-} from "../events/role-conflict-group.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Contract {
@@ -31,7 +22,6 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ROLE_CONFLICT_GROUP_SERVICE)
         private readonly roleConflictGroupService: Services.RoleConflictGroup.Contract,
-        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(props: Commands.RoleConflictGroup.Create.Props): Promise<Commands.RoleConflictGroup.Create.Result> {
@@ -69,11 +59,6 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             },
         });
 
-        this.eventEmitter.emit(
-            RoleConflictGroupCreatedEvent.TOKEN,
-            new RoleConflictGroupCreatedEvent(realm, input.members),
-        );
-
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
@@ -97,8 +82,6 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                 this.roleConflictGroupService.update({ entity, patch: input.patch });
             },
         });
-
-        this.eventEmitter.emit(RoleConflictGroupUpdatedEvent.TOKEN, new RoleConflictGroupUpdatedEvent(id, realm));
 
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
@@ -129,8 +112,6 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             },
         });
 
-        this.eventEmitter.emit(RoleConflictGroupPurgedEvent.TOKEN, new RoleConflictGroupPurgedEvent(input.identifiers));
-
         if (count > 1) {
             return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
         } else {
@@ -141,7 +122,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
     public async revoke(props: Commands.RoleConflictGroup.Revoke.Props): Promise<Commands.RoleConflictGroup.Revoke.Result> {
         const { input } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.CONFLICT_GROUP,
@@ -159,15 +140,13 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                     throw CommandException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                 } else {
                     this.roleConflictGroupService.revoke({ entities });
-                    return { count: entities.length };
+                    return entities;
                 }
             },
         });
 
-        this.eventEmitter.emit(RoleConflictGroupRevokedEvent.TOKEN, new RoleConflictGroupRevokedEvent(input.identifiers));
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count } };
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.REVOKED` };
         }
@@ -178,7 +157,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
     ): Promise<Commands.RoleConflictGroup.Restore.Result> {
         const { input } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.CONFLICT_GROUP,
@@ -196,15 +175,13 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                     throw CommandException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
                 } else {
                     this.roleConflictGroupService.restore({ entities });
-                    return { count: entities.length };
+                    return entities;
                 }
             },
         });
 
-        this.eventEmitter.emit(RoleConflictGroupRestoredEvent.TOKEN, new RoleConflictGroupRestoredEvent(input.identifiers));
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count } };
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }

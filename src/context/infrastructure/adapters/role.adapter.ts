@@ -2,11 +2,13 @@ import { FindOptions, Knex, ObjectQuery, QueryOrder } from "@mikro-orm/postgresq
 
 import { MikroAdapter, KnexAdapter } from "~infrastructure/database/utils";
 import { RoleActorType, RoleProtoType } from "~context/enums";
-import { Role } from "~context/domain/entities";
 
-export class RoleAdapter implements Adapters.Contract<Role, Adapters.Role.Types> {
-    public buildWhereORM(filters: Adapters.Role.Filters, basic: ObjectQuery<Role> = {}): ObjectQuery<Role> {
-        const where: ObjectQuery<Role> = basic;
+export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Role.Types> {
+    public buildWhereORM(
+        filters: Adapters.Role.Filters,
+        basic: ObjectQuery<Entities.Role> = {},
+    ): ObjectQuery<Entities.Role> {
+        const where: ObjectQuery<Entities.Role> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -48,11 +50,11 @@ export class RoleAdapter implements Adapters.Contract<Role, Adapters.Role.Types>
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.Role.Sort,
         pagination: Pagination,
-        basic: FindOptions<Role, P, F> = {},
-    ): FindOptions<Role, P, F> {
+        basic: FindOptions<Entities.Role, P, F> = {},
+    ): FindOptions<Entities.Role, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Role>(sort, { createdAt: QueryOrder.ASC }),
+            orderBy: MikroAdapter.orderBy<Entities.Role>(sort, { createdAt: QueryOrder.ASC }),
             ...MikroAdapter.pagination(pagination),
         };
     }

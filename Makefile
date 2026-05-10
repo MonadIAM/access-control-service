@@ -1,5 +1,7 @@
 .PHONY: coverage
 
+dataset ?= system
+
 # Infrastructure
 env:
 	[ -f .env.example ] && cp -f .env.example .env || echo '.env.example not found'
@@ -38,6 +40,8 @@ seed:
 	npx mikro-orm seeder:run
 seed-demo:
 	npx mikro-orm seeder:run --class=DemoSeeder
+seed-redis:
+	npx tsx ./src/infrastructure/redis/seeder.ts --dataset=$(dataset)
 
 # Test
 test:

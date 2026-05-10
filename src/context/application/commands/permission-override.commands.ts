@@ -1,22 +1,15 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 
-import { EventType, EntityType } from "~context/enums";
 import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { ProjectionScript } from "~context/infrastructure/scripts";
+import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 import {
     PERMISSION_OVERRIDE_REPOSITORY,
     PERMISSION_REPOSITORY,
     REALM_REPOSITORY,
 } from "~context/infrastructure/repositories";
-
-import {
-    PermissionOverrideCreatedEvent,
-    PermissionOverridePurgedEvent,
-    PermissionOverrideRevokedEvent,
-    PermissionOverrideRestoredEvent,
-} from "../events/permission-override.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideCommands implements Commands.PermissionOverride.Contract {
@@ -34,7 +27,6 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(PERMISSION_OVERRIDE_SERVICE)
         private readonly permissionOverrideService: Services.PermissionOverride.Contract,
-        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(
@@ -44,6 +36,21 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
         await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.PERMISSION_OVERRIDE_CREATE,
+                payloadMapper: (entity: Entities.PermissionOverride) => ({
+                    items: [
+                        {
+                            permission: entity.permission.id,
+                            account: entity.account,
+                            version: entity.version,
+                            effect: entity.effect,
+                            override: entity.id,
+                            realm,
+                        },
+                    ],
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
                 actionType: EventType.CREATE,
@@ -62,7 +69,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                     }),
                 ]);
 
-                await this.permissionOverrideService.create({
+                return this.permissionOverrideService.create({
                     input: {
                         permission: permissionEntity,
                         account: input.account,
@@ -74,19 +81,24 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             },
         });
 
-        this.eventEmitter.emit(
-            PermissionOverrideCreatedEvent.TOKEN,
-            new PermissionOverrideCreatedEvent(realm, input.permission, input.account, [input.account]),
-        );
-
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
     public async purge(props: Commands.PermissionOverride.Purge.Props): Promise<Commands.PermissionOverride.Purge.Result> {
         const { input } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
+                payloadMapper: (entities: Entities.PermissionOverride[]) => ({
+                    items: entities.map(({ realm, account, permission }) => ({
+                        permission: permission.id,
+                        realm: realm.id,
+                        account,
+                    })),
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
                 actionType: EventType.DELETE,
@@ -104,15 +116,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 } else {
                     this.permissionOverrideService.purge({ transaction, entities });
 
-                    return { count: entities.length };
+                    return entities;
                 }
             },
         });
 
-        this.eventEmitter.emit(PermissionOverridePurgedEvent.TOKEN, new PermissionOverridePurgedEvent(input.identifiers));
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
         }
@@ -125,6 +135,20 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
+                payloadMapper: (entities: Entities.PermissionOverride[]) => ({
+                    items: entities.map(({ id, realm, account, permission, effect, version }) => ({
+                        permission: permission.id,
+                        realm: realm.id,
+                        override: id,
+                        version,
+                        account,
+                        effect,
+                    })),
+                    isRevoked: true,
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
                 actionType: EventType.REVOKE,
@@ -147,14 +171,6 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             },
         });
 
-        this.eventEmitter.emit(
-            PermissionOverrideRevokedEvent.TOKEN,
-            new PermissionOverrideRevokedEvent(
-                entities.map(({ id }) => id),
-                entities.map(({ account }) => account),
-            ),
-        );
-
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
         } else {
@@ -169,6 +185,20 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
+                payloadMapper: (entities: Entities.PermissionOverride[]) => ({
+                    items: entities.map(({ id, realm, account, permission, effect, version }) => ({
+                        permission: permission.id,
+                        realm: realm.id,
+                        override: id,
+                        version,
+                        account,
+                        effect,
+                    })),
+                    isRevoked: false,
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
                 actionType: EventType.RESTORE,
@@ -191,14 +221,6 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             },
         });
 
-        this.eventEmitter.emit(
-            PermissionOverrideRestoredEvent.TOKEN,
-            new PermissionOverrideRestoredEvent(
-                entities.map(({ id }) => id),
-                entities.map(({ account }) => account),
-            ),
-        );
-
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
         } else {
@@ -209,6 +231,16 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     public async clean(props: Commands.PermissionOverride.Clean.Props): Promise<Commands.PermissionOverride.Clean.Result> {
         await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
+                payloadMapper: (entities: Entities.PermissionOverride[]) => ({
+                    items: entities.map(({ realm, account, permission }) => ({
+                        permission: permission.id,
+                        realm: realm.id,
+                        account,
+                    })),
+                }),
+            },
             execute: async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
                     where: { account: props.account },
@@ -216,6 +248,8 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 });
 
                 this.permissionOverrideService.purge({ transaction, entities });
+
+                return entities;
             },
         });
     }

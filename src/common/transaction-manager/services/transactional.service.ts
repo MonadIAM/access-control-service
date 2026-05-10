@@ -5,8 +5,7 @@ import { Injectable } from "@nestjs/common";
 import { ServiceException } from "~common/exceptions";
 
 import { OperationContext } from "../utilities/operation-context";
-import { AuditLog } from "../entities/audit-log.entity";
-import { Outbox } from "../entities";
+import { ProjectionJournal, AuditLog, Outbox } from "../entities";
 
 @Injectable()
 export class TransactionalService {
@@ -16,56 +15,83 @@ export class TransactionalService {
         private readonly operationContext: OperationContext,
     ) {}
 
-    public async run<T extends AnyEntity>(params: TransactionManager.Service.Run<T>): Promise<T | void> {
+    public async run<T extends AnyEntity | AnyEntity[]>(params: TransactionManager.Service.Run<T>): Promise<T | void> {
         try {
             const writeManager = this.writeManager.fork();
 
-            if (!params.audit) {
-                return writeManager.transactional(async (transaction) => {
-                    const result = await params.execute(transaction);
+            if (params.audit) {
+                const auditEntry = new AuditLog(params.audit);
 
-                    if (params.outbox && result) {
-                        const mapper = params.outbox.payloadMapper;
-                        const payloads = mapper ? [mapper(result)].flat() : [result].flat();
-                        for (const payload of payloads) {
-                            transaction.persist(new Outbox({ ...params.outbox, payload }));
-                        }
-                    }
+                return await this.operationContext.run(
+                    {
+                        changeLogEnabled: params.changeLog ?? false,
+                        auditEntry: auditEntry.id,
+                    },
+                    async () => {
+                        return await writeManager.transactional(async (transaction) => {
+                            transaction.persist(auditEntry);
 
-                    await transaction.flush();
-
-                    return result;
+                            return await this.executeWithEffects(params, transaction);
+                        });
+                    },
+                );
+            } else {
+                return await writeManager.transactional(async (transaction) => {
+                    return await this.executeWithEffects(params, transaction);
                 });
             }
-
-            const auditEntry = new AuditLog(params.audit);
-
-            return await this.operationContext.run(
-                {
-                    changeLogEnabled: params.changeLog ?? false,
-                    auditEntry: auditEntry.id,
-                },
-                () =>
-                    writeManager.transactional(async (transaction) => {
-                        transaction.persist(auditEntry);
-
-                        const result = await params.execute(transaction);
-
-                        if (params.outbox && result) {
-                            const mapper = params.outbox.payloadMapper;
-                            const payloads = mapper ? [mapper(result)].flat() : [result].flat();
-                            for (const payload of payloads) {
-                                transaction.persist(new Outbox({ ...params.outbox, payload }));
-                            }
-                        }
-
-                        await transaction.flush();
-
-                        return result;
-                    }),
-            );
         } catch (error) {
             throw ServiceException.fromOrmError(error, params.resource);
+        }
+    }
+
+    private async executeWithEffects<T extends AnyEntity | AnyEntity[]>(
+        params: TransactionManager.Service.Run<T>,
+        transaction: EntityManager,
+    ): Promise<T | void> {
+        const result = await params.execute(transaction);
+
+        if (result) {
+            this.persistProjectionJournalEntries(params, transaction, result);
+            this.persistOutboxEvents(params, transaction, result);
+        }
+
+        await transaction.flush();
+
+        return result;
+    }
+
+    private persistOutboxEvents<T extends AnyEntity | AnyEntity[]>(
+        params: TransactionManager.Service.Run<T>,
+        transaction: EntityManager,
+        result: T,
+    ): void {
+        if (params.outbox) {
+            const { payloadMapper, ...outboxProps } = params.outbox;
+            const payloads = payloadMapper ? [payloadMapper(result)].flat() : [result].flat();
+
+            for (const payload of payloads) {
+                transaction.persist(new Outbox({ ...outboxProps, payload }));
+            }
+        }
+    }
+
+    private persistProjectionJournalEntries<T extends AnyEntity | AnyEntity[]>(
+        params: TransactionManager.Service.Run<T>,
+        transaction: EntityManager,
+        result: T,
+    ): void {
+        if (params.projectionJournal) {
+            const payloads = [params.projectionJournal.payloadMapper(result)].flat();
+
+            for (const payload of payloads) {
+                transaction.persist(
+                    new ProjectionJournal({
+                        operationType: params.projectionJournal.operationType,
+                        payload,
+                    }),
+                );
+            }
         }
     }
 }

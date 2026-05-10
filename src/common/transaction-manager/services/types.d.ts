@@ -20,12 +20,17 @@ declare global {
                           eventType: EventType;
                           metadata?: UnknownObject;
                       };
+                      projectionJournal?: {
+                          operationType: string;
+                          payloadMapper: (result: T) => UnknownObject | UnknownObject[];
+                      };
                       changeLog?: boolean;
                       resource?: string;
                   }
                 | {
                       execute: (transaction: EntityManager) => Promise<void> | void;
                       audit?: Entities.AuditLog.ConstructorProps;
+                      projectionJournal?: never;
                       changeLog?: never;
                       resource?: string;
                       outbox?: never;

@@ -1,17 +1,12 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
 import { PermissionOverrideEffect } from "~context/enums";
-import {
-    PermissionOverride as PermissionOverrideEntity,
-    Permission as PermissionEntity,
-    Realm as RealmEntity,
-} from "~context/domain/entities";
 
 declare global {
     namespace Services {
         namespace PermissionOverride {
             interface Contract {
-                create: (props: Create) => Promise<void>;
+                create: (props: Create) => Promise<Entities.PermissionOverride>;
                 restore: (props: Restore) => void;
                 revoke: (props: Revoke) => void;
                 purge: (props: Purge) => void;
@@ -21,23 +16,23 @@ declare global {
                 transaction: EntityManager;
                 input: {
                     effect: PermissionOverrideEffect;
-                    permission: PermissionEntity;
+                    permission: Entities.Permission;
                     account: string;
                 };
-                realm: RealmEntity;
+                realm: Entities.Realm;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                entities: PermissionOverrideEntity[];
+                entities: Entities.PermissionOverride[];
             };
 
             type Revoke = {
-                entities: PermissionOverrideEntity[];
+                entities: Entities.PermissionOverride[];
             };
 
             type Restore = {
-                entities: PermissionOverrideEntity[];
+                entities: Entities.PermissionOverride[];
             };
         }
     }

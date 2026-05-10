@@ -77,6 +77,16 @@ export enum AssignmentScope {
     /* eslint-enable prettier/prettier */
 }
 
+export enum ProjectionJournalStatus {
+    /* eslint-disable prettier/prettier */
+    PROCESSING = "PROCESSING",
+    PENDING    = "PENDING",
+    APPLIED    = "APPLIED",
+    FAILED     = "FAILED",
+    DEAD       = "DEAD",
+    /* eslint-enable prettier/prettier */
+}
+
 export enum PermissionCode {
     /* eslint-disable prettier/prettier */
     REALM_READ_PERSONAL = "realm.read_personal",

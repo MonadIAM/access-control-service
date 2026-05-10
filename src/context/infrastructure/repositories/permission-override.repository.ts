@@ -10,7 +10,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideRepository
-    extends BaseRepository<PermissionOverride, Adapters.PermissionOverride.Types>({
+    extends BaseRepository<Entities.PermissionOverride, Adapters.PermissionOverride.Types>({
         Adapter: PermissionOverrideAdapter,
         Entity: PermissionOverride,
     })

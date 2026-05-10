@@ -5,7 +5,7 @@ import { GuardException } from "~common/exceptions";
 import { IS_PUBLIC_KEY } from "~common/decorators";
 import { JWT_SERVICE } from "~common/services";
 
-import { BLACKLIST_CACHE_SERVICE } from "../services";
+import { BLACKLIST_CACHE_SERVICE } from "../services/tokens";
 
 @Injectable()
 export class AuthGuard implements CanActivate {

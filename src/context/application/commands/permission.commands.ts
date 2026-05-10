@@ -1,19 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
-import { EventType, EntityType } from "~context/enums";
-import { PERMISSION_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { ProjectionScript } from "~context/infrastructure/scripts";
+import { PERMISSION_SERVICE } from "~context/domain/services";
+import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
-
-import {
-    PermissionRestoredEvent,
-    PermissionRevokedEvent,
-    PermissionCreatedEvent,
-    PermissionUpdatedEvent,
-    PermissionPurgedEvent,
-} from "../events/permission.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionCommands implements Commands.Permission.Contract {
@@ -29,14 +21,22 @@ export class PermissionCommands implements Commands.Permission.Contract {
         private readonly realmRepository: Repositories.Realm.InternalContract,
         @Inject(PERMISSION_SERVICE)
         private readonly permissionService: Services.Permission.Contract,
-        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(props: Commands.Permission.Create.Props): Promise<Commands.Permission.Create.Result> {
         const { input, realm } = props;
 
-        const entity = await this.transactionalService.run({
+        await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.PERMISSION_CREATE,
+                payloadMapper: (entity: Entities.Permission) => ({
+                    version: entity.version,
+                    permission: entity.id,
+                    code: entity.code,
+                    realm,
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION,
                 actionType: EventType.CREATE,
@@ -56,8 +56,6 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 });
             },
         });
-
-        this.eventEmitter.emit(PermissionCreatedEvent.TOKEN, new PermissionCreatedEvent(entity.id, realm));
 
         return { message: `${this.dictionaryPath}.CREATED` };
     }
@@ -83,16 +81,21 @@ export class PermissionCommands implements Commands.Permission.Contract {
             },
         });
 
-        this.eventEmitter.emit(PermissionUpdatedEvent.TOKEN, new PermissionUpdatedEvent(id, realm));
-
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
     public async purge(props: Commands.Permission.Purge.Props): Promise<Commands.Permission.Purge.Result> {
         const { input, realm } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.PERMISSION_PURGE,
+                payloadMapper: (entities: Entities.Permission[]) => ({
+                    permissions: entities.map(({ id }) => id),
+                    realm,
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION,
                 actionType: EventType.DELETE,
@@ -109,15 +112,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
                     throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
                 } else {
                     this.permissionService.purge({ transaction, entities });
-                    return { count: entities.length };
+                    return entities;
                 }
             },
         });
 
-        this.eventEmitter.emit(PermissionPurgedEvent.TOKEN, new PermissionPurgedEvent(input.identifiers, realm));
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
         }
@@ -126,8 +127,19 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public async revoke(props: Commands.Permission.Revoke.Props): Promise<Commands.Permission.Revoke.Result> {
         const { input, realm } = props;
 
-        const { entities, affected } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.PERMISSION_UPDATE,
+                payloadMapper: (entities: Entities.Permission[]) => ({
+                    permissions: entities.map(({ id, version }) => ({
+                        permission: id,
+                        version,
+                    })),
+                    isRevoked: true,
+                    realm,
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION,
                 actionType: EventType.REVOKE,
@@ -145,23 +157,10 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 } else {
                     this.permissionService.revoke({ entities });
 
-                    const affected = await this.permissionRepository.findAccountsByPermissions({
-                        permissions: entities.map(({ id }) => id),
-                    });
-
-                    return { entities, affected };
+                    return entities;
                 }
             },
         });
-
-        this.eventEmitter.emit(
-            PermissionRevokedEvent.TOKEN,
-            new PermissionRevokedEvent(
-                entities.map(({ id }) => id),
-                props.realm,
-                affected,
-            ),
-        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -173,8 +172,19 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public async restore(props: Commands.Permission.Restore.Props): Promise<Commands.Permission.Restore.Result> {
         const { input, realm } = props;
 
-        const { entities, affected } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.PERMISSION_UPDATE,
+                payloadMapper: (entities: Entities.Permission[]) => ({
+                    permissions: entities.map(({ id, version }) => ({
+                        permission: id,
+                        version,
+                    })),
+                    isRevoked: false,
+                    realm,
+                }),
+            },
             audit: {
                 entityType: EntityType.PERMISSION,
                 actionType: EventType.RESTORE,
@@ -192,23 +202,10 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 } else {
                     this.permissionService.restore({ entities });
 
-                    const affected = await this.permissionRepository.findAccountsByPermissions({
-                        permissions: entities.map(({ id }) => id),
-                    });
-
-                    return { entities, affected };
+                    return entities;
                 }
             },
         });
-
-        this.eventEmitter.emit(
-            PermissionRestoredEvent.TOKEN,
-            new PermissionRestoredEvent(
-                entities.map(({ id }) => id),
-                realm,
-                affected,
-            ),
-        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };

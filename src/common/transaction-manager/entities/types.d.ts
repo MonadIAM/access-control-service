@@ -36,5 +36,13 @@ declare global {
                 payload: UnknownObject;
             };
         }
+
+        namespace ProjectionJournal {
+            type ConstructorProps = {
+                payload: UnknownObject;
+                operationType: string;
+                availableAt?: Date;
+            };
+        }
     }
 }

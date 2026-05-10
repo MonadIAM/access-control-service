@@ -99,7 +99,7 @@ export class RoleService implements Services.Role.Contract {
                 descendant.canPurge();
                 transaction.remove(descendant);
             }
-            return descendants.length;
+            return descendants;
         }
     }
 
@@ -115,7 +115,13 @@ export class RoleService implements Services.Role.Contract {
         }
     }
 
-    public async move({ transaction, targetParent, target, realm, mode }: Services.Role.Move): Promise<void> {
+    public async move({
+        targetParent,
+        transaction,
+        target,
+        realm,
+        mode,
+    }: Services.Role.Move.Props): Promise<Services.Role.Move.Result> {
         if (targetParent.protoType === RoleProtoType.ATOMIC) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_NO_INHERITANCE`);
         }
@@ -150,6 +156,8 @@ export class RoleService implements Services.Role.Contract {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_IN_SUBTREE`);
         }
 
+        const steps: Services.Role.Move.Result = [];
+
         if (mode !== MoveMode.SUBTREE) {
             const directChildren = await this.roleRepository.getDescendants({
                 ancestor: target.id,
@@ -158,13 +166,15 @@ export class RoleService implements Services.Role.Contract {
             });
 
             if (directChildren.length) {
-                await this.roleClosureRepository.moveSubtrees({
+                const result = await this.roleClosureRepository.moveSubtrees({
                     children: directChildren.map(({ id }) => id),
                     newParent: currentParent.id,
                     oldParent: target.id,
                     transaction,
                     realm,
                 });
+
+                steps.push(result);
             }
         }
 
@@ -176,22 +186,28 @@ export class RoleService implements Services.Role.Contract {
             });
 
             if (displacedChildren.length) {
-                await this.roleClosureRepository.moveSubtrees({
+                const result = await this.roleClosureRepository.moveSubtrees({
                     children: displacedChildren.map(({ id }) => id).filter((id) => id !== target.id),
                     oldParent: targetParent.id,
                     newParent: target.id,
                     transaction,
                     realm,
                 });
+
+                steps.push(result);
             }
         }
 
-        await this.roleClosureRepository.move({
+        const result = await this.roleClosureRepository.move({
             newParent: targetParent.id,
             target: target.id,
             transaction,
             realm,
         });
+
+        steps.push(result);
+
+        return steps;
     }
 
     private async buildHierarchy({

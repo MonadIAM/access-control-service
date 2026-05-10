@@ -1,16 +1,15 @@
 import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
-import { RolePermissionAssignment } from "~context/domain/entities";
 
 export class RolePermissionAssignmentAdapter
-    implements Adapters.Contract<RolePermissionAssignment, Adapters.RolePermissionAssignment.Types>
+    implements Adapters.Contract<Entities.RolePermissionAssignment, Adapters.RolePermissionAssignment.Types>
 {
     public buildWhereORM(
         filters: Adapters.RolePermissionAssignment.Filters,
-        basic: ObjectQuery<RolePermissionAssignment> = {},
-    ): ObjectQuery<RolePermissionAssignment> {
-        const where: ObjectQuery<RolePermissionAssignment> = basic;
+        basic: ObjectQuery<Entities.RolePermissionAssignment> = {},
+    ): ObjectQuery<Entities.RolePermissionAssignment> {
+        const where: ObjectQuery<Entities.RolePermissionAssignment> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -40,11 +39,11 @@ export class RolePermissionAssignmentAdapter
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.RolePermissionAssignment.Sort,
         pagination: Pagination,
-        basic: FindOptions<RolePermissionAssignment, P, F> = {},
-    ): FindOptions<RolePermissionAssignment, P, F> {
+        basic: FindOptions<Entities.RolePermissionAssignment, P, F> = {},
+    ): FindOptions<Entities.RolePermissionAssignment, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<RolePermissionAssignment>(sort, { createdAt: QueryOrder.ASC }),
+            orderBy: MikroAdapter.orderBy<Entities.RolePermissionAssignment>(sort, { createdAt: QueryOrder.ASC }),
             ...MikroAdapter.pagination(pagination),
         };
     }

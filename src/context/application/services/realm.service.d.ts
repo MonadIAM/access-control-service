@@ -1,7 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Realm as RealmEntity, Role as RoleEntity } from "~context/domain/entities";
-
 declare global {
     namespace Services {
         namespace Realm {
@@ -17,52 +15,75 @@ declare global {
                 type Props = {
                     transaction: EntityManager;
                     input: {
+                        description?: string;
                         code: string;
                         name: string;
-                        description?: string;
                     };
                     actor: string;
                 };
 
-                type Result = RealmEntity;
+                type Result = {
+                    assignments: {
+                        permission: Entities.RolePermissionAssignment[];
+                        role: Entities.AccountRoleAssignment[];
+                    };
+                    paths: Entities.RoleClosure[];
+                    roles: Entities.Role[];
+                    realm: Entities.Realm;
+                };
             }
 
             type Update = {
                 patch: Partial<Entities.Realm.MutableFields>;
-                entity: RealmEntity;
+                entity: Entities.Realm;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                entities: RealmEntity[];
+                entities: Entities.Realm[];
             };
 
             type Revoke = {
-                entities: RealmEntity[];
+                entities: Entities.Realm[];
             };
 
             type Restore = {
-                entities: RealmEntity[];
+                entities: Entities.Realm[];
             };
 
             namespace CreateBaseRoles {
                 type Props = {
-                    transaction: EntityManager;
                     input: Create.Props["input"];
-                    realm: RealmEntity;
+                    transaction: EntityManager;
+                    realm: Entities.Realm;
                 };
+
                 type Result = {
-                    admin: RoleEntity;
-                    user: RoleEntity;
-                    root: RoleEntity;
+                    roles: Record<"admin" | "user" | "root", Entities.Role>;
+                    paths: Entities.RoleClosure[];
                 };
             }
 
-            type AssignBasePermissions = {
-                transaction: EntityManager;
-                roles: CreateBaseRoles.Result;
-                realm: RealmEntity;
-            };
+            namespace AssignBasePermissions {
+                type Props = {
+                    roles: CreateBaseRoles.Result["roles"];
+                    transaction: EntityManager;
+                    realm: Entities.Realm;
+                };
+
+                type Result = Entities.RolePermissionAssignment[];
+            }
+
+            namespace AssignBaseRoles {
+                type Props = {
+                    roles: CreateBaseRoles.Result["roles"];
+                    transaction: EntityManager;
+                    realm: Entities.Realm;
+                    actor: string;
+                };
+
+                type Result = Entities.AccountRoleAssignment[];
+            }
         }
     }
 }

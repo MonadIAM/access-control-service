@@ -1,15 +1,16 @@
 import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
-import { PermissionOverride } from "~context/domain/entities";
 import { PermissionOverrideEffect } from "~context/enums";
 
-export class PermissionOverrideAdapter implements Adapters.Contract<PermissionOverride, Adapters.PermissionOverride.Types> {
+export class PermissionOverrideAdapter
+    implements Adapters.Contract<Entities.PermissionOverride, Adapters.PermissionOverride.Types>
+{
     public buildWhereORM(
         filters: Adapters.PermissionOverride.Filters,
-        basic: ObjectQuery<PermissionOverride> = {},
-    ): ObjectQuery<PermissionOverride> {
-        const where: ObjectQuery<PermissionOverride> = basic;
+        basic: ObjectQuery<Entities.PermissionOverride> = {},
+    ): ObjectQuery<Entities.PermissionOverride> {
+        const where: ObjectQuery<Entities.PermissionOverride> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -42,11 +43,11 @@ export class PermissionOverrideAdapter implements Adapters.Contract<PermissionOv
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.PermissionOverride.Sort,
         pagination: Pagination,
-        basic: FindOptions<PermissionOverride, P, F> = {},
-    ): FindOptions<PermissionOverride, P, F> {
+        basic: FindOptions<Entities.PermissionOverride, P, F> = {},
+    ): FindOptions<Entities.PermissionOverride, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<PermissionOverride>(sort, { createdAt: QueryOrder.ASC }),
+            orderBy: MikroAdapter.orderBy<Entities.PermissionOverride>(sort, { createdAt: QueryOrder.ASC }),
             ...MikroAdapter.pagination(pagination),
         };
     }

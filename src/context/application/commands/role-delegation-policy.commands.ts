@@ -1,19 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { ROLE_DELEGATION_POLICY_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { EventType, EntityType } from "~context/enums";
 import { ROLE_DELEGATION_POLICY_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CommandException } from "~common/exceptions";
-
-import {
-    RoleDelegationPolicyCreatedEvent,
-    RoleDelegationPolicyUpdatedEvent,
-    RoleDelegationPolicyPurgedEvent,
-    RoleDelegationPolicyRevokedEvent,
-    RoleDelegationPolicyRestoredEvent,
-} from "../events/role-delegation-policy.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPolicy.Contract {
@@ -31,7 +22,6 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ROLE_DELEGATION_POLICY_SERVICE)
         private readonly roleDelegationPolicyService: Services.RoleDelegationPolicy.Contract,
-        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(
@@ -85,11 +75,6 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             },
         });
 
-        this.eventEmitter.emit(
-            RoleDelegationPolicyCreatedEvent.TOKEN,
-            new RoleDelegationPolicyCreatedEvent(realm, input.delegator, input.target),
-        );
-
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
@@ -115,8 +100,6 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
                 this.roleDelegationPolicyService.update({ entity, patch: input.patch });
             },
         });
-
-        this.eventEmitter.emit(RoleDelegationPolicyUpdatedEvent.TOKEN, new RoleDelegationPolicyUpdatedEvent(id, realm));
 
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
@@ -149,11 +132,6 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             },
         });
 
-        this.eventEmitter.emit(
-            RoleDelegationPolicyPurgedEvent.TOKEN,
-            new RoleDelegationPolicyPurgedEvent(input.identifiers),
-        );
-
         if (count > 1) {
             return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
         } else {
@@ -166,7 +144,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
     ): Promise<Commands.RoleDelegationPolicy.Revoke.Result> {
         const { input } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.DELEGATION_POLICY,
@@ -184,18 +162,13 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
                     throw CommandException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 } else {
                     this.roleDelegationPolicyService.revoke({ entities });
-                    return { count: entities.length };
+                    return entities;
                 }
             },
         });
 
-        this.eventEmitter.emit(
-            RoleDelegationPolicyRevokedEvent.TOKEN,
-            new RoleDelegationPolicyRevokedEvent(input.identifiers),
-        );
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count } };
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.REVOKED` };
         }
@@ -206,7 +179,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
     ): Promise<Commands.RoleDelegationPolicy.Restore.Result> {
         const { input } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
             audit: {
                 entityType: EntityType.DELEGATION_POLICY,
@@ -224,18 +197,13 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
                     throw CommandException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
                 } else {
                     this.roleDelegationPolicyService.restore({ entities });
-                    return { count: entities.length };
+                    return entities;
                 }
             },
         });
 
-        this.eventEmitter.emit(
-            RoleDelegationPolicyRestoredEvent.TOKEN,
-            new RoleDelegationPolicyRestoredEvent(input.identifiers),
-        );
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count } };
+        if (entities.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }

@@ -10,7 +10,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberRepository
-    extends BaseRepository<RoleConflictMember, Adapters.RoleConflictMember.Types>({
+    extends BaseRepository<Entities.RoleConflictMember, Adapters.RoleConflictMember.Types>({
         Adapter: RoleConflictMemberAdapter,
         Entity: RoleConflictMember,
     })

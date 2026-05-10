@@ -8,7 +8,6 @@ import { COMMON_SERVICES } from "~common/services";
 
 import { PermissionGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
-import { EVENT_HANDLERS } from "./application/event-handlers";
 import { REPOSITORIES } from "./infrastructure/repositories";
 import { PROCESSORS } from "./infrastructure/processors";
 import { CONTROLLERS } from "./interface/controllers";
@@ -27,7 +26,6 @@ import { QUERIES } from "./application/queries";
         ...INFRASTRUCTURE_SERVICES,
         ...DOMAIN_SERVICES,
         ...COMMON_SERVICES,
-        ...EVENT_HANDLERS,
         ...REPOSITORIES,
         ...PROCESSORS,
         ...COMMANDS,

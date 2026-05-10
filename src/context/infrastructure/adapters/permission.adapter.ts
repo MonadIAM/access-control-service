@@ -1,14 +1,13 @@
 import { FindOptions, Knex, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter, KnexAdapter } from "~infrastructure/database/utils";
-import { Permission } from "~context/domain/entities";
 
-export class PermissionAdapter implements Adapters.Contract<Permission, Adapters.Permission.Types> {
+export class PermissionAdapter implements Adapters.Contract<Entities.Permission, Adapters.Permission.Types> {
     public buildWhereORM(
         filters: Adapters.Permission.Filters,
-        basic: ObjectQuery<Permission> = {},
-    ): ObjectQuery<Permission> {
-        const where: ObjectQuery<Permission> = basic;
+        basic: ObjectQuery<Entities.Permission> = {},
+    ): ObjectQuery<Entities.Permission> {
+        const where: ObjectQuery<Entities.Permission> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -44,11 +43,11 @@ export class PermissionAdapter implements Adapters.Contract<Permission, Adapters
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.Permission.Sort,
         pagination: Pagination,
-        basic: FindOptions<Permission, P, F> = {},
-    ): FindOptions<Permission, P, F> {
+        basic: FindOptions<Entities.Permission, P, F> = {},
+    ): FindOptions<Entities.Permission, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Permission>(sort, { createdAt: QueryOrder.ASC }),
+            orderBy: MikroAdapter.orderBy<Entities.Permission>(sort, { createdAt: QueryOrder.ASC }),
             ...MikroAdapter.pagination(pagination),
         };
     }

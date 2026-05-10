@@ -1,50 +1,44 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import {
-    AccountRoleAssignment as AccountRoleAssignmentEntity,
-    Realm as RealmEntity,
-    Role as RoleEntity,
-} from "~context/domain/entities";
-
 declare global {
     namespace Services {
         namespace AccountRoleAssignment {
             interface Contract {
-                create: (props: Create) => Promise<void>;
+                create: (props: Create) => Promise<Entities.AccountRoleAssignment[]>;
+                assign: (props: Assign) => Entities.AccountRoleAssignment;
                 restore: (props: Restore) => void;
                 revoke: (props: Revoke) => void;
-                assign: (props: Assign) => void;
                 purge: (props: Purge) => void;
             }
 
             type Create = {
                 transaction: EntityManager;
                 input: {
-                    roles: RoleEntity[];
+                    roles: Entities.Role[];
                     account: string;
                 };
-                realm: RealmEntity;
+                realm: Entities.Realm;
                 actor: string;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                entities: AccountRoleAssignmentEntity[];
+                entities: Entities.AccountRoleAssignment[];
             };
 
             type Revoke = {
-                entities: AccountRoleAssignmentEntity[];
+                entities: Entities.AccountRoleAssignment[];
             };
 
             type Restore = {
-                entities: AccountRoleAssignmentEntity[];
+                entities: Entities.AccountRoleAssignment[];
             };
 
             type Assign = {
                 transaction: EntityManager;
                 input: {
-                    realm: RealmEntity;
-                    role: RoleEntity;
+                    realm: Entities.Realm;
+                    role: Entities.Role;
                     account: string;
                 };
             };

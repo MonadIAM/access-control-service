@@ -1,7 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Permission as PermissionEntity, Realm as RealmEntity } from "~context/domain/entities";
-
 declare global {
     namespace Services {
         namespace Permission {
@@ -21,28 +19,28 @@ declare global {
                         name: string;
                         description?: string;
                     };
-                    realm: RealmEntity;
+                    realm: Entities.Realm;
                 };
 
-                type Result = PermissionEntity;
+                type Result = Entities.Permission;
             }
 
             type Update = {
                 patch: Partial<Entities.Permission.MutableFields>;
-                entity: PermissionEntity;
+                entity: Entities.Permission;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                entities: PermissionEntity[];
+                entities: Entities.Permission[];
             };
 
             type Revoke = {
-                entities: PermissionEntity[];
+                entities: Entities.Permission[];
             };
 
             type Restore = {
-                entities: PermissionEntity[];
+                entities: Entities.Permission[];
             };
         }
     }

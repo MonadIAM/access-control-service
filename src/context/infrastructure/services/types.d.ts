@@ -1,63 +1,33 @@
-declare namespace InfrastructureServices {
-    namespace PermissionCache {
-        interface Contract {
-            has: (props: Has) => Promise<string[]>;
-            exists: (props: Exists) => Promise<boolean>;
-            hasGlobal: (props: HasGlobal) => Promise<string[]>;
-            hasRealm: (props: HasRealm) => Promise<boolean>;
-            getRealms: (props: GetRealms) => Promise<string[]>;
-            populate: (props: Populate) => Promise<void>;
-            invalidate: (props: Invalidate) => Promise<void>;
+import { ProjectionScript } from "../scripts";
+
+declare global {
+    namespace InfrastructureServices {
+        namespace BlacklistCache {
+            interface Contract {
+                exists: (props: Exists) => Promise<boolean>;
+                set: (props: Set) => Promise<void>;
+            }
+
+            type Set = {
+                sessionId: string;
+                ttl: number;
+            };
+
+            type Exists = {
+                sessionId: string;
+            };
         }
 
-        type Has = {
-            permissions: string[];
-            account: string;
-            realm: string;
-        };
-
-        type HasGlobal = {
-            permissions: string[];
-            account: string;
-        };
-
-        type HasRealm = {
-            account: string;
-            realm: string;
-        };
-
-        type GetRealms = {
-            account: string;
-        };
-
-        type Exists = {
-            account: string;
-        };
-
-        type Populate = {
-            rows: Repositories.Permission.CollectEffective.Result;
-            realms: string[];
-            account: string;
-        };
-
-        type Invalidate = {
-            accounts: string[];
-        };
-    }
-
-    namespace BlacklistCache {
-        interface Contract {
-            exists: (props: Exists) => Promise<boolean>;
-            set: (props: Set) => Promise<void>;
+        namespace ScriptLoader {
+            interface Contract {
+                getHash: (props: ProjectionScript) => string;
+            }
         }
 
-        type Set = {
-            sessionId: string;
-            ttl: number;
-        };
-
-        type Exists = {
-            sessionId: string;
-        };
+        namespace ScriptExecutor {
+            interface Contract {
+                execute: <T>(props: ProjectionScript, keys: string[], args: string[]) => Promise<T>;
+            }
+        }
     }
 }

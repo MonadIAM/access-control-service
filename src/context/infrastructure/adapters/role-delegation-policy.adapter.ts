@@ -1,16 +1,15 @@
 import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
-import { RoleDelegationPolicy } from "~context/domain/entities";
 
 export class RoleDelegationPolicyAdapter
-    implements Adapters.Contract<RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types>
+    implements Adapters.Contract<Entities.RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types>
 {
     public buildWhereORM(
         filters: Adapters.RoleDelegationPolicy.Filters,
-        basic: ObjectQuery<RoleDelegationPolicy> = {},
-    ): ObjectQuery<RoleDelegationPolicy> {
-        const where: ObjectQuery<RoleDelegationPolicy> = basic;
+        basic: ObjectQuery<Entities.RoleDelegationPolicy> = {},
+    ): ObjectQuery<Entities.RoleDelegationPolicy> {
+        const where: ObjectQuery<Entities.RoleDelegationPolicy> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -43,11 +42,11 @@ export class RoleDelegationPolicyAdapter
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.RoleDelegationPolicy.Sort,
         pagination: Pagination,
-        basic: FindOptions<RoleDelegationPolicy, P, F> = {},
-    ): FindOptions<RoleDelegationPolicy, P, F> {
+        basic: FindOptions<Entities.RoleDelegationPolicy, P, F> = {},
+    ): FindOptions<Entities.RoleDelegationPolicy, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<RoleDelegationPolicy>(sort, { createdAt: QueryOrder.ASC }),
+            orderBy: MikroAdapter.orderBy<Entities.RoleDelegationPolicy>(sort, { createdAt: QueryOrder.ASC }),
             ...MikroAdapter.pagination(pagination),
         };
     }

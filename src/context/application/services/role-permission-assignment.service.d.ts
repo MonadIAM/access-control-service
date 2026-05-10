@@ -1,17 +1,10 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import {
-    RolePermissionAssignment as RolePermissionAssignmentEntity,
-    Permission as PermissionEntity,
-    Realm as RealmEntity,
-    Role as RoleEntity,
-} from "~context/domain/entities";
-
 declare global {
     namespace Services {
         namespace RolePermissionAssignment {
             interface Contract {
-                create: (props: Create) => Promise<void>;
+                create: (props: Create) => Promise<Entities.RolePermissionAssignment[]>;
                 restore: (props: Restore) => void;
                 revoke: (props: Revoke) => void;
                 purge: (props: Purge) => void;
@@ -20,23 +13,23 @@ declare global {
             type Create = {
                 transaction: EntityManager;
                 input: {
-                    permissions: PermissionEntity[];
-                    role: RoleEntity;
+                    permissions: Entities.Permission[];
+                    role: Entities.Role;
                 };
-                realm: RealmEntity;
+                realm: Entities.Realm;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                entities: RolePermissionAssignmentEntity[];
+                entities: Entities.RolePermissionAssignment[];
             };
 
             type Revoke = {
-                entities: RolePermissionAssignmentEntity[];
+                entities: Entities.RolePermissionAssignment[];
             };
 
             type Restore = {
-                entities: RolePermissionAssignmentEntity[];
+                entities: Entities.RolePermissionAssignment[];
             };
         }
     }

@@ -1,17 +1,14 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 
-import { EventType, EntityType } from "~context/enums";
 import { ROLE_CONFLICT_MEMBER_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 import {
     ROLE_CONFLICT_MEMBER_REPOSITORY,
     ROLE_CONFLICT_GROUP_REPOSITORY,
     ROLE_REPOSITORY,
 } from "~context/infrastructure/repositories";
-
-import { RoleConflictMemberCreatedEvent, RoleConflictMemberPurgedEvent } from "../events/role-conflict-member.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberCommands implements Commands.RoleConflictMember.Contract {
@@ -29,7 +26,6 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
         private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ROLE_CONFLICT_MEMBER_SERVICE)
         private readonly roleConflictMemberService: Services.RoleConflictMember.Contract,
-        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(
@@ -68,11 +64,6 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
             },
         });
 
-        this.eventEmitter.emit(
-            RoleConflictMemberCreatedEvent.TOKEN,
-            new RoleConflictMemberCreatedEvent(input.group, realm, input.roles),
-        );
-
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
@@ -101,8 +92,6 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
                 }
             },
         });
-
-        this.eventEmitter.emit(RoleConflictMemberPurgedEvent.TOKEN, new RoleConflictMemberPurgedEvent(input.identifiers));
 
         if (count > 1) {
             return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };

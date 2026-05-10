@@ -1,6 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { Realm as RealmEntity, Role as RoleEntity } from "~context/domain/entities";
 import { MoveMode, RoleActorType, RoleProtoType } from "~context/enums";
 
 declare global {
@@ -9,7 +8,7 @@ declare global {
             interface Contract {
                 purgeSubtree: (props: PurgeSubtree.Props) => Promise<PurgeSubtree.Result>;
                 create: (props: Create.Props) => Promise<Create.Result>;
-                move: (props: Move) => Promise<void>;
+                move: (props: Move.Props) => Promise<Move.Result>;
                 purge: (props: Purge) => Promise<void>;
                 restore: (props: Restore) => void;
                 update: (props: Update) => void;
@@ -19,11 +18,11 @@ declare global {
             namespace PurgeSubtree {
                 type Props = {
                     transaction: EntityManager;
-                    entity: RoleEntity;
+                    entity: Entities.Role;
                     realm: string;
                 };
 
-                type Result = number;
+                type Result = Entities.Role[];
             }
 
             namespace Create {
@@ -32,51 +31,58 @@ declare global {
                     input: {
                         actorType: RoleActorType;
                         protoType: RoleProtoType;
+                        parent: Entities.Role;
                         description?: string;
                         children?: string[];
-                        parent: RoleEntity;
                         code: string;
                         name: string;
                     };
-                    realm: RealmEntity;
+                    realm: Entities.Realm;
                 };
 
-                type Result = RoleEntity;
+                type Result = Entities.Role;
+            }
+
+            namespace Move {
+                type Props = {
+                    targetParent: Entities.Role;
+                    transaction: EntityManager;
+                    target: Entities.Role;
+                    mode: MoveMode;
+                    realm: string;
+                };
+
+                type Result = {
+                    removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
+                    upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
+                }[];
             }
 
             type Update = {
                 patch: Partial<Entities.Role.MutableFields>;
-                entity: RoleEntity;
+                entity: Entities.Role;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                entity: RoleEntity;
+                entity: Entities.Role;
                 realm: string;
             };
 
             type Revoke = {
-                entities: RoleEntity[];
+                entities: Entities.Role[];
             };
 
             type Restore = {
-                entities: RoleEntity[];
-            };
-
-            type Move = {
-                transaction: EntityManager;
-                targetParent: RoleEntity;
-                target: RoleEntity;
-                mode: MoveMode;
-                realm: string;
+                entities: Entities.Role[];
             };
 
             type BuildHierarchy = {
                 transaction: EntityManager;
                 input: {
                     children?: string[];
-                    parent: RoleEntity;
-                    entity: RoleEntity;
+                    parent: Entities.Role;
+                    entity: Entities.Role;
                     realm: string;
                 };
             };

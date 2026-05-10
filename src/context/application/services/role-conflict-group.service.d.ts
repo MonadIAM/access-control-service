@@ -1,11 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import {
-    RoleConflictGroup as RoleConflictGroupEntity,
-    Realm as RealmEntity,
-    Role as RoleEntity,
-} from "~context/domain/entities";
-
 declare global {
     namespace Services {
         namespace RoleConflictGroup {
@@ -20,31 +14,31 @@ declare global {
             type Create = {
                 transaction: EntityManager;
                 input: {
-                    members: RoleEntity[];
+                    members: Entities.Role[];
                     description: string;
                     maxAllowed: number;
                     code: string;
                     name: string;
                 };
-                realm: RealmEntity;
+                realm: Entities.Realm;
             };
 
             type Update = {
                 patch: Partial<Entities.RoleConflictGroup.MutableFields>;
-                entity: RoleConflictGroupEntity;
+                entity: Entities.RoleConflictGroup;
             };
 
             type Purge = {
                 transaction: EntityManager;
-                entities: RoleConflictGroupEntity[];
+                entities: Entities.RoleConflictGroup[];
             };
 
             type Revoke = {
-                entities: RoleConflictGroupEntity[];
+                entities: Entities.RoleConflictGroup[];
             };
 
             type Restore = {
-                entities: RoleConflictGroupEntity[];
+                entities: Entities.RoleConflictGroup[];
             };
         }
     }

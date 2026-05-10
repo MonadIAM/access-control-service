@@ -11,7 +11,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionRepository
-    extends BaseRepository<Permission, Adapters.Permission.Types>({
+    extends BaseRepository<Entities.Permission, Adapters.Permission.Types>({
         Adapter: PermissionAdapter,
         Entity: Permission,
     })
@@ -32,7 +32,7 @@ export class PermissionRepository
         pagination,
         realm,
         term,
-    }: Repositories.Permission.GetLookupList): Promise<[Permission[], number]> {
+    }: Repositories.Permission.GetLookupList): Promise<[Entities.Permission[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const builder = entityManager.createQueryBuilder(Permission, "p");
@@ -62,7 +62,7 @@ export class PermissionRepository
         pagination,
         filters,
         sort,
-    }: Repositories.Permission.FindEffective): Promise<[Permission[], number]> {
+    }: Repositories.Permission.FindEffective): Promise<[Entities.Permission[], number]> {
         try {
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
@@ -139,7 +139,7 @@ export class PermissionRepository
 
             const total = parseInt(String(countResult?.total ?? 0), 10);
 
-            const permissions: Permission[] = rawPermissions.map((raw: EntityDictionary<Permission>) => {
+            const permissions: Entities.Permission[] = rawPermissions.map((raw: EntityDictionary<Entities.Permission>) => {
                 return entityManager.map(Permission, raw);
             });
 

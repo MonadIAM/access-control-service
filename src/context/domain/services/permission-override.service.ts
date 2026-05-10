@@ -13,7 +13,11 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
         private readonly permissionOverrideRepository: Repositories.PermissionOverride.InternalContract,
     ) {}
 
-    public async create({ transaction, input, realm }: Services.PermissionOverride.Create): Promise<void> {
+    public async create({
+        transaction,
+        input,
+        realm,
+    }: Services.PermissionOverride.Create): Promise<Entities.PermissionOverride> {
         const limitExceeded = await this.permissionOverrideRepository.wouldExceedOverrideLimit({
             account: input.account,
             realm: realm.id,
@@ -23,7 +27,9 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
         if (limitExceeded) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
         } else {
-            transaction.persist(new PermissionOverride({ ...input, realm }));
+            const entity = new PermissionOverride({ ...input, realm });
+            transaction.persist(entity);
+            return entity;
         }
     }
 

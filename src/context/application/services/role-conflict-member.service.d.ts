@@ -1,11 +1,5 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import {
-    RoleConflictMember as RoleConflictMemberEntity,
-    RoleConflictGroup as RoleConflictGroupEntity,
-    Role as RoleEntity,
-} from "~context/domain/entities";
-
 declare global {
     namespace Services {
         namespace RoleConflictMember {
@@ -17,14 +11,14 @@ declare global {
             type Create = {
                 transaction: EntityManager;
                 input: {
-                    group: RoleConflictGroupEntity;
-                    roles: RoleEntity[];
+                    group: Entities.RoleConflictGroup;
+                    roles: Entities.Role[];
                 };
             };
 
             type Purge = {
                 transaction: EntityManager;
-                entities: RoleConflictMemberEntity[];
+                entities: Entities.RoleConflictMember[];
             };
         }
     }

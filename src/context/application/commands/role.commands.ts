@@ -1,21 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { EventType, EntityType } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { ProjectionScript } from "~context/infrastructure/scripts";
 import { ROLE_SERVICE } from "~context/domain/services";
+import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
-
-import {
-    RoleSubtreePurgedEvent,
-    RoleRestoredEvent,
-    RoleRevokedEvent,
-    RoleUpdatedEvent,
-    RoleCreatedEvent,
-    RolePurgedEvent,
-    RoleMovedEvent,
-} from "../events/role.events";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleCommands implements Commands.Role.Contract {
@@ -31,14 +21,22 @@ export class RoleCommands implements Commands.Role.Contract {
         private readonly roleRepository: Repositories.Role.InternalContract,
         @Inject(ROLE_SERVICE)
         private readonly roleService: Services.Role.Contract,
-        private readonly eventEmitter: EventEmitter2,
     ) {}
 
     public async create(props: Commands.Role.Create.Props): Promise<Commands.Role.Create.Result> {
         const { input, realm } = props;
 
-        const entity = await this.transactionalService.run({
+        await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ROLE_CREATE,
+                payloadMapper: (entity: Entities.Role) => ({
+                    version: entity.version,
+                    parent: input.parent,
+                    role: entity.id,
+                    realm,
+                }),
+            },
             audit: {
                 actionType: EventType.CREATE,
                 entityType: EntityType.ROLE,
@@ -65,8 +63,6 @@ export class RoleCommands implements Commands.Role.Contract {
             },
         });
 
-        this.eventEmitter.emit(RoleCreatedEvent.TOKEN, new RoleCreatedEvent(entity.id, realm, input.parent));
-
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
@@ -91,8 +87,6 @@ export class RoleCommands implements Commands.Role.Contract {
             },
         });
 
-        this.eventEmitter.emit(RoleUpdatedEvent.TOKEN, new RoleUpdatedEvent(id, realm));
-
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
@@ -101,6 +95,13 @@ export class RoleCommands implements Commands.Role.Contract {
 
         await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ROLE_PURGE,
+                payloadMapper: (entity: Entities.Role) => ({
+                    role: entity.id,
+                    realm,
+                }),
+            },
             audit: {
                 actionType: EventType.DELETE,
                 entityType: EntityType.ROLE,
@@ -118,10 +119,10 @@ export class RoleCommands implements Commands.Role.Contract {
                     entity,
                     realm,
                 });
+
+                return entity;
             },
         });
-
-        this.eventEmitter.emit(RolePurgedEvent.TOKEN, new RolePurgedEvent(id, realm));
 
         return { message: `${this.dictionaryPath}.PURGED` };
     }
@@ -129,8 +130,15 @@ export class RoleCommands implements Commands.Role.Contract {
     public async purgeSubtree(props: Commands.Role.PurgeSubtree.Props): Promise<Commands.Role.PurgeSubtree.Result> {
         const { realm, id } = props;
 
-        const { count } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ROLE_PURGE_SUBTREE,
+                payloadMapper: () => ({
+                    role: id,
+                    realm,
+                }),
+            },
             audit: {
                 actionType: EventType.DELETE,
                 entityType: EntityType.ROLE,
@@ -143,26 +151,33 @@ export class RoleCommands implements Commands.Role.Contract {
                     transaction,
                 });
 
-                const count = await this.roleService.purgeSubtree({
+                return this.roleService.purgeSubtree({
                     transaction,
                     entity,
                     realm,
                 });
-
-                return { count };
             },
         });
 
-        this.eventEmitter.emit(RoleSubtreePurgedEvent.TOKEN, new RoleSubtreePurgedEvent(id, realm, count));
-
-        return { message: `${this.dictionaryPath}.SUBTREE_PURGED_COUNT`, params: { count } };
+        return { message: `${this.dictionaryPath}.SUBTREE_PURGED_COUNT`, params: { count: entities.length } };
     }
 
     public async revoke(props: Commands.Role.Revoke.Props): Promise<Commands.Role.Revoke.Result> {
         const { input, realm } = props;
 
-        const { entities, affected } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ROLE_UPDATE,
+                payloadMapper: (entities: Entities.Role[]) => ({
+                    roles: entities.map(({ id, version }) => ({
+                        role: id,
+                        version,
+                    })),
+                    isRevoked: true,
+                    realm,
+                }),
+            },
             audit: {
                 actionType: EventType.REVOKE,
                 entityType: EntityType.ROLE,
@@ -179,24 +194,10 @@ export class RoleCommands implements Commands.Role.Contract {
                     throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 } else {
                     this.roleService.revoke({ entities });
-
-                    const affected = await this.roleRepository.findAccountsByRoles({
-                        roles: entities.map(({ id }) => id),
-                    });
-
-                    return { entities, affected };
+                    return entities;
                 }
             },
         });
-
-        this.eventEmitter.emit(
-            RoleRevokedEvent.TOKEN,
-            new RoleRevokedEvent(
-                entities.map(({ id }) => id),
-                realm,
-                affected,
-            ),
-        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
@@ -208,8 +209,19 @@ export class RoleCommands implements Commands.Role.Contract {
     public async restore(props: Commands.Role.Restore.Props): Promise<Commands.Role.Restore.Result> {
         const { input, realm } = props;
 
-        const { entities, affected } = await this.transactionalService.run({
+        const entities = await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ROLE_UPDATE,
+                payloadMapper: (entities: Entities.Role[]) => ({
+                    roles: entities.map(({ id, version }) => ({
+                        role: id,
+                        version,
+                    })),
+                    isRevoked: false,
+                    realm,
+                }),
+            },
             audit: {
                 actionType: EventType.RESTORE,
                 entityType: EntityType.ROLE,
@@ -226,24 +238,10 @@ export class RoleCommands implements Commands.Role.Contract {
                     throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
                 } else {
                     this.roleService.restore({ entities });
-
-                    const affected = await this.roleRepository.findAccountsByRoles({
-                        roles: entities.map(({ id }) => id),
-                    });
-
-                    return { entities, affected };
+                    return entities;
                 }
             },
         });
-
-        this.eventEmitter.emit(
-            RoleRestoredEvent.TOKEN,
-            new RoleRestoredEvent(
-                entities.map(({ id }) => id),
-                realm,
-                affected,
-            ),
-        );
 
         if (entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
@@ -255,8 +253,12 @@ export class RoleCommands implements Commands.Role.Contract {
     public async move(props: Commands.Role.Move.Props): Promise<Commands.Role.Move.Result> {
         const { input, realm } = props;
 
-        const { target } = await this.transactionalService.run({
+        await this.transactionalService.run({
             resource: this.resource,
+            projectionJournal: {
+                operationType: ProjectionScript.ROLE_CLOSURE_UPDATE,
+                payloadMapper: (steps: Services.Role.Move.Result) => ({ steps, realm }),
+            },
             audit: {
                 actionType: EventType.REPARENT,
                 entityType: EntityType.ROLE,
@@ -274,13 +276,9 @@ export class RoleCommands implements Commands.Role.Contract {
                     }),
                 ]);
 
-                await this.roleService.move({ ...input, transaction, targetParent, target, realm });
-
-                return { target };
+                return this.roleService.move({ ...input, transaction, targetParent, target, realm });
             },
         });
-
-        this.eventEmitter.emit(RoleMovedEvent.TOKEN, new RoleMovedEvent([target.id], realm));
 
         return { message: `${this.dictionaryPath}.REPARENTED` };
     }
