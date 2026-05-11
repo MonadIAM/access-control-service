@@ -5,7 +5,7 @@
 <details>
 <summary><strong>Local Deployment</strong></summary>
 
-1. Make sure the [Infra](https://github.com/Lambdius/IAM-Infra) repository is already running locally.
+1. Make sure the [infra](https://github.com/LambdiusLab/infra) repository is already running locally.
 
 2. Make sure the `DOCKER_NETWORK_NAME` value in `.env` matches `monitoring-network` or your custom network.
 
@@ -49,31 +49,34 @@ docker exec -it access-control-service-postgres-replica psql -U lambdius -d acce
 <details>
 <summary><strong>Project Commands</strong></summary>
 
-| Command                                              | Makefile                  | Description                                           |
-|:-----------------------------------------------------|:--------------------------|:------------------------------------------------------|
-| **Infrastructure**                                   |                           |                                                       |
-| `[ -f .env.example ] && cp -f .env.example .env`     | `make env`                | Generate `.env` from example (if file exists).        |
-| `docker-compose up -d`                               | `make up`                 | Start all services in detached mode.                  |
-| `docker-compose stop`                                | `make stop`               | Stop containers without removing them.                |
-| `docker-compose down`                                | `make down`               | Stop and remove containers and networks.              |
-| `docker-compose down && docker-compose up -d`        | `make restart`            | Restart the entire infrastructure.                    |
-| `docker-compose build`                               | `make build`              | Build application Docker images.                      |
-| `docker-compose logs -f service`                     | `make logs`               | Stream logs from the main service.                    |
-| `docker-compose logs -f`                             | `make logs-all`           | Stream combined logs from all services.               |
-| `docker-compose ps`                                  | `make ps`                 | Show status of running containers.                    |
-| `docker-compose down -v`                             | `make clean`              | Remove containers along with volumes (wipes DB data). |
-| `docker system prune -f`                             | `make prune`              | Global cleanup of unused Docker resources.            |
-| **Development**                                      |                           |                                                       |
-| `npm run lint`                                       | `make lint`               | Run ESLint code checks.                               |
-| `npm run lint:fix`                                   | `make lint-fix`           | Auto-fix formatting and log changed files.            |
-| **Database**                                         |                           |                                                       |
-| `npx mikro-orm migration:create --name=$(name)`      | `make migration name="*"` | Generate a new migration based on entity changes.     |
-| `npx mikro-orm migration:up`                         | `make migrate`            | Apply all pending migrations to the database.         |
-| `npx mikro-orm seeder:run`                           | `make seed`               | Run the default seeder (`SystemSeeder`).              |
-| `npx mikro-orm seeder:run --class=DemoSeeder`        | `make seed-demo`          | Run a specific seeder by class name.                  |
-| **Test**                                             |                           |                                                       |
-| `npx jest --config ./jest.unit.config.ts`            | `make test`               | Run unit tests.                                       |
-| `npx jest --config ./jest.unit.config.ts --coverage` | `make coverage`           | Run unit tests with coverage report.                  |
+| Command                                                         | Makefile                         | Description                                           |
+|:----------------------------------------------------------------|:---------------------------------|:------------------------------------------------------|
+| **Infrastructure**                                              |                                  |                                                       |
+| `[ -f .env.example ] && cp -f .env.example .env`                | `make env`                       | Generate `.env` from example (if file exists).        |
+| `docker-compose up -d`                                          | `make up`                        | Start all services in detached mode.                  |
+| `docker-compose stop`                                           | `make stop`                      | Stop containers without removing them.                |
+| `docker-compose down`                                           | `make down`                      | Stop and remove containers and networks.              |
+| `docker-compose down && docker-compose up -d`                   | `make restart`                   | Restart the entire infrastructure.                    |
+| `docker-compose build`                                          | `make build`                     | Build application Docker images.                      |
+| `docker-compose logs -f service`                                | `make logs`                      | Stream logs from the main service.                    |
+| `docker-compose logs -f`                                        | `make logs-all`                  | Stream combined logs from all services.               |
+| `docker-compose ps`                                             | `make ps`                        | Show status of running containers.                    |
+| `docker-compose down -v`                                        | `make clean`                     | Remove containers along with volumes (wipes DB data). |
+| `docker system prune -f`                                        | `make prune`                     | Global cleanup of unused Docker resources.            |
+| **Development**                                                 |                                  |                                                       |
+| `npm run lint`                                                  | `make lint`                      | Run ESLint code checks.                               |
+| `npm run lint:fix`                                              | `make lint-fix`                  | Auto-fix formatting and log changed files.            |
+| **Database**                                                    |                                  |                                                       |
+| `npx mikro-orm migration:create --name=$(name)`                 | `make migration name="*"`        | Generate a new migration based on entity changes.     |
+| `npx mikro-orm migration:up`                                    | `make migrate`                   | Apply all pending migrations to the database.         |
+| `npx mikro-orm seeder:run --class=SystemSeeder`                 | `make seed`                      | Run the default system seeder.                        |
+| `npx mikro-orm seeder:run --class=DemoSeeder`                   | `make seed class=Demo`           | Run a specific MikroORM seeder by class prefix.       |
+| `npx tsx ./src/infrastructure/redis/seeder.ts --dataset=system` | `make seed-redis`                | Seed Redis using the default `system` dataset.        |
+| `npx tsx ./src/infrastructure/redis/seeder.ts --dataset=demo`   | `make seed-redis dataset=demo`   | Seed Redis using a specific dataset.                  |
+| **Test**                                                        |                                  |                                                       |
+| `npx jest --config ./jest.unit.config.ts`                       | `make test`                      | Run unit tests.                                       |
+| `npx jest --config ./jest.unit.config.ts --coverage`            | `make coverage`                  | Run unit tests with coverage report.                  |
+
 
 </details>
 

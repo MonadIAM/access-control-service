@@ -1,6 +1,5 @@
 import { Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { readFile } from "node:fs/promises";
-import { isString } from "class-validator";
 import { join } from "node:path";
 import Redis from "ioredis";
 
@@ -19,18 +18,18 @@ export class ScriptLoaderService implements OnModuleInit, InfrastructureServices
     ) {}
 
     public async onModuleInit(): Promise<void> {
-        const entries = Object.typedEntries(PROJECTION_SCRIPT_FILES);
-        await Promise.all(
-            entries.map(async ([script, file]) => {
-                const content = await readFile(join(__dirname, "../scripts", file), "utf8");
-                const hash = await this.redis.script("LOAD", content);
-                if (isString(hash)) {
-                    return this.scriptHashes.set(script, hash);
-                } else {
-                    throw ServiceException.invariantViolation("Redis returned an invalid Lua script hash.");
-                }
-            }),
-        );
+        await Promise.all(Object.typedEntries(PROJECTION_SCRIPT_FILES).map(([script]) => this.reload(script)));
+    }
+
+    public async reload(script: ProjectionScript): Promise<string> {
+        const content = await readFile(join(__dirname, "../scripts", PROJECTION_SCRIPT_FILES[script]), "utf8");
+        const hash = await this.redis.script("LOAD", content);
+        if (typeof hash === "string") {
+            this.scriptHashes.set(script, hash);
+            return hash;
+        } else {
+            throw ServiceException.invariantViolation("Redis returned an invalid Lua script hash.");
+        }
     }
 
     public getHash(script: ProjectionScript): string {

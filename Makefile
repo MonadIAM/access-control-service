@@ -1,6 +1,7 @@
 .PHONY: coverage
 
 dataset ?= system
+class ?= System
 
 # Infrastructure
 env:
@@ -37,9 +38,7 @@ migrate:
 migration:
 	npx mikro-orm migration:create --name=$(name)
 seed:
-	npx mikro-orm seeder:run
-seed-demo:
-	npx mikro-orm seeder:run --class=DemoSeeder
+	npx mikro-orm seeder:run --class=${class}Seeder
 seed-redis:
 	npx tsx ./src/infrastructure/redis/seeder.ts --dataset=$(dataset)
 

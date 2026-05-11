@@ -20,7 +20,8 @@ declare global {
 
         namespace ScriptLoader {
             interface Contract {
-                getHash: (props: ProjectionScript) => string;
+                reload: (script: ProjectionScript) => Promise<string>;
+                getHash: (script: ProjectionScript) => string;
             }
         }
 
