@@ -19,6 +19,18 @@ local function is_active_entity(bucket, realm_id, entity_id)
     return bucket[realm_id] ~= nil and bucket[realm_id][entity_id] == true
 end
 
+local function activate_role_permission(realm_id, role_id, permission_id, scope)
+    if scope == "GLOBAL" then
+        redis.call("SADD", make_key("role-permissions-global", realm_id, role_id), permission_id)
+    elseif scope == "REALM" then
+        redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
+    else
+        return
+    end
+
+    redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+end
+
 local active_entities = {
     permissions = {},
     realms = {},
@@ -65,6 +77,7 @@ for _, permission in ipairs(payload.permissions or {}) do
         "code", code
     )
 
+    redis.call("HSET", make_key("permission-id-by-code", realm_id), code, permission_id)
     redis.call("HSET", make_key("permission-code-by-id", realm_id), permission_id, code)
 
     if active_entities.realms[realm_id] and not is_revoked then
@@ -110,8 +123,7 @@ for _, assignment in ipairs(payload.rolePermissionAssignments or {}) do
         and is_active_entity(active_entities.roles, realm_id, role_id)
         and is_active_entity(active_entities.permissions, permission_realm_id, permission_id)
         and not is_revoked then
-        redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
-        redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+        activate_role_permission(realm_id, role_id, permission_id, scope)
     end
 end
 

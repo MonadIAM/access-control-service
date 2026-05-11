@@ -15,6 +15,7 @@ redis.call("HSET", make_key("permission", realm_id, permission_id),
     "code", code
 )
 
+redis.call("HSET", make_key("permission-id-by-code", realm_id), code, permission_id)
 redis.call("HSET", make_key("permission-code-by-id", realm_id), permission_id, code)
 
 return "OK"

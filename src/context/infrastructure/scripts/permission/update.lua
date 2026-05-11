@@ -36,6 +36,18 @@ local function maybe_remove_account_realm(realm_id, account_id)
     end
 end
 
+local function add_role_permission_by_scope(realm_id, role_id, permission_id, scope)
+    if scope == "GLOBAL" then
+        redis.call("SADD", make_key("role-permissions-global", realm_id, role_id), permission_id)
+        redis.call("SREM", make_key("role-permissions", realm_id, role_id), permission_id)
+    else
+        redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
+        redis.call("SREM", make_key("role-permissions-global", realm_id, role_id), permission_id)
+    end
+
+    redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+end
+
 local cleanup_pairs = {}
 
 local function schedule_cleanup(realm_id, account_id)
@@ -61,6 +73,7 @@ for _, permission in ipairs(payload.permissions or {}) do
 
             if target_realm_id and role_id then
                 redis.call("SREM", make_key("role-permissions", target_realm_id, role_id), permission_id)
+                redis.call("SREM", make_key("role-permissions-global", target_realm_id, role_id), permission_id)
                 redis.call("SREM", make_key("permission-roles", target_realm_id, permission_id), role_id)
             end
         end
@@ -79,14 +92,15 @@ for _, permission in ipairs(payload.permissions or {}) do
 
             if target_realm_id and role_id then
                 local assignment_key = make_key("role-permission-assignment", target_realm_id, role_id, permission_id)
+                local scope = redis.call("HGET", assignment_key, "scope") or "REALM"
 
                 if is_active_entity(make_key("realm", target_realm_id))
                     and is_active_entity(make_key("role", target_realm_id, role_id))
                     and redis.call("HGET", assignment_key, "isRevoked") == "0" then
-                    redis.call("SADD", make_key("role-permissions", target_realm_id, role_id), permission_id)
-                    redis.call("SADD", make_key("permission-roles", target_realm_id, permission_id), role_id)
+                    add_role_permission_by_scope(target_realm_id, role_id, permission_id, scope)
                 else
                     redis.call("SREM", make_key("role-permissions", target_realm_id, role_id), permission_id)
+                    redis.call("SREM", make_key("role-permissions-global", target_realm_id, role_id), permission_id)
                     redis.call("SREM", make_key("permission-roles", target_realm_id, permission_id), role_id)
                 end
             end

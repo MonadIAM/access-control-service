@@ -25,6 +25,25 @@ local function maybe_remove_account_realm(realm_id, account_id)
     end
 end
 
+local function remove_role_permission(realm_id, role_id, permission_id)
+    redis.call("SREM", make_key("role-permissions", realm_id, role_id), permission_id)
+    redis.call("SREM", make_key("role-permissions-global", realm_id, role_id), permission_id)
+    redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
+end
+
+local function activate_role_permission(realm_id, role_id, permission_id, scope)
+    if scope == "GLOBAL" then
+        redis.call("SADD", make_key("role-permissions-global", realm_id, role_id), permission_id)
+    elseif scope == "REALM" then
+        redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
+    else
+        remove_role_permission(realm_id, role_id, permission_id)
+        return
+    end
+
+    redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+end
+
 local cleanup_pairs = {}
 
 local function schedule_cleanup(realm_id, account_id)
@@ -39,7 +58,6 @@ for _, role in ipairs(payload.roles or {}) do
 
     local role_key = make_key("role", realm_id, role_id)
     local role_accounts_key = make_key("role-accounts", realm_id, role_id)
-    local role_permissions_key = make_key("role-permissions", realm_id, role_id)
 
     redis.call("HSET", role_key, "isRevoked", redis_bool(is_revoked))
     redis.call("SADD", make_key("realm-roles", realm_id), role_id)
@@ -55,8 +73,7 @@ for _, role in ipairs(payload.roles or {}) do
         end
 
         for _, permission_id in ipairs(permission_ids) do
-            redis.call("SREM", role_permissions_key, permission_id)
-            redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
+            remove_role_permission(realm_id, role_id, permission_id)
         end
     else
         if is_active_entity(make_key("realm", realm_id)) then
@@ -80,15 +97,24 @@ for _, role in ipairs(payload.roles or {}) do
                 local assignment_key = make_key("role-permission-assignment", realm_id, role_id, permission_id)
                 local permission_realm_id = redis.call("HGET", assignment_key, "permissionRealm") or realm_id
                 local assignment_is_revoked = redis.call("HGET", assignment_key, "isRevoked")
+                local scope = redis.call("HGET", assignment_key, "scope") or ""
 
                 if assignment_is_revoked == "0"
                     and is_active_entity(make_key("permission", permission_realm_id, permission_id)) then
-                    redis.call("SADD", role_permissions_key, permission_id)
-                    redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+                    activate_role_permission(realm_id, role_id, permission_id, scope)
                 else
-                    redis.call("SREM", role_permissions_key, permission_id)
-                    redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
+                    remove_role_permission(realm_id, role_id, permission_id)
                 end
+            end
+        else
+            for _, account_id in ipairs(account_ids) do
+                redis.call("SREM", make_key("account-roles", realm_id, account_id), role_id)
+                redis.call("SREM", role_accounts_key, account_id)
+                schedule_cleanup(realm_id, account_id)
+            end
+
+            for _, permission_id in ipairs(permission_ids) do
+                remove_role_permission(realm_id, role_id, permission_id)
             end
         end
     end

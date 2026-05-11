@@ -28,6 +28,7 @@ local role_id = tostring(payload.role)
 
 local role_accounts_key = make_key("role-accounts", realm_id, role_id)
 local role_permissions_key = make_key("role-permissions", realm_id, role_id)
+local role_permissions_global_key = make_key("role-permissions-global", realm_id, role_id)
 local role_ancestors_key = make_key("role-ancestors", realm_id, role_id)
 local role_descendants_key = make_key("role-descendants", realm_id, role_id)
 
@@ -54,6 +55,7 @@ for _, permission_id in ipairs(permission_ids) do
     redis.call("SREM", make_key("permission-usages", "role-assignments", permission_realm_id, permission_id), realm_id .. ":" .. role_id)
 
     redis.call("SREM", role_permissions_key, permission_id)
+    redis.call("SREM", role_permissions_global_key, permission_id)
     redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
 end
 
@@ -74,6 +76,7 @@ redis.call("SREM", make_key("realm-roles", realm_id), role_id)
 redis.call("UNLINK", make_key("role", realm_id, role_id))
 redis.call("UNLINK", role_accounts_key)
 redis.call("UNLINK", role_permissions_key)
+redis.call("UNLINK", role_permissions_global_key)
 redis.call("UNLINK", role_ancestors_key)
 redis.call("UNLINK", role_descendants_key)
 redis.call("UNLINK", make_key("account-role-assignments", "by-role", realm_id, role_id))

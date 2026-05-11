@@ -27,8 +27,20 @@ declare global {
 
         namespace ScriptExecutor {
             interface Contract {
-                execute: <T>(props: ProjectionScript, keys: string[], args: string[]) => Promise<T>;
+                execute: <T>(props: ProjectionScript, args: string[], keys?: string[]) => Promise<T>;
             }
+        }
+
+        namespace PermissionCache {
+            interface Contract {
+                check: (props: Check) => Promise<boolean>;
+            }
+
+            type Check = {
+                permissions: string[];
+                account: string;
+                realm: string;
+            };
         }
     }
 }

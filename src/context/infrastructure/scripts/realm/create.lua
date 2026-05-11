@@ -10,6 +10,18 @@ local function is_active_entity(key)
     return redis.call("HGET", key, "isRevoked") == "0"
 end
 
+local function activate_role_permission(realm_id, role_id, permission_id, scope)
+    if scope == "GLOBAL" then
+        redis.call("SADD", make_key("role-permissions-global", realm_id, role_id), permission_id)
+    elseif scope == "REALM" then
+        redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
+    else
+        return
+    end
+
+    redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+end
+
 local realm_id = tostring(payload.realm)
 local permission_realm_id = tostring(payload.permissionRealm or realm_id)
 
@@ -53,8 +65,7 @@ for _, item in ipairs(payload.rolePermissionAssignments or {}) do
     redis.call("SADD", make_key("permission-usages", "role-assignments", permission_realm_id, permission_id), realm_id .. ":" .. role_id)
 
     if is_active_entity(make_key("permission", permission_realm_id, permission_id)) then
-        redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
-        redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+        activate_role_permission(realm_id, role_id, permission_id, scope)
     end
 end
 

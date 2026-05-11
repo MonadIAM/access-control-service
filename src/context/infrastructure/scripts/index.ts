@@ -16,6 +16,7 @@ export enum ProjectionScript {
     PERMISSION_CREATE = "permission/create",
     PERMISSION_UPDATE = "permission/update",
     PERMISSION_PURGE = "permission/purge",
+    PERMISSION_CHECK = "permission/check",
 
     REALM_CREATE = "realm/create",
     REALM_UPDATE = "realm/update",
@@ -44,6 +45,7 @@ export const PROJECTION_SCRIPT_FILES: Record<ProjectionScript, string> = {
     [ProjectionScript.PERMISSION_CREATE]: "permission/create.lua",
     [ProjectionScript.PERMISSION_UPDATE]: "permission/update.lua",
     [ProjectionScript.PERMISSION_PURGE]: "permission/purge.lua",
+    [ProjectionScript.PERMISSION_CHECK]: "permission/check.lua",
 
     [ProjectionScript.REALM_CREATE]: "realm/create.lua",
     [ProjectionScript.REALM_UPDATE]: "realm/update.lua",

@@ -21,6 +21,25 @@ local function remove_active_override(realm_id, account_id, permission_id)
     redis.call("SREM", make_key("permission-override-accounts", realm_id, permission_id), account_id)
 end
 
+local function remove_role_permission(realm_id, role_id, permission_id)
+    redis.call("SREM", make_key("role-permissions", realm_id, role_id), permission_id)
+    redis.call("SREM", make_key("role-permissions-global", realm_id, role_id), permission_id)
+    redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
+end
+
+local function activate_role_permission(realm_id, role_id, permission_id, scope)
+    if scope == "GLOBAL" then
+        redis.call("SADD", make_key("role-permissions-global", realm_id, role_id), permission_id)
+    elseif scope == "REALM" then
+        redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
+    else
+        remove_role_permission(realm_id, role_id, permission_id)
+        return
+    end
+
+    redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+end
+
 for _, realm in ipairs(payload.realms or {}) do
     local realm_id = tostring(realm)
 
@@ -47,6 +66,7 @@ for _, realm in ipairs(payload.realms or {}) do
 
             redis.call("UNLINK", make_key("role-accounts", realm_id, role_id))
             redis.call("UNLINK", make_key("role-permissions", realm_id, role_id))
+            redis.call("UNLINK", make_key("role-permissions-global", realm_id, role_id))
         end
 
         local override_ids = redis.call("SMEMBERS", make_key("permission-overrides", "by-realm", realm_id))
@@ -80,11 +100,13 @@ for _, realm in ipairs(payload.realms or {}) do
                 for _, permission_id in ipairs(assigned_permission_ids) do
                     local assignment_key = make_key("role-permission-assignment", realm_id, role_id, permission_id)
                     local permission_realm_id = redis.call("HGET", assignment_key, "permissionRealm") or realm_id
+                    local scope = redis.call("HGET", assignment_key, "scope") or ""
 
                     if redis.call("HGET", assignment_key, "isRevoked") == "0"
                         and is_active_entity(make_key("permission", permission_realm_id, permission_id)) then
-                        redis.call("SADD", make_key("role-permissions", realm_id, role_id), permission_id)
-                        redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
+                        activate_role_permission(realm_id, role_id, permission_id, scope)
+                    else
+                        remove_role_permission(realm_id, role_id, permission_id)
                     end
                 end
             end

@@ -13,6 +13,6 @@ export class ProjectionConsumer implements Consumers.Projection.Contract {
 
     @EventPattern(KafkaTopic.PROJECTION_JOURNAL)
     public async handle(@Payload() message: Consumers.Projection.Payload): Promise<void> {
-        await this.scriptExecutorService.execute<string>(message.operationType, [], [message.payload]);
+        await this.scriptExecutorService.execute<string>(message.operationType, [message.payload]);
     }
 }

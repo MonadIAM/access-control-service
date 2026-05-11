@@ -15,7 +15,7 @@ export class ScriptExecutorService implements InfrastructureServices.ScriptExecu
         private readonly scriptLoaderService: InfrastructureServices.ScriptLoader.Contract,
     ) {}
 
-    public async execute<T>(script: ProjectionScript, keys: string[], args: string[]): Promise<T> {
+    public async execute<T>(script: ProjectionScript, args: string[], keys: string[] = []): Promise<T> {
         try {
             return await this.evalsha<T>(script, keys, args);
         } catch (error) {

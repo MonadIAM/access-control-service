@@ -6,6 +6,12 @@ local function make_key(...)
     return table.concat({"projection", ...}, ":")
 end
 
+local function remove_role_permission(realm_id, role_id, permission_id)
+    redis.call("SREM", make_key("role-permissions", realm_id, role_id), permission_id)
+    redis.call("SREM", make_key("role-permissions-global", realm_id, role_id), permission_id)
+    redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
+end
+
 for _, item in ipairs(payload.items or {}) do
     local permission_id = tostring(item.permission)
     local realm_id = tostring(item.realm)
@@ -21,8 +27,7 @@ for _, item in ipairs(payload.items or {}) do
     redis.call("SREM", make_key("role-permission-assignments", "by-permission", realm_id, permission_id), role_id)
     redis.call("SREM", make_key("permission-usages", "role-assignments", permission_realm_id, permission_id), realm_id .. ":" .. role_id)
 
-    redis.call("SREM", make_key("role-permissions", realm_id, role_id), permission_id)
-    redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
+    remove_role_permission(realm_id, role_id, permission_id)
 end
 
 return "OK"
