@@ -20,7 +20,6 @@ for _, item in ipairs(payload.assignments or {}) do
     local assignment_id = tostring(item.assignment)
     local permission_id = tostring(item.permission)
     local permission_realm_id = tostring(item.permissionRealm or item.permission_realm or realm_id)
-    local version = tonumber(item.version) or 1
     local scope = tostring(item.scope or "")
 
     local assignment_key = make_key("role-permission-assignment", realm_id, role_id, permission_id)
@@ -28,7 +27,6 @@ for _, item in ipairs(payload.assignments or {}) do
     redis.call("HSET", assignment_key,
         "assignmentId", assignment_id,
         "isRevoked", "0",
-        "version", version,
         "scope", scope,
         "permissionRealm", permission_realm_id
     )

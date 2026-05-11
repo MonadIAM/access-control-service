@@ -17,13 +17,11 @@ local realm_active = is_active_entity(make_key("realm", realm_id))
 
 for _, assignment in ipairs(payload.assignments or {}) do
     local assignment_id = tostring(assignment.assignment)
-    local version = tonumber(assignment.version) or 1
     local role_id = tostring(assignment.role)
 
     redis.call("HSET", make_key("account-role-assignment", realm_id, account_id, role_id),
         "assignmentId", assignment_id,
-        "isRevoked", "0",
-        "version", version
+        "isRevoked", "0"
     )
 
     redis.call("SADD", make_key("account-role-assignments", "by-account", realm_id, account_id), role_id)

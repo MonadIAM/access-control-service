@@ -36,6 +36,7 @@ for _, item in ipairs(payload.items or {}) do
 
     redis.call("SREM", make_key("permission-overrides", "by-account", realm_id, account_id), permission_id)
     redis.call("SREM", make_key("permission-overrides", "by-permission", realm_id, permission_id), account_id)
+    redis.call("SREM", make_key("permission-overrides", "by-realm", realm_id), account_id .. ":" .. permission_id)
     redis.call("SREM", make_key("permission-usages", "overrides", permission_realm_id, permission_id), realm_id .. ":" .. account_id)
 
     redis.call("SREM", make_key("account-overrides-allow", realm_id, account_id), permission_id)

@@ -34,15 +34,14 @@ end
 local realm_id = tostring(payload.realm)
 local is_revoked = payload.isRevoked == true
 
-for _, item in ipairs(payload.roles or {}) do
-    local role_id = tostring(item.role)
-    local version = tonumber(item.version) or 1
+for _, role in ipairs(payload.roles or {}) do
+    local role_id = tostring(role)
 
     local role_key = make_key("role", realm_id, role_id)
     local role_accounts_key = make_key("role-accounts", realm_id, role_id)
     local role_permissions_key = make_key("role-permissions", realm_id, role_id)
 
-    redis.call("HSET", role_key, "isRevoked", redis_bool(is_revoked), "version", version)
+    redis.call("HSET", role_key, "isRevoked", redis_bool(is_revoked))
     redis.call("SADD", make_key("realm-roles", realm_id), role_id)
 
     local account_ids = redis.call("SMEMBERS", make_key("account-role-assignments", "by-role", realm_id, role_id))
@@ -79,10 +78,11 @@ for _, item in ipairs(payload.roles or {}) do
 
             for _, permission_id in ipairs(permission_ids) do
                 local assignment_key = make_key("role-permission-assignment", realm_id, role_id, permission_id)
+                local permission_realm_id = redis.call("HGET", assignment_key, "permissionRealm") or realm_id
                 local assignment_is_revoked = redis.call("HGET", assignment_key, "isRevoked")
 
                 if assignment_is_revoked == "0"
-                    and is_active_entity(make_key("permission", realm_id, permission_id)) then
+                    and is_active_entity(make_key("permission", permission_realm_id, permission_id)) then
                     redis.call("SADD", role_permissions_key, permission_id)
                     redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
                 else

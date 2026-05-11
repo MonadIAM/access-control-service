@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ROLE_DELEGATION_POLICY_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { EventType, EntityType } from "~context/enums";
 import { ROLE_DELEGATION_POLICY_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
+import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })

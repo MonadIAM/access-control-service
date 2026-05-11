@@ -38,12 +38,16 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.PERMISSION_OVERRIDE_CREATE,
-                payloadMapper: ({ permission, account, version, effect, id }: Entities.PermissionOverride) => ({
+                payloadMapper: ({
+                    permission,
+                    account,
+                    effect,
+                    id,
+                }: Entities.PermissionOverride): Scripts.PermissionOverride.Create => ({
                     permissionRealm: permission.realm.id,
                     permission: permission.id,
                     override: id,
                     account,
-                    version,
                     effect,
                     realm,
                 }),
@@ -88,7 +92,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
-                payloadMapper: (entities: Entities.PermissionOverride[]) => ({
+                payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Purge => ({
                     items: entities.map(({ realm, account, permission }) => ({
                         permissionRealm: permission.realm.id,
                         permission: permission.id,
@@ -135,13 +139,12 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
-                payloadMapper: (entities: Entities.PermissionOverride[]) => ({
-                    items: entities.map(({ id, realm, account, permission, effect, version }) => ({
+                payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Update => ({
+                    items: entities.map(({ id, realm, account, permission, effect }) => ({
                         permissionRealm: permission.realm.id,
                         permission: permission.id,
                         realm: realm.id,
                         override: id,
-                        version,
                         account,
                         effect,
                     })),
@@ -187,13 +190,12 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
-                payloadMapper: (entities: Entities.PermissionOverride[]) => ({
-                    items: entities.map(({ id, realm, account, permission, effect, version }) => ({
+                payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Update => ({
+                    items: entities.map(({ id, realm, account, permission, effect }) => ({
                         permissionRealm: permission.realm.id,
                         permission: permission.id,
                         realm: realm.id,
                         override: id,
-                        version,
                         account,
                         effect,
                     })),
@@ -235,7 +237,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
-                payloadMapper: (entities: Entities.PermissionOverride[]) => ({
+                payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Purge => ({
                     items: entities.map(({ realm, account, permission }) => ({
                         permissionRealm: permission.realm.id,
                         permission: permission.id,

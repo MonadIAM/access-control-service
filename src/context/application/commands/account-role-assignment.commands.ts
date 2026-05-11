@@ -41,11 +41,10 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
-                    assignments: entities.map(({ id, role, version }) => ({
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Create => ({
+                    assignments: entities.map(({ id, role }) => ({
                         assignment: id,
                         role: role.id,
-                        version,
                     })),
                     account: input.account,
                     realm,
@@ -94,7 +93,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Purge => ({
                     items: entities.map(({ realm, account, role }) => ({
                         realm: realm.id,
                         role: role.id,
@@ -140,14 +139,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Update => ({
                     isRevoked: true,
-                    items: entities.map(({ id, realm, account, role, version }) => ({
+                    items: entities.map(({ id, realm, account, role }) => ({
                         realm: realm.id,
                         assignment: id,
                         role: role.id,
                         account,
-                        version,
                     })),
                 }),
             },
@@ -189,14 +187,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Update => ({
                     isRevoked: false,
-                    items: entities.map(({ id, realm, account, role, version }) => ({
+                    items: entities.map(({ id, realm, account, role }) => ({
                         realm: realm.id,
                         assignment: id,
                         role: role.id,
                         account,
-                        version,
                     })),
                 }),
             },
@@ -236,12 +233,11 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
-                payloadMapper: (entity: Entities.AccountRoleAssignment) => ({
+                payloadMapper: (entity: Entities.AccountRoleAssignment): Scripts.AccountRoleAssignment.Create => ({
                     realm: SYSTEM_REALM,
                     account: props.account,
                     assignments: [
                         {
-                            version: entity.version,
                             assignment: entity.id,
                             role: SYSTEM_USER_ROLE,
                         },
@@ -279,7 +275,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Purge => ({
                     items: entities.map(({ realm, account, role }) => ({
                         realm: realm.id,
                         role: role.id,

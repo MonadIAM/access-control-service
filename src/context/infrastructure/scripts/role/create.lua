@@ -6,7 +6,6 @@ local function make_key(...)
     return table.concat({"projection", ...}, ":")
 end
 
-local version = tonumber(payload.version) or 1
 local parent_id = tostring(payload.parent)
 local realm_id = tostring(payload.realm)
 local role_id = tostring(payload.role)
@@ -16,12 +15,11 @@ local role_ancestors_key = make_key("role-ancestors", realm_id, role_id)
 local role_descendants_key = make_key("role-descendants", realm_id, role_id)
 local parent_ancestors_key = make_key("role-ancestors", realm_id, parent_id)
 
-redis.call("HSET", role_key, "isRevoked", "0", "version", version)
+redis.call("HSET", role_key, "isRevoked", "0")
 redis.call("SADD", make_key("realm-roles", realm_id), role_id)
 
 redis.call("HSET", make_key("role-closure", realm_id, role_id, role_id),
-    "depth", "0",
-    "version", version
+    "depth", "0"
 )
 
 redis.call("ZADD", role_ancestors_key, 0, role_id)
@@ -35,8 +33,7 @@ for index = 1, #parent_ancestors, 2 do
     local depth = parent_depth + 1
 
     redis.call("HSET", make_key("role-closure", realm_id, ancestor_id, role_id),
-        "depth", tostring(depth),
-        "version", version
+        "depth", tostring(depth)
     )
 
     redis.call("ZADD", role_ancestors_key, depth, ancestor_id)

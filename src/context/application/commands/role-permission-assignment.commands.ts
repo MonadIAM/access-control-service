@@ -41,12 +41,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_CREATE,
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
-                    assignments: entities.map(({ id, permission, version, scope }) => ({
+                payloadMapper: (
+                    entities: Entities.RolePermissionAssignment[],
+                ): Scripts.RolePermissionAssignment.Create => ({
+                    assignments: entities.map(({ id, permission, scope }) => ({
                         permissionRealm: permission.realm.id,
                         permission: permission.id,
                         assignment: id,
-                        version,
                         scope,
                     })),
                     role: input.role,
@@ -102,7 +103,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_PURGE,
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]): Scripts.RolePermissionAssignment.Purge => ({
                     items: entities.map(({ realm, role, permission }) => ({
                         permissionRealm: permission.realm.id,
                         permission: permission.id,
@@ -149,14 +150,15 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
-                    items: entities.map(({ id, realm, role, permission, version }) => ({
+                payloadMapper: (
+                    entities: Entities.RolePermissionAssignment[],
+                ): Scripts.RolePermissionAssignment.Update => ({
+                    items: entities.map(({ id, realm, role, permission }) => ({
                         permissionRealm: permission.realm.id,
                         permission: permission.id,
                         realm: realm.id,
                         assignment: id,
                         role: role.id,
-                        version,
                     })),
                     isRevoked: true,
                 }),
@@ -199,14 +201,15 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => ({
-                    items: entities.map(({ id, realm, role, permission, version }) => ({
+                payloadMapper: (
+                    entities: Entities.RolePermissionAssignment[],
+                ): Scripts.RolePermissionAssignment.Update => ({
+                    items: entities.map(({ id, realm, role, permission }) => ({
                         permissionRealm: permission.realm.id,
                         permission: permission.id,
                         realm: realm.id,
                         assignment: id,
                         role: role.id,
-                        version,
                     })),
                     isRevoked: false,
                 }),

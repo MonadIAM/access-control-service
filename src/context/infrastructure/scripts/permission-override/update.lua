@@ -58,7 +58,6 @@ end
 
 for _, item in ipairs(payload.items or {}) do
     local permission_id = tostring(item.permission)
-    local version = tonumber(item.version) or 1
     local override_id = tostring(item.override)
     local effect = tostring(item.effect or "")
     local account_id = tostring(item.account)
@@ -71,13 +70,13 @@ for _, item in ipairs(payload.items or {}) do
     redis.call("HSET", override_key,
         "overrideId", override_id,
         "isRevoked", is_revoked_value,
-        "version", version,
         "effect", effect,
         "permissionRealm", permission_realm_id
     )
 
     redis.call("SADD", make_key("permission-overrides", "by-account", realm_id, account_id), permission_id)
     redis.call("SADD", make_key("permission-overrides", "by-permission", realm_id, permission_id), account_id)
+    redis.call("SADD", make_key("permission-overrides", "by-realm", realm_id), account_id .. ":" .. permission_id)
     redis.call("SADD", make_key("permission-usages", "overrides", permission_realm_id, permission_id), realm_id .. ":" .. account_id)
 
     if is_revoked then

@@ -24,7 +24,6 @@ local is_revoked_value = redis_bool(is_revoked)
 for _, item in ipairs(payload.items or {}) do
     local assignment_id = tostring(item.assignment)
     local permission_id = tostring(item.permission)
-    local version = tonumber(item.version) or 1
     local realm_id = tostring(item.realm)
     local role_id = tostring(item.role)
 
@@ -38,7 +37,6 @@ for _, item in ipairs(payload.items or {}) do
     redis.call("HSET", assignment_key,
         "assignmentId", assignment_id,
         "isRevoked", is_revoked_value,
-        "version", version,
         "permissionRealm", permission_realm_id
     )
 

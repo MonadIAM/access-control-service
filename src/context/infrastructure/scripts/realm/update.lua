@@ -21,17 +21,12 @@ local function remove_active_override(realm_id, account_id, permission_id)
     redis.call("SREM", make_key("permission-override-accounts", realm_id, permission_id), account_id)
 end
 
-for _, item in ipairs(payload.realms or {}) do
-    local realm_id = tostring(item.realm)
-    local version = tonumber(item.version) or 1
+for _, realm in ipairs(payload.realms or {}) do
+    local realm_id = tostring(realm)
 
-    redis.call("HSET", make_key("realm", realm_id),
-        "isRevoked", redis_bool(is_revoked),
-        "version", version
-    )
+    redis.call("HSET", make_key("realm", realm_id), "isRevoked", redis_bool(is_revoked))
 
     local role_ids = redis.call("SMEMBERS", make_key("realm-roles", realm_id))
-    local permission_ids = redis.call("HKEYS", make_key("permission-code-by-id", realm_id))
 
     if is_revoked then
         local account_ids = redis.call("SMEMBERS", make_key("realm-accounts", realm_id))
@@ -44,13 +39,23 @@ for _, item in ipairs(payload.realms or {}) do
         end
 
         for _, role_id in ipairs(role_ids) do
+            local assigned_permission_ids = redis.call("SMEMBERS", make_key("role-permission-assignments", "by-role", realm_id, role_id))
+
+            for _, permission_id in ipairs(assigned_permission_ids) do
+                redis.call("SREM", make_key("permission-roles", realm_id, permission_id), role_id)
+            end
+
             redis.call("UNLINK", make_key("role-accounts", realm_id, role_id))
             redis.call("UNLINK", make_key("role-permissions", realm_id, role_id))
         end
 
-        for _, permission_id in ipairs(permission_ids) do
-            redis.call("UNLINK", make_key("permission-roles", realm_id, permission_id))
-            redis.call("UNLINK", make_key("permission-override-accounts", realm_id, permission_id))
+        local override_ids = redis.call("SMEMBERS", make_key("permission-overrides", "by-realm", realm_id))
+        for _, override_id in ipairs(override_ids) do
+            local account_id, permission_id = string.match(override_id, "^([^:]+):([^:]+)$")
+
+            if account_id and permission_id then
+                redis.call("SREM", make_key("permission-override-accounts", realm_id, permission_id), account_id)
+            end
         end
 
         redis.call("UNLINK", make_key("realm-accounts", realm_id))
@@ -85,10 +90,11 @@ for _, item in ipairs(payload.realms or {}) do
             end
         end
 
-        for _, account_id in ipairs(redis.call("SMEMBERS", make_key("realm-accounts", realm_id))) do
-            local override_permission_ids = redis.call("SMEMBERS", make_key("permission-overrides", "by-account", realm_id, account_id))
+        local override_ids = redis.call("SMEMBERS", make_key("permission-overrides", "by-realm", realm_id))
+        for _, override_id in ipairs(override_ids) do
+            local account_id, permission_id = string.match(override_id, "^([^:]+):([^:]+)$")
 
-            for _, permission_id in ipairs(override_permission_ids) do
+            if account_id and permission_id then
                 local override_key = make_key("permission-override", realm_id, account_id, permission_id)
                 local permission_realm_id = redis.call("HGET", override_key, "permissionRealm") or realm_id
                 local override_is_revoked = redis.call("HGET", override_key, "isRevoked")

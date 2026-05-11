@@ -30,8 +30,7 @@ export class RoleCommands implements Commands.Role.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_CREATE,
-                payloadMapper: (entity: Entities.Role) => ({
-                    version: entity.version,
+                payloadMapper: (entity: Entities.Role): Scripts.Role.Create => ({
                     parent: input.parent,
                     role: entity.id,
                     realm,
@@ -97,7 +96,7 @@ export class RoleCommands implements Commands.Role.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_PURGE,
-                payloadMapper: (entity: Entities.Role) => ({
+                payloadMapper: (entity: Entities.Role): Scripts.Role.Purge => ({
                     role: entity.id,
                     realm,
                 }),
@@ -134,7 +133,7 @@ export class RoleCommands implements Commands.Role.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_PURGE,
-                payloadMapper: () => ({
+                payloadMapper: (): Scripts.Role.Purge => ({
                     role: id,
                     realm,
                 }),
@@ -169,11 +168,8 @@ export class RoleCommands implements Commands.Role.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_UPDATE,
-                payloadMapper: (entities: Entities.Role[]) => ({
-                    roles: entities.map(({ id, version }) => ({
-                        role: id,
-                        version,
-                    })),
+                payloadMapper: (entities: Entities.Role[]): Scripts.Role.Update => ({
+                    roles: entities.map(({ id }) => id),
                     isRevoked: true,
                     realm,
                 }),
@@ -213,11 +209,8 @@ export class RoleCommands implements Commands.Role.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_UPDATE,
-                payloadMapper: (entities: Entities.Role[]) => ({
-                    roles: entities.map(({ id, version }) => ({
-                        role: id,
-                        version,
-                    })),
+                payloadMapper: (entities: Entities.Role[]): Scripts.Role.Update => ({
+                    roles: entities.map(({ id }) => id),
                     isRevoked: false,
                     realm,
                 }),
@@ -257,7 +250,7 @@ export class RoleCommands implements Commands.Role.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_CLOSURE_UPDATE,
-                payloadMapper: (steps: Services.Role.Move.Result) => ({ steps, realm }),
+                payloadMapper: (steps: Services.Role.Move.Result): Scripts.Role.Move => ({ steps, realm }),
             },
             audit: {
                 actionType: EventType.REPARENT,

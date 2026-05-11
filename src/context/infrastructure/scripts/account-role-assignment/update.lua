@@ -35,15 +35,13 @@ end
 
 for _, item in ipairs(payload.items or {}) do
     local assignment_id = tostring(item.assignment)
-    local version = tonumber(item.version) or 1
     local account_id = tostring(item.account)
     local realm_id = tostring(item.realm)
     local role_id = tostring(item.role)
 
     redis.call("HSET", make_key("account-role-assignment", realm_id, account_id, role_id),
         "assignmentId", assignment_id,
-        "isRevoked", is_revoked_value,
-        "version", version
+        "isRevoked", is_revoked_value
     )
 
     redis.call("SADD", make_key("account-role-assignments", "by-account", realm_id, account_id), role_id)

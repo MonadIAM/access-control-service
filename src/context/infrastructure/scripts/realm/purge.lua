@@ -70,16 +70,20 @@ for _, realm in ipairs(payload.realms or {}) do
         redis.call("UNLINK", make_key("role-permission-assignments", "by-role", realm_id, role_id))
     end
 
-    for _, account_id in ipairs(active_account_ids) do
-        local override_permission_ids = redis.call("SMEMBERS", make_key("permission-overrides", "by-account", realm_id, account_id))
+    local override_ids = redis.call("SMEMBERS", make_key("permission-overrides", "by-realm", realm_id))
+    for _, override_id in ipairs(override_ids) do
+        local account_id, permission_id = string.match(override_id, "^([^:]+):([^:]+)$")
 
-        for _, permission_id in ipairs(override_permission_ids) do
+        if account_id and permission_id then
+            remember_account(account_id)
+
             local override_key = make_key("permission-override", realm_id, account_id, permission_id)
             local permission_realm_id = redis.call("HGET", override_key, "permissionRealm") or realm_id
 
             redis.call("UNLINK", override_key)
             redis.call("SREM", make_key("permission-overrides", "by-account", realm_id, account_id), permission_id)
             redis.call("SREM", make_key("permission-overrides", "by-permission", realm_id, permission_id), account_id)
+            redis.call("SREM", make_key("permission-overrides", "by-realm", realm_id), account_id .. ":" .. permission_id)
             redis.call("SREM", make_key("permission-usages", "overrides", permission_realm_id, permission_id), realm_id .. ":" .. account_id)
             redis.call("SREM", make_key("account-overrides-allow", realm_id, account_id), permission_id)
             redis.call("SREM", make_key("account-overrides-deny", realm_id, account_id), permission_id)
@@ -111,6 +115,7 @@ for _, realm in ipairs(payload.realms or {}) do
     redis.call("UNLINK", make_key("realm-roles", realm_id))
     redis.call("UNLINK", make_key("realm-accounts", realm_id))
     redis.call("UNLINK", make_key("permission-code-by-id", realm_id))
+    redis.call("UNLINK", make_key("permission-overrides", "by-realm", realm_id))
 end
 
 return "OK"

@@ -26,13 +26,11 @@ local active_entities = {
 }
 
 for _, realm in ipairs(payload.realms or {}) do
-    local version = tonumber(realm.version) or 1
     local is_revoked = realm.is_revoked
     local realm_id = tostring(realm.id)
 
     redis.call("HSET", make_key("realm", realm_id),
-        "isRevoked", to_redis_bool(is_revoked),
-        "version", version
+        "isRevoked", to_redis_bool(is_revoked)
     )
 
     if not is_revoked then
@@ -41,14 +39,12 @@ for _, realm in ipairs(payload.realms or {}) do
 end
 
 for _, role in ipairs(payload.roles or {}) do
-    local version = tonumber(role.version) or 1
     local realm_id = tostring(role.realm_id)
     local is_revoked = role.is_revoked
     local role_id = tostring(role.id)
 
     redis.call("HSET", make_key("role", realm_id, role_id),
-        "isRevoked", to_redis_bool(is_revoked),
-        "version", version
+        "isRevoked", to_redis_bool(is_revoked)
     )
 
     redis.call("SADD", make_key("realm-roles", realm_id), role_id)
@@ -59,7 +55,6 @@ for _, role in ipairs(payload.roles or {}) do
 end
 
 for _, permission in ipairs(payload.permissions or {}) do
-    local version = tonumber(permission.version) or 1
     local realm_id = tostring(permission.realm_id)
     local permission_id = tostring(permission.id)
     local code = tostring(permission.code or "")
@@ -67,7 +62,6 @@ for _, permission in ipairs(payload.permissions or {}) do
 
     redis.call("HSET", make_key("permission", realm_id, permission_id),
         "isRevoked", to_redis_bool(is_revoked),
-        "version", version,
         "code", code
     )
 
@@ -81,13 +75,11 @@ end
 for _, closure in ipairs(payload.roleClosures or {}) do
     local descendant_id = tostring(closure.descendant_id)
     local ancestor_id = tostring(closure.ancestor_id)
-    local version = tonumber(closure.version) or 1
     local realm_id = tostring(closure.realm_id)
     local depth = tonumber(closure.depth) or 0
 
     redis.call("HSET", make_key("role-closure", realm_id, ancestor_id, descendant_id),
-        "depth", tostring(depth),
-        "version", version
+        "depth", tostring(depth)
     )
 
     redis.call("ZADD", make_key("role-ancestors", realm_id, descendant_id), depth, ancestor_id)
@@ -97,7 +89,6 @@ end
 for _, assignment in ipairs(payload.rolePermissionAssignments or {}) do
     local permission_id = tostring(assignment.permission_id)
     local permission_realm_id = tostring(assignment.permission_realm_id or assignment.permissionRealm or assignment.realm_id)
-    local version = tonumber(assignment.version) or 1
     local scope = tostring(assignment.scope or "")
     local realm_id = tostring(assignment.realm_id)
     local assignment_id = tostring(assignment.id)
@@ -107,7 +98,6 @@ for _, assignment in ipairs(payload.rolePermissionAssignments or {}) do
     redis.call("HSET", make_key("role-permission-assignment", realm_id, role_id, permission_id),
         "assignmentId", assignment_id,
         "isRevoked", to_redis_bool(is_revoked),
-        "version", version,
         "scope", scope,
         "permissionRealm", permission_realm_id
     )
@@ -126,7 +116,6 @@ for _, assignment in ipairs(payload.rolePermissionAssignments or {}) do
 end
 
 for _, assignment in ipairs(payload.accountRoleAssignments or {}) do
-    local version = tonumber(assignment.version) or 1
     local account_id = tostring(assignment.account)
     local realm_id = tostring(assignment.realm_id)
     local assignment_id = tostring(assignment.id)
@@ -135,8 +124,7 @@ for _, assignment in ipairs(payload.accountRoleAssignments or {}) do
 
     redis.call("HSET", make_key("account-role-assignment", realm_id, account_id, role_id),
         "assignmentId", assignment_id,
-        "isRevoked", to_redis_bool(is_revoked),
-        "version", version
+        "isRevoked", to_redis_bool(is_revoked)
     )
 
     redis.call("SADD", make_key("account-role-assignments", "by-account", realm_id, account_id), role_id)
@@ -155,7 +143,6 @@ end
 for _, override in ipairs(payload.permissionOverrides or {}) do
     local permission_id = tostring(override.permission_id)
     local permission_realm_id = tostring(override.permission_realm_id or override.permissionRealm or override.realm_id)
-    local version = tonumber(override.version) or 1
     local effect = tostring(override.effect or "")
     local account_id = tostring(override.account)
     local realm_id = tostring(override.realm_id)
@@ -165,13 +152,13 @@ for _, override in ipairs(payload.permissionOverrides or {}) do
     redis.call("HSET", make_key("permission-override", realm_id, account_id, permission_id),
         "overrideId", override_id,
         "isRevoked", to_redis_bool(is_revoked),
-        "version", version,
         "effect", effect,
         "permissionRealm", permission_realm_id
     )
 
     redis.call("SADD", make_key("permission-overrides", "by-account", realm_id, account_id), permission_id)
     redis.call("SADD", make_key("permission-overrides", "by-permission", realm_id, permission_id), account_id)
+    redis.call("SADD", make_key("permission-overrides", "by-realm", realm_id), account_id .. ":" .. permission_id)
     redis.call("SADD", make_key("permission-usages", "overrides", permission_realm_id, permission_id), realm_id .. ":" .. account_id)
 
     if active_entities.realms[realm_id]

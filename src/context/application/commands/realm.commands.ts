@@ -29,35 +29,31 @@ export class RealmCommands implements Commands.Realm.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.REALM_CREATE,
-                payloadMapper: ({ assignments, paths, realm, roles }: Services.Realm.Create.Result) => ({
-                    permissionRealm: SystemRealm.id,
-                    realm: {
-                        version: realm.version,
-                        realm: realm.id,
-                    },
-                    roles: roles.map(({ id, version }) => ({
-                        role: id,
-                        version,
+                payloadMapper: ({
+                    assignments,
+                    paths,
+                    realm,
+                    roles,
+                }: Services.Realm.Create.Result): Scripts.Realm.Create => ({
+                    rolePermissionAssignments: assignments.permission.map(({ id, role, permission, scope }) => ({
+                        permission: permission.id,
+                        assignment: id,
+                        role: role.id,
+                        scope,
+                    })),
+                    accountRoleAssignments: assignments.role.map(({ id, account, role }) => ({
+                        assignment: id,
+                        role: role.id,
+                        account,
                     })),
                     paths: paths.map(({ ancestor, descendant, depth }) => ({
                         descendant: descendant.id,
                         ancestor: ancestor.id,
-                        version: 1,
                         depth,
                     })),
-                    rolePermissionAssignments: assignments.permission.map(({ id, role, permission, scope, version }) => ({
-                        permission: permission.id,
-                        assignment: id,
-                        role: role.id,
-                        version,
-                        scope,
-                    })),
-                    accountRoleAssignments: assignments.role.map(({ id, account, role, version }) => ({
-                        assignment: id,
-                        role: role.id,
-                        account,
-                        version,
-                    })),
+                    roles: roles.map(({ id }) => id),
+                    permissionRealm: SystemRealm.id,
+                    realm: realm.id,
                 }),
             },
             audit: {
@@ -109,7 +105,7 @@ export class RealmCommands implements Commands.Realm.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.REALM_PURGE,
-                payloadMapper: (entities: Entities.Realm[]) => ({
+                payloadMapper: (entities: Entities.Realm[]): Scripts.Realm.Purge => ({
                     realms: entities.map(({ id }) => id),
                 }),
             },
@@ -148,12 +144,9 @@ export class RealmCommands implements Commands.Realm.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.REALM_UPDATE,
-                payloadMapper: (entities: Entities.Realm[]) => ({
+                payloadMapper: (entities: Entities.Realm[]): Scripts.Realm.Update => ({
+                    realms: entities.map(({ id }) => id),
                     isRevoked: true,
-                    realms: entities.map(({ id, version }) => ({
-                        realm: id,
-                        version,
-                    })),
                 }),
             },
             audit: {
@@ -191,12 +184,9 @@ export class RealmCommands implements Commands.Realm.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.REALM_UPDATE,
-                payloadMapper: (entities: Entities.Realm[]) => ({
+                payloadMapper: (entities: Entities.Realm[]): Scripts.Realm.Update => ({
+                    realms: entities.map(({ id }) => id),
                     isRevoked: false,
-                    realms: entities.map(({ id, version }) => ({
-                        realm: id,
-                        version,
-                    })),
                 }),
             },
             audit: {

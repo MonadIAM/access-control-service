@@ -30,8 +30,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.PERMISSION_CREATE,
-                payloadMapper: (entity: Entities.Permission) => ({
-                    version: entity.version,
+                payloadMapper: (entity: Entities.Permission): Scripts.Permission.Create => ({
                     permission: entity.id,
                     code: entity.code,
                     realm,
@@ -91,7 +90,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.PERMISSION_PURGE,
-                payloadMapper: (entities: Entities.Permission[]) => ({
+                payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Purge => ({
                     permissions: entities.map(({ id }) => id),
                     realm,
                 }),
@@ -131,11 +130,8 @@ export class PermissionCommands implements Commands.Permission.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.PERMISSION_UPDATE,
-                payloadMapper: (entities: Entities.Permission[]) => ({
-                    permissions: entities.map(({ id, version }) => ({
-                        permission: id,
-                        version,
-                    })),
+                payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Update => ({
+                    permissions: entities.map(({ id }) => id),
                     isRevoked: true,
                     realm,
                 }),
@@ -176,11 +172,8 @@ export class PermissionCommands implements Commands.Permission.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.PERMISSION_UPDATE,
-                payloadMapper: (entities: Entities.Permission[]) => ({
-                    permissions: entities.map(({ id, version }) => ({
-                        permission: id,
-                        version,
-                    })),
+                payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Update => ({
+                    permissions: entities.map(({ id }) => id),
                     isRevoked: false,
                     realm,
                 }),
