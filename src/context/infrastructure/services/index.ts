@@ -1,11 +1,11 @@
 import { Provider } from "@nestjs/common";
 
-import { PermissionCacheService } from "./permission-read.service";
+import { ProjectionCacheService } from "./projection-cache.service";
 import { BlacklistCacheService } from "./blacklist-cache.service";
 import { ScriptExecutorService } from "./script-executor.service";
 import { ScriptLoaderService } from "./script-loader.service";
 import {
-    PERMISSION_CACHE_SERVICE,
+    PROJECTION_CACHE_SERVICE,
     BLACKLIST_CACHE_SERVICE,
     SCRIPT_EXECUTOR_SERVICE,
     SCRIPT_LOADER_SERVICE,
@@ -13,8 +13,8 @@ import {
 
 export const INFRASTRUCTURE_SERVICES: Provider[] = [
     {
-        provide: PERMISSION_CACHE_SERVICE,
-        useClass: PermissionCacheService,
+        provide: PROJECTION_CACHE_SERVICE,
+        useClass: ProjectionCacheService,
     },
     {
         provide: BLACKLIST_CACHE_SERVICE,

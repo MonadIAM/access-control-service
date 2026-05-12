@@ -31,12 +31,29 @@ declare global {
             }
         }
 
-        namespace PermissionCache {
+        namespace ProjectionCache {
             interface Contract {
-                check: (props: Check) => Promise<boolean>;
+                collectPermissions: (props: CollectPermissions) => Promise<Record<string, string>>;
+                checkPermissions: (props: CheckPermissions) => Promise<boolean>;
+                collectRealms: (props: CollectRealms) => Promise<string[]>;
+                checkRealm: (props: CheckRealm) => Promise<boolean>;
             }
 
-            type Check = {
+            type CollectPermissions = {
+                account: string;
+                realm: string;
+            };
+
+            type CheckRealm = {
+                account: string;
+                realm: string;
+            };
+
+            type CollectRealms = {
+                account: string;
+            };
+
+            type CheckPermissions = {
                 permissions: string[];
                 account: string;
                 realm: string;

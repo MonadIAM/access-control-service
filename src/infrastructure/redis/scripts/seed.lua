@@ -69,8 +69,8 @@ end
 for _, permission in ipairs(payload.permissions or {}) do
     local realm_id = tostring(permission.realm_id)
     local permission_id = tostring(permission.id)
-    local code = tostring(permission.code or "")
     local is_revoked = permission.is_revoked
+    local code = tostring(permission.code)
 
     redis.call("HSET", make_key("permission", realm_id, permission_id),
         "isRevoked", to_redis_bool(is_revoked),
@@ -89,7 +89,7 @@ for _, closure in ipairs(payload.roleClosures or {}) do
     local descendant_id = tostring(closure.descendant_id)
     local ancestor_id = tostring(closure.ancestor_id)
     local realm_id = tostring(closure.realm_id)
-    local depth = tonumber(closure.depth) or 0
+    local depth = tonumber(closure.depth)
 
     redis.call("HSET", make_key("role-closure", realm_id, ancestor_id, descendant_id),
         "depth", tostring(depth)
@@ -100,13 +100,13 @@ for _, closure in ipairs(payload.roleClosures or {}) do
 end
 
 for _, assignment in ipairs(payload.rolePermissionAssignments or {}) do
+    local permission_realm_id = tostring(assignment.permission_realm_id)
     local permission_id = tostring(assignment.permission_id)
-    local permission_realm_id = tostring(assignment.permission_realm_id or assignment.permissionRealm or assignment.realm_id)
-    local scope = tostring(assignment.scope or "")
     local realm_id = tostring(assignment.realm_id)
     local assignment_id = tostring(assignment.id)
     local role_id = tostring(assignment.role_id)
     local is_revoked = assignment.is_revoked
+    local scope = tostring(assignment.scope)
 
     redis.call("HSET", make_key("role-permission-assignment", realm_id, role_id, permission_id),
         "assignmentId", assignment_id,
@@ -154,11 +154,11 @@ end
 
 for _, override in ipairs(payload.permissionOverrides or {}) do
     local permission_id = tostring(override.permission_id)
-    local permission_realm_id = tostring(override.permission_realm_id or override.permissionRealm or override.realm_id)
-    local effect = tostring(override.effect or "")
+    local permission_realm_id = tostring(override.permission_realm_id)
     local account_id = tostring(override.account)
     local realm_id = tostring(override.realm_id)
     local override_id = tostring(override.id)
+    local effect = tostring(override.effect)
     local is_revoked = override.is_revoked
 
     redis.call("HSET", make_key("permission-override", realm_id, account_id, permission_id),

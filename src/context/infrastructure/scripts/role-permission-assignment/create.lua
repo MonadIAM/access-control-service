@@ -36,10 +36,10 @@ local realm_active = is_active_entity(make_key("realm", realm_id))
 local role_active = is_active_entity(make_key("role", realm_id, role_id))
 
 for _, item in ipairs(payload.assignments or {}) do
-    local assignment_id = tostring(item.assignment)
+    local permission_realm_id = tostring(item.permissionRealm)
     local permission_id = tostring(item.permission)
-    local permission_realm_id = tostring(item.permissionRealm or item.permission_realm or realm_id)
-    local scope = tostring(item.scope or "")
+    local assignment_id = tostring(item.assignment)
+    local scope = tostring(item.scope)
 
     local assignment_key = make_key("role-permission-assignment", realm_id, role_id, permission_id)
 

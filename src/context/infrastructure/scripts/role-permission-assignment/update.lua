@@ -47,9 +47,8 @@ for _, item in ipairs(payload.items or {}) do
     local role_id = tostring(item.role)
 
     local assignment_key = make_key("role-permission-assignment", realm_id, role_id, permission_id)
-    local stored_permission_realm = redis.call("HGET", assignment_key, "permissionRealm")
-    local permission_realm_id = tostring(item.permissionRealm or item.permission_realm or stored_permission_realm or realm_id)
     local scope = tostring(item.scope or redis.call("HGET", assignment_key, "scope") or "")
+    local permission_realm_id = tostring(item.permissionRealm)
 
     redis.call("HSET", assignment_key,
         "assignmentId", assignment_id,

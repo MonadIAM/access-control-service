@@ -22,8 +22,8 @@ local function activate_role_permission(realm_id, role_id, permission_id, scope)
     redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
 end
 
+local permission_realm_id = tostring(payload.permissionRealm)
 local realm_id = tostring(payload.realm)
-local permission_realm_id = tostring(payload.permissionRealm or realm_id)
 
 redis.call("HSET", make_key("realm", realm_id), "isRevoked", "0")
 
@@ -35,9 +35,9 @@ for _, role in ipairs(payload.roles or {}) do
 end
 
 for _, item in ipairs(payload.paths or {}) do
-    local ancestor_id = tostring(item.ancestor)
     local descendant_id = tostring(item.descendant)
-    local depth = tonumber(item.depth) or 0
+    local ancestor_id = tostring(item.ancestor)
+    local depth = tonumber(item.depth)
 
     redis.call("HSET", make_key("role-closure", realm_id, ancestor_id, descendant_id),
         "depth", tostring(depth)
@@ -50,8 +50,8 @@ end
 for _, item in ipairs(payload.rolePermissionAssignments or {}) do
     local assignment_id = tostring(item.assignment)
     local permission_id = tostring(item.permission)
-    local scope = tostring(item.scope or "")
     local role_id = tostring(item.role)
+    local scope = tostring(item.scope)
 
     redis.call("HSET", make_key("role-permission-assignment", realm_id, role_id, permission_id),
         "assignmentId", assignment_id,

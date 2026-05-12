@@ -21,9 +21,9 @@ for _, step in ipairs(payload.steps or {}) do
     end
 
     for _, path in ipairs(step.upsertedPaths or {}) do
-        local ancestor_id = tostring(path.ancestor)
         local descendant_id = tostring(path.descendant)
-        local depth = tonumber(path.depth) or 0
+        local ancestor_id = tostring(path.ancestor)
+        local depth = tonumber(path.depth)
 
         redis.call("HSET", make_key("role-closure", realm_id, ancestor_id, descendant_id),
             "depth", tostring(depth)

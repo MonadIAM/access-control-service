@@ -7,8 +7,8 @@ local function make_key(...)
 end
 
 local permission_id = tostring(payload.permission)
-local code = tostring(payload.code or "")
 local realm_id = tostring(payload.realm)
+local code = tostring(payload.code)
 
 redis.call("HSET", make_key("permission", realm_id, permission_id),
     "isRevoked", "0",

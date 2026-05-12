@@ -28,8 +28,8 @@ redis.call("ZADD", role_descendants_key, 0, role_id)
 local parent_ancestors = redis.call("ZRANGE", parent_ancestors_key, 0, -1, "WITHSCORES")
 
 for index = 1, #parent_ancestors, 2 do
-    local ancestor_id = tostring(parent_ancestors[index])
     local parent_depth = tonumber(parent_ancestors[index + 1]) or 0
+    local ancestor_id = tostring(parent_ancestors[index])
     local depth = parent_depth + 1
 
     redis.call("HSET", make_key("role-closure", realm_id, ancestor_id, role_id),

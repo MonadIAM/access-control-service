@@ -59,13 +59,12 @@ end
 for _, item in ipairs(payload.items or {}) do
     local permission_id = tostring(item.permission)
     local override_id = tostring(item.override)
-    local effect = tostring(item.effect or "")
     local account_id = tostring(item.account)
     local realm_id = tostring(item.realm)
+    local effect = tostring(item.effect)
 
     local override_key = make_key("permission-override", realm_id, account_id, permission_id)
-    local stored_permission_realm = redis.call("HGET", override_key, "permissionRealm")
-    local permission_realm_id = tostring(item.permissionRealm or item.permission_realm or stored_permission_realm or realm_id)
+    local permission_realm_id = tostring(item.permissionRealm)
 
     redis.call("HSET", override_key,
         "overrideId", override_id,

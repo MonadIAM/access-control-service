@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { PERMISSION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
+import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
 import { REQUIRE_PERMISSION_KEY, IS_PUBLIC_KEY } from "~common/decorators";
 import { GuardException } from "~common/exceptions";
@@ -12,8 +12,8 @@ export class PermissionGuard implements CanActivate {
     private readonly dictionaryPath = "guard.permission";
 
     public constructor(
-        @Inject(PERMISSION_CACHE_SERVICE)
-        private readonly permissionCacheService: InfrastructureServices.PermissionCache.Contract,
+        @Inject(PROJECTION_CACHE_SERVICE)
+        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
         private readonly reflector: Reflector,
     ) {}
 
@@ -44,7 +44,7 @@ export class PermissionGuard implements CanActivate {
             throw GuardException.forbidden(`${this.dictionaryPath}.ACCOUNT_REQUIRED`);
         }
 
-        const allowed = await this.permissionCacheService.check({
+        const allowed = await this.projectionCacheService.checkPermissions({
             permissions,
             account,
             realm,

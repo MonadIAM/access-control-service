@@ -29,8 +29,7 @@ for _, item in ipairs(payload.items or {}) do
     local realm_id = tostring(item.realm)
 
     local override_key = make_key("permission-override", realm_id, account_id, permission_id)
-    local stored_permission_realm = redis.call("HGET", override_key, "permissionRealm")
-    local permission_realm_id = tostring(item.permissionRealm or item.permission_realm or stored_permission_realm or realm_id)
+    local permission_realm_id = tostring(item.permissionRealm)
 
     redis.call("UNLINK", override_key)
 

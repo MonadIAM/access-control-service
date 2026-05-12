@@ -19,7 +19,7 @@ for _, item in ipairs(payload.items or {}) do
 
     local assignment_key = make_key("role-permission-assignment", realm_id, role_id, permission_id)
     local stored_permission_realm = redis.call("HGET", assignment_key, "permissionRealm")
-    local permission_realm_id = tostring(item.permissionRealm or item.permission_realm or stored_permission_realm or realm_id)
+    local permission_realm_id = tostring(item.permissionRealm)
 
     redis.call("UNLINK", assignment_key)
 

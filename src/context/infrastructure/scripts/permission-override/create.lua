@@ -26,12 +26,12 @@ local function activate_override(realm_id, account_id, permission_id, effect)
     redis.call("SADD", make_key("account-realms", account_id), realm_id)
 end
 
+local permission_realm_id = tostring(payload.permissionRealm)
 local permission_id = tostring(payload.permission)
-local permission_realm_id = tostring(payload.permissionRealm or payload.permission_realm or payload.realm)
 local override_id = tostring(payload.override)
-local effect = tostring(payload.effect or "")
 local account_id = tostring(payload.account)
 local realm_id = tostring(payload.realm)
+local effect = tostring(payload.effect)
 
 redis.call("HSET", make_key("permission-override", realm_id, account_id, permission_id),
     "overrideId", override_id,
