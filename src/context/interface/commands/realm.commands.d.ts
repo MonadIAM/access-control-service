@@ -1,12 +1,18 @@
 declare namespace Commands {
     namespace Realm {
-        interface Contract {
+        interface ControllerContract {
             restore: (props: Restore.Props) => Promise<Restore.Result>;
             create: (props: Create.Props) => Promise<Create.Result>;
             update: (props: Update.Props) => Promise<Update.Result>;
             revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
             purge: (props: Purge.Props) => Promise<Purge.Result>;
         }
+
+        interface PrivateContract {
+            outboxPayloadMapper: (props: OutboxPayloadMapper.Props) => OutboxPayloadMapper.Result;
+        }
+
+        interface Contract extends ControllerContract, PrivateContract {}
 
         namespace Create {
             type Props = {
@@ -73,6 +79,11 @@ declare namespace Commands {
             };
 
             type Result = MessageResult;
+        }
+
+        namespace OutboxPayloadMapper {
+            type Result = Events.AccessCache.Invalidation;
+            type Props = Entities.Realm[];
         }
     }
 }

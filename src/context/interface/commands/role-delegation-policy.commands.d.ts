@@ -1,12 +1,14 @@
 declare namespace Commands {
     namespace RoleDelegationPolicy {
-        interface Contract {
+        interface ControllerContract {
             restore: (props: Restore.Props) => Promise<Restore.Result>;
             create: (props: Create.Props) => Promise<Create.Result>;
             update: (props: Update.Props) => Promise<Update.Result>;
             revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
             purge: (props: Purge.Props) => Promise<Purge.Result>;
         }
+
+        interface Contract extends ControllerContract {}
 
         namespace Create {
             type Props = {

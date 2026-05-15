@@ -1,11 +1,17 @@
 declare namespace Commands {
     namespace RolePermissionAssignment {
-        interface Contract {
+        interface ControllerContract {
             restore: (props: Restore.Props) => Promise<Restore.Result>;
             create: (props: Create.Props) => Promise<Create.Result>;
             revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
             purge: (props: Purge.Props) => Promise<Purge.Result>;
         }
+
+        interface PrivateContract {
+            outboxPayloadMapper: (props: OutboxPayloadMapper.Props) => OutboxPayloadMapper.Result;
+        }
+
+        interface Contract extends ControllerContract, PrivateContract {}
 
         namespace Create {
             type Props = {
@@ -61,6 +67,11 @@ declare namespace Commands {
             };
 
             type Result = MessageResult;
+        }
+
+        namespace OutboxPayloadMapper {
+            type Props = Entities.RolePermissionAssignment[];
+            type Result = Events.AccessCache.Invalidation;
         }
     }
 }

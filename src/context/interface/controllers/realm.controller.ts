@@ -56,7 +56,7 @@ const {
 export class RealmController {
     public constructor(
         @Inject(REALM_COMMANDS)
-        private readonly realmCommands: Commands.Realm.Contract,
+        private readonly realmCommands: Commands.Realm.ControllerContract,
         @Inject(REALM_QUERIES)
         private readonly realmQueries: Queries.Realm.Contract,
     ) {}

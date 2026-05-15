@@ -3,7 +3,7 @@ import { MoveMode, RoleActorType, RoleProtoType } from "~context/enums";
 declare global {
     namespace Commands {
         namespace Role {
-            interface Contract {
+            interface ControllerContract {
                 purgeSubtree: (props: PurgeSubtree.Props) => Promise<PurgeSubtree.Result>;
                 move: (props: Move.Props) => Promise<Move.Result>;
                 restore: (props: Restore.Props) => Promise<Restore.Result>;
@@ -12,6 +12,12 @@ declare global {
                 revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
                 purge: (props: Purge.Props) => Promise<Purge.Result>;
             }
+
+            interface PrivateContract {
+                outboxPayloadMapper: (props: OutboxPayloadMapper.Props) => OutboxPayloadMapper.Result;
+            }
+
+            interface Contract extends ControllerContract, PrivateContract {}
 
             namespace Create {
                 type Props = {
@@ -117,6 +123,11 @@ declare global {
                 };
 
                 type Result = MessageResult;
+            }
+
+            namespace OutboxPayloadMapper {
+                type Props = Entities.Role[] | { realm: string }[];
+                type Result = Events.AccessCache.Invalidation;
             }
         }
     }

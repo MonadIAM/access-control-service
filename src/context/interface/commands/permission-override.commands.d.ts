@@ -14,7 +14,11 @@ declare global {
                 clean: (props: Clean.Props) => Promise<Clean.Result>;
             }
 
-            interface Contract extends ControllerContract, ConsumerContract {}
+            interface PrivateContract {
+                outboxPayloadMapper: (props: OutboxPayloadMapper.Props) => OutboxPayloadMapper.Result;
+            }
+
+            interface Contract extends ControllerContract, ConsumerContract, PrivateContract {}
 
             namespace Create {
                 type Props = {
@@ -79,6 +83,11 @@ declare global {
                 };
 
                 type Result = void;
+            }
+
+            namespace OutboxPayloadMapper {
+                type Result = Events.AccessCache.Invalidation;
+                type Props = Entities.PermissionOverride[];
             }
         }
     }

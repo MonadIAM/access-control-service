@@ -1,11 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { EventType, EntityType, AggregateType, KafkaTopic, InvalidationScope } from "~context/enums";
 import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { REALM_SERVICE } from "~context/domain/services";
-import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -109,6 +109,13 @@ export class RealmCommands implements Commands.Realm.Contract {
                     realms: entities.map(({ id }) => id),
                 }),
             },
+            outbox: {
+                eventType: EventType.DELETE,
+                aggregateType: AggregateType.REALM,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.Realm[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             audit: {
                 actionType: EventType.DELETE,
                 entityType: EntityType.REALM,
@@ -148,6 +155,13 @@ export class RealmCommands implements Commands.Realm.Contract {
                     realms: entities.map(({ id }) => id),
                     isRevoked: true,
                 }),
+            },
+            outbox: {
+                eventType: EventType.REVOKE,
+                aggregateType: AggregateType.REALM,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.Realm[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 actionType: EventType.REVOKE,
@@ -189,6 +203,13 @@ export class RealmCommands implements Commands.Realm.Contract {
                     isRevoked: false,
                 }),
             },
+            outbox: {
+                eventType: EventType.RESTORE,
+                aggregateType: AggregateType.REALM,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.Realm[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             audit: {
                 actionType: EventType.RESTORE,
                 entityType: EntityType.REALM,
@@ -215,5 +236,16 @@ export class RealmCommands implements Commands.Realm.Contract {
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
+    }
+
+    public outboxPayloadMapper(
+        entities: Commands.Realm.OutboxPayloadMapper.Props,
+    ): Commands.Realm.OutboxPayloadMapper.Result {
+        return {
+            items: entities.map(({ id }) => ({
+                scope: InvalidationScope.REALM,
+                realm: id,
+            })),
+        };
     }
 }

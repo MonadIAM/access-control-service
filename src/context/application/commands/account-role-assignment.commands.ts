@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { EventType, EntityType, KafkaTopic, AggregateType, InvalidationScope } from "~context/enums";
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
@@ -49,6 +49,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     account: input.account,
                     realm,
                 }),
+            },
+            outbox: {
+                eventType: EventType.CREATE,
+                aggregateType: AggregateType.ROLE_ASSIGNMENT,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
@@ -101,6 +108,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     })),
                 }),
             },
+            outbox: {
+                eventType: EventType.DELETE,
+                aggregateType: AggregateType.ROLE_ASSIGNMENT,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: EventType.DELETE,
@@ -148,6 +162,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                         account,
                     })),
                 }),
+            },
+            outbox: {
+                eventType: EventType.REVOKE,
+                aggregateType: AggregateType.ROLE_ASSIGNMENT,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
@@ -197,6 +218,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     })),
                 }),
             },
+            outbox: {
+                eventType: EventType.RESTORE,
+                aggregateType: AggregateType.ROLE_ASSIGNMENT,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: EventType.RESTORE,
@@ -233,7 +261,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
-                payloadMapper: (entity: Entities.AccountRoleAssignment): Scripts.AccountRoleAssignment.Create => ({
+                payloadMapper: ([entity]: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Create => ({
                     realm: SYSTEM_REALM,
                     account: props.account,
                     assignments: [
@@ -243,6 +271,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                         },
                     ],
                 }),
+            },
+            outbox: {
+                eventType: EventType.CREATE,
+                aggregateType: AggregateType.ROLE_ASSIGNMENT,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             execute: async (transaction) => {
                 const [realmEntity, roleEntity] = await Promise.all([
@@ -256,14 +291,16 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     }),
                 ]);
 
-                return this.accountRoleAssignmentService.assign({
-                    transaction,
-                    input: {
-                        account: props.account,
-                        realm: realmEntity,
-                        role: roleEntity,
-                    },
-                });
+                return [
+                    this.accountRoleAssignmentService.assign({
+                        transaction,
+                        input: {
+                            account: props.account,
+                            realm: realmEntity,
+                            role: roleEntity,
+                        },
+                    }),
+                ];
             },
         });
     }
@@ -283,6 +320,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     })),
                 }),
             },
+            outbox: {
+                eventType: EventType.DELETE,
+                aggregateType: AggregateType.ROLE_ASSIGNMENT,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             execute: async (transaction) => {
                 const entities = await this.accountRoleAssignmentRepository.find({
                     where: { account: props.account },
@@ -293,5 +337,17 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 return entities;
             },
         });
+    }
+
+    public outboxPayloadMapper(
+        entities: Commands.AccountRoleAssignment.OutboxPayloadMapper.Props,
+    ): Commands.AccountRoleAssignment.OutboxPayloadMapper.Result {
+        return {
+            items: entities.map(({ account, realm }) => ({
+                scope: InvalidationScope.ACCOUNT_REALM,
+                realm: realm.id,
+                account,
+            })),
+        };
     }
 }

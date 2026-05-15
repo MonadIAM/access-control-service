@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 import {
     ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
@@ -53,6 +53,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                     role: input.role,
                     realm,
                 }),
+            },
+            outbox: {
+                eventType: EventType.CREATE,
+                aggregateType: AggregateType.PERMISSION_ASSIGNMENT,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
@@ -112,6 +119,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                     })),
                 }),
             },
+            outbox: {
+                eventType: EventType.DELETE,
+                aggregateType: AggregateType.PERMISSION_ASSIGNMENT,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
                 actionType: EventType.DELETE,
@@ -162,6 +176,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                     })),
                     isRevoked: true,
                 }),
+            },
+            outbox: {
+                eventType: EventType.REVOKE,
+                aggregateType: AggregateType.PERMISSION_ASSIGNMENT,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
@@ -214,6 +235,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                     isRevoked: false,
                 }),
             },
+            outbox: {
+                eventType: EventType.RESTORE,
+                aggregateType: AggregateType.PERMISSION_ASSIGNMENT,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
                 actionType: EventType.RESTORE,
@@ -241,5 +269,16 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
+    }
+
+    public outboxPayloadMapper(
+        entities: Commands.RolePermissionAssignment.OutboxPayloadMapper.Props,
+    ): Commands.RolePermissionAssignment.OutboxPayloadMapper.Result {
+        return {
+            items: entities.map(({ realm }) => ({
+                scope: InvalidationScope.REALM,
+                realm: realm.id,
+            })),
+        };
     }
 }

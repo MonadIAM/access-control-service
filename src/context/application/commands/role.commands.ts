@@ -1,10 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
 import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { ROLE_SERVICE } from "~context/domain/services";
-import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -96,10 +96,17 @@ export class RoleCommands implements Commands.Role.Contract {
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_PURGE,
-                payloadMapper: (entity: Entities.Role): Scripts.Role.Purge => ({
+                payloadMapper: ([entity]: Entities.Role[]): Scripts.Role.Purge => ({
                     role: entity.id,
                     realm,
                 }),
+            },
+            outbox: {
+                eventType: EventType.DELETE,
+                aggregateType: AggregateType.ROLE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.Role[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 actionType: EventType.DELETE,
@@ -119,7 +126,7 @@ export class RoleCommands implements Commands.Role.Contract {
                     realm,
                 });
 
-                return entity;
+                return [entity];
             },
         });
 
@@ -137,6 +144,13 @@ export class RoleCommands implements Commands.Role.Contract {
                     role: id,
                     realm,
                 }),
+            },
+            outbox: {
+                eventType: EventType.DELETE,
+                aggregateType: AggregateType.ROLE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.Role[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 actionType: EventType.DELETE,
@@ -173,6 +187,13 @@ export class RoleCommands implements Commands.Role.Contract {
                     isRevoked: true,
                     realm,
                 }),
+            },
+            outbox: {
+                eventType: EventType.REVOKE,
+                aggregateType: AggregateType.ROLE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.Role[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 actionType: EventType.REVOKE,
@@ -215,6 +236,13 @@ export class RoleCommands implements Commands.Role.Contract {
                     realm,
                 }),
             },
+            outbox: {
+                eventType: EventType.RESTORE,
+                aggregateType: AggregateType.ROLE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.Role[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             audit: {
                 actionType: EventType.RESTORE,
                 entityType: EntityType.ROLE,
@@ -252,6 +280,12 @@ export class RoleCommands implements Commands.Role.Contract {
                 operationType: ProjectionScript.ROLE_CLOSURE_UPDATE,
                 payloadMapper: (steps: Services.Role.Move.Result): Scripts.Role.Move => ({ steps, realm }),
             },
+            outbox: {
+                eventType: EventType.REPARENT,
+                aggregateType: AggregateType.ROLE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (): Events.AccessCache.Invalidation => this.outboxPayloadMapper([{ realm }]),
+            },
             audit: {
                 actionType: EventType.REPARENT,
                 entityType: EntityType.ROLE,
@@ -274,5 +308,16 @@ export class RoleCommands implements Commands.Role.Contract {
         });
 
         return { message: `${this.dictionaryPath}.REPARENTED` };
+    }
+
+    public outboxPayloadMapper(
+        entities: Commands.Role.OutboxPayloadMapper.Props,
+    ): Commands.Role.OutboxPayloadMapper.Result {
+        return {
+            items: entities.map(({ realm }) => ({
+                realm: typeof realm === "string" ? realm : realm.id,
+                scope: InvalidationScope.REALM,
+            })),
+        };
     }
 }

@@ -12,7 +12,11 @@ declare namespace Commands {
             clean: (props: Clean.Props) => Promise<Clean.Result>;
         }
 
-        interface Contract extends ControllerContract, ConsumerContract {}
+        interface PrivateContract {
+            outboxPayloadMapper: (props: OutboxPayloadMapper.Props) => OutboxPayloadMapper.Result;
+        }
+
+        interface Contract extends ControllerContract, ConsumerContract, PrivateContract {}
 
         namespace Create {
             type Props = {
@@ -84,6 +88,11 @@ declare namespace Commands {
             };
 
             type Result = void;
+        }
+
+        namespace OutboxPayloadMapper {
+            type Props = Entities.AccountRoleAssignment[];
+            type Result = Events.AccessCache.Invalidation;
         }
     }
 }

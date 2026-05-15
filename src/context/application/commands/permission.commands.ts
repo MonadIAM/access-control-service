@@ -1,10 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
 import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { PERMISSION_SERVICE } from "~context/domain/services";
-import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -95,6 +95,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
                     realm,
                 }),
             },
+            outbox: {
+                eventType: EventType.DELETE,
+                aggregateType: AggregateType.PERMISSION,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.Permission[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             audit: {
                 entityType: EntityType.PERMISSION,
                 actionType: EventType.DELETE,
@@ -135,6 +142,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
                     isRevoked: true,
                     realm,
                 }),
+            },
+            outbox: {
+                eventType: EventType.REVOKE,
+                aggregateType: AggregateType.PERMISSION,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.Permission[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 entityType: EntityType.PERMISSION,
@@ -178,6 +192,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
                     realm,
                 }),
             },
+            outbox: {
+                eventType: EventType.RESTORE,
+                aggregateType: AggregateType.PERMISSION,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.Permission[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             audit: {
                 entityType: EntityType.PERMISSION,
                 actionType: EventType.RESTORE,
@@ -205,5 +226,16 @@ export class PermissionCommands implements Commands.Permission.Contract {
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
+    }
+
+    public outboxPayloadMapper(
+        entities: Commands.Permission.OutboxPayloadMapper.Props,
+    ): Commands.Permission.OutboxPayloadMapper.Result {
+        return {
+            items: entities.map(({ realm }) => ({
+                scope: InvalidationScope.REALM,
+                realm: realm.id,
+            })),
+        };
     }
 }

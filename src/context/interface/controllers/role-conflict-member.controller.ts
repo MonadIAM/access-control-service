@@ -39,7 +39,7 @@ const {
 export class RoleConflictMemberController {
     public constructor(
         @Inject(ROLE_CONFLICT_MEMBER_COMMANDS)
-        private readonly roleConflictMemberCommands: Commands.RoleConflictMember.Contract,
+        private readonly roleConflictMemberCommands: Commands.RoleConflictMember.ControllerContract,
         @Inject(ROLE_CONFLICT_MEMBER_QUERIES)
         private readonly roleConflictMemberQueries: Queries.RoleConflictMember.Contract,
     ) {}

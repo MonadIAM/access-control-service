@@ -1,9 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
 import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { EventType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 import {
     PERMISSION_OVERRIDE_REPOSITORY,
@@ -38,12 +38,9 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.PERMISSION_OVERRIDE_CREATE,
-                payloadMapper: ({
-                    permission,
-                    account,
-                    effect,
-                    id,
-                }: Entities.PermissionOverride): Scripts.PermissionOverride.Create => ({
+                payloadMapper: ([
+                    { permission, account, effect, id },
+                ]: Entities.PermissionOverride[]): Scripts.PermissionOverride.Create => ({
                     permissionRealm: permission.realm.id,
                     permission: permission.id,
                     override: id,
@@ -51,6 +48,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                     effect,
                     realm,
                 }),
+            },
+            outbox: {
+                eventType: EventType.CREATE,
+                aggregateType: AggregateType.PERMISSION_OVERRIDE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.PermissionOverride[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
@@ -70,15 +74,17 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                     }),
                 ]);
 
-                return this.permissionOverrideService.create({
-                    input: {
-                        permission: permissionEntity,
-                        account: input.account,
-                        effect: input.effect,
-                    },
-                    realm: realmEntity,
-                    transaction,
-                });
+                return this.permissionOverrideService
+                    .create({
+                        input: {
+                            permission: permissionEntity,
+                            account: input.account,
+                            effect: input.effect,
+                        },
+                        realm: realmEntity,
+                        transaction,
+                    })
+                    .then((override) => [override]);
             },
         });
 
@@ -100,6 +106,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                         account,
                     })),
                 }),
+            },
+            outbox: {
+                eventType: EventType.DELETE,
+                aggregateType: AggregateType.PERMISSION_OVERRIDE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.PermissionOverride[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
@@ -150,6 +163,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                     })),
                     isRevoked: true,
                 }),
+            },
+            outbox: {
+                eventType: EventType.REVOKE,
+                aggregateType: AggregateType.PERMISSION_OVERRIDE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.PermissionOverride[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
             },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
@@ -202,6 +222,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                     isRevoked: false,
                 }),
             },
+            outbox: {
+                eventType: EventType.RESTORE,
+                aggregateType: AggregateType.PERMISSION_OVERRIDE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.PermissionOverride[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
                 actionType: EventType.RESTORE,
@@ -246,6 +273,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                     })),
                 }),
             },
+            outbox: {
+                eventType: EventType.DELETE,
+                aggregateType: AggregateType.PERMISSION_OVERRIDE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
+                payloadMapper: (entities: Entities.PermissionOverride[]): Events.AccessCache.Invalidation =>
+                    this.outboxPayloadMapper(entities),
+            },
             execute: async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
                     options: { populate: ["permission.realm"] },
@@ -258,5 +292,17 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 return entities;
             },
         });
+    }
+
+    public outboxPayloadMapper(
+        entities: Commands.PermissionOverride.OutboxPayloadMapper.Props,
+    ): Commands.PermissionOverride.OutboxPayloadMapper.Result {
+        return {
+            items: entities.map(({ account, realm }) => ({
+                scope: InvalidationScope.ACCOUNT_REALM,
+                realm: realm.id,
+                account,
+            })),
+        };
     }
 }

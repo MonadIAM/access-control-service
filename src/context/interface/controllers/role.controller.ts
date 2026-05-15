@@ -86,7 +86,7 @@ const {
 export class RoleController {
     public constructor(
         @Inject(ROLE_COMMANDS)
-        private readonly roleCommands: Commands.Role.Contract,
+        private readonly roleCommands: Commands.Role.ControllerContract,
         @Inject(ROLE_QUERIES)
         private readonly roleQueries: Queries.Role.Contract,
     ) {}

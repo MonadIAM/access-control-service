@@ -64,7 +64,7 @@ const {
 export class RoleDelegationPolicyController {
     public constructor(
         @Inject(ROLE_DELEGATION_POLICY_COMMANDS)
-        private readonly roleDelegationPolicyCommands: Commands.RoleDelegationPolicy.Contract,
+        private readonly roleDelegationPolicyCommands: Commands.RoleDelegationPolicy.ControllerContract,
         @Inject(ROLE_DELEGATION_POLICY_QUERIES)
         private readonly roleDelegationPolicyQueries: Queries.RoleDelegationPolicy.Contract,
     ) {}

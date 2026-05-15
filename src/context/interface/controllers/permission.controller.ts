@@ -71,7 +71,7 @@ const {
 export class PermissionController {
     public constructor(
         @Inject(PERMISSION_COMMANDS)
-        private readonly permissionCommands: Commands.Permission.Contract,
+        private readonly permissionCommands: Commands.Permission.ControllerContract,
         @Inject(PERMISSION_QUERIES)
         private readonly permissionQueries: Queries.Permission.Contract,
     ) {}
