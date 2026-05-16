@@ -16,14 +16,14 @@ export class RoleCommands implements Commands.Role.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.InternalContract,
+        private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.InternalContract,
+        private readonly roleRepository: Repositories.Role.Contract,
         @Inject(ROLE_SERVICE)
         private readonly roleService: Services.Role.Contract,
     ) {}
 
-    public async create(props: Commands.Role.Create.Props): Promise<Commands.Role.Create.Result> {
+    public async create(props: Commands.Role.Create.Props): Commands.Role.Create.Result {
         const { input, realm } = props;
 
         await this.transactionalService.run({
@@ -65,7 +65,7 @@ export class RoleCommands implements Commands.Role.Contract {
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async update(props: Commands.Role.Update.Props): Promise<Commands.Role.Update.Result> {
+    public async update(props: Commands.Role.Update.Props): Commands.Role.Update.Result {
         const { input, realm, id } = props;
 
         await this.transactionalService.run({
@@ -89,7 +89,7 @@ export class RoleCommands implements Commands.Role.Contract {
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
-    public async purge(props: Commands.Role.Purge.Props): Promise<Commands.Role.Purge.Result> {
+    public async purge(props: Commands.Role.Purge.Props): Commands.Role.Purge.Result {
         const { realm, id } = props;
 
         await this.transactionalService.run({
@@ -133,7 +133,7 @@ export class RoleCommands implements Commands.Role.Contract {
         return { message: `${this.dictionaryPath}.PURGED` };
     }
 
-    public async purgeSubtree(props: Commands.Role.PurgeSubtree.Props): Promise<Commands.Role.PurgeSubtree.Result> {
+    public async purgeSubtree(props: Commands.Role.PurgeSubtree.Props): Commands.Role.PurgeSubtree.Result {
         const { realm, id } = props;
 
         const entities = await this.transactionalService.run({
@@ -175,7 +175,7 @@ export class RoleCommands implements Commands.Role.Contract {
         return { message: `${this.dictionaryPath}.SUBTREE_PURGED_COUNT`, params: { count: entities.length } };
     }
 
-    public async revoke(props: Commands.Role.Revoke.Props): Promise<Commands.Role.Revoke.Result> {
+    public async revoke(props: Commands.Role.Revoke.Props): Commands.Role.Revoke.Result {
         const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
@@ -223,7 +223,7 @@ export class RoleCommands implements Commands.Role.Contract {
         }
     }
 
-    public async restore(props: Commands.Role.Restore.Props): Promise<Commands.Role.Restore.Result> {
+    public async restore(props: Commands.Role.Restore.Props): Commands.Role.Restore.Result {
         const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
@@ -271,14 +271,14 @@ export class RoleCommands implements Commands.Role.Contract {
         }
     }
 
-    public async move(props: Commands.Role.Move.Props): Promise<Commands.Role.Move.Result> {
+    public async move(props: Commands.Role.Move.Props): Commands.Role.Move.Result {
         const { input, realm } = props;
 
         await this.transactionalService.run({
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ROLE_CLOSURE_UPDATE,
-                payloadMapper: (steps: Services.Role.Move.Result): Scripts.Role.Move => ({ steps, realm }),
+                payloadMapper: (steps: Awaited<Services.Role.Move.Result>): Scripts.Role.Move => ({ steps, realm }),
             },
             outbox: {
                 eventType: EventType.REPARENT,

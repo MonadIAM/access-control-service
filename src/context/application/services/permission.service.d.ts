@@ -4,11 +4,11 @@ declare global {
     namespace Services {
         namespace Permission {
             interface Contract {
-                create: (props: Create.Props) => Promise<Create.Result>;
-                restore: (props: Restore) => void;
-                revoke: (props: Revoke) => void;
-                update: (props: Update) => void;
-                purge: (props: Purge) => void;
+                restore: (props: Restore.Props) => Restore.Result;
+                revoke: (props: Revoke.Props) => Revoke.Result;
+                create: (props: Create.Props) => Create.Result;
+                update: (props: Update.Props) => Update.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
             namespace Create {
@@ -22,26 +22,42 @@ declare global {
                     realm: Entities.Realm;
                 };
 
-                type Result = Entities.Permission;
+                type Result = Promise<Entities.Permission>;
             }
 
-            type Update = {
-                patch: Partial<Entities.Permission.MutableFields>;
-                entity: Entities.Permission;
-            };
+            namespace Update {
+                type Props = {
+                    patch: Partial<Entities.Permission.MutableFields>;
+                    entity: Entities.Permission;
+                };
 
-            type Purge = {
-                transaction: EntityManager;
-                entities: Entities.Permission[];
-            };
+                type Result = void;
+            }
 
-            type Revoke = {
-                entities: Entities.Permission[];
-            };
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    entities: Entities.Permission[];
+                };
 
-            type Restore = {
-                entities: Entities.Permission[];
-            };
+                type Result = void;
+            }
+
+            namespace Revoke {
+                type Props = {
+                    entities: Entities.Permission[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Restore {
+                type Props = {
+                    entities: Entities.Permission[];
+                };
+
+                type Result = void;
+            }
         }
     }
 }

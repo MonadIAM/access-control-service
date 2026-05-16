@@ -83,7 +83,7 @@ export class PermissionController {
     @ApiResponse({ status: OK, type: PermissionDTO })
     @ApiOperation({ summary: "Returns a permission by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public findUnique(@Query() { realm, permission, view }: GetByIdQueryDTO): Promise<Queries.Permission.Entity> {
+    public findUnique(@Query() { realm, permission, view }: GetByIdQueryDTO): Queries.Permission.FindUnique.Result {
         return this.permissionQueries.findUnique({ permission, realm, view });
     }
 
@@ -97,7 +97,7 @@ export class PermissionController {
     public getList(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { realm, view }: GetListQueryDTO,
-    ): Promise<[Queries.Permission.Entity[], number]> {
+    ): Queries.Permission.FindMany.Result {
         return this.permissionQueries.findMany({ pagination, filters, realm, sort, view });
     }
 
@@ -113,7 +113,7 @@ export class PermissionController {
         @Query() { account, realm }: GetEffectiveListQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
-    ): Promise<[Queries.Permission.Entity[], number]> {
+    ): Queries.Permission.FindEffective.Result {
         return this.permissionQueries.findEffective({ permissions, pagination, filters, account, realm, actor, sort });
     }
 
@@ -127,7 +127,7 @@ export class PermissionController {
     public getLookupList(
         @Query() { realm, term }: GetLookupListQueryDTO,
         @Body() { pagination }: GetLookupListBodyDTO,
-    ): Promise<[Queries.Permission.Entity[], number]> {
+    ): Queries.Permission.GetLookupList.Result {
         return this.permissionQueries.getLookupList({ pagination, realm, term });
     }
 

@@ -98,7 +98,7 @@ export class RoleController {
     @ApiResponse({ status: OK, type: RoleDTO })
     @ApiOperation({ summary: "Returns a role by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public findUnique(@Query() { realm, role, view }: GetByIdQueryDTO): Promise<Queries.Role.Entity> {
+    public findUnique(@Query() { realm, role, view }: GetByIdQueryDTO): Queries.Role.FindUnique.Result {
         return this.roleQueries.findUnique({ realm, role, view });
     }
 
@@ -112,7 +112,7 @@ export class RoleController {
     public findMany(
         @Query() { realm, view }: GetListQueryDTO,
         @Body() { pagination, filters, sort }: GetListBodyDTO,
-    ): Promise<[Queries.Role.Entity[], number]> {
+    ): Queries.Role.FindMany.Result {
         return this.roleQueries.findMany({ pagination, filters, realm, sort, view });
     }
 
@@ -126,7 +126,7 @@ export class RoleController {
     public findAncestors(
         @Query() { descendant, realm, view }: GetAncestorsListQueryDTO,
         @Body() { pagination, filters }: GetAncestorsListBodyDTO,
-    ): Promise<[Queries.Role.DepthEntity[], number]> {
+    ): Queries.Role.FindAncestors.Result {
         return this.roleQueries.findAncestors({ descendant, pagination, filters, realm, view });
     }
 
@@ -140,7 +140,7 @@ export class RoleController {
     public findDescendants(
         @Query() { ancestor, realm, view }: GetDescendantsListQueryDTO,
         @Body() { pagination, filters }: GetDescendantsListBodyDTO,
-    ): Promise<[Queries.Role.DepthEntity[], number]> {
+    ): Queries.Role.FindDescendants.Result {
         return this.roleQueries.findDescendants({ pagination, ancestor, filters, realm, view });
     }
 
@@ -156,7 +156,7 @@ export class RoleController {
         @Query() { realm, id }: GetDelegableListQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
-    ): Promise<[Queries.Role.Entity[], number]> {
+    ): Queries.Role.FindDelegableByAccount.Result {
         return this.roleQueries.findDelegableByAccount({ permissions, pagination, filters, sort, realm, actor, id });
     }
 
@@ -170,7 +170,7 @@ export class RoleController {
     public findDelegableByRole(
         @Body() { pagination, filters, sort }: GetDelegableListBodyDTO,
         @Query() { realm, id }: GetDelegableListQueryDTO,
-    ): Promise<[Queries.Role.Entity[], number]> {
+    ): Queries.Role.FindDelegableByRole.Result {
         return this.roleQueries.findDelegableByRole({ pagination, filters, sort, realm, id });
     }
 
@@ -186,7 +186,7 @@ export class RoleController {
         @Query() { realm, account }: GetEffectiveListQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
-    ): Promise<[Queries.Role.Entity[], number]> {
+    ): Queries.Role.FindEffective.Result {
         return this.roleQueries.findEffective({ permissions, pagination, filters, sort, account, actor, realm });
     }
 
@@ -200,7 +200,7 @@ export class RoleController {
     public getLookupList(
         @Query() { realm, term }: GetLookupListQueryDTO,
         @Body() { pagination }: GetLookupListBodyDTO,
-    ): Promise<[Queries.Role.Entity[], number]> {
+    ): Queries.Role.GetLookupList.Result {
         return this.roleQueries.getLookupList({ pagination, realm, term });
     }
 

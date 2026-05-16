@@ -14,19 +14,15 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
 
     public constructor(
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
-        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.InternalContract,
+        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
-        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.InternalContract,
+        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.Contract,
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.InternalContract,
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
     ) {}
 
-    public async create({
-        transaction,
-        input,
-        realm,
-        actor,
-    }: Services.AccountRoleAssignment.Create): Promise<Entities.AccountRoleAssignment[]> {
+    public async create(props: Services.AccountRoleAssignment.Create.Props): Services.AccountRoleAssignment.Create.Result {
+        const { transaction, input, realm, actor } = props;
         const roleIds = input.roles.map(({ id }) => id!);
         const [isDelegationAllowed, limitExceeded, hasSoDViolations] = await Promise.all([
             this.roleDelegationPolicyRepository.isDelegationAllowed({
@@ -71,7 +67,8 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         }
     }
 
-    public purge({ transaction, entities }: Services.AccountRoleAssignment.Purge): void {
+    public purge(props: Services.AccountRoleAssignment.Purge.Props): Services.AccountRoleAssignment.Purge.Result {
+        const { transaction, entities } = props;
         transaction.clear();
         for (const entity of entities) {
             entity.canPurge();
@@ -79,19 +76,22 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         }
     }
 
-    public revoke({ entities }: Services.AccountRoleAssignment.Revoke): void {
+    public revoke(props: Services.AccountRoleAssignment.Revoke.Props): Services.AccountRoleAssignment.Revoke.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.revoke();
         }
     }
 
-    public restore({ entities }: Services.AccountRoleAssignment.Restore): void {
+    public restore(props: Services.AccountRoleAssignment.Restore.Props): Services.AccountRoleAssignment.Restore.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.restore();
         }
     }
 
-    public assign({ transaction, input }: Services.AccountRoleAssignment.Assign): Entities.AccountRoleAssignment {
+    public assign(props: Services.AccountRoleAssignment.Assign.Props): Services.AccountRoleAssignment.Assign.Result {
+        const { transaction, input } = props;
         const entity = new AccountRoleAssignment(input);
         transaction.persist(entity);
         return entity;

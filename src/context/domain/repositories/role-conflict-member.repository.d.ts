@@ -1,23 +1,24 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { RoleConflictMember as RoleConflictMemberEntity } from "../entities";
-
 declare global {
     namespace Repositories {
         namespace RoleConflictMember {
-            type Entity = RoleConflictMemberEntity;
-
-            interface InternalContract extends Repositories.Base.Contract<Entity, Adapters.RoleConflictMember.Types> {
-                wouldExceedMemberLimit: (props: WouldExceedMemberLimit) => Promise<boolean>;
+            interface Contract
+                extends Repositories.Base.Contract<Entities.RoleConflictMember, Adapters.RoleConflictMember.Types> {
+                wouldExceedMemberLimit: (props: WouldExceedMemberLimit.Props) => WouldExceedMemberLimit.Result;
             }
 
-            interface ExternalContract extends Pick<InternalContract, "findUniqueOrThrow" | "findMany"> {}
+            interface QueryContract extends Pick<Contract, "findUniqueOrThrow" | "findMany"> {}
 
-            type WouldExceedMemberLimit = {
-                transaction?: EntityManager;
-                group: string;
-                count: number;
-            };
+            namespace WouldExceedMemberLimit {
+                type Props = {
+                    transaction?: EntityManager;
+                    group: string;
+                    count: number;
+                };
+
+                type Result = Promise<boolean>;
+            }
         }
     }
 }

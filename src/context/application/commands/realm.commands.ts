@@ -17,12 +17,12 @@ export class RealmCommands implements Commands.Realm.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.InternalContract,
+        private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(REALM_SERVICE)
         private readonly realmService: Services.Realm.Contract,
     ) {}
 
-    public async create(props: Commands.Realm.Create.Props): Promise<Commands.Realm.Create.Result> {
+    public async create(props: Commands.Realm.Create.Props): Commands.Realm.Create.Result {
         const { input, actor } = props;
 
         await this.transactionalService.run({
@@ -34,7 +34,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                     paths,
                     realm,
                     roles,
-                }: Services.Realm.Create.Result): Scripts.Realm.Create => ({
+                }: Awaited<Services.Realm.Create.Result>): Scripts.Realm.Create => ({
                     rolePermissionAssignments: assignments.permission.map(({ id, role, permission, scope }) => ({
                         permission: permission.id,
                         assignment: id,
@@ -74,7 +74,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async update(props: Commands.Realm.Update.Props): Promise<Commands.Realm.Update.Result> {
+    public async update(props: Commands.Realm.Update.Props): Commands.Realm.Update.Result {
         const { input, id } = props;
 
         await this.transactionalService.run({
@@ -98,7 +98,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
-    public async purge(props: Commands.Realm.Purge.Props): Promise<Commands.Realm.Purge.Result> {
+    public async purge(props: Commands.Realm.Purge.Props): Commands.Realm.Purge.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -144,7 +144,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         }
     }
 
-    public async revoke(props: Commands.Realm.Revoke.Props): Promise<Commands.Realm.Revoke.Result> {
+    public async revoke(props: Commands.Realm.Revoke.Props): Commands.Realm.Revoke.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -191,7 +191,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         }
     }
 
-    public async restore(props: Commands.Realm.Restore.Props): Promise<Commands.Realm.Restore.Result> {
+    public async restore(props: Commands.Realm.Restore.Props): Commands.Realm.Restore.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({

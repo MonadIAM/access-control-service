@@ -15,18 +15,16 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
-        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.InternalContract,
+        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.InternalContract,
+        private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.InternalContract,
+        private readonly roleRepository: Repositories.Role.Contract,
         @Inject(ROLE_DELEGATION_POLICY_SERVICE)
         private readonly roleDelegationPolicyService: Services.RoleDelegationPolicy.Contract,
     ) {}
 
-    public async create(
-        props: Commands.RoleDelegationPolicy.Create.Props,
-    ): Promise<Commands.RoleDelegationPolicy.Create.Result> {
+    public async create(props: Commands.RoleDelegationPolicy.Create.Props): Commands.RoleDelegationPolicy.Create.Result {
         const { input, realm } = props;
 
         await this.transactionalService.run({
@@ -78,9 +76,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async update(
-        props: Commands.RoleDelegationPolicy.Update.Props,
-    ): Promise<Commands.RoleDelegationPolicy.Update.Result> {
+    public async update(props: Commands.RoleDelegationPolicy.Update.Props): Commands.RoleDelegationPolicy.Update.Result {
         const { input, realm, id } = props;
 
         await this.transactionalService.run({
@@ -104,9 +100,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
-    public async purge(
-        props: Commands.RoleDelegationPolicy.Purge.Props,
-    ): Promise<Commands.RoleDelegationPolicy.Purge.Result> {
+    public async purge(props: Commands.RoleDelegationPolicy.Purge.Props): Commands.RoleDelegationPolicy.Purge.Result {
         const { input } = props;
 
         const { count } = await this.transactionalService.run({
@@ -139,9 +133,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         }
     }
 
-    public async revoke(
-        props: Commands.RoleDelegationPolicy.Revoke.Props,
-    ): Promise<Commands.RoleDelegationPolicy.Revoke.Result> {
+    public async revoke(props: Commands.RoleDelegationPolicy.Revoke.Props): Commands.RoleDelegationPolicy.Revoke.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -174,9 +166,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         }
     }
 
-    public async restore(
-        props: Commands.RoleDelegationPolicy.Restore.Props,
-    ): Promise<Commands.RoleDelegationPolicy.Restore.Result> {
+    public async restore(props: Commands.RoleDelegationPolicy.Restore.Props): Commands.RoleDelegationPolicy.Restore.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({

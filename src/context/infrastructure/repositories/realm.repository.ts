@@ -14,7 +14,7 @@ export class RealmRepository
         Adapter: RealmAdapter,
         Entity: Realm,
     })
-    implements Repositories.Realm.InternalContract
+    implements Repositories.Realm.Contract
 {
     protected readonly realmLimit: number;
 
@@ -27,12 +27,9 @@ export class RealmRepository
         this.realmLimit = this.configService.getOrThrow<number>("REALM_LIMIT");
     }
 
-    public async getLookupList({
-        pagination,
-        realms,
-        term,
-    }: Repositories.Realm.GetLookupList): Promise<[Entities.Realm[], number]> {
+    public async getLookupList(props: Repositories.Realm.GetLookupList.Props): Repositories.Realm.GetLookupList.Result {
         try {
+            const { pagination, realms, term } = props;
             const entityManager = this.readManager.fork();
             const builder = entityManager.createQueryBuilder(Realm, "r");
 
@@ -59,12 +56,11 @@ export class RealmRepository
         }
     }
 
-    public async wouldExceedRealmLimit({
-        transaction,
-        account,
-        count,
-    }: Repositories.Realm.WouldExceedRealmLimit): Promise<boolean> {
+    public async wouldExceedRealmLimit(
+        props: Repositories.Realm.WouldExceedRealmLimit.Props,
+    ): Repositories.Realm.WouldExceedRealmLimit.Result {
         try {
+            const { transaction, account, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 

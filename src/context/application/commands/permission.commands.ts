@@ -16,14 +16,14 @@ export class PermissionCommands implements Commands.Permission.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.InternalContract,
+        private readonly permissionRepository: Repositories.Permission.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.InternalContract,
+        private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(PERMISSION_SERVICE)
         private readonly permissionService: Services.Permission.Contract,
     ) {}
 
-    public async create(props: Commands.Permission.Create.Props): Promise<Commands.Permission.Create.Result> {
+    public async create(props: Commands.Permission.Create.Props): Commands.Permission.Create.Result {
         const { input, realm } = props;
 
         await this.transactionalService.run({
@@ -59,7 +59,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async update(props: Commands.Permission.Update.Props): Promise<Commands.Permission.Update.Result> {
+    public async update(props: Commands.Permission.Update.Props): Commands.Permission.Update.Result {
         const { input, realm, id } = props;
 
         await this.transactionalService.run({
@@ -83,7 +83,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
-    public async purge(props: Commands.Permission.Purge.Props): Promise<Commands.Permission.Purge.Result> {
+    public async purge(props: Commands.Permission.Purge.Props): Commands.Permission.Purge.Result {
         const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
@@ -130,7 +130,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
         }
     }
 
-    public async revoke(props: Commands.Permission.Revoke.Props): Promise<Commands.Permission.Revoke.Result> {
+    public async revoke(props: Commands.Permission.Revoke.Props): Commands.Permission.Revoke.Result {
         const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
@@ -179,7 +179,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
         }
     }
 
-    public async restore(props: Commands.Permission.Restore.Props): Promise<Commands.Permission.Restore.Result> {
+    public async restore(props: Commands.Permission.Restore.Props): Commands.Permission.Restore.Result {
         const { input, realm } = props;
 
         const entities = await this.transactionalService.run({

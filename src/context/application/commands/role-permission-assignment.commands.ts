@@ -21,20 +21,20 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
-        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.InternalContract,
+        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.Contract,
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.InternalContract,
+        private readonly permissionRepository: Repositories.Permission.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.InternalContract,
+        private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.InternalContract,
+        private readonly roleRepository: Repositories.Role.Contract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_SERVICE)
         private readonly rolePermissionAssignmentService: Services.RolePermissionAssignment.Contract,
     ) {}
 
     public async create(
         props: Commands.RolePermissionAssignment.Create.Props,
-    ): Promise<Commands.RolePermissionAssignment.Create.Result> {
+    ): Commands.RolePermissionAssignment.Create.Result {
         const { input, realm } = props;
 
         await this.transactionalService.run({
@@ -103,7 +103,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
     public async purge(
         props: Commands.RolePermissionAssignment.Purge.Props,
-    ): Promise<Commands.RolePermissionAssignment.Purge.Result> {
+    ): Commands.RolePermissionAssignment.Purge.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -157,7 +157,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
     public async revoke(
         props: Commands.RolePermissionAssignment.Revoke.Props,
-    ): Promise<Commands.RolePermissionAssignment.Revoke.Result> {
+    ): Commands.RolePermissionAssignment.Revoke.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -215,7 +215,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
     public async restore(
         props: Commands.RolePermissionAssignment.Restore.Props,
-    ): Promise<Commands.RolePermissionAssignment.Restore.Result> {
+    ): Commands.RolePermissionAssignment.Restore.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({

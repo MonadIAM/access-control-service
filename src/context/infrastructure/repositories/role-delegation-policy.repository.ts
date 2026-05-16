@@ -14,7 +14,7 @@ export class RoleDelegationPolicyRepository
         Adapter: RoleDelegationPolicyAdapter,
         Entity: RoleDelegationPolicy,
     })
-    implements Repositories.RoleDelegationPolicy.InternalContract
+    implements Repositories.RoleDelegationPolicy.Contract
 {
     protected readonly policyLimit: number;
 
@@ -27,12 +27,11 @@ export class RoleDelegationPolicyRepository
         this.policyLimit = this.configService.getOrThrow<number>("DELEGATION_POLICY_PER_ROLE_LIMIT");
     }
 
-    public async existsTransitivePath({
-        transaction,
-        from,
-        to,
-    }: Repositories.RoleDelegationPolicy.ExistsTransitivePath): Promise<boolean> {
+    public async existsTransitivePath(
+        props: Repositories.RoleDelegationPolicy.ExistsTransitivePath.Props,
+    ): Repositories.RoleDelegationPolicy.ExistsTransitivePath.Result {
         try {
+            const { transaction, from, to } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
             const targetIds = Array.isArray(to) ? to : [to];
@@ -73,13 +72,11 @@ export class RoleDelegationPolicyRepository
         }
     }
 
-    public async isDelegationAllowed({
-        transaction,
-        roles,
-        realm,
-        actor,
-    }: Repositories.RoleDelegationPolicy.IsDelegationAllowed): Promise<boolean> {
+    public async isDelegationAllowed(
+        props: Repositories.RoleDelegationPolicy.IsDelegationAllowed.Props,
+    ): Repositories.RoleDelegationPolicy.IsDelegationAllowed.Result {
         try {
+            const { transaction, roles, realm, actor } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
@@ -115,12 +112,11 @@ export class RoleDelegationPolicyRepository
         }
     }
 
-    public async wouldExceedPolicyLimit({
-        transaction,
-        delegator,
-        count,
-    }: Repositories.RoleDelegationPolicy.WouldExceedPolicyLimit): Promise<boolean> {
+    public async wouldExceedPolicyLimit(
+        props: Repositories.RoleDelegationPolicy.WouldExceedPolicyLimit.Props,
+    ): Repositories.RoleDelegationPolicy.WouldExceedPolicyLimit.Result {
         try {
+            const { transaction, delegator, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 

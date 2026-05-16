@@ -78,7 +78,7 @@ export class RoleConflictGroupController {
     @ApiResponse({ status: OK, type: RoleConflictGroupDTO })
     @ApiOperation({ summary: "Returns a role conflict group by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public findUnique(@Query() { group, realm, view }: GetByIdQueryDTO): Promise<Queries.RoleConflictGroup.Entity> {
+    public findUnique(@Query() { group, realm, view }: GetByIdQueryDTO): Queries.RoleConflictGroup.FindUnique.Result {
         return this.roleConflictGroupQueries.findUnique({ group, realm, view });
     }
 
@@ -92,7 +92,7 @@ export class RoleConflictGroupController {
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { realm, view }: GetListQueryDTO,
-    ): Promise<[Queries.RoleConflictGroup.Entity[], number]> {
+    ): Queries.RoleConflictGroup.FindMany.Result {
         return this.roleConflictGroupQueries.findMany({ pagination, filters, realm, sort, view });
     }
 
@@ -106,7 +106,7 @@ export class RoleConflictGroupController {
     public findViolationDetails(
         @Body() { account, roles }: GetDetailsBodyDTO,
         @Query() { realm }: GetDetailsQueryDTO,
-    ): Promise<Queries.RoleConflictGroup.Entity[]> {
+    ): Queries.RoleConflictGroup.FindViolationDetails.Result {
         return this.roleConflictGroupQueries.findViolationDetails({ account, realm, roles });
     }
 

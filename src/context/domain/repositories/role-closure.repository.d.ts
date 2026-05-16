@@ -4,11 +4,11 @@ declare global {
     namespace Repositories {
         namespace RoleClosure {
             interface Contract {
-                decreaseTransitiveDepth: (props: DecreaseTransitiveDepth) => Promise<void>;
-                moveSubtrees: (props: MoveSubtrees.Props) => Promise<MoveSubtrees.Result>;
-                existsTransitivePath: (props: ExistsTransitivePath) => Promise<boolean>;
-                insertNewHierarchy: (props: InsertNewHierarchy) => Promise<void>;
-                move: (props: Move.Props) => Promise<Move.Result>;
+                decreaseTransitiveDepth: (props: DecreaseTransitiveDepth.Props) => DecreaseTransitiveDepth.Result;
+                existsTransitivePath: (props: ExistsTransitivePath.Props) => ExistsTransitivePath.Result;
+                insertNewHierarchy: (props: InsertNewHierarchy.Props) => InsertNewHierarchy.Result;
+                moveSubtrees: (props: MoveSubtrees.Props) => MoveSubtrees.Result;
+                move: (props: Move.Props) => Move.Result;
             }
 
             namespace Move {
@@ -19,10 +19,10 @@ declare global {
                     realm: string;
                 };
 
-                type Result = {
+                type Result = Promise<{
                     removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
                     upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
-                };
+                }>;
             }
 
             namespace MoveSubtrees {
@@ -34,31 +34,43 @@ declare global {
                     realm: string;
                 };
 
-                type Result = {
+                type Result = Promise<{
                     removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
                     upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
-                };
+                }>;
             }
 
-            type InsertNewHierarchy = {
-                transaction: EntityManager;
-                descendant: string;
-                ancestor: string;
-                realm: string;
-            };
+            namespace InsertNewHierarchy {
+                type Props = {
+                    transaction: EntityManager;
+                    descendant: string;
+                    ancestor: string;
+                    realm: string;
+                };
 
-            type DecreaseTransitiveDepth = {
-                transaction: EntityManager;
-                realm: string;
-                role: string;
-            };
+                type Result = Promise<void>;
+            }
 
-            type ExistsTransitivePath = {
-                transaction: EntityManager;
-                descendant: string;
-                ancestor: string;
-                realm: string;
-            };
+            namespace DecreaseTransitiveDepth {
+                type Props = {
+                    transaction: EntityManager;
+                    realm: string;
+                    role: string;
+                };
+
+                type Result = Promise<void>;
+            }
+
+            namespace ExistsTransitivePath {
+                type Props = {
+                    transaction: EntityManager;
+                    descendant: string;
+                    ancestor: string;
+                    realm: string;
+                };
+
+                type Result = Promise<boolean>;
+            }
         }
     }
 }

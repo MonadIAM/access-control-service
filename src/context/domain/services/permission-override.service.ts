@@ -10,14 +10,11 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
 
     public constructor(
         @Inject(PERMISSION_OVERRIDE_REPOSITORY)
-        private readonly permissionOverrideRepository: Repositories.PermissionOverride.InternalContract,
+        private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
     ) {}
 
-    public async create({
-        transaction,
-        input,
-        realm,
-    }: Services.PermissionOverride.Create): Promise<Entities.PermissionOverride> {
+    public async create(props: Services.PermissionOverride.Create.Props): Services.PermissionOverride.Create.Result {
+        const { transaction, input, realm } = props;
         const limitExceeded = await this.permissionOverrideRepository.wouldExceedOverrideLimit({
             account: input.account,
             realm: realm.id,
@@ -33,7 +30,8 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
         }
     }
 
-    public purge({ transaction, entities }: Services.PermissionOverride.Purge): void {
+    public purge(props: Services.PermissionOverride.Purge.Props): Services.PermissionOverride.Purge.Result {
+        const { transaction, entities } = props;
         transaction.clear();
         for (const entity of entities) {
             entity.canPurge();
@@ -41,13 +39,15 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
         }
     }
 
-    public revoke({ entities }: Services.PermissionOverride.Revoke): void {
+    public revoke(props: Services.PermissionOverride.Revoke.Props): Services.PermissionOverride.Revoke.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.revoke();
         }
     }
 
-    public restore({ entities }: Services.PermissionOverride.Restore): void {
+    public restore(props: Services.PermissionOverride.Restore.Props): Services.PermissionOverride.Restore.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.restore();
         }

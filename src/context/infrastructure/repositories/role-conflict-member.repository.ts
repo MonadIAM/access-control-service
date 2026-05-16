@@ -14,7 +14,7 @@ export class RoleConflictMemberRepository
         Adapter: RoleConflictMemberAdapter,
         Entity: RoleConflictMember,
     })
-    implements Repositories.RoleConflictMember.InternalContract
+    implements Repositories.RoleConflictMember.Contract
 {
     protected readonly membersLimit: number;
 
@@ -27,12 +27,11 @@ export class RoleConflictMemberRepository
         this.membersLimit = this.configService.getOrThrow<number>("MAX_CONFLICT_MEMBERS_COUNT");
     }
 
-    public async wouldExceedMemberLimit({
-        transaction,
-        group,
-        count,
-    }: Repositories.RoleConflictMember.WouldExceedMemberLimit): Promise<boolean> {
+    public async wouldExceedMemberLimit(
+        props: Repositories.RoleConflictMember.WouldExceedMemberLimit.Props,
+    ): Repositories.RoleConflictMember.WouldExceedMemberLimit.Result {
         try {
+            const { transaction, group, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 

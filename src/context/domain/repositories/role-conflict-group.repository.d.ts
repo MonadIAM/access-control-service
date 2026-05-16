@@ -1,53 +1,72 @@
-import { EntityManager } from "@mikro-orm/postgresql";
-
-import { RoleConflictGroup as RoleConflictGroupEntity } from "../entities";
-
+import { EntityManager, Knex } from "@mikro-orm/postgresql";
 declare global {
     namespace Repositories {
         namespace RoleConflictGroup {
-            type Entity = RoleConflictGroupEntity;
-
-            interface InternalContract extends Repositories.Base.Contract<Entity, Adapters.Realm.Types> {
-                hasAccountViolatingConflictGroup: (props: HasAccountViolatingConflictGroup) => Promise<boolean>;
-                wouldExceedGroupLimit: (props: WouldExceedGroupLimit) => Promise<boolean>;
-                findViolationDetails: (props: FindViolationDetails) => Promise<Entity[]>;
-                hasViolations: (props: HasViolations) => Promise<boolean>;
+            interface PrivateContract {
+                getViolationsQuery: (props: GetViolationsQuery.Props) => GetViolationsQuery.Result;
+            }
+            interface Contract
+                extends PrivateContract,
+                    Repositories.Base.Contract<Entities.RoleConflictGroup, Adapters.Realm.Types> {
+                wouldExceedGroupLimit: (props: WouldExceedGroupLimit.Props) => WouldExceedGroupLimit.Result;
+                findViolationDetails: (props: FindViolationDetails.Props) => FindViolationDetails.Result;
+                hasAccountViolating: (props: HasAccountViolating.Props) => HasAccountViolating.Result;
+                hasViolations: (props: HasViolations.Props) => HasViolations.Result;
             }
 
-            interface ExternalContract
-                extends Pick<InternalContract, "findViolationDetails" | "findUniqueOrThrow" | "findMany"> {}
+            interface QueryContract extends Pick<Contract, "findViolationDetails" | "findUniqueOrThrow" | "findMany"> {}
 
-            type FindViolationDetails = {
-                account: string;
-                roles: string[];
-                realm: string;
-            };
+            namespace FindViolationDetails {
+                type Props = {
+                    account: string;
+                    roles: string[];
+                    realm: string;
+                };
 
-            type HasViolations = {
-                transaction?: EntityManager;
-                account: string;
-                roles: string[];
-                realm: string;
-            };
+                type Result = Promise<Entities.RoleConflictGroup[]>;
+            }
 
-            type GetViolationsQuery = {
-                transaction?: EntityManager;
-                account: string;
-                roles: string[];
-                realm: string;
-            };
+            namespace WouldExceedGroupLimit {
+                type Props = {
+                    transaction?: EntityManager;
+                    count?: number;
+                    realm: string;
+                };
 
-            type HasAccountViolatingConflictGroup = {
-                transaction?: EntityManager;
-                identifiers: string[];
-                maxAllowed: number;
-            };
+                type Result = Promise<boolean>;
+            }
 
-            type WouldExceedGroupLimit = {
-                transaction?: EntityManager;
-                count?: number;
-                realm: string;
-            };
+            namespace HasAccountViolating {
+                type Props = {
+                    transaction?: EntityManager;
+                    identifiers: string[];
+                    maxAllowed: number;
+                };
+
+                type Result = Promise<boolean>;
+            }
+
+            namespace HasViolations {
+                type Props = {
+                    transaction?: EntityManager;
+                    account: string;
+                    roles: string[];
+                    realm: string;
+                };
+
+                type Result = Promise<boolean>;
+            }
+
+            namespace GetViolationsQuery {
+                type Props = {
+                    transaction?: EntityManager;
+                    account: string;
+                    roles: string[];
+                    realm: string;
+                };
+
+                type Result = Knex.QueryBuilder;
+            }
         }
     }
 }

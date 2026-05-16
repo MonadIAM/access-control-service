@@ -14,7 +14,7 @@ export class AccountRoleAssignmentRepository
         Adapter: AccountRoleAssignmentAdapter,
         Entity: AccountRoleAssignment,
     })
-    implements Repositories.AccountRoleAssignment.InternalContract
+    implements Repositories.AccountRoleAssignment.Contract
 {
     protected readonly accountRoleLimit: number;
 
@@ -27,12 +27,11 @@ export class AccountRoleAssignmentRepository
         this.accountRoleLimit = this.configService.getOrThrow<number>("ROLE_PER_ACCOUNT_LIMIT");
     }
 
-    public async wouldExceedRoleLimit({
-        transaction,
-        account,
-        roles,
-    }: Repositories.AccountRoleAssignment.WouldExceedRoleLimit): Promise<boolean> {
+    public async wouldExceedRoleLimit(
+        props: Repositories.AccountRoleAssignment.WouldExceedRoleLimit.Props,
+    ): Repositories.AccountRoleAssignment.WouldExceedRoleLimit.Result {
         try {
+            const { transaction, account, roles } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 

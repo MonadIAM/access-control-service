@@ -14,7 +14,7 @@ export class RolePermissionAssignmentRepository
         Adapter: RolePermissionAssignmentAdapter,
         Entity: RolePermissionAssignment,
     })
-    implements Repositories.RolePermissionAssignment.InternalContract
+    implements Repositories.RolePermissionAssignment.Contract
 {
     protected readonly permissionLimit: number;
 
@@ -27,12 +27,11 @@ export class RolePermissionAssignmentRepository
         this.permissionLimit = this.configService.getOrThrow<number>("PERMISSION_PER_ROLE_LIMIT");
     }
 
-    public async wouldExceedPermissionLimit({
-        transaction,
-        permissions,
-        role,
-    }: Repositories.RolePermissionAssignment.WouldExceedPermissionLimit): Promise<boolean> {
+    public async wouldExceedPermissionLimit(
+        props: Repositories.RolePermissionAssignment.WouldExceedPermissionLimit.Props,
+    ): Repositories.RolePermissionAssignment.WouldExceedPermissionLimit.Result {
         try {
+            const { transaction, permissions, role } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 

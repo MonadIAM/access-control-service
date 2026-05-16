@@ -10,14 +10,13 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
 
     public constructor(
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
-        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.InternalContract,
+        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.Contract,
     ) {}
 
-    public async create({
-        transaction,
-        realm,
-        input,
-    }: Services.RolePermissionAssignment.Create): Promise<Entities.RolePermissionAssignment[]> {
+    public async create(
+        props: Services.RolePermissionAssignment.Create.Props,
+    ): Services.RolePermissionAssignment.Create.Result {
+        const { transaction, realm, input } = props;
         const limitExceeded = await this.rolePermissionAssignmentRepository.wouldExceedPermissionLimit({
             permissions: input.permissions.map(({ id }) => id!),
             role: input.role.id,
@@ -45,20 +44,25 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
         }
     }
 
-    public purge({ transaction, entities }: Services.RolePermissionAssignment.Purge): void {
+    public purge(props: Services.RolePermissionAssignment.Purge.Props): Services.RolePermissionAssignment.Purge.Result {
+        const { transaction, entities } = props;
         for (const entity of entities) {
             entity.canPurge();
             transaction.remove(entity);
         }
     }
 
-    public revoke({ entities }: Services.RolePermissionAssignment.Revoke): void {
+    public revoke(props: Services.RolePermissionAssignment.Revoke.Props): Services.RolePermissionAssignment.Revoke.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.revoke();
         }
     }
 
-    public restore({ entities }: Services.RolePermissionAssignment.Restore): void {
+    public restore(
+        props: Services.RolePermissionAssignment.Restore.Props,
+    ): Services.RolePermissionAssignment.Restore.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.restore();
         }

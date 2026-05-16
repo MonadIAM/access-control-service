@@ -76,7 +76,7 @@ export class RoleDelegationPolicyController {
     @ApiResponse({ status: OK, type: RoleDelegationPolicyDTO })
     @ApiOperation({ summary: "Returns a role delegation policy by identifier" })
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
-    public findUnique(@Query() { policy, realm, view }: GetByIdQueryDTO): Promise<Queries.RoleDelegationPolicy.Entity> {
+    public findUnique(@Query() { policy, realm, view }: GetByIdQueryDTO): Queries.RoleDelegationPolicy.FindUnique.Result {
         return this.roleDelegationPolicyQueries.findUnique({ policy, realm, view });
     }
 
@@ -90,7 +90,7 @@ export class RoleDelegationPolicyController {
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { realm, view }: GetListQueryDTO,
-    ): Promise<[Queries.RoleDelegationPolicy.Entity[], number]> {
+    ): Queries.RoleDelegationPolicy.FindMany.Result {
         return this.roleDelegationPolicyQueries.findMany({ pagination, filters, realm, sort, view });
     }
 

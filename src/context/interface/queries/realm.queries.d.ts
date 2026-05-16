@@ -3,12 +3,10 @@ import { ResponseViewType } from "~context/enums";
 declare global {
     namespace Queries {
         namespace Realm {
-            type Entity = Repositories.Realm.Entity;
-
             interface Contract {
-                getLookupList: (props: GetLookupList.Props) => Promise<GetLookupList.Result>;
-                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
-                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
+                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
+                findUnique: (props: FindUnique.Props) => FindUnique.Result;
+                findMany: (props: FindMany.Props) => FindMany.Result;
             }
 
             namespace GetLookupList {
@@ -19,7 +17,7 @@ declare global {
                     term: string;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.Realm[], number]>;
             }
 
             namespace FindMany {
@@ -32,7 +30,7 @@ declare global {
                     account: string;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.Realm[], number]>;
             }
 
             namespace FindUnique {
@@ -43,7 +41,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = Entity;
+                type Result = Promise<Entities.Realm>;
             }
         }
     }

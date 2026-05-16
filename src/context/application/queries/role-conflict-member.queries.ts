@@ -11,19 +11,17 @@ export class RoleConflictMemberQueries implements Queries.RoleConflictMember.Con
 
     public constructor(
         @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictMember.ExternalContract,
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictMember.QueryContract,
     ) {}
 
-    public findUnique(
-        props: Queries.RoleConflictMember.FindUnique.Props,
-    ): Promise<Queries.RoleConflictMember.FindUnique.Result> {
+    public findUnique(props: Queries.RoleConflictMember.FindUnique.Props): Queries.RoleConflictMember.FindUnique.Result {
         return this.roleConflictGroupRepository.findUniqueOrThrow({
             where: { id: props.member, group: { id: props.group, realm: props.realm } },
             options: { populate: this.populate[props.view] },
         });
     }
 
-    public findMany(props: Queries.RoleConflictMember.FindMany.Props): Promise<Queries.RoleConflictMember.FindMany.Result> {
+    public findMany(props: Queries.RoleConflictMember.FindMany.Props): Queries.RoleConflictMember.FindMany.Result {
         return this.roleConflictGroupRepository.findMany({
             prefilter: { group: { id: props.group, realm: props.realm } },
             options: { populate: this.populate[props.view] },

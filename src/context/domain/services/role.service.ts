@@ -15,13 +15,14 @@ export class RoleService implements Services.Role.Contract {
         @Inject(ROLE_CLOSURE_REPOSITORY)
         private readonly roleClosureRepository: Repositories.RoleClosure.Contract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.InternalContract,
+        private readonly roleRepository: Repositories.Role.Contract,
         private readonly configService: ConfigService,
     ) {
         this.purgeSubtreeSizeLimit = this.configService.getOrThrow<number>("MAX_ROLE_SUBTREE_SIZE_FOR_PURGE");
     }
 
-    public async create({ transaction, input, realm }: Services.Role.Create.Props): Promise<Services.Role.Create.Result> {
+    public async create(props: Services.Role.Create.Props): Services.Role.Create.Result {
+        const { transaction, input, realm } = props;
         if (input.parent.protoType === RoleProtoType.ATOMIC) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE`);
         } else {
@@ -60,11 +61,13 @@ export class RoleService implements Services.Role.Contract {
         }
     }
 
-    public update({ entity, patch }: Services.Role.Update): void {
+    public update(props: Services.Role.Update.Props): Services.Role.Update.Result {
+        const { entity, patch } = props;
         entity.update({ patch });
     }
 
-    public async purge({ transaction, entity, realm }: Services.Role.Purge): Promise<void> {
+    public async purge(props: Services.Role.Purge.Props): Services.Role.Purge.Result {
+        const { transaction, entity, realm } = props;
         entity.canPurge();
         transaction.clear();
 
@@ -77,11 +80,8 @@ export class RoleService implements Services.Role.Contract {
         transaction.remove(entity);
     }
 
-    public async purgeSubtree({
-        transaction,
-        entity,
-        realm,
-    }: Services.Role.PurgeSubtree.Props): Promise<Services.Role.PurgeSubtree.Result> {
+    public async purgeSubtree(props: Services.Role.PurgeSubtree.Props): Services.Role.PurgeSubtree.Result {
+        const { transaction, entity, realm } = props;
         const descendants = await this.roleRepository.getDescendants({
             ancestor: entity.id,
             where: { realm },
@@ -103,25 +103,22 @@ export class RoleService implements Services.Role.Contract {
         }
     }
 
-    public revoke({ entities }: Services.Role.Revoke): void {
+    public revoke(props: Services.Role.Revoke.Props): Services.Role.Revoke.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.revoke();
         }
     }
 
-    public restore({ entities }: Services.Role.Restore): void {
+    public restore(props: Services.Role.Restore.Props): Services.Role.Restore.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.restore();
         }
     }
 
-    public async move({
-        targetParent,
-        transaction,
-        target,
-        realm,
-        mode,
-    }: Services.Role.Move.Props): Promise<Services.Role.Move.Result> {
+    public async move(props: Services.Role.Move.Props): Services.Role.Move.Result {
+        const { targetParent, transaction, target, realm, mode } = props;
         if (targetParent.protoType === RoleProtoType.ATOMIC) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_NO_INHERITANCE`);
         }
@@ -156,7 +153,7 @@ export class RoleService implements Services.Role.Contract {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_IN_SUBTREE`);
         }
 
-        const steps: Services.Role.Move.Result = [];
+        const steps: Awaited<Services.Role.Move.Result> = [];
 
         if (mode !== MoveMode.SUBTREE) {
             const directChildren = await this.roleRepository.getDescendants({
@@ -210,10 +207,11 @@ export class RoleService implements Services.Role.Contract {
         return steps;
     }
 
-    private async buildHierarchy({
-        transaction,
-        input: { children, parent, entity, realm },
-    }: Services.Role.BuildHierarchy): Promise<void> {
+    public async buildHierarchy(props: Services.Role.BuildHierarchy.Props): Services.Role.BuildHierarchy.Result {
+        const {
+            input: { children, parent, entity, realm },
+            transaction,
+        } = props;
         await this.roleClosureRepository.insertNewHierarchy({
             descendant: entity.id,
             ancestor: parent.id,

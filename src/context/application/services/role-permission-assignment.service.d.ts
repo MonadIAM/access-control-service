@@ -4,33 +4,49 @@ declare global {
     namespace Services {
         namespace RolePermissionAssignment {
             interface Contract {
-                create: (props: Create) => Promise<Entities.RolePermissionAssignment[]>;
-                restore: (props: Restore) => void;
-                revoke: (props: Revoke) => void;
-                purge: (props: Purge) => void;
+                restore: (props: Restore.Props) => Restore.Result;
+                revoke: (props: Revoke.Props) => Revoke.Result;
+                create: (props: Create.Props) => Create.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
-            type Create = {
-                transaction: EntityManager;
-                input: {
-                    permissions: Entities.Permission[];
-                    role: Entities.Role;
+            namespace Create {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        permissions: Entities.Permission[];
+                        role: Entities.Role;
+                    };
+                    realm: Entities.Realm;
                 };
-                realm: Entities.Realm;
-            };
 
-            type Purge = {
-                transaction: EntityManager;
-                entities: Entities.RolePermissionAssignment[];
-            };
+                type Result = Promise<Entities.RolePermissionAssignment[]>;
+            }
 
-            type Revoke = {
-                entities: Entities.RolePermissionAssignment[];
-            };
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    entities: Entities.RolePermissionAssignment[];
+                };
 
-            type Restore = {
-                entities: Entities.RolePermissionAssignment[];
-            };
+                type Result = void;
+            }
+
+            namespace Revoke {
+                type Props = {
+                    entities: Entities.RolePermissionAssignment[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Restore {
+                type Props = {
+                    entities: Entities.RolePermissionAssignment[];
+                };
+
+                type Result = void;
+            }
         }
     }
 }

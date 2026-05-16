@@ -5,13 +5,11 @@ import { ResponseViewType } from "~context/enums";
 declare global {
     namespace Queries {
         namespace Permission {
-            type Entity = Repositories.Permission.Entity;
-
             interface Contract {
-                findEffective: (props: FindEffective.Props) => Promise<FindEffective.Result>;
-                getLookupList: (props: GetLookupList.Props) => Promise<GetLookupList.Result>;
-                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
-                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
+                findEffective: (props: FindEffective.Props) => FindEffective.Result;
+                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
+                findUnique: (props: FindUnique.Props) => FindUnique.Result;
+                findMany: (props: FindMany.Props) => FindMany.Result;
             }
 
             namespace FindEffective {
@@ -25,18 +23,18 @@ declare global {
                     actor: string;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.Permission[], number]>;
             }
 
             namespace GetLookupList {
                 type Props = {
-                    options?: FindOptions<Entity>;
+                    options?: FindOptions<Entities.Permission>;
                     pagination: Pagination;
                     realm: string;
                     term: string;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.Permission[], number]>;
             }
 
             namespace FindMany {
@@ -48,7 +46,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.Permission[], number]>;
             }
 
             namespace FindUnique {
@@ -58,7 +56,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = Entity;
+                type Result = Promise<Entities.Permission>;
             }
         }
     }

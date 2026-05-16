@@ -5,20 +5,19 @@ import { ResponseViewType } from "~context/enums";
 declare global {
     namespace Queries {
         namespace Role {
-            type Entity = Repositories.Role.Entity;
-            type DepthEntity = Entity & { depth: number };
+            type DepthEntity = Entities.Role & { depth: number };
             type Graph = Repositories.Role.Graph.Data;
 
             interface Contract {
-                findDelegableByAccount: (props: FindDelegableByAccount.Props) => Promise<FindDelegableByAccount.Result>;
-                findDelegableByRole: (props: FindDelegableByRole.Props) => Promise<FindDelegableByRole.Result>;
-                getHierarchyGraph: (props: GetHierarchyGraph.Props) => Promise<GetHierarchyGraph.Result>;
-                findDescendants: (props: FindDescendants.Props) => Promise<FindDescendants.Result>;
-                findAncestors: (props: FindAncestors.Props) => Promise<FindAncestors.Result>;
-                findEffective: (props: FindEffective.Props) => Promise<FindEffective.Result>;
-                getLookupList: (props: GetLookupList.Props) => Promise<GetLookupList.Result>;
-                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
-                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
+                findDelegableByAccount: (props: FindDelegableByAccount.Props) => FindDelegableByAccount.Result;
+                findDelegableByRole: (props: FindDelegableByRole.Props) => FindDelegableByRole.Result;
+                getHierarchyGraph: (props: GetHierarchyGraph.Props) => GetHierarchyGraph.Result;
+                findDescendants: (props: FindDescendants.Props) => FindDescendants.Result;
+                findAncestors: (props: FindAncestors.Props) => FindAncestors.Result;
+                findEffective: (props: FindEffective.Props) => FindEffective.Result;
+                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
+                findUnique: (props: FindUnique.Props) => FindUnique.Result;
+                findMany: (props: FindMany.Props) => FindMany.Result;
             }
 
             namespace FindDelegableByAccount {
@@ -32,7 +31,7 @@ declare global {
                     id?: string;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.Role[], number]>;
             }
 
             namespace FindDelegableByRole {
@@ -44,7 +43,7 @@ declare global {
                     id: string;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.Role[], number]>;
             }
 
             namespace FindDescendants {
@@ -56,7 +55,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = [DepthEntity[], number];
+                type Result = Promise<[DepthEntity[], number]>;
             }
 
             namespace FindAncestors {
@@ -68,7 +67,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = [DepthEntity[], number];
+                type Result = Promise<[DepthEntity[], number]>;
             }
 
             namespace FindEffective {
@@ -82,18 +81,18 @@ declare global {
                     actor: string;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.Role[], number]>;
             }
 
             namespace GetLookupList {
                 type Props = {
-                    options?: FindOptions<Entity>;
+                    options?: FindOptions<Entities.Role>;
                     pagination: Pagination;
                     realm: string;
                     term: string;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.Role[], number]>;
             }
 
             namespace GetHierarchyGraph {
@@ -101,7 +100,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = Graph;
+                type Result = Promise<Graph>;
             }
 
             namespace FindMany {
@@ -113,7 +112,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.Role[], number]>;
             }
 
             namespace FindUnique {
@@ -123,7 +122,7 @@ declare global {
                     role: string;
                 };
 
-                type Result = Entity;
+                type Result = Promise<Entities.Role>;
             }
         }
     }

@@ -1,5 +1,5 @@
-import { EntityManager, Knex } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
+import { EntityManager } from "@mikro-orm/postgresql";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
@@ -14,7 +14,7 @@ export class RoleConflictGroupRepository
         Adapter: RoleConflictGroupAdapter,
         Entity: RoleConflictGroup,
     })
-    implements Repositories.RoleConflictGroup.InternalContract
+    implements Repositories.RoleConflictGroup.Contract
 {
     protected readonly groupLimit: number;
 
@@ -28,8 +28,8 @@ export class RoleConflictGroupRepository
     }
 
     public async findViolationDetails(
-        props: Repositories.RoleConflictGroup.FindViolationDetails,
-    ): Promise<Entities.RoleConflictGroup[]> {
+        props: Repositories.RoleConflictGroup.FindViolationDetails.Props,
+    ): Repositories.RoleConflictGroup.FindViolationDetails.Result {
         try {
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
@@ -51,7 +51,9 @@ export class RoleConflictGroupRepository
         }
     }
 
-    public async hasViolations(props: Repositories.RoleConflictGroup.HasViolations): Promise<boolean> {
+    public async hasViolations(
+        props: Repositories.RoleConflictGroup.HasViolations.Props,
+    ): Repositories.RoleConflictGroup.HasViolations.Result {
         try {
             const entityManager = props.transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
@@ -67,12 +69,11 @@ export class RoleConflictGroupRepository
         }
     }
 
-    public async hasAccountViolatingConflictGroup({
-        transaction,
-        identifiers,
-        maxAllowed,
-    }: Repositories.RoleConflictGroup.HasAccountViolatingConflictGroup): Promise<boolean> {
+    public async hasAccountViolating(
+        props: Repositories.RoleConflictGroup.HasAccountViolating.Props,
+    ): Repositories.RoleConflictGroup.HasAccountViolating.Result {
         try {
+            const { transaction, identifiers, maxAllowed } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
@@ -92,12 +93,11 @@ export class RoleConflictGroupRepository
         }
     }
 
-    public async wouldExceedGroupLimit({
-        transaction,
-        realm,
-        count,
-    }: Repositories.RoleConflictGroup.WouldExceedGroupLimit): Promise<boolean> {
+    public async wouldExceedGroupLimit(
+        props: Repositories.RoleConflictGroup.WouldExceedGroupLimit.Props,
+    ): Repositories.RoleConflictGroup.WouldExceedGroupLimit.Result {
         try {
+            const { transaction, realm, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 
@@ -112,7 +112,9 @@ export class RoleConflictGroupRepository
         }
     }
 
-    private getViolationsQuery(props: Repositories.RoleConflictGroup.GetViolationsQuery): Knex.QueryBuilder {
+    public getViolationsQuery(
+        props: Repositories.RoleConflictGroup.GetViolationsQuery.Props,
+    ): Repositories.RoleConflictGroup.GetViolationsQuery.Result {
         const entityManager = props.transaction ?? this.readManager.fork();
         const knex = entityManager.getKnex();
 

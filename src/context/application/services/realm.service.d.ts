@@ -3,12 +3,18 @@ import { EntityManager } from "@mikro-orm/postgresql";
 declare global {
     namespace Services {
         namespace Realm {
-            interface Contract {
-                create: (props: Create.Props) => Promise<Create.Result>;
-                restore: (props: Restore) => void;
-                revoke: (props: Revoke) => void;
-                update: (props: Update) => void;
-                purge: (props: Purge) => void;
+            interface PrivateContract {
+                assignBasePermissions: (props: AssignBasePermissions.Props) => AssignBasePermissions.Result;
+                createBaseRoles: (props: CreateBaseRoles.Props) => CreateBaseRoles.Result;
+                assignBaseRoles: (props: AssignBaseRoles.Props) => AssignBaseRoles.Result;
+            }
+
+            interface Contract extends PrivateContract {
+                restore: (props: Restore.Props) => Restore.Result;
+                revoke: (props: Revoke.Props) => Revoke.Result;
+                create: (props: Create.Props) => Create.Result;
+                update: (props: Update.Props) => Update.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
             namespace Create {
@@ -22,7 +28,7 @@ declare global {
                     actor: string;
                 };
 
-                type Result = {
+                type Result = Promise<{
                     assignments: {
                         permission: Entities.RolePermissionAssignment[];
                         role: Entities.AccountRoleAssignment[];
@@ -30,26 +36,42 @@ declare global {
                     paths: Entities.RoleClosure[];
                     roles: Entities.Role[];
                     realm: Entities.Realm;
-                };
+                }>;
             }
 
-            type Update = {
-                patch: Partial<Entities.Realm.MutableFields>;
-                entity: Entities.Realm;
-            };
+            namespace Update {
+                type Props = {
+                    patch: Partial<Entities.Realm.MutableFields>;
+                    entity: Entities.Realm;
+                };
 
-            type Purge = {
-                transaction: EntityManager;
-                entities: Entities.Realm[];
-            };
+                type Result = void;
+            }
 
-            type Revoke = {
-                entities: Entities.Realm[];
-            };
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    entities: Entities.Realm[];
+                };
 
-            type Restore = {
-                entities: Entities.Realm[];
-            };
+                type Result = void;
+            }
+
+            namespace Revoke {
+                type Props = {
+                    entities: Entities.Realm[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Restore {
+                type Props = {
+                    entities: Entities.Realm[];
+                };
+
+                type Result = void;
+            }
 
             namespace CreateBaseRoles {
                 type Props = {
@@ -71,7 +93,7 @@ declare global {
                     realm: Entities.Realm;
                 };
 
-                type Result = Entities.RolePermissionAssignment[];
+                type Result = Promise<Entities.RolePermissionAssignment[]>;
             }
 
             namespace AssignBaseRoles {

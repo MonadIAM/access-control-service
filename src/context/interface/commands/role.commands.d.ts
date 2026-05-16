@@ -4,13 +4,13 @@ declare global {
     namespace Commands {
         namespace Role {
             interface ControllerContract {
-                purgeSubtree: (props: PurgeSubtree.Props) => Promise<PurgeSubtree.Result>;
-                move: (props: Move.Props) => Promise<Move.Result>;
-                restore: (props: Restore.Props) => Promise<Restore.Result>;
-                create: (props: Create.Props) => Promise<Create.Result>;
-                update: (props: Update.Props) => Promise<Update.Result>;
-                revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
-                purge: (props: Purge.Props) => Promise<Purge.Result>;
+                purgeSubtree: (props: PurgeSubtree.Props) => PurgeSubtree.Result;
+                restore: (props: Restore.Props) => Restore.Result;
+                create: (props: Create.Props) => Create.Result;
+                update: (props: Update.Props) => Update.Result;
+                revoke: (props: Revoke.Props) => Revoke.Result;
+                purge: (props: Purge.Props) => Purge.Result;
+                move: (props: Move.Props) => Move.Result;
             }
 
             interface PrivateContract {
@@ -36,7 +36,7 @@ declare global {
                     context: Extract.Meta;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Update {
@@ -51,7 +51,7 @@ declare global {
                     context: Extract.Meta;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Purge {
@@ -65,7 +65,7 @@ declare global {
                     context: Extract.Meta;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace PurgeSubtree {
@@ -79,7 +79,7 @@ declare global {
                     context: Extract.Meta;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Revoke {
@@ -93,7 +93,7 @@ declare global {
                     context: Extract.Meta;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Restore {
@@ -107,7 +107,7 @@ declare global {
                     context: Extract.Meta;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Move {
@@ -122,7 +122,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace OutboxPayloadMapper {

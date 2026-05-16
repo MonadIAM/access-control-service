@@ -1,23 +1,24 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { AccountRoleAssignment as AccountRoleAssignmentEntity } from "../entities";
-
 declare global {
     namespace Repositories {
         namespace AccountRoleAssignment {
-            type Entity = AccountRoleAssignmentEntity;
-
-            interface InternalContract extends Repositories.Base.Contract<Entity, Adapters.AccountRoleAssignment.Types> {
-                wouldExceedRoleLimit: (props: WouldExceedRoleLimit) => Promise<boolean>;
+            interface Contract
+                extends Repositories.Base.Contract<Entities.AccountRoleAssignment, Adapters.AccountRoleAssignment.Types> {
+                wouldExceedRoleLimit: (props: WouldExceedRoleLimit.Props) => WouldExceedRoleLimit.Result;
             }
 
-            interface ExternalContract extends Pick<InternalContract, "findUniqueOrThrow" | "findMany"> {}
+            interface QueryContract extends Pick<Contract, "findUniqueOrThrow" | "findMany"> {}
 
-            type WouldExceedRoleLimit = {
-                transaction?: EntityManager;
-                account: string;
-                roles: string[];
-            };
+            namespace WouldExceedRoleLimit {
+                type Props = {
+                    transaction?: EntityManager;
+                    account: string;
+                    roles: string[];
+                };
+
+                type Result = Promise<boolean>;
+            }
         }
     }
 }

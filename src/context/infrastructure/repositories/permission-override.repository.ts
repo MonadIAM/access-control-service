@@ -14,7 +14,7 @@ export class PermissionOverrideRepository
         Adapter: PermissionOverrideAdapter,
         Entity: PermissionOverride,
     })
-    implements Repositories.PermissionOverride.InternalContract
+    implements Repositories.PermissionOverride.Contract
 {
     protected readonly overrideLimit: number;
 
@@ -27,13 +27,11 @@ export class PermissionOverrideRepository
         this.overrideLimit = this.configService.getOrThrow<number>("PERMISSION_OVERRIDE_PER_ACCOUNT_LIMIT");
     }
 
-    public async wouldExceedOverrideLimit({
-        transaction,
-        account,
-        realm,
-        count,
-    }: Repositories.PermissionOverride.WouldExceedOverrideLimit): Promise<boolean> {
+    public async wouldExceedOverrideLimit(
+        props: Repositories.PermissionOverride.WouldExceedOverrideLimit.Props,
+    ): Repositories.PermissionOverride.WouldExceedOverrideLimit.Result {
         try {
+            const { transaction, account, realm, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 

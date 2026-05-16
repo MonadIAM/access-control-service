@@ -53,7 +53,7 @@ export class RoleConflictMemberController {
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
         @Query() { member, group, realm, view }: GetByIdQueryDTO,
-    ): Promise<Queries.RoleConflictMember.Entity> {
+    ): Queries.RoleConflictMember.FindUnique.Result {
         return this.roleConflictMemberQueries.findUnique({ member, group, realm, view });
     }
 
@@ -67,7 +67,7 @@ export class RoleConflictMemberController {
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { group, realm, view }: GetListQueryDTO,
-    ): Promise<[Queries.RoleConflictMember.Entity[], number]> {
+    ): Queries.RoleConflictMember.FindMany.Result {
         return this.roleConflictMemberQueries.findMany({ pagination, filters, group, realm, sort, view });
     }
 

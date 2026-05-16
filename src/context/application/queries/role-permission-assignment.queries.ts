@@ -11,12 +11,12 @@ export class RolePermissionAssignmentQueries implements Queries.RolePermissionAs
 
     public constructor(
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
-        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.ExternalContract,
+        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.QueryContract,
     ) {}
 
     public findUnique(
         props: Queries.RolePermissionAssignment.FindUnique.Props,
-    ): Promise<Queries.RolePermissionAssignment.FindUnique.Result> {
+    ): Queries.RolePermissionAssignment.FindUnique.Result {
         return this.rolePermissionAssignmentRepository.findUniqueOrThrow({
             where: { id: props.assignment, realm: props.realm },
             options: { populate: this.populate[props.view] },
@@ -25,7 +25,7 @@ export class RolePermissionAssignmentQueries implements Queries.RolePermissionAs
 
     public findMany(
         props: Queries.RolePermissionAssignment.FindMany.Props,
-    ): Promise<Queries.RolePermissionAssignment.FindMany.Result> {
+    ): Queries.RolePermissionAssignment.FindMany.Result {
         return this.rolePermissionAssignmentRepository.findMany({
             options: { populate: this.populate[props.view] },
             prefilter: { realm: props.realm },

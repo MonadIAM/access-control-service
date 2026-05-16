@@ -19,10 +19,10 @@ export class RealmQueries implements Queries.Realm.Contract {
         @Inject(PROJECTION_CACHE_SERVICE)
         private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.ExternalContract,
+        private readonly realmRepository: Repositories.Realm.QueryContract,
     ) {}
 
-    public async findUnique(props: Queries.Realm.FindUnique.Props): Promise<Queries.Realm.FindUnique.Result> {
+    public async findUnique(props: Queries.Realm.FindUnique.Props): Queries.Realm.FindUnique.Result {
         if (!props.permissions?.includes(PermissionCode.REALM_READ_ABSOLUTE)) {
             const hasRealmRelation = await this.projectionCacheService.checkRealm({
                 account: props.account,
@@ -38,7 +38,7 @@ export class RealmQueries implements Queries.Realm.Contract {
         });
     }
 
-    public async findMany(props: Queries.Realm.FindMany.Props): Promise<Queries.Realm.FindMany.Result> {
+    public async findMany(props: Queries.Realm.FindMany.Props): Queries.Realm.FindMany.Result {
         const filters = { ...props.filters };
         if (!props.permissions?.includes(PermissionCode.REALM_READ_ABSOLUTE)) {
             const realms = await this.projectionCacheService.collectRealms({ account: props.account });
@@ -56,7 +56,7 @@ export class RealmQueries implements Queries.Realm.Contract {
         });
     }
 
-    public async getLookupList(props: Queries.Realm.GetLookupList.Props): Promise<Queries.Realm.GetLookupList.Result> {
+    public async getLookupList(props: Queries.Realm.GetLookupList.Props): Queries.Realm.GetLookupList.Result {
         let realms: Optional<string[]>;
         if (!props.permissions?.includes(PermissionCode.REALM_READ_ABSOLUTE)) {
             realms = await this.projectionCacheService.collectRealms({ account: props.account });

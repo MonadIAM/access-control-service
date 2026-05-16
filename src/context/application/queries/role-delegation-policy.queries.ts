@@ -11,21 +11,19 @@ export class RoleDelegationPolicyQueries implements Queries.RoleDelegationPolicy
 
     public constructor(
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleDelegationPolicy.ExternalContract,
+        private readonly roleConflictGroupRepository: Repositories.RoleDelegationPolicy.QueryContract,
     ) {}
 
     public findUnique(
         props: Queries.RoleDelegationPolicy.FindUnique.Props,
-    ): Promise<Queries.RoleDelegationPolicy.FindUnique.Result> {
+    ): Queries.RoleDelegationPolicy.FindUnique.Result {
         return this.roleConflictGroupRepository.findUniqueOrThrow({
             options: { populate: this.populate[props.view] },
             where: { id: props.policy, realm: props.realm },
         });
     }
 
-    public findMany(
-        props: Queries.RoleDelegationPolicy.FindMany.Props,
-    ): Promise<Queries.RoleDelegationPolicy.FindMany.Result> {
+    public findMany(props: Queries.RoleDelegationPolicy.FindMany.Props): Queries.RoleDelegationPolicy.FindMany.Result {
         return this.roleConflictGroupRepository.findMany({
             options: { populate: this.populate[props.view] },
             prefilter: { realm: props.realm },

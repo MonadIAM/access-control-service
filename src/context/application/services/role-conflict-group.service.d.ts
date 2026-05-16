@@ -4,42 +4,62 @@ declare global {
     namespace Services {
         namespace RoleConflictGroup {
             interface Contract {
-                create: (props: Create) => Promise<void>;
-                restore: (props: Restore) => void;
-                revoke: (props: Revoke) => void;
-                update: (props: Update) => void;
-                purge: (props: Purge) => void;
+                restore: (props: Restore.Props) => Restore.Result;
+                revoke: (props: Revoke.Props) => Revoke.Result;
+                create: (props: Create.Props) => Create.Result;
+                update: (props: Update.Props) => Update.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
-            type Create = {
-                transaction: EntityManager;
-                input: {
-                    members: Entities.Role[];
-                    description: string;
-                    maxAllowed: number;
-                    code: string;
-                    name: string;
+            namespace Create {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        members: Entities.Role[];
+                        description: string;
+                        maxAllowed: number;
+                        code: string;
+                        name: string;
+                    };
+                    realm: Entities.Realm;
                 };
-                realm: Entities.Realm;
-            };
 
-            type Update = {
-                patch: Partial<Entities.RoleConflictGroup.MutableFields>;
-                entity: Entities.RoleConflictGroup;
-            };
+                type Result = Promise<void>;
+            }
 
-            type Purge = {
-                transaction: EntityManager;
-                entities: Entities.RoleConflictGroup[];
-            };
+            namespace Update {
+                type Props = {
+                    patch: Partial<Entities.RoleConflictGroup.MutableFields>;
+                    entity: Entities.RoleConflictGroup;
+                };
 
-            type Revoke = {
-                entities: Entities.RoleConflictGroup[];
-            };
+                type Result = void;
+            }
 
-            type Restore = {
-                entities: Entities.RoleConflictGroup[];
-            };
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    entities: Entities.RoleConflictGroup[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Revoke {
+                type Props = {
+                    entities: Entities.RoleConflictGroup[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Restore {
+                type Props = {
+                    entities: Entities.RoleConflictGroup[];
+                };
+
+                type Result = void;
+            }
         }
     }
 }

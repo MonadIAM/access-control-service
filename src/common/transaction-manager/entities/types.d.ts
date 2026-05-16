@@ -2,6 +2,11 @@ import { ChangeSetType } from "@mikro-orm/postgresql";
 
 import { AggregateType, EventType, KafkaTopic } from "~context/enums";
 
+import { ProjectionJournal as ProjectionJournalEntity } from "./projection-journal.entity";
+import { ChangeLog as ChangeLogEntity } from "./change-log.entity";
+import { AuditLog as AuditLogEntity } from "./audit-log.entity";
+import { Outbox as OutboxEntity } from "./outbox.entity";
+
 declare global {
     type DeltaChanges = Record<string, { old: unknown; new: unknown }>;
 
@@ -17,6 +22,8 @@ declare global {
             };
         }
 
+        type AuditLog = AuditLogEntity;
+
         namespace ChangeLog {
             type ConstructorProps = {
                 auditEntry: string;
@@ -26,6 +33,8 @@ declare global {
                 delta: DeltaChanges;
             };
         }
+
+        type ChangeLog = ChangeLogEntity;
 
         namespace Outbox {
             type ConstructorProps = {
@@ -37,6 +46,8 @@ declare global {
             };
         }
 
+        type Outbox = OutboxEntity;
+
         namespace ProjectionJournal {
             type ConstructorProps = {
                 payload: UnknownObject;
@@ -44,5 +55,7 @@ declare global {
                 availableAt?: Date;
             };
         }
+
+        type ProjectionJournal = ProjectionJournalEntity;
     }
 }

@@ -12,17 +12,17 @@ export class RoleQueries implements Queries.Role.Contract {
 
     public constructor(
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.ExternalContract,
+        private readonly roleRepository: Repositories.Role.QueryContract,
     ) {}
 
-    public findUnique(props: Queries.Role.FindUnique.Props): Promise<Queries.Role.FindUnique.Result> {
+    public findUnique(props: Queries.Role.FindUnique.Props): Queries.Role.FindUnique.Result {
         return this.roleRepository.findUniqueOrThrow({
             options: { populate: this.populate[props.view] },
             where: { id: props.role, realm: props.realm },
         });
     }
 
-    public findMany(props: Queries.Role.FindMany.Props): Promise<Queries.Role.FindMany.Result> {
+    public findMany(props: Queries.Role.FindMany.Props): Queries.Role.FindMany.Result {
         return this.roleRepository.findMany({
             options: { populate: this.populate[props.view] },
             prefilter: { realm: props.realm },
@@ -32,7 +32,7 @@ export class RoleQueries implements Queries.Role.Contract {
         });
     }
 
-    public findAncestors(props: Queries.Role.FindAncestors.Props): Promise<Queries.Role.FindAncestors.Result> {
+    public findAncestors(props: Queries.Role.FindAncestors.Props): Queries.Role.FindAncestors.Result {
         return this.roleRepository.findAncestors({
             populate: this.populate[props.view],
             descendant: props.descendant,
@@ -42,7 +42,7 @@ export class RoleQueries implements Queries.Role.Contract {
         });
     }
 
-    public findDescendants(props: Queries.Role.FindDescendants.Props): Promise<Queries.Role.FindDescendants.Result> {
+    public findDescendants(props: Queries.Role.FindDescendants.Props): Queries.Role.FindDescendants.Result {
         return this.roleRepository.findDescendants({
             populate: this.populate[props.view],
             pagination: props.pagination,
@@ -54,7 +54,7 @@ export class RoleQueries implements Queries.Role.Contract {
 
     public findDelegableByAccount(
         props: Queries.Role.FindDelegableByAccount.Props,
-    ): Promise<Queries.Role.FindDelegableByAccount.Result> {
+    ): Queries.Role.FindDelegableByAccount.Result {
         let id = props.actor;
         if (props.permissions?.includes(PermissionCode.ROLE_READ_ABSOLUTE)) {
             id = props.id ?? props.actor;
@@ -67,9 +67,7 @@ export class RoleQueries implements Queries.Role.Contract {
         });
     }
 
-    public findDelegableByRole(
-        props: Queries.Role.FindDelegableByRole.Props,
-    ): Promise<Queries.Role.FindDelegableByRole.Result> {
+    public findDelegableByRole(props: Queries.Role.FindDelegableByRole.Props): Queries.Role.FindDelegableByRole.Result {
         return this.roleRepository.findDelegateable({
             where: {
                 type: DelegatorType.ROLE,
@@ -82,7 +80,7 @@ export class RoleQueries implements Queries.Role.Contract {
         });
     }
 
-    public findEffective(props: Queries.Role.FindEffective.Props): Promise<Queries.Role.FindEffective.Result> {
+    public findEffective(props: Queries.Role.FindEffective.Props): Queries.Role.FindEffective.Result {
         let account = props.actor;
         if (props.permissions?.includes(PermissionCode.ROLE_READ_ABSOLUTE)) {
             account = props.account ?? props.actor;
@@ -95,7 +93,7 @@ export class RoleQueries implements Queries.Role.Contract {
         });
     }
 
-    public getLookupList(props: Queries.Role.GetLookupList.Props): Promise<Queries.Role.GetLookupList.Result> {
+    public getLookupList(props: Queries.Role.GetLookupList.Props): Queries.Role.GetLookupList.Result {
         return this.roleRepository.getLookupList({
             pagination: props.pagination,
             realm: props.realm,
@@ -103,7 +101,7 @@ export class RoleQueries implements Queries.Role.Contract {
         });
     }
 
-    public getHierarchyGraph(props: Queries.Role.GetHierarchyGraph.Props): Promise<Queries.Role.GetHierarchyGraph.Result> {
+    public getHierarchyGraph(props: Queries.Role.GetHierarchyGraph.Props): Queries.Role.GetHierarchyGraph.Result {
         return this.roleRepository.getHierarchyGraph({
             realm: props.realm,
         });

@@ -1,8 +1,8 @@
 declare namespace Commands {
     namespace RoleConflictMember {
         interface ControllerContract {
-            create: (props: Create.Props) => Promise<Create.Result>;
-            purge: (props: Purge.Props) => Promise<Purge.Result>;
+            create: (props: Create.Props) => Create.Result;
+            purge: (props: Purge.Props) => Purge.Result;
         }
 
         interface Contract extends ControllerContract {}
@@ -18,7 +18,7 @@ declare namespace Commands {
                 context: Extract.Meta;
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
 
         namespace Purge {
@@ -32,7 +32,7 @@ declare namespace Commands {
                 context: Extract.Meta;
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
     }
 }

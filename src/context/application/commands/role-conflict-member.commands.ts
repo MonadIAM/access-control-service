@@ -19,18 +19,16 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
-        private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.InternalContract,
+        private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.Contract,
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.InternalContract,
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.InternalContract,
+        private readonly roleRepository: Repositories.Role.Contract,
         @Inject(ROLE_CONFLICT_MEMBER_SERVICE)
         private readonly roleConflictMemberService: Services.RoleConflictMember.Contract,
     ) {}
 
-    public async create(
-        props: Commands.RoleConflictMember.Create.Props,
-    ): Promise<Commands.RoleConflictMember.Create.Result> {
+    public async create(props: Commands.RoleConflictMember.Create.Props): Commands.RoleConflictMember.Create.Result {
         const { input, realm } = props;
 
         await this.transactionalService.run({
@@ -67,7 +65,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async purge(props: Commands.RoleConflictMember.Purge.Props): Promise<Commands.RoleConflictMember.Purge.Result> {
+    public async purge(props: Commands.RoleConflictMember.Purge.Props): Commands.RoleConflictMember.Purge.Result {
         const { input } = props;
 
         const { count } = await this.transactionalService.run({

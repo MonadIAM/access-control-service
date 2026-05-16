@@ -4,44 +4,64 @@ declare global {
     namespace Services {
         namespace AccountRoleAssignment {
             interface Contract {
-                create: (props: Create) => Promise<Entities.AccountRoleAssignment[]>;
-                assign: (props: Assign) => Entities.AccountRoleAssignment;
-                restore: (props: Restore) => void;
-                revoke: (props: Revoke) => void;
-                purge: (props: Purge) => void;
+                restore: (props: Restore.Props) => Restore.Result;
+                revoke: (props: Revoke.Props) => Revoke.Result;
+                create: (props: Create.Props) => Create.Result;
+                assign: (props: Assign.Props) => Assign.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
-            type Create = {
-                transaction: EntityManager;
-                input: {
-                    roles: Entities.Role[];
-                    account: string;
-                };
-                realm: Entities.Realm;
-                actor: string;
-            };
-
-            type Purge = {
-                transaction: EntityManager;
-                entities: Entities.AccountRoleAssignment[];
-            };
-
-            type Revoke = {
-                entities: Entities.AccountRoleAssignment[];
-            };
-
-            type Restore = {
-                entities: Entities.AccountRoleAssignment[];
-            };
-
-            type Assign = {
-                transaction: EntityManager;
-                input: {
+            namespace Create {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        roles: Entities.Role[];
+                        account: string;
+                    };
                     realm: Entities.Realm;
-                    role: Entities.Role;
-                    account: string;
+                    actor: string;
                 };
-            };
+
+                type Result = Promise<Entities.AccountRoleAssignment[]>;
+            }
+
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    entities: Entities.AccountRoleAssignment[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Revoke {
+                type Props = {
+                    entities: Entities.AccountRoleAssignment[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Restore {
+                type Props = {
+                    entities: Entities.AccountRoleAssignment[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Assign {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        realm: Entities.Realm;
+                        role: Entities.Role;
+                        account: string;
+                    };
+                };
+
+                type Result = Entities.AccountRoleAssignment;
+            }
         }
     }
 }

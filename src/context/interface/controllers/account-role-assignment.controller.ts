@@ -75,7 +75,7 @@ export class AccountRoleAssignmentController {
     @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
     public findUnique(
         @Query() { assignment, realm, view }: GetByIdQueryDTO,
-    ): Promise<Queries.AccountRoleAssignment.Entity> {
+    ): Queries.AccountRoleAssignment.FindUnique.Result {
         return this.accountRoleAssignmentQueries.findUnique({ assignment, realm, view });
     }
 
@@ -89,7 +89,7 @@ export class AccountRoleAssignmentController {
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { realm, view }: GetListQueryDTO,
-    ): Promise<[Queries.AccountRoleAssignment.Entity[], number]> {
+    ): Queries.AccountRoleAssignment.FindMany.Result {
         return this.accountRoleAssignmentQueries.findMany({ pagination, filters, realm, sort, view });
     }
 

@@ -5,13 +5,11 @@ import { RepositoryException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleClosureRepository implements Repositories.RoleClosure.Contract {
-    public async insertNewHierarchy({
-        transaction,
-        descendant,
-        ancestor,
-        realm,
-    }: Repositories.RoleClosure.InsertNewHierarchy): Promise<void> {
+    public async insertNewHierarchy(
+        props: Repositories.RoleClosure.InsertNewHierarchy.Props,
+    ): Repositories.RoleClosure.InsertNewHierarchy.Result {
         try {
+            const { transaction, descendant, ancestor, realm } = props;
             const context = transaction.getTransactionContext();
             const knex = transaction.getKnex();
 
@@ -42,14 +40,11 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
         }
     }
 
-    public async moveSubtrees({
-        transaction,
-        oldParent,
-        newParent,
-        children,
-        realm,
-    }: Repositories.RoleClosure.MoveSubtrees.Props): Promise<Repositories.RoleClosure.MoveSubtrees.Result> {
+    public async moveSubtrees(
+        props: Repositories.RoleClosure.MoveSubtrees.Props,
+    ): Repositories.RoleClosure.MoveSubtrees.Result {
         try {
+            const { transaction, oldParent, newParent, children, realm } = props;
             const context = transaction.getTransactionContext();
             const knex = transaction.getKnex();
 
@@ -112,12 +107,11 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
         }
     }
 
-    public async decreaseTransitiveDepth({
-        transaction,
-        realm,
-        role,
-    }: Repositories.RoleClosure.DecreaseTransitiveDepth): Promise<void> {
+    public async decreaseTransitiveDepth(
+        props: Repositories.RoleClosure.DecreaseTransitiveDepth.Props,
+    ): Repositories.RoleClosure.DecreaseTransitiveDepth.Result {
         try {
+            const { transaction, realm, role } = props;
             const knex = transaction.getKnex();
             const context = transaction.getTransactionContext()!;
 
@@ -145,13 +139,9 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
         }
     }
 
-    public async move({
-        transaction,
-        target,
-        newParent,
-        realm,
-    }: Repositories.RoleClosure.Move.Props): Promise<Repositories.RoleClosure.Move.Result> {
+    public async move(props: Repositories.RoleClosure.Move.Props): Repositories.RoleClosure.Move.Result {
         try {
+            const { transaction, newParent, target, realm } = props;
             const knex = transaction.getKnex();
             const context = transaction.getTransactionContext();
             const closureTable = "access_control.role_closure";
@@ -227,13 +217,11 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
         }
     }
 
-    public async existsTransitivePath({
-        transaction,
-        descendant,
-        ancestor,
-        realm,
-    }: Repositories.RoleClosure.ExistsTransitivePath): Promise<boolean> {
+    public async existsTransitivePath(
+        props: Repositories.RoleClosure.ExistsTransitivePath.Props,
+    ): Repositories.RoleClosure.ExistsTransitivePath.Result {
         try {
+            const { transaction, descendant, ancestor, realm } = props;
             const context = transaction.getTransactionContext();
             const knex = transaction.getKnex();
 

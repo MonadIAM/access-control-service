@@ -12,17 +12,17 @@ export class PermissionQueries implements Queries.Permission.Contract {
 
     public constructor(
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.ExternalContract,
+        private readonly permissionRepository: Repositories.Permission.QueryContract,
     ) {}
 
-    public findUnique(props: Queries.Permission.FindUnique.Props): Promise<Queries.Permission.FindUnique.Result> {
+    public findUnique(props: Queries.Permission.FindUnique.Props): Queries.Permission.FindUnique.Result {
         return this.permissionRepository.findUniqueOrThrow({
             where: { id: props.permission, realm: props.realm },
             options: { populate: this.populate[props.view] },
         });
     }
 
-    public findMany(props: Queries.Permission.FindMany.Props): Promise<Queries.Permission.FindMany.Result> {
+    public findMany(props: Queries.Permission.FindMany.Props): Queries.Permission.FindMany.Result {
         return this.permissionRepository.findMany({
             options: { populate: this.populate[props.view] },
             prefilter: { realm: props.realm },
@@ -32,7 +32,7 @@ export class PermissionQueries implements Queries.Permission.Contract {
         });
     }
 
-    public getLookupList(props: Queries.Permission.GetLookupList.Props): Promise<Queries.Permission.GetLookupList.Result> {
+    public getLookupList(props: Queries.Permission.GetLookupList.Props): Queries.Permission.GetLookupList.Result {
         return this.permissionRepository.getLookupList({
             pagination: props.pagination,
             realm: props.realm,
@@ -40,7 +40,7 @@ export class PermissionQueries implements Queries.Permission.Contract {
         });
     }
 
-    public findEffective(props: Queries.Permission.FindEffective.Props): Promise<Queries.Permission.FindEffective.Result> {
+    public findEffective(props: Queries.Permission.FindEffective.Props): Queries.Permission.FindEffective.Result {
         let account = props.actor;
         if (props.permissions?.includes(PermissionCode.PERMISSION_READ_ABSOLUTE)) {
             account = props.account ?? props.actor;

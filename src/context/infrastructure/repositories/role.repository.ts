@@ -15,7 +15,7 @@ export class RoleRepository
         Adapter: RoleAdapter,
         Entity: Role,
     })
-    implements Repositories.Role.ExternalContract, Repositories.Role.InternalContract
+    implements Repositories.Role.Contract
 {
     protected readonly roleLimit: number;
 
@@ -28,7 +28,7 @@ export class RoleRepository
         this.roleLimit = this.configService.getOrThrow<number>("ROLE_PER_REALM_LIMIT");
     }
 
-    public async getAncestors(props: Repositories.Role.GetAncestors): Promise<Entities.Role[]> {
+    public async getAncestors(props: Repositories.Role.GetAncestors.Props): Repositories.Role.GetAncestors.Result {
         try {
             const where: FilterQuery<Entities.RoleClosure> = {
                 ...(props.depth ? { depth: props.depth } : {}),
@@ -47,7 +47,7 @@ export class RoleRepository
         }
     }
 
-    public async findAncestors(props: Repositories.Role.FindAncestors): Promise<[Repositories.Role.DepthEntity[], number]> {
+    public async findAncestors(props: Repositories.Role.FindAncestors.Props): Repositories.Role.FindAncestors.Result {
         try {
             const { populate, pagination, filters, descendant } = props;
             const ancestorPopulate = populate.map((key) => `ancestor.${key}` as const);
@@ -72,7 +72,7 @@ export class RoleRepository
         }
     }
 
-    public async getDescendants(props: Repositories.Role.GetDescendants): Promise<Entities.Role[]> {
+    public async getDescendants(props: Repositories.Role.GetDescendants.Props): Repositories.Role.GetDescendants.Result {
         try {
             const where: FilterQuery<Entities.RoleClosure> = {
                 ...(props.depth ? { depth: props.depth } : {}),
@@ -93,9 +93,7 @@ export class RoleRepository
         }
     }
 
-    public async findDescendants(
-        props: Repositories.Role.FindDescendants,
-    ): Promise<[Repositories.Role.DepthEntity[], number]> {
+    public async findDescendants(props: Repositories.Role.FindDescendants.Props): Repositories.Role.FindDescendants.Result {
         try {
             const { populate, pagination, filters, ancestor } = props;
             const descendantPopulate = populate.map((key) => `descendant.${key}` as const);
@@ -120,12 +118,9 @@ export class RoleRepository
         }
     }
 
-    public async getLookupList({
-        pagination,
-        realm,
-        term,
-    }: Repositories.Role.GetLookupList): Promise<[Entities.Role[], number]> {
+    public async getLookupList(props: Repositories.Role.GetLookupList.Props): Repositories.Role.GetLookupList.Result {
         try {
+            const { pagination, realm, term } = props;
             const entityManager = this.readManager.fork();
             const builder = entityManager.createQueryBuilder(Role, "r");
 
@@ -149,13 +144,11 @@ export class RoleRepository
         }
     }
 
-    public async findDelegateable({
-        where: { realm, type, id },
-        pagination,
-        filters,
-        sort,
-    }: Repositories.Role.FindDelegateable): Promise<[Entities.Role[], number]> {
+    public async findDelegateable(
+        props: Repositories.Role.FindDelegateable.Props,
+    ): Repositories.Role.FindDelegateable.Result {
         try {
+            const { where, pagination, filters, sort } = props;
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
 
@@ -167,20 +160,23 @@ export class RoleRepository
                 .where("policy.is_revoked", false)
                 .modify((builder) => {
                     builder.andWhere((sub) => {
-                        if (type === "ACCOUNT") {
+                        if (where.type === "ACCOUNT") {
                             const rolesByAccountSubquery = knex("access_control.account_role_assignment")
                                 .select("role_id")
-                                .where("account", id);
+                                .where("account", where.id);
                             sub.whereIn("policy.delegator_id", rolesByAccountSubquery);
                         } else {
-                            sub.where("policy.delegator_id", id);
+                            sub.where("policy.delegator_id", where.id);
                         }
                     });
                 })
                 .select("closure.descendant_id");
 
             const baseQuery = (): Knex.QueryBuilder =>
-                knex.from({ R: "access_control.role" }).where("R.realm_id", realm).whereIn("R.id", allowedIdsSubquery);
+                knex
+                    .from({ R: "access_control.role" })
+                    .where("R.realm_id", where.realm)
+                    .whereIn("R.id", allowedIdsSubquery);
 
             const dataQuery = baseQuery().distinct("R.id").select("R.*");
             super.buildWhereKnex?.(dataQuery, filters, "R");
@@ -202,13 +198,9 @@ export class RoleRepository
         }
     }
 
-    public async findEffective({
-        where: { account, realm },
-        pagination,
-        filters,
-        sort,
-    }: Repositories.Role.FindEffective): Promise<[Entities.Role[], number]> {
+    public async findEffective(props: Repositories.Role.FindEffective.Props): Repositories.Role.FindEffective.Result {
         try {
+            const { where, pagination, filters, sort } = props;
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
 
@@ -217,8 +209,8 @@ export class RoleRepository
                     .from({ R: "access_control.role" })
                     .join({ RC: "access_control.role_closure" }, "R.id", "RC.ancestor_id")
                     .join({ ARM: "access_control.account_role_assignment" }, "RC.descendant_id", "ARM.role_id")
-                    .where("ARM.account", account)
-                    .andWhere("ARM.realm_id", realm)
+                    .where("ARM.account", where.account)
+                    .andWhere("ARM.realm_id", where.realm)
                     .andWhere("ARM.is_revoked", false);
 
             const dataQuery = baseQuery().distinct("R.id").select("R.*");
@@ -239,11 +231,11 @@ export class RoleRepository
         }
     }
 
-    public async getHierarchyGraph({
-        transaction,
-        realm,
-    }: Repositories.Role.GetHierarchyGraph): Promise<Repositories.Role.Graph.Data> {
+    public async getHierarchyGraph(
+        props: Repositories.Role.GetHierarchyGraph.Props,
+    ): Repositories.Role.GetHierarchyGraph.Result {
         try {
+            const { transaction, realm } = props;
             const knex = (transaction ?? this.readManager).getKnex();
 
             const nodesCTE = knex("access_control.role as role")
@@ -284,7 +276,10 @@ export class RoleRepository
         }
     }
 
-    public async findAccountsByRoles({ transaction, roles }: Repositories.Role.FindAccountsByRoles): Promise<string[]> {
+    public async findAccountsByRoles(
+        props: Repositories.Role.FindAccountsByRoles.Props,
+    ): Repositories.Role.FindAccountsByRoles.Result {
+        const { transaction, roles } = props;
         const entityManager = transaction ?? this.readManager.fork();
         const knex = entityManager.getKnex();
 
@@ -299,12 +294,11 @@ export class RoleRepository
         return results.map(({ account }) => account);
     }
 
-    public async wouldExceedRoleLimit({
-        transaction,
-        realm,
-        count,
-    }: Repositories.Role.WouldExceedRoleLimit): Promise<boolean> {
+    public async wouldExceedRoleLimit(
+        props: Repositories.Role.WouldExceedRoleLimit.Props,
+    ): Repositories.Role.WouldExceedRoleLimit.Result {
         try {
+            const { transaction, realm, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 

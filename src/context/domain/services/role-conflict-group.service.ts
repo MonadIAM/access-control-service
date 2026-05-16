@@ -12,13 +12,14 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
 
     public constructor(
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.InternalContract,
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
         private readonly configService: ConfigService,
     ) {
         this.membersLimit = this.configService.getOrThrow<number>("MAX_CONFLICT_MEMBERS_COUNT");
     }
 
-    public async create({ transaction, input, realm }: Services.RoleConflictGroup.Create): Promise<void> {
+    public async create(props: Services.RoleConflictGroup.Create.Props): Services.RoleConflictGroup.Create.Result {
+        const { transaction, input, realm } = props;
         if (input.members.length > this.membersLimit) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED`);
         } else {
@@ -47,11 +48,13 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
         }
     }
 
-    public update({ entity, patch }: Services.RoleConflictGroup.Update): void {
+    public update(props: Services.RoleConflictGroup.Update.Props): Services.RoleConflictGroup.Update.Result {
+        const { entity, patch } = props;
         entity.update({ patch });
     }
 
-    public purge({ transaction, entities }: Services.RoleConflictGroup.Purge): void {
+    public purge(props: Services.RoleConflictGroup.Purge.Props): Services.RoleConflictGroup.Purge.Result {
+        const { transaction, entities } = props;
         transaction.clear();
         for (const entity of entities) {
             entity.canPurge();
@@ -59,13 +62,15 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
         }
     }
 
-    public revoke({ entities }: Services.RoleConflictGroup.Revoke): void {
+    public revoke(props: Services.RoleConflictGroup.Revoke.Props): Services.RoleConflictGroup.Revoke.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.revoke();
         }
     }
 
-    public restore({ entities }: Services.RoleConflictGroup.Restore): void {
+    public restore(props: Services.RoleConflictGroup.Restore.Props): Services.RoleConflictGroup.Restore.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.restore();
         }

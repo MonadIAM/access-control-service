@@ -15,16 +15,16 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.InternalContract,
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.InternalContract,
+        private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.InternalContract,
+        private readonly roleRepository: Repositories.Role.Contract,
         @Inject(ROLE_CONFLICT_GROUP_SERVICE)
         private readonly roleConflictGroupService: Services.RoleConflictGroup.Contract,
     ) {}
 
-    public async create(props: Commands.RoleConflictGroup.Create.Props): Promise<Commands.RoleConflictGroup.Create.Result> {
+    public async create(props: Commands.RoleConflictGroup.Create.Props): Commands.RoleConflictGroup.Create.Result {
         const { input, realm } = props;
 
         await this.transactionalService.run({
@@ -62,7 +62,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async update(props: Commands.RoleConflictGroup.Update.Props): Promise<Commands.RoleConflictGroup.Update.Result> {
+    public async update(props: Commands.RoleConflictGroup.Update.Props): Commands.RoleConflictGroup.Update.Result {
         const { input, realm, id } = props;
 
         await this.transactionalService.run({
@@ -86,7 +86,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         return { message: `${this.dictionaryPath}.UPDATED` };
     }
 
-    public async purge(props: Commands.RoleConflictGroup.Purge.Props): Promise<Commands.RoleConflictGroup.Purge.Result> {
+    public async purge(props: Commands.RoleConflictGroup.Purge.Props): Commands.RoleConflictGroup.Purge.Result {
         const { input } = props;
 
         const { count } = await this.transactionalService.run({
@@ -119,7 +119,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         }
     }
 
-    public async revoke(props: Commands.RoleConflictGroup.Revoke.Props): Promise<Commands.RoleConflictGroup.Revoke.Result> {
+    public async revoke(props: Commands.RoleConflictGroup.Revoke.Props): Commands.RoleConflictGroup.Revoke.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -152,9 +152,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         }
     }
 
-    public async restore(
-        props: Commands.RoleConflictGroup.Restore.Props,
-    ): Promise<Commands.RoleConflictGroup.Restore.Result> {
+    public async restore(props: Commands.RoleConflictGroup.Restore.Props): Commands.RoleConflictGroup.Restore.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({

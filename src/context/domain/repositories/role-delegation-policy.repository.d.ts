@@ -1,38 +1,47 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { RoleDelegationPolicy as RoleDelegationPolicyEntity } from "../entities";
-
 declare global {
     namespace Repositories {
         namespace RoleDelegationPolicy {
-            type Entity = RoleDelegationPolicyEntity;
-
-            interface InternalContract extends Repositories.Base.Contract<Entity, Adapters.RoleDelegationPolicy.Types> {
-                wouldExceedPolicyLimit: (props: WouldExceedPolicyLimit) => Promise<boolean>;
-                existsTransitivePath: (props: ExistsTransitivePath) => Promise<boolean>;
-                isDelegationAllowed: (props: IsDelegationAllowed) => Promise<boolean>;
+            interface Contract
+                extends Repositories.Base.Contract<Entities.RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types> {
+                wouldExceedPolicyLimit: (props: WouldExceedPolicyLimit.Props) => WouldExceedPolicyLimit.Result;
+                existsTransitivePath: (props: ExistsTransitivePath.Props) => ExistsTransitivePath.Result;
+                isDelegationAllowed: (props: IsDelegationAllowed.Props) => IsDelegationAllowed.Result;
             }
 
-            interface ExternalContract extends Pick<InternalContract, "findUniqueOrThrow" | "findMany"> {}
+            interface QueryContract extends Pick<Contract, "findUniqueOrThrow" | "findMany"> {}
 
-            type ExistsTransitivePath = {
-                transaction?: EntityManager;
-                from: string;
-                to: string | string[];
-            };
+            namespace ExistsTransitivePath {
+                type Props = {
+                    transaction?: EntityManager;
+                    to: string | string[];
+                    from: string;
+                };
 
-            type IsDelegationAllowed = {
-                transaction?: EntityManager;
-                roles: string[];
-                realm: string;
-                actor: string;
-            };
+                type Result = Promise<boolean>;
+            }
 
-            type WouldExceedPolicyLimit = {
-                transaction?: EntityManager;
-                delegator: string;
-                count?: number;
-            };
+            namespace WouldExceedPolicyLimit {
+                type Props = {
+                    transaction?: EntityManager;
+                    delegator: string;
+                    count?: number;
+                };
+
+                type Result = Promise<boolean>;
+            }
+
+            namespace IsDelegationAllowed {
+                type Props = {
+                    transaction?: EntityManager;
+                    roles: string[];
+                    realm: string;
+                    actor: string;
+                };
+
+                type Result = Promise<boolean>;
+            }
         }
     }
 }

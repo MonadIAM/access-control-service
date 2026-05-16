@@ -23,18 +23,16 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
-        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.InternalContract,
+        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.InternalContract,
+        private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.InternalContract,
+        private readonly roleRepository: Repositories.Role.Contract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_SERVICE)
         private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.Contract,
     ) {}
 
-    public async create(
-        props: Commands.AccountRoleAssignment.Create.Props,
-    ): Promise<Commands.AccountRoleAssignment.Create.Result> {
+    public async create(props: Commands.AccountRoleAssignment.Create.Props): Commands.AccountRoleAssignment.Create.Result {
         const { input, actor, realm } = props;
 
         await this.transactionalService.run({
@@ -91,9 +89,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async purge(
-        props: Commands.AccountRoleAssignment.Purge.Props,
-    ): Promise<Commands.AccountRoleAssignment.Purge.Result> {
+    public async purge(props: Commands.AccountRoleAssignment.Purge.Props): Commands.AccountRoleAssignment.Purge.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -144,9 +140,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         }
     }
 
-    public async revoke(
-        props: Commands.AccountRoleAssignment.Revoke.Props,
-    ): Promise<Commands.AccountRoleAssignment.Revoke.Result> {
+    public async revoke(props: Commands.AccountRoleAssignment.Revoke.Props): Commands.AccountRoleAssignment.Revoke.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -201,7 +195,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
 
     public async restore(
         props: Commands.AccountRoleAssignment.Restore.Props,
-    ): Promise<Commands.AccountRoleAssignment.Restore.Result> {
+    ): Commands.AccountRoleAssignment.Restore.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -254,9 +248,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         }
     }
 
-    public async assign(
-        props: Commands.AccountRoleAssignment.Assign.Props,
-    ): Promise<Commands.AccountRoleAssignment.Assign.Result> {
+    public async assign(props: Commands.AccountRoleAssignment.Assign.Props): Commands.AccountRoleAssignment.Assign.Result {
         await this.transactionalService.run({
             resource: this.resource,
             projectionJournal: {
@@ -305,9 +297,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         });
     }
 
-    public async clean(
-        props: Commands.AccountRoleAssignment.Clean.Props,
-    ): Promise<Commands.AccountRoleAssignment.Clean.Result> {
+    public async clean(props: Commands.AccountRoleAssignment.Clean.Props): Commands.AccountRoleAssignment.Clean.Result {
         await this.transactionalService.run({
             resource: this.resource,
             projectionJournal: {

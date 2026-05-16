@@ -4,14 +4,14 @@ declare global {
     namespace Commands {
         namespace PermissionOverride {
             interface ControllerContract {
-                restore: (props: Restore.Props) => Promise<Restore.Result>;
-                create: (props: Create.Props) => Promise<Create.Result>;
-                revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
-                purge: (props: Purge.Props) => Promise<Purge.Result>;
+                restore: (props: Restore.Props) => Restore.Result;
+                create: (props: Create.Props) => Create.Result;
+                revoke: (props: Revoke.Props) => Revoke.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
             interface ConsumerContract {
-                clean: (props: Clean.Props) => Promise<Clean.Result>;
+                clean: (props: Clean.Props) => Clean.Result;
             }
 
             interface PrivateContract {
@@ -32,7 +32,7 @@ declare global {
                     context: Extract.Meta;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Purge {
@@ -46,7 +46,7 @@ declare global {
                     context: Extract.Meta;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Revoke {
@@ -60,7 +60,7 @@ declare global {
                     context: Extract.Meta;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Restore {
@@ -74,7 +74,7 @@ declare global {
                     context: Extract.Meta;
                 };
 
-                type Result = MessageResult;
+                type Result = Promise<MessageResult>;
             }
 
             namespace Clean {
@@ -82,7 +82,7 @@ declare global {
                     account: string;
                 };
 
-                type Result = void;
+                type Result = Promise<void>;
             }
 
             namespace OutboxPayloadMapper {

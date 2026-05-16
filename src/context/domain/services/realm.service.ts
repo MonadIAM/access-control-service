@@ -12,12 +12,13 @@ export class RealmService implements Services.Realm.Contract {
 
     public constructor(
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.InternalContract,
+        private readonly permissionRepository: Repositories.Permission.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.InternalContract,
+        private readonly realmRepository: Repositories.Realm.Contract,
     ) {}
 
-    public async create({ transaction, input, actor }: Services.Realm.Create.Props): Promise<Services.Realm.Create.Result> {
+    public async create(props: Services.Realm.Create.Props): Services.Realm.Create.Result {
+        const { transaction, input, actor } = props;
         const limitExceeded = await this.realmRepository.wouldExceedRealmLimit({
             account: actor,
             transaction,
@@ -47,11 +48,13 @@ export class RealmService implements Services.Realm.Contract {
         }
     }
 
-    public update({ entity, patch }: Services.Realm.Update): void {
+    public update(props: Services.Realm.Update.Props): Services.Realm.Update.Result {
+        const { entity, patch } = props;
         entity.update({ patch });
     }
 
-    public purge({ transaction, entities }: Services.Realm.Purge): void {
+    public purge(props: Services.Realm.Purge.Props): Services.Realm.Purge.Result {
+        const { transaction, entities } = props;
         transaction.clear();
         for (const entity of entities) {
             entity.canPurge();
@@ -59,23 +62,22 @@ export class RealmService implements Services.Realm.Contract {
         }
     }
 
-    public revoke({ entities }: Services.Realm.Revoke): void {
+    public revoke(props: Services.Realm.Revoke.Props): Services.Realm.Revoke.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.revoke();
         }
     }
 
-    public restore({ entities }: Services.Realm.Restore): void {
+    public restore(props: Services.Realm.Restore.Props): Services.Realm.Restore.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.restore();
         }
     }
 
-    private createBaseRoles({
-        transaction,
-        input,
-        realm,
-    }: Services.Realm.CreateBaseRoles.Props): Services.Realm.CreateBaseRoles.Result {
+    public createBaseRoles(props: Services.Realm.CreateBaseRoles.Props): Services.Realm.CreateBaseRoles.Result {
+        const { transaction, input, realm } = props;
         const root = new Role({
             description: "Role not available to users",
             protoType: RoleProtoType.COMPOSITE,
@@ -123,11 +125,23 @@ export class RealmService implements Services.Realm.Contract {
         };
     }
 
-    private async assignBasePermissions({
-        transaction,
-        roles,
-        realm,
-    }: Services.Realm.AssignBasePermissions.Props): Promise<Services.Realm.AssignBasePermissions.Result> {
+    public assignBaseRoles(props: Services.Realm.AssignBaseRoles.Props): Services.Realm.AssignBaseRoles.Result {
+        const { transaction, roles, actor, realm } = props;
+        const assignments: Entities.AccountRoleAssignment[] = [
+            new AccountRoleAssignment({ account: actor, role: roles.admin, realm }),
+        ];
+
+        for (const assignment of assignments) {
+            transaction.persist(assignment);
+        }
+
+        return assignments;
+    }
+
+    public async assignBasePermissions(
+        props: Services.Realm.AssignBasePermissions.Props,
+    ): Services.Realm.AssignBasePermissions.Result {
+        const { transaction, roles, realm } = props;
         const permissions = await this.permissionRepository.find({
             where: { code: { $in: ADMIN_PERMISSION_CODES } },
             transaction,
@@ -148,23 +162,6 @@ export class RealmService implements Services.Realm.Contract {
                 transaction.persist(userAssignment);
                 assignments.push(userAssignment);
             }
-        }
-
-        return assignments;
-    }
-
-    private assignBaseRoles({
-        transaction,
-        roles,
-        actor,
-        realm,
-    }: Services.Realm.AssignBaseRoles.Props): Services.Realm.AssignBaseRoles.Result {
-        const assignments: Entities.AccountRoleAssignment[] = [
-            new AccountRoleAssignment({ account: actor, role: roles.admin, realm }),
-        ];
-
-        for (const assignment of assignments) {
-            transaction.persist(assignment);
         }
 
         return assignments;

@@ -10,10 +10,11 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
 
     public constructor(
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
-        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.InternalContract,
+        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.Contract,
     ) {}
 
-    public async create({ transaction, realm, input }: Services.RoleDelegationPolicy.Create): Promise<void> {
+    public async create(props: Services.RoleDelegationPolicy.Create.Props): Services.RoleDelegationPolicy.Create.Result {
+        const { transaction, realm, input } = props;
         const [limitExceeded, existsTransitivePath] = await Promise.all([
             this.roleDelegationPolicyRepository.wouldExceedPolicyLimit({
                 delegator: input.delegator.id,
@@ -44,11 +45,13 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
         }
     }
 
-    public update({ entity, patch }: Services.RoleDelegationPolicy.Update): void {
+    public update(props: Services.RoleDelegationPolicy.Update.Props): Services.RoleDelegationPolicy.Update.Result {
+        const { entity, patch } = props;
         entity.update({ patch });
     }
 
-    public purge({ transaction, entities }: Services.RoleDelegationPolicy.Purge): void {
+    public purge(props: Services.RoleDelegationPolicy.Purge.Props): Services.RoleDelegationPolicy.Purge.Result {
+        const { transaction, entities } = props;
         transaction.clear();
         for (const entity of entities) {
             entity.canPurge();
@@ -56,13 +59,15 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
         }
     }
 
-    public revoke({ entities }: Services.RoleDelegationPolicy.Revoke): void {
+    public revoke(props: Services.RoleDelegationPolicy.Revoke.Props): Services.RoleDelegationPolicy.Revoke.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.revoke();
         }
     }
 
-    public restore({ entities }: Services.RoleDelegationPolicy.Restore): void {
+    public restore(props: Services.RoleDelegationPolicy.Restore.Props): Services.RoleDelegationPolicy.Restore.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.restore();
         }

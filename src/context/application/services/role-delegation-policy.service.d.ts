@@ -4,41 +4,61 @@ declare global {
     namespace Services {
         namespace RoleDelegationPolicy {
             interface Contract {
-                create: (props: Create) => Promise<void>;
-                restore: (props: Restore) => void;
-                revoke: (props: Revoke) => void;
-                update: (props: Update) => void;
-                purge: (props: Purge) => void;
+                restore: (props: Restore.Props) => Restore.Result;
+                revoke: (props: Revoke.Props) => Revoke.Result;
+                create: (props: Create.Props) => Create.Result;
+                update: (props: Update.Props) => Update.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
-            type Create = {
-                transaction: EntityManager;
-                input: {
-                    delegator: Entities.Role;
-                    target: Entities.Role;
-                    description: string;
-                    depthLimit?: number;
+            namespace Create {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        delegator: Entities.Role;
+                        target: Entities.Role;
+                        description: string;
+                        depthLimit?: number;
+                    };
+                    realm: Entities.Realm;
                 };
-                realm: Entities.Realm;
-            };
 
-            type Update = {
-                patch: Partial<Entities.RoleConflictGroup.MutableFields>;
-                entity: Entities.RoleDelegationPolicy;
-            };
+                type Result = Promise<void>;
+            }
 
-            type Purge = {
-                transaction: EntityManager;
-                entities: Entities.RoleDelegationPolicy[];
-            };
+            namespace Update {
+                type Props = {
+                    patch: Partial<Entities.RoleConflictGroup.MutableFields>;
+                    entity: Entities.RoleDelegationPolicy;
+                };
 
-            type Revoke = {
-                entities: Entities.RoleDelegationPolicy[];
-            };
+                type Result = void;
+            }
 
-            type Restore = {
-                entities: Entities.RoleDelegationPolicy[];
-            };
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    entities: Entities.RoleDelegationPolicy[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Revoke {
+                type Props = {
+                    entities: Entities.RoleDelegationPolicy[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Restore {
+                type Props = {
+                    entities: Entities.RoleDelegationPolicy[];
+                };
+
+                type Result = void;
+            }
         }
     }
 }

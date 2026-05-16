@@ -5,14 +5,18 @@ import { MoveMode, RoleActorType, RoleProtoType } from "~context/enums";
 declare global {
     namespace Services {
         namespace Role {
-            interface Contract {
-                purgeSubtree: (props: PurgeSubtree.Props) => Promise<PurgeSubtree.Result>;
-                create: (props: Create.Props) => Promise<Create.Result>;
-                move: (props: Move.Props) => Promise<Move.Result>;
-                purge: (props: Purge) => Promise<void>;
-                restore: (props: Restore) => void;
-                update: (props: Update) => void;
-                revoke: (props: Revoke) => void;
+            interface PrivateContract {
+                buildHierarchy: (props: BuildHierarchy.Props) => BuildHierarchy.Result;
+            }
+
+            interface Contract extends PrivateContract {
+                purgeSubtree: (props: PurgeSubtree.Props) => PurgeSubtree.Result;
+                restore: (props: Restore.Props) => Restore.Result;
+                revoke: (props: Revoke.Props) => Revoke.Result;
+                update: (props: Update.Props) => Update.Result;
+                create: (props: Create.Props) => Create.Result;
+                purge: (props: Purge.Props) => Purge.Result;
+                move: (props: Move.Props) => Move.Result;
             }
 
             namespace PurgeSubtree {
@@ -22,7 +26,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = Entities.Role[];
+                type Result = Promise<Entities.Role[]>;
             }
 
             namespace Create {
@@ -40,7 +44,7 @@ declare global {
                     realm: Entities.Realm;
                 };
 
-                type Result = Entities.Role;
+                type Result = Promise<Entities.Role>;
             }
 
             namespace Move {
@@ -52,40 +56,62 @@ declare global {
                     realm: string;
                 };
 
-                type Result = {
-                    removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
-                    upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
-                }[];
+                type Result = Promise<
+                    {
+                        removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
+                        upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
+                    }[]
+                >;
             }
 
-            type Update = {
-                patch: Partial<Entities.Role.MutableFields>;
-                entity: Entities.Role;
-            };
+            namespace Update {
+                type Props = {
+                    patch: Partial<Entities.Role.MutableFields>;
+                    entity: Entities.Role;
+                };
 
-            type Purge = {
-                transaction: EntityManager;
-                entity: Entities.Role;
-                realm: string;
-            };
+                type Result = void;
+            }
 
-            type Revoke = {
-                entities: Entities.Role[];
-            };
-
-            type Restore = {
-                entities: Entities.Role[];
-            };
-
-            type BuildHierarchy = {
-                transaction: EntityManager;
-                input: {
-                    children?: string[];
-                    parent: Entities.Role;
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
                     entity: Entities.Role;
                     realm: string;
                 };
-            };
+
+                type Result = Promise<void>;
+            }
+
+            namespace Revoke {
+                type Props = {
+                    entities: Entities.Role[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Restore {
+                type Props = {
+                    entities: Entities.Role[];
+                };
+
+                type Result = void;
+            }
+
+            namespace BuildHierarchy {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        children?: string[];
+                        parent: Entities.Role;
+                        entity: Entities.Role;
+                        realm: string;
+                    };
+                };
+
+                type Result = Promise<void>;
+            }
         }
     }
 }

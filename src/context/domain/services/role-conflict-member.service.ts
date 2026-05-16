@@ -10,10 +10,11 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
 
     public constructor(
         @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
-        private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.InternalContract,
+        private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.Contract,
     ) {}
 
-    public async create({ transaction, input }: Services.RoleConflictMember.Create): Promise<void> {
+    public async create(props: Services.RoleConflictMember.Create.Props): Services.RoleConflictMember.Create.Result {
+        const { transaction, input } = props;
         const limitExceeded = await this.roleConflictMemberRepository.wouldExceedMemberLimit({
             count: input.roles.length,
             group: input.group.id,
@@ -29,7 +30,8 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
         }
     }
 
-    public purge({ transaction, entities }: Services.RoleConflictMember.Purge): void {
+    public purge(props: Services.RoleConflictMember.Purge.Props): Services.RoleConflictMember.Purge.Result {
+        const { transaction, entities } = props;
         transaction.clear();
         for (const entity of entities) {
             entity.canPurge();

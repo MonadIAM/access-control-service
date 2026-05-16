@@ -3,12 +3,10 @@ import { ResponseViewType } from "~context/enums";
 declare global {
     namespace Queries {
         namespace RoleConflictGroup {
-            type Entity = Repositories.RoleConflictGroup.Entity;
-
             interface Contract {
-                findViolationDetails: (props: FindViolationDetails.Props) => Promise<FindViolationDetails.Result>;
-                findUnique: (props: FindUnique.Props) => Promise<FindUnique.Result>;
-                findMany: (props: FindMany.Props) => Promise<FindMany.Result>;
+                findViolationDetails: (props: FindViolationDetails.Props) => FindViolationDetails.Result;
+                findUnique: (props: FindUnique.Props) => FindUnique.Result;
+                findMany: (props: FindMany.Props) => FindMany.Result;
             }
 
             namespace FindMany {
@@ -20,7 +18,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = [Entity[], number];
+                type Result = Promise<[Entities.RoleConflictGroup[], number]>;
             }
 
             namespace FindUnique {
@@ -30,7 +28,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = Entity;
+                type Result = Promise<Entities.RoleConflictGroup>;
             }
 
             namespace FindViolationDetails {
@@ -40,7 +38,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = Entity[];
+                type Result = Promise<Entities.RoleConflictGroup[]>;
             }
         }
     }

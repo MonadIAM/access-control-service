@@ -1,11 +1,11 @@
 declare namespace Commands {
     namespace Permission {
         interface ControllerContract {
-            restore: (props: Restore.Props) => Promise<Restore.Result>;
-            create: (props: Create.Props) => Promise<Create.Result>;
-            update: (props: Update.Props) => Promise<Update.Result>;
-            revoke: (props: Revoke.Props) => Promise<Revoke.Result>;
-            purge: (props: Purge.Props) => Promise<Purge.Result>;
+            restore: (props: Restore.Props) => Restore.Result;
+            create: (props: Create.Props) => Create.Result;
+            update: (props: Update.Props) => Update.Result;
+            revoke: (props: Revoke.Props) => Revoke.Result;
+            purge: (props: Purge.Props) => Purge.Result;
         }
 
         interface PrivateContract {
@@ -26,7 +26,7 @@ declare namespace Commands {
                 context: Extract.Meta;
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
 
         namespace Update {
@@ -41,7 +41,7 @@ declare namespace Commands {
                 context: Extract.Meta;
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
 
         namespace Purge {
@@ -55,7 +55,7 @@ declare namespace Commands {
                 context: Extract.Meta;
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
 
         namespace Revoke {
@@ -69,7 +69,7 @@ declare namespace Commands {
                 context: Extract.Meta;
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
 
         namespace Restore {
@@ -83,7 +83,7 @@ declare namespace Commands {
                 context: Extract.Meta;
             };
 
-            type Result = MessageResult;
+            type Result = Promise<MessageResult>;
         }
 
         namespace OutboxPayloadMapper {

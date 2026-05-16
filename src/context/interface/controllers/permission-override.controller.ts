@@ -78,7 +78,7 @@ export class PermissionOverrideController {
         @Query() { override, realm, view }: GetByIdQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
-    ): Promise<Queries.PermissionOverride.Entity> {
+    ): Queries.PermissionOverride.FindUnique.Result {
         return this.permissionOverrideQueries.findUnique({ permissions, override, realm, actor, view });
     }
 
@@ -94,7 +94,7 @@ export class PermissionOverrideController {
         @Query() { realm, view }: GetListQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
-    ): Promise<[Queries.PermissionOverride.Entity[], number]> {
+    ): Queries.PermissionOverride.FindMany.Result {
         return this.permissionOverrideQueries.findMany({ permissions, pagination, filters, realm, actor, sort, view });
     }
 

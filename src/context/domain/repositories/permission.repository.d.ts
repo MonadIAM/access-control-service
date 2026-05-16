@@ -2,44 +2,49 @@ import { EntityManager } from "@mikro-orm/postgresql";
 
 import { AssignmentScope } from "~context/enums";
 
-import { Permission as PermissionEntity } from "../entities";
-
 declare global {
     namespace Repositories {
         namespace Permission {
-            type Entity = PermissionEntity;
-
-            interface InternalContract extends Repositories.Base.Contract<Entity, Adapters.Permission.Types> {
+            interface Contract extends Repositories.Base.Contract<Entities.Permission, Adapters.Permission.Types> {
+                wouldExceedPermissionLimit: (props: WouldExceedPermissionLimit.Props) => WouldExceedPermissionLimit.Result;
+                findAccountsByPermissions: (props: FindAccountsByPermissions.Props) => FindAccountsByPermissions.Result;
                 collectEffective: (props: CollectEffective.Props) => Promise<CollectEffective.Result>;
-                wouldExceedPermissionLimit: (props: WouldExceedPermissionLimit) => Promise<boolean>;
-                findAccountsByPermissions: (props: FindAccountsByPermissions) => Promise<string[]>;
-                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
-                findEffective: (props: FindEffective) => Promise<[Entity[], number]>;
+                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
+                findEffective: (props: FindEffective.Props) => FindEffective.Result;
             }
 
-            interface ExternalContract
-                extends Pick<InternalContract, "getLookupList" | "findEffective" | "findUniqueOrThrow" | "findMany"> {}
+            interface QueryContract
+                extends Pick<Contract, "getLookupList" | "findEffective" | "findUniqueOrThrow" | "findMany"> {}
 
-            type GetLookupList = {
-                pagination: Pagination;
-                realm: string;
-                term: string;
-            };
-
-            type FindEffective = {
-                filters: Adapters.Permission.Filters;
-                sort: Adapters.Permission.Sort;
-                pagination: Pagination;
-                where: {
-                    account: string;
+            namespace GetLookupList {
+                type Props = {
+                    pagination: Pagination;
                     realm: string;
+                    term: string;
                 };
-            };
+
+                type Result = Promise<[Entities.Permission[], number]>;
+            }
+
+            namespace FindEffective {
+                type Props = {
+                    filters: Adapters.Permission.Filters;
+                    sort: Adapters.Permission.Sort;
+                    pagination: Pagination;
+                    where: {
+                        account: string;
+                        realm: string;
+                    };
+                };
+
+                type Result = Promise<[Entities.Permission[], number]>;
+            }
 
             namespace CollectEffective {
                 type Props = {
                     account: string;
                 };
+
                 type Result = {
                     scope: AssignmentScope;
                     permission: string;
@@ -47,16 +52,24 @@ declare global {
                 }[];
             }
 
-            type FindAccountsByPermissions = {
-                transaction?: EntityManager;
-                permissions: string[];
-            };
+            namespace FindAccountsByPermissions {
+                type Props = {
+                    transaction?: EntityManager;
+                    permissions: string[];
+                };
 
-            type WouldExceedPermissionLimit = {
-                transaction?: EntityManager;
-                count?: number;
-                realm: string;
-            };
+                type Result = Promise<string[]>;
+            }
+
+            namespace WouldExceedPermissionLimit {
+                type Props = {
+                    transaction?: EntityManager;
+                    count?: number;
+                    realm: string;
+                };
+
+                type Result = Promise<boolean>;
+            }
         }
     }
 }

@@ -72,7 +72,7 @@ export class RealmController {
         @Query() { realm, view }: GetByIdQueryDTO,
         @Extract.Session() { account }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
-    ): Promise<Queries.Realm.Entity> {
+    ): Queries.Realm.FindUnique.Result {
         return this.realmQueries.findUnique({ permissions, account, realm, view });
     }
 
@@ -88,7 +88,7 @@ export class RealmController {
         @Extract.Session() { account }: Extract.Session.Auth,
         @Query() { view }: BaseReadQueryDTO,
         @Extract.Permissions() permissions?: string[],
-    ): Promise<[Queries.Realm.Entity[], number]> {
+    ): Queries.Realm.FindMany.Result {
         return this.realmQueries.findMany({ permissions, pagination, filters, account, view, sort });
     }
 
@@ -104,7 +104,7 @@ export class RealmController {
         @Query() { term }: GetLookupListQueryDTO,
         @Extract.Session() { account }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
-    ): Promise<[Queries.Realm.Entity[], number]> {
+    ): Queries.Realm.GetLookupList.Result {
         return this.realmQueries.getLookupList({ permissions, pagination, account, term });
     }
 

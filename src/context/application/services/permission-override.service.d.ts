@@ -6,34 +6,50 @@ declare global {
     namespace Services {
         namespace PermissionOverride {
             interface Contract {
-                create: (props: Create) => Promise<Entities.PermissionOverride>;
-                restore: (props: Restore) => void;
-                revoke: (props: Revoke) => void;
-                purge: (props: Purge) => void;
+                restore: (props: Restore.Props) => Restore.Result;
+                revoke: (props: Revoke.Props) => Revoke.Result;
+                create: (props: Create.Props) => Create.Result;
+                purge: (props: Purge.Props) => Purge.Result;
             }
 
-            type Create = {
-                transaction: EntityManager;
-                input: {
-                    effect: PermissionOverrideEffect;
-                    permission: Entities.Permission;
-                    account: string;
+            namespace Create {
+                type Props = {
+                    transaction: EntityManager;
+                    input: {
+                        effect: PermissionOverrideEffect;
+                        permission: Entities.Permission;
+                        account: string;
+                    };
+                    realm: Entities.Realm;
                 };
-                realm: Entities.Realm;
-            };
 
-            type Purge = {
-                transaction: EntityManager;
-                entities: Entities.PermissionOverride[];
-            };
+                type Result = Promise<Entities.PermissionOverride>;
+            }
 
-            type Revoke = {
-                entities: Entities.PermissionOverride[];
-            };
+            namespace Purge {
+                type Props = {
+                    transaction: EntityManager;
+                    entities: Entities.PermissionOverride[];
+                };
 
-            type Restore = {
-                entities: Entities.PermissionOverride[];
-            };
+                type Result = void;
+            }
+
+            namespace Revoke {
+                type Props = {
+                    entities: Entities.PermissionOverride[];
+                };
+
+                type Result = void;
+            }
+
+            namespace Restore {
+                type Props = {
+                    entities: Entities.PermissionOverride[];
+                };
+
+                type Result = void;
+            }
         }
     }
 }

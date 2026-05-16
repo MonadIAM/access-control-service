@@ -15,7 +15,7 @@ export class PermissionRepository
         Adapter: PermissionAdapter,
         Entity: Permission,
     })
-    implements Repositories.Permission.InternalContract
+    implements Repositories.Permission.Contract
 {
     protected readonly permissionLimit: number;
 
@@ -28,12 +28,11 @@ export class PermissionRepository
         this.permissionLimit = this.configService.getOrThrow<number>("PERMISSION_PER_REALM_LIMIT");
     }
 
-    public async getLookupList({
-        pagination,
-        realm,
-        term,
-    }: Repositories.Permission.GetLookupList): Promise<[Entities.Permission[], number]> {
+    public async getLookupList(
+        props: Repositories.Permission.GetLookupList.Props,
+    ): Repositories.Permission.GetLookupList.Result {
         try {
+            const { pagination, realm, term } = props;
             const entityManager = this.readManager.fork();
             const builder = entityManager.createQueryBuilder(Permission, "p");
 
@@ -57,13 +56,11 @@ export class PermissionRepository
         }
     }
 
-    public async findEffective({
-        where: { account, realm },
-        pagination,
-        filters,
-        sort,
-    }: Repositories.Permission.FindEffective): Promise<[Entities.Permission[], number]> {
+    public async findEffective(
+        props: Repositories.Permission.FindEffective.Props,
+    ): Repositories.Permission.FindEffective.Result {
         try {
+            const { pagination, filters, where, sort } = props;
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
 
@@ -73,8 +70,8 @@ export class PermissionRepository
                     .distinct()
                     .from({ arm: "access_control.account_role_assignment" })
                     .join({ rc: "access_control.role_closure" }, "arm.role_id", "rc.descendant_id")
-                    .where("arm.account", account)
-                    .andWhere("arm.realm_id", realm)
+                    .where("arm.account", where.account)
+                    .andWhere("arm.realm_id", where.realm)
                     .andWhere("arm.is_revoked", false);
 
                 const rolePermissions = knex
@@ -87,16 +84,16 @@ export class PermissionRepository
                 const deniedPermissions = knex
                     .select("po.permission_id")
                     .from({ po: "access_control.permission_override" })
-                    .where("po.account", account)
-                    .andWhere("po.realm_id", realm)
+                    .where("po.account", where.account)
+                    .andWhere("po.realm_id", where.realm)
                     .andWhere("po.effect", PermissionOverrideEffect.DENY)
                     .andWhere("po.is_revoked", false);
 
                 const allowedOverrides = knex
                     .select("po.permission_id")
                     .from({ po: "access_control.permission_override" })
-                    .where("po.account", account)
-                    .andWhere("po.realm_id", realm)
+                    .where("po.account", where.account)
+                    .andWhere("po.realm_id", where.realm)
                     .andWhere("po.effect", PermissionOverrideEffect.ALLOW)
                     .andWhere("po.is_revoked", false);
 
@@ -219,10 +216,10 @@ export class PermissionRepository
         }
     }
 
-    public async findAccountsByPermissions({
-        transaction,
-        permissions,
-    }: Repositories.Permission.FindAccountsByPermissions): Promise<string[]> {
+    public async findAccountsByPermissions(
+        props: Repositories.Permission.FindAccountsByPermissions.Props,
+    ): Repositories.Permission.FindAccountsByPermissions.Result {
+        const { transaction, permissions } = props;
         const entityManager = transaction ?? this.readManager.fork();
         const knex = entityManager.getKnex();
 
@@ -248,12 +245,11 @@ export class PermissionRepository
         return results.map(({ account }) => account);
     }
 
-    public async wouldExceedPermissionLimit({
-        transaction,
-        realm,
-        count,
-    }: Repositories.Permission.WouldExceedPermissionLimit): Promise<boolean> {
+    public async wouldExceedPermissionLimit(
+        props: Repositories.Permission.WouldExceedPermissionLimit.Props,
+    ): Repositories.Permission.WouldExceedPermissionLimit.Result {
         try {
+            const { transaction, realm, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
             const knex = entityManager.getKnex();
 

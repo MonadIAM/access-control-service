@@ -2,13 +2,10 @@ import { EntityManager, FilterQuery, FindOptions, EntityKey } from "@mikro-orm/p
 
 import { DelegatorType } from "~context/enums";
 
-import { RoleClosure as RoleClosureEntity, Role as RoleEntity } from "../entities";
-
 declare global {
     namespace Repositories {
         namespace Role {
-            type Entity = RoleEntity;
-            type DepthEntity = Entity & { depth: number };
+            type DepthEntity = Entities.Role & { depth: number };
 
             namespace Graph {
                 type Node = {
@@ -33,22 +30,22 @@ declare global {
                 };
             }
 
-            interface InternalContract extends Repositories.Base.Contract<Entity, Adapters.RolePermissionAssignment.Types> {
-                findDescendants: (props: FindDescendants) => Promise<[DepthEntity[], number]>;
-                findDelegateable: (props: FindDelegateable) => Promise<[Entity[], number]>;
-                findAncestors: (props: FindAncestors) => Promise<[DepthEntity[], number]>;
-                wouldExceedRoleLimit: (props: WouldExceedRoleLimit) => Promise<boolean>;
-                findAccountsByRoles: (props: FindAccountsByRoles) => Promise<string[]>;
-                getLookupList: (props: GetLookupList) => Promise<[Entity[], number]>;
-                findEffective: (props: FindEffective) => Promise<[Entity[], number]>;
-                getHierarchyGraph: (props: GetHierarchyGraph) => Promise<Graph.Data>;
-                getDescendants: (props: GetDescendants) => Promise<Entity[]>;
-                getAncestors: (props: GetAncestors) => Promise<Entity[]>;
+            interface Contract extends Repositories.Base.Contract<Entities.Role, Adapters.RolePermissionAssignment.Types> {
+                wouldExceedRoleLimit: (props: WouldExceedRoleLimit.Props) => WouldExceedRoleLimit.Result;
+                findAccountsByRoles: (props: FindAccountsByRoles.Props) => FindAccountsByRoles.Result;
+                getHierarchyGraph: (props: GetHierarchyGraph.Props) => GetHierarchyGraph.Result;
+                findDelegateable: (props: FindDelegateable.Props) => FindDelegateable.Result;
+                findDescendants: (props: FindDescendants.Props) => FindDescendants.Result;
+                getDescendants: (props: GetDescendants.Props) => GetDescendants.Result;
+                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
+                findEffective: (props: FindEffective.Props) => FindEffective.Result;
+                findAncestors: (props: FindAncestors.Props) => FindAncestors.Result;
+                getAncestors: (props: GetAncestors.Props) => GetAncestors.Result;
             }
 
-            interface ExternalContract
+            interface QueryContract
                 extends Pick<
-                    InternalContract,
+                    Contract,
                     | "findMany"
                     | "getLookupList"
                     | "findEffective"
@@ -59,80 +56,120 @@ declare global {
                     | "getHierarchyGraph"
                 > {}
 
-            type GetAncestors = {
-                options?: FindOptions<RoleClosureEntity>;
-                where?: FilterQuery<Entity>;
-                transaction: EntityManager;
-                descendant: string;
-                depth?: number;
-            };
-
-            type FindAncestors = {
-                populate: readonly EntityKey<Entity>[];
-                filters: Adapters.Role.Filters;
-                pagination: Pagination;
-                descendant: string;
-                realm: string;
-            };
-
-            type GetDescendants = {
-                options?: FindOptions<RoleClosureEntity>;
-                where?: FilterQuery<Entity>;
-                transaction: EntityManager;
-                ancestor: string;
-                depth?: number;
-            };
-
-            type FindDescendants = {
-                populate: readonly EntityKey<Entity>[];
-                filters: Adapters.Role.Filters;
-                pagination: Pagination;
-                ancestor: string;
-                realm: string;
-            };
-
-            type GetLookupList = {
-                pagination: Pagination;
-                realm: string;
-                term: string;
-            };
-
-            type FindDelegateable = {
-                filters: Adapters.Role.Filters;
-                sort: Adapters.Role.Sort;
-                pagination: Pagination;
-                where: {
-                    type: DelegatorType;
-                    realm: string;
-                    id: string;
+            namespace FindAccountsByRoles {
+                type Props = {
+                    transaction?: EntityManager;
+                    roles: string[];
                 };
-            };
 
-            type FindEffective = {
-                filters: Adapters.Role.Filters;
-                sort: Adapters.Role.Sort;
-                pagination: Pagination;
-                where: {
-                    account: string;
+                type Result = Promise<string[]>;
+            }
+
+            namespace GetLookupList {
+                type Props = {
+                    pagination: Pagination;
+                    realm: string;
+                    term: string;
+                };
+
+                type Result = Promise<[Entities.Role[], number]>;
+            }
+
+            namespace GetAncestors {
+                type Props = {
+                    options?: FindOptions<Entities.RoleClosure>;
+                    where?: FilterQuery<Entities.Role>;
+                    transaction: EntityManager;
+                    descendant: string;
+                    depth?: number;
+                };
+
+                type Result = Promise<Entities.Role[]>;
+            }
+
+            namespace FindAncestors {
+                type Props = {
+                    populate: readonly EntityKey<Entities.Role>[];
+                    filters: Adapters.Role.Filters;
+                    pagination: Pagination;
+                    descendant: string;
                     realm: string;
                 };
-            };
 
-            type GetHierarchyGraph = {
-                transaction?: EntityManager;
-                realm: string;
-            };
+                type Result = Promise<[DepthEntity[], number]>;
+            }
 
-            type FindAccountsByRoles = {
-                transaction?: EntityManager;
-                roles: string[];
-            };
+            namespace GetDescendants {
+                type Props = {
+                    options?: FindOptions<Entities.RoleClosure>;
+                    where?: FilterQuery<Entities.Role>;
+                    transaction: EntityManager;
+                    ancestor: string;
+                    depth?: number;
+                };
 
-            type WouldExceedRoleLimit = {
-                transaction?: EntityManager;
-                count?: number;
-                realm: string;
-            };
+                type Result = Promise<Entities.Role[]>;
+            }
+
+            namespace FindDescendants {
+                type Props = {
+                    populate: readonly EntityKey<Entities.Role>[];
+                    filters: Adapters.Role.Filters;
+                    pagination: Pagination;
+                    ancestor: string;
+                    realm: string;
+                };
+
+                type Result = Promise<[DepthEntity[], number]>;
+            }
+
+            namespace FindDelegateable {
+                type Props = {
+                    filters: Adapters.Role.Filters;
+                    sort: Adapters.Role.Sort;
+                    pagination: Pagination;
+                    where: {
+                        type: DelegatorType;
+                        realm: string;
+                        id: string;
+                    };
+                };
+
+                type Result = Promise<[Entities.Role[], number]>;
+            }
+
+            namespace FindEffective {
+                type Props = {
+                    filters: Adapters.Role.Filters;
+                    sort: Adapters.Role.Sort;
+                    pagination: Pagination;
+                    where: {
+                        account: string;
+                        realm: string;
+                    };
+                };
+
+                type Result = Promise<[Entities.Role[], number]>;
+            }
+
+            namespace GetHierarchyGraph {
+                type Props = {
+                    transaction?: EntityManager;
+                    realm: string;
+                };
+
+                type Result = Promise<Graph.Data>;
+            }
+
+            namespace WouldExceedRoleLimit {
+                type Props = {
+                    transaction?: EntityManager;
+                    count?: number;
+                    realm: string;
+                };
+
+                type Result = Promise<boolean>;
+            }
         }
     }
 }

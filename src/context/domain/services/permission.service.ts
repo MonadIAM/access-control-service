@@ -10,14 +10,11 @@ export class PermissionService implements Services.Permission.Contract {
 
     public constructor(
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.InternalContract,
+        private readonly permissionRepository: Repositories.Permission.Contract,
     ) {}
 
-    public async create({
-        transaction,
-        input,
-        realm,
-    }: Services.Permission.Create.Props): Promise<Services.Permission.Create.Result> {
+    public async create(props: Services.Permission.Create.Props): Services.Permission.Create.Result {
+        const { transaction, input, realm } = props;
         const limitExceeded = await this.permissionRepository.wouldExceedPermissionLimit({
             realm: realm.id,
             transaction,
@@ -34,11 +31,13 @@ export class PermissionService implements Services.Permission.Contract {
         }
     }
 
-    public update({ entity, patch }: Services.Permission.Update): void {
+    public update(props: Services.Permission.Update.Props): Services.Permission.Update.Result {
+        const { entity, patch } = props;
         entity.update({ patch });
     }
 
-    public purge({ transaction, entities }: Services.Permission.Purge): void {
+    public purge(props: Services.Permission.Purge.Props): Services.Permission.Purge.Result {
+        const { transaction, entities } = props;
         transaction.clear();
         for (const entity of entities) {
             entity.canPurge();
@@ -46,13 +45,15 @@ export class PermissionService implements Services.Permission.Contract {
         }
     }
 
-    public revoke({ entities }: Services.Permission.Revoke): void {
+    public revoke(props: Services.Permission.Revoke.Props): Services.Permission.Revoke.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.revoke();
         }
     }
 
-    public restore({ entities }: Services.Permission.Restore): void {
+    public restore(props: Services.Permission.Restore.Props): Services.Permission.Restore.Result {
+        const { entities } = props;
         for (const entity of entities) {
             entity.restore();
         }

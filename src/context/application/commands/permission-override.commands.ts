@@ -20,18 +20,16 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.Contract,
         @Inject(PERMISSION_OVERRIDE_REPOSITORY)
-        private readonly permissionOverrideRepository: Repositories.PermissionOverride.InternalContract,
+        private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.InternalContract,
+        private readonly permissionRepository: Repositories.Permission.Contract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.InternalContract,
+        private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(PERMISSION_OVERRIDE_SERVICE)
         private readonly permissionOverrideService: Services.PermissionOverride.Contract,
     ) {}
 
-    public async create(
-        props: Commands.PermissionOverride.Create.Props,
-    ): Promise<Commands.PermissionOverride.Create.Result> {
+    public async create(props: Commands.PermissionOverride.Create.Props): Commands.PermissionOverride.Create.Result {
         const { input, realm } = props;
 
         await this.transactionalService.run({
@@ -91,7 +89,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         return { message: `${this.dictionaryPath}.CREATED` };
     }
 
-    public async purge(props: Commands.PermissionOverride.Purge.Props): Promise<Commands.PermissionOverride.Purge.Result> {
+    public async purge(props: Commands.PermissionOverride.Purge.Props): Commands.PermissionOverride.Purge.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -143,9 +141,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         }
     }
 
-    public async revoke(
-        props: Commands.PermissionOverride.Revoke.Props,
-    ): Promise<Commands.PermissionOverride.Revoke.Result> {
+    public async revoke(props: Commands.PermissionOverride.Revoke.Props): Commands.PermissionOverride.Revoke.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -201,9 +197,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         }
     }
 
-    public async restore(
-        props: Commands.PermissionOverride.Restore.Props,
-    ): Promise<Commands.PermissionOverride.Restore.Result> {
+    public async restore(props: Commands.PermissionOverride.Restore.Props): Commands.PermissionOverride.Restore.Result {
         const { input } = props;
 
         const entities = await this.transactionalService.run({
@@ -259,7 +253,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         }
     }
 
-    public async clean(props: Commands.PermissionOverride.Clean.Props): Promise<Commands.PermissionOverride.Clean.Result> {
+    public async clean(props: Commands.PermissionOverride.Clean.Props): Commands.PermissionOverride.Clean.Result {
         await this.transactionalService.run({
             resource: this.resource,
             projectionJournal: {
