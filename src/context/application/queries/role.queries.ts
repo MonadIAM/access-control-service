@@ -59,7 +59,7 @@ export class RoleQueries implements Queries.Role.Contract {
         if (props.permissions?.includes(PermissionCode.ROLE_READ_ABSOLUTE)) {
             id = props.id ?? props.actor;
         }
-        return this.roleRepository.findDelegateable({
+        return this.roleRepository.findDelegable({
             where: { type: DelegatorType.ACCOUNT, realm: props.realm, id },
             pagination: props.pagination,
             filters: props.filters,
@@ -68,7 +68,7 @@ export class RoleQueries implements Queries.Role.Contract {
     }
 
     public findDelegableByRole(props: Queries.Role.FindDelegableByRole.Props): Queries.Role.FindDelegableByRole.Result {
-        return this.roleRepository.findDelegateable({
+        return this.roleRepository.findDelegable({
             where: {
                 type: DelegatorType.ROLE,
                 realm: props.realm,

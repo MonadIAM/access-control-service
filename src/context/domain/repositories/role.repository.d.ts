@@ -13,7 +13,7 @@ declare global {
                     label: string;
                     attributes: {
                         code: string;
-                        protoType: string;
+                        prototype: string;
                         isRevoked: boolean;
                     };
                 };
@@ -34,7 +34,7 @@ declare global {
                 wouldExceedRoleLimit: (props: WouldExceedRoleLimit.Props) => WouldExceedRoleLimit.Result;
                 findAccountsByRoles: (props: FindAccountsByRoles.Props) => FindAccountsByRoles.Result;
                 getHierarchyGraph: (props: GetHierarchyGraph.Props) => GetHierarchyGraph.Result;
-                findDelegateable: (props: FindDelegateable.Props) => FindDelegateable.Result;
+                findDelegable: (props: FindDelegable.Props) => FindDelegable.Result;
                 findDescendants: (props: FindDescendants.Props) => FindDescendants.Result;
                 getDescendants: (props: GetDescendants.Props) => GetDescendants.Result;
                 getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
@@ -51,7 +51,7 @@ declare global {
                     | "findEffective"
                     | "findAncestors"
                     | "findDescendants"
-                    | "findDelegateable"
+                    | "findDelegable"
                     | "findUniqueOrThrow"
                     | "getHierarchyGraph"
                 > {}
@@ -123,7 +123,7 @@ declare global {
                 type Result = Promise<[DepthEntity[], number]>;
             }
 
-            namespace FindDelegateable {
+            namespace FindDelegable {
                 type Props = {
                     filters: Adapters.Role.Filters;
                     sort: Adapters.Role.Sort;

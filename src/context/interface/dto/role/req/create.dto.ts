@@ -1,7 +1,7 @@
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
-import { RoleActorType, RoleProtoType } from "~context/enums";
+import { RoleActorType, RolePrototype } from "~context/enums";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "RoleCreateBody" })
@@ -28,9 +28,9 @@ export class CreateBodyDTO {
     declare public actorType: RoleActorType;
 
     @Expose()
-    @Validator.IsEnum(RoleProtoType)
-    @ApiProperty({ required: true, enum: RoleProtoType, enumName: "RoleProtoType" })
-    declare public protoType: RoleProtoType;
+    @Validator.IsEnum(RolePrototype)
+    @ApiProperty({ required: true, enum: RolePrototype, enumName: "RolePrototype" })
+    declare public prototype: RolePrototype;
 
     @Expose()
     @Validator.IsBoolean()

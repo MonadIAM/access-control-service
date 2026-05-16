@@ -1,4 +1,4 @@
-import { PermissionOverrideEffect, RoleActorType, RoleProtoType } from "~context/enums";
+import { PermissionOverrideEffect, RoleActorType, RolePrototype } from "~context/enums";
 
 import { RolePermissionAssignment as RolePermissionAssignmentEntity } from "./role-permission-assignment.entity";
 import { AccountRoleAssignment as AccountRoleAssignmentEntity } from "./account-role-assignment.entity";
@@ -20,7 +20,7 @@ declare global {
                 code: string;
                 name: string;
                 actorType: RoleActorType;
-                protoType: RoleProtoType;
+                prototype: RolePrototype;
                 description?: string;
                 isSystemManaged?: boolean;
                 nonDelegable?: boolean;

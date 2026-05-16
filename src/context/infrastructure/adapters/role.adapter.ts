@@ -1,7 +1,7 @@
 import { FindOptions, Knex, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter, KnexAdapter } from "~infrastructure/database/utils";
-import { RoleActorType, RoleProtoType } from "~context/enums";
+import { RoleActorType, RolePrototype } from "~context/enums";
 
 export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Role.Types> {
     public buildWhereORM(
@@ -16,8 +16,8 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
         if (filters.actorType) {
             where.actorType = MikroAdapter.applyStringFilter<RoleActorType>(filters.actorType);
         }
-        if (filters.protoType) {
-            where.protoType = MikroAdapter.applyStringFilter<RoleProtoType>(filters.protoType);
+        if (filters.prototype) {
+            where.prototype = MikroAdapter.applyStringFilter<RolePrototype>(filters.prototype);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
@@ -63,8 +63,8 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
         if (filters.actorType) {
             KnexAdapter.applyStringFilter(query, filters.actorType, `${tableAlias}.actor_type`);
         }
-        if (filters.protoType) {
-            KnexAdapter.applyStringFilter(query, filters.protoType, `${tableAlias}.proto_type`);
+        if (filters.prototype) {
+            KnexAdapter.applyStringFilter(query, filters.prototype, `${tableAlias}.proto_type`);
         }
         if (filters.code) {
             KnexAdapter.applyStringFilter(query, filters.code, `${tableAlias}.code`);

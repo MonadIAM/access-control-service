@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type, prettier/prettier */
-import { RoleActorType, RoleProtoType } from "~context/enums";
+import { RoleActorType, RolePrototype } from "~context/enums";
 
 const DEMO_REALM   = "00000001-0000-4000-8000-200000000001";
 const CREATED_AT   = new Date("2026-01-01T00:00:00.000Z");
@@ -12,7 +12,7 @@ const entry = (id: string, code: string, name: string, description: string, nonD
     is_system_managed: false,
     non_delegable: nonDelegable,
     is_revoked: false,
-    proto_type: RoleProtoType.COMPOSITE,
+    proto_type: RolePrototype.COMPOSITE,
     actor_type: RoleActorType.HUMAN,
     realm_id: DEMO_REALM,
     created_at: CREATED_AT,

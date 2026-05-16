@@ -1051,8 +1051,8 @@
           ],
           "mappedType": "enum"
         },
-        "proto_type": {
-          "name": "proto_type",
+        "prototype": {
+          "name": "prototype",
           "type": "text",
           "unsigned": false,
           "autoincrement": false,

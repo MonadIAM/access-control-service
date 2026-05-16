@@ -1,7 +1,7 @@
 import { Expose, Type } from "class-transformer";
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
-import { RoleProtoType } from "~context/enums";
+import { RolePrototype } from "~context/enums";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "GraphNodeAttributes" })
@@ -12,9 +12,9 @@ class NodeAttributesDTO {
     declare public code: string;
 
     @Expose()
-    @Validator.IsEnum(RoleProtoType)
-    @ApiProperty({ required: true, enum: RoleProtoType, enumName: "RoleProtoType" })
-    declare public protoType: RoleProtoType;
+    @Validator.IsEnum(RolePrototype)
+    @ApiProperty({ required: true, enum: RolePrototype, enumName: "RolePrototype" })
+    declare public prototype: RolePrototype;
 
     @Expose()
     @Validator.IsBoolean()

@@ -261,7 +261,7 @@ declare global {
                 updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
                 actorType?: StringFilterDTO;
-                protoType?: StringFilterDTO;
+                prototype?: StringFilterDTO;
                 code?: StringFilterDTO;
                 name?: StringFilterDTO;
                 id?: StringFilterDTO;

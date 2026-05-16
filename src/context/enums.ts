@@ -25,7 +25,7 @@ export enum RoleActorType {
     /* eslint-enable prettier/prettier */
 }
 
-export enum RoleProtoType {
+export enum RolePrototype {
     /* eslint-disable prettier/prettier */
     COMPOSITE = "COMPOSITE",
     ATOMIC    = "ATOMIC",

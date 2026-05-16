@@ -1,6 +1,6 @@
 import { EntitySchema } from "@mikro-orm/core";
 
-import { RoleActorType, RoleProtoType } from "~context/enums";
+import { RoleActorType, RolePrototype } from "~context/enums";
 import {
     RolePermissionAssignment,
     AccountRoleAssignment,
@@ -36,7 +36,7 @@ export const RoleSchema = new EntitySchema<Role>({
         name: { type: "string", length: 255 },
         description: { type: "text", nullable: true },
         actorType: { enum: true, items: () => RoleActorType },
-        protoType: { enum: true, items: () => RoleProtoType },
+        prototype: { enum: true, items: () => RolePrototype },
 
         isSystemManaged: { type: "boolean" },
         nonDelegable: { type: "boolean" },

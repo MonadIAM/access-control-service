@@ -144,9 +144,7 @@ export class RoleRepository
         }
     }
 
-    public async findDelegateable(
-        props: Repositories.Role.FindDelegateable.Props,
-    ): Repositories.Role.FindDelegateable.Result {
+    public async findDelegable(props: Repositories.Role.FindDelegable.Props): Repositories.Role.FindDelegable.Result {
         try {
             const { where, pagination, filters, sort } = props;
             const entityManager = this.readManager.fork();
@@ -243,7 +241,7 @@ export class RoleRepository
                     "role.id",
                     "role.name as label",
                     knex.raw(
-                        "jsonb_build_object('code', role.code, 'protoType', role.proto_type, 'isRevoked', role.is_revoked) AS attributes",
+                        "jsonb_build_object('code', role.code, 'prototype', role.proto_type, 'isRevoked', role.is_revoked) AS attributes",
                     ),
                 )
                 .where("role.realm_id", realm);

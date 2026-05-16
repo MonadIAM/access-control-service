@@ -1,6 +1,6 @@
 import { EntityManager } from "@mikro-orm/postgresql";
 
-import { MoveMode, RoleActorType, RoleProtoType } from "~context/enums";
+import { MoveMode, RoleActorType, RolePrototype } from "~context/enums";
 
 declare global {
     namespace Services {
@@ -34,7 +34,7 @@ declare global {
                     transaction: EntityManager;
                     input: {
                         actorType: RoleActorType;
-                        protoType: RoleProtoType;
+                        prototype: RolePrototype;
                         parent: Entities.Role;
                         description?: string;
                         children?: string[];

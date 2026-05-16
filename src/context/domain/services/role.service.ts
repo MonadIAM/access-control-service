@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { ROLE_CLOSURE_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { RoleProtoType, MoveMode } from "~context/enums";
+import { RolePrototype, MoveMode } from "~context/enums";
 import { ServiceException } from "~common/exceptions";
 import { Role } from "~context/domain/entities";
 
@@ -23,7 +23,7 @@ export class RoleService implements Services.Role.Contract {
 
     public async create(props: Services.Role.Create.Props): Services.Role.Create.Result {
         const { transaction, input, realm } = props;
-        if (input.parent.protoType === RoleProtoType.ATOMIC) {
+        if (input.parent.prototype === RolePrototype.ATOMIC) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE`);
         } else {
             const limitExceeded = await this.roleRepository.wouldExceedRoleLimit({
@@ -37,7 +37,7 @@ export class RoleService implements Services.Role.Contract {
                 const entity = new Role({
                     description: input.description,
                     actorType: input.actorType,
-                    protoType: input.protoType,
+                    prototype: input.prototype,
                     code: input.code,
                     name: input.name,
                     realm,
@@ -119,7 +119,7 @@ export class RoleService implements Services.Role.Contract {
 
     public async move(props: Services.Role.Move.Props): Services.Role.Move.Result {
         const { targetParent, transaction, target, realm, mode } = props;
-        if (targetParent.protoType === RoleProtoType.ATOMIC) {
+        if (targetParent.prototype === RolePrototype.ATOMIC) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_NO_INHERITANCE`);
         }
 
