@@ -1,10 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories/tokens";
 import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
-import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
+import { PERMISSION_SERVICE } from "~context/domain/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { PERMISSION_SERVICE } from "~context/domain/services";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })

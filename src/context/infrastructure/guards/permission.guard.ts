@@ -3,7 +3,7 @@ import { Reflector } from "@nestjs/core";
 
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
-import { REQUIRE_PERMISSION_KEY, IS_PUBLIC_KEY } from "~common/decorators";
+import { REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
 import { GuardException } from "~common/exceptions";
 import { PermissionCode } from "~context/enums";
 
@@ -18,16 +18,13 @@ export class PermissionGuard implements CanActivate {
     ) {}
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
-        const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-            context.getHandler(),
-            context.getClass(),
-        ]);
+        const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [context.getHandler(), context.getClass()]);
 
         if (isPublic) {
             return true;
         }
 
-        const permissions = this.reflector.getAllAndOverride<PermissionCode[]>(REQUIRE_PERMISSION_KEY, [
+        const permissions = this.reflector.getAllAndOverride<PermissionCode[]>(REQUIRE_PERMISSION, [
             context.getHandler(),
             context.getClass(),
         ]);

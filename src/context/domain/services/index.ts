@@ -9,16 +9,17 @@ import { RoleConflictGroupService } from "./role-conflict-group.service";
 import { PermissionService } from "./permission.service";
 import { RealmService } from "./realm.service";
 import { RoleService } from "./role.service";
-
-export const ROLE_PERMISSION_ASSIGNMENT_SERVICE = Symbol("Services.RolePermissionAssignment.Contract");
-export const ACCOUNT_ROLE_ASSIGNMENT_SERVICE = Symbol("Services.AccountRoleAssignment.Contract");
-export const ROLE_DELEGATION_POLICY_SERVICE = Symbol("Services.RoleDelegationPolicy.Contract");
-export const ROLE_CONFLICT_MEMBER_SERVICE = Symbol("Services.RoleConflictMember.Contract");
-export const PERMISSION_OVERRIDE_SERVICE = Symbol("Services.PermissionOverride.Contract");
-export const ROLE_CONFLICT_GROUP_SERVICE = Symbol("Services.RoleConflictGroup.Contract");
-export const PERMISSION_SERVICE = Symbol("Services.Permission.Contract");
-export const REALM_SERVICE = Symbol("Services.Realm.Contract");
-export const ROLE_SERVICE = Symbol("Services.Role.Contract");
+import {
+    ROLE_PERMISSION_ASSIGNMENT_SERVICE,
+    ACCOUNT_ROLE_ASSIGNMENT_SERVICE,
+    ROLE_DELEGATION_POLICY_SERVICE,
+    ROLE_CONFLICT_MEMBER_SERVICE,
+    PERMISSION_OVERRIDE_SERVICE,
+    ROLE_CONFLICT_GROUP_SERVICE,
+    PERMISSION_SERVICE,
+    REALM_SERVICE,
+    ROLE_SERVICE,
+} from "./tokens";
 
 export const DOMAIN_SERVICES: Provider[] = [
     {
@@ -58,3 +59,15 @@ export const DOMAIN_SERVICES: Provider[] = [
         useClass: RoleService,
     },
 ];
+
+export {
+    ROLE_PERMISSION_ASSIGNMENT_SERVICE,
+    ACCOUNT_ROLE_ASSIGNMENT_SERVICE,
+    ROLE_DELEGATION_POLICY_SERVICE,
+    ROLE_CONFLICT_MEMBER_SERVICE,
+    PERMISSION_OVERRIDE_SERVICE,
+    ROLE_CONFLICT_GROUP_SERVICE,
+    PERMISSION_SERVICE,
+    REALM_SERVICE,
+    ROLE_SERVICE,
+};

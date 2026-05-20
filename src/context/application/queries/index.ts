@@ -11,18 +11,19 @@ import { ChangeLogQueries } from "./change-log.queries";
 import { AuditLogQueries } from "./audit-log.queries";
 import { RealmQueries } from "./realm.queries";
 import { RoleQueries } from "./role.queries";
-
-export const ROLE_PERMISSION_ASSIGNMENT_QUERIES = Symbol("Queries.RolePermissionAssignment.Contract");
-export const ACCOUNT_ROLE_ASSIGNMENT_QUERIES = Symbol("Queries.AccountRoleAssignment.Contract");
-export const ROLE_DELEGATION_POLICY_QUERIES = Symbol("Queries.RoleDelegationPolicy.Contract");
-export const ROLE_CONFLICT_MEMBER_QUERIES = Symbol("Queries.RoleConflictMember.Contract");
-export const PERMISSION_OVERRIDE_QUERIES = Symbol("Queries.PermissionOverride.Contract");
-export const ROLE_CONFLICT_GROUP_QUERIES = Symbol("Queries.RoleConflictGroup.Contract");
-export const PERMISSION_QUERIES = Symbol("Queries.Permission.Contract");
-export const CHANGE_LOG_QUERIES = Symbol("Queries.ChangeLog.Contract");
-export const AUDIT_LOG_QUERIES = Symbol("Queries.AuditLog.Contract");
-export const REALM_QUERIES = Symbol("Queries.Realm.Contract");
-export const ROLE_QUERIES = Symbol("Queries.Role.Contract");
+import {
+    ROLE_PERMISSION_ASSIGNMENT_QUERIES,
+    ACCOUNT_ROLE_ASSIGNMENT_QUERIES,
+    ROLE_DELEGATION_POLICY_QUERIES,
+    ROLE_CONFLICT_MEMBER_QUERIES,
+    PERMISSION_OVERRIDE_QUERIES,
+    ROLE_CONFLICT_GROUP_QUERIES,
+    PERMISSION_QUERIES,
+    CHANGE_LOG_QUERIES,
+    AUDIT_LOG_QUERIES,
+    REALM_QUERIES,
+    ROLE_QUERIES,
+} from "./tokens";
 
 export const QUERIES: Provider[] = [
     {
@@ -70,3 +71,17 @@ export const QUERIES: Provider[] = [
         useClass: RoleQueries,
     },
 ];
+
+export {
+    ROLE_PERMISSION_ASSIGNMENT_QUERIES,
+    ACCOUNT_ROLE_ASSIGNMENT_QUERIES,
+    ROLE_DELEGATION_POLICY_QUERIES,
+    ROLE_CONFLICT_MEMBER_QUERIES,
+    PERMISSION_OVERRIDE_QUERIES,
+    ROLE_CONFLICT_GROUP_QUERIES,
+    PERMISSION_QUERIES,
+    CHANGE_LOG_QUERIES,
+    AUDIT_LOG_QUERIES,
+    REALM_QUERIES,
+    ROLE_QUERIES,
+};

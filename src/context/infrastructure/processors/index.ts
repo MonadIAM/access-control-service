@@ -1,8 +1,7 @@
 import { Provider } from "@nestjs/common";
 
 import { DLQRetryProcessor } from "./dlq-retry.processor";
-
-export const DLQ_RETRY_PROCESSOR = Symbol("Processors.DLQRetry");
+import { DLQ_RETRY_PROCESSOR } from "./tokens";
 
 export const PROCESSORS: Provider[] = [
     {
@@ -10,3 +9,5 @@ export const PROCESSORS: Provider[] = [
         useClass: DLQRetryProcessor,
     },
 ];
+
+export { DLQ_RETRY_PROCESSOR };

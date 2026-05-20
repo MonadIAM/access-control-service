@@ -2,8 +2,7 @@ import { ClientsModule, Transport, MicroserviceOptions } from "@nestjs/microserv
 import { Global, Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-export const KAFKA_MICROSERVICE_CONFIG = Symbol("KAFKA_MICROSERVICE_CONFIG");
-export const KAFKA_SERVICE = Symbol("KAFKA_SERVICE");
+import { KAFKA_SERVICE, KAFKA_CONFIG } from "./tokens";
 
 @Global()
 @Module({
@@ -29,7 +28,7 @@ export const KAFKA_SERVICE = Symbol("KAFKA_SERVICE");
     ],
     providers: [
         {
-            provide: KAFKA_MICROSERVICE_CONFIG,
+            provide: KAFKA_CONFIG,
             inject: [ConfigService],
             useFactory: (config: ConfigService): MicroserviceOptions => ({
                 transport: Transport.KAFKA,
@@ -49,6 +48,6 @@ export const KAFKA_SERVICE = Symbol("KAFKA_SERVICE");
             }),
         },
     ],
-    exports: [ClientsModule, KAFKA_MICROSERVICE_CONFIG],
+    exports: [ClientsModule, KAFKA_CONFIG],
 })
 export class KafkaModule {}

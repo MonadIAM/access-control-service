@@ -5,7 +5,7 @@ import { Observable, from, switchMap } from "rxjs";
 import { isString } from "class-validator";
 import { Reflector } from "@nestjs/core";
 
-import { SKIP_INTERCEPTORS_KEY, FORMAT_RESPONSE_DTO } from "~common/decorators";
+import { FORMAT_RESPONSE_DTO, SKIP_INTERCEPTORS } from "~common/decorators";
 
 @Injectable()
 export class FormatResponseInterceptor implements NestInterceptor {
@@ -15,7 +15,7 @@ export class FormatResponseInterceptor implements NestInterceptor {
     ) {}
 
     public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-        const skip = this.reflector.getAllAndOverride<boolean>(SKIP_INTERCEPTORS_KEY, [
+        const skip = this.reflector.getAllAndOverride<boolean>(SKIP_INTERCEPTORS, [
             context.getHandler(),
             context.getClass(),
         ]);

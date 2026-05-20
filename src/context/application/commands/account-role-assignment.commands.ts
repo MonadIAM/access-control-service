@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { EventType, EntityType, KafkaTopic, AggregateType, InvalidationScope } from "~context/enums";
-import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services";
+import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { CommandException } from "~common/exceptions";
@@ -9,7 +9,7 @@ import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
-} from "~context/infrastructure/repositories";
+} from "~context/infrastructure/repositories/tokens";
 
 const SYSTEM_USER_ROLE = "00000002-0000-4000-8000-100000000002";
 const SYSTEM_REALM = "00000001-0000-4000-8000-100000000001";

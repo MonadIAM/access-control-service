@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
-import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
+import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { CommandException } from "~common/exceptions";
@@ -9,7 +9,7 @@ import {
     PERMISSION_OVERRIDE_REPOSITORY,
     PERMISSION_REPOSITORY,
     REALM_REPOSITORY,
-} from "~context/infrastructure/repositories";
+} from "~context/infrastructure/repositories/tokens";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideCommands implements Commands.PermissionOverride.Contract {

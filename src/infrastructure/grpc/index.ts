@@ -1,1 +1,2 @@
-export { GRPC_MICROSERVICE_CONFIG, GRPCModule } from "./grpc.module";
+export { GRPCModule } from "./grpc.module";
+export * from "./tokens";

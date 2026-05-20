@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import Redis from "ioredis";
 
-import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/redis.tokens";
+import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/tokens";
 import { ServiceException } from "~common/exceptions";
 
 import { PROJECTION_SCRIPT_FILES, ProjectionScript } from "../scripts";

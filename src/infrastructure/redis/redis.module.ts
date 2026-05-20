@@ -2,7 +2,7 @@ import { Module, Global } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
 
-import { REDIS_CACHE_CLIENT, REDIS_LIMITER_CLIENT, REDIS_QUEUE_CLIENT } from "./redis.tokens";
+import { REDIS_CACHE_CLIENT, REDIS_LIMITER_CLIENT, REDIS_QUEUE_CLIENT } from "./tokens";
 import { RedisLifecycle } from "./redis.lifecycle";
 import { RedisConfig } from "./redis.config";
 

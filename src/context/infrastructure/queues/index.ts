@@ -1,8 +1,7 @@
 import { Provider } from "@nestjs/common";
 
 import { PermissionCacheInvalidationQueue } from "./permission-invalidation.queue";
-
-export const PERMISSION_CACHE_INVALIDATION_QUEUE = Symbol("Queues.PermissionInvalidation.Contract");
+import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "./tokens";
 
 export const QUEUES: Provider[] = [
     {
@@ -10,3 +9,5 @@ export const QUEUES: Provider[] = [
         useClass: PermissionCacheInvalidationQueue,
     },
 ];
+
+export { PERMISSION_CACHE_INVALIDATION_QUEUE };

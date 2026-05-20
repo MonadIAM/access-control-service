@@ -3,13 +3,13 @@ import { ACCESS_CONTROL_PROTO_PATH } from "@liam/contracts";
 import { Global, Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-export const GRPC_MICROSERVICE_CONFIG = Symbol("GRPC_MICROSERVICE_CONFIG");
+import { GRPC_CONFIG } from "./tokens";
 
 @Global()
 @Module({
     providers: [
         {
-            provide: GRPC_MICROSERVICE_CONFIG,
+            provide: GRPC_CONFIG,
             inject: [ConfigService],
             useFactory: (config: ConfigService): MicroserviceOptions => ({
                 transport: Transport.GRPC,
@@ -21,6 +21,6 @@ export const GRPC_MICROSERVICE_CONFIG = Symbol("GRPC_MICROSERVICE_CONFIG");
             }),
         },
     ],
-    exports: [GRPC_MICROSERVICE_CONFIG],
+    exports: [GRPC_CONFIG],
 })
 export class GRPCModule {}

@@ -1,0 +1,12 @@
+export const ROLE_PERMISSION_ASSIGNMENT_REPOSITORY = Symbol("Repositories.RolePermissionAssignment.Contract");
+export const ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY = Symbol("Repositories.AccountRoleAssignment.Contract");
+export const ROLE_DELEGATION_POLICY_REPOSITORY = Symbol("Repositories.RoleDelegationPolicy.Contract");
+export const ROLE_CONFLICT_MEMBER_REPOSITORY = Symbol("Repositories.RoleConflictMember.Contract");
+export const PERMISSION_OVERRIDE_REPOSITORY = Symbol("Repositories.PermissionOverride.Contract");
+export const ROLE_CONFLICT_GROUP_REPOSITORY = Symbol("Repositories.RoleConflictGroup.Contract");
+export const ROLE_CLOSURE_REPOSITORY = Symbol("Repositories.RoleClosure.Contract");
+export const PERMISSION_REPOSITORY = Symbol("Repositories.Permission.Contract");
+export const CHANGE_LOG_REPOSITORY = Symbol("Repositories.ChangeLog.Contract");
+export const AUDIT_LOG_REPOSITORY = Symbol("Repositories.AuditLog.Contract");
+export const REALM_REPOSITORY = Symbol("Repositories.Realm.Contract");
+export const ROLE_REPOSITORY = Symbol("Repositories.Role.Contract");

@@ -2,8 +2,8 @@ import { SetMetadata } from "@nestjs/common";
 
 import { PermissionCode } from "~context/enums";
 
-export const REQUIRE_PERMISSION_KEY = Symbol("require-permissions");
+import { REQUIRE_PERMISSION } from "./tokens";
 
 export function RequirePermission(...permissions: PermissionCode[]): MethodDecorator & ClassDecorator {
-    return SetMetadata(REQUIRE_PERMISSION_KEY, permissions);
+    return SetMetadata(REQUIRE_PERMISSION, permissions);
 }

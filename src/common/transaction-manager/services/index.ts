@@ -1,8 +1,7 @@
 import { Provider } from "@nestjs/common";
 
 import { TransactionalService } from "./transactional.service";
-
-export const TRANSACTIONAL_SERVICE = Symbol("Services.TransactionManager.Contract");
+import { TRANSACTIONAL_SERVICE } from "./tokens";
 
 export const TRANSACTION_MANAGER_SERVICES: Provider[] = [
     {
@@ -10,3 +9,5 @@ export const TRANSACTION_MANAGER_SERVICES: Provider[] = [
         useClass: TransactionalService,
     },
 ];
+
+export { TRANSACTIONAL_SERVICE };

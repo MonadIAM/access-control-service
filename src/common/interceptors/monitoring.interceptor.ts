@@ -6,7 +6,7 @@ import { Observable, throwError } from "rxjs";
 import { FastifyRequest } from "fastify";
 import { Reflector } from "@nestjs/core";
 
-import { SKIP_INTERCEPTORS_KEY } from "~common/decorators";
+import { SKIP_INTERCEPTORS } from "~common/decorators";
 
 @Injectable()
 export class MonitoringInterceptor implements NestInterceptor {
@@ -19,7 +19,7 @@ export class MonitoringInterceptor implements NestInterceptor {
     ) {}
 
     public intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-        const skip = this.reflector.getAllAndOverride<boolean>(SKIP_INTERCEPTORS_KEY, [
+        const skip = this.reflector.getAllAndOverride<boolean>(SKIP_INTERCEPTORS, [
             context.getHandler(),
             context.getClass(),
         ]);

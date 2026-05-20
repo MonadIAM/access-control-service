@@ -1,8 +1,7 @@
 import { Provider } from "@nestjs/common";
 
 import { JWTService } from "./jwt.service";
-
-export const JWT_SERVICE = Symbol("Services.JWT.Contract");
+import { JWT_SERVICE } from "./tokens";
 
 export const COMMON_SERVICES: Provider[] = [
     {
@@ -10,3 +9,5 @@ export const COMMON_SERVICES: Provider[] = [
         useClass: JWTService,
     },
 ];
+
+export { JWT_SERVICE };

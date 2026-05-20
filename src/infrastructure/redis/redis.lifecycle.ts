@@ -1,7 +1,7 @@
 import { Inject, Injectable, OnApplicationShutdown, Logger } from "@nestjs/common";
 import Redis from "ioredis";
 
-import { REDIS_CACHE_CLIENT, REDIS_LIMITER_CLIENT, REDIS_QUEUE_CLIENT } from "./redis.tokens";
+import { REDIS_CACHE_CLIENT, REDIS_LIMITER_CLIENT, REDIS_QUEUE_CLIENT } from "./tokens";
 
 @Injectable()
 export class RedisLifecycle implements OnApplicationShutdown {
