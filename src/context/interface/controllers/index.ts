@@ -10,7 +10,7 @@ import { AuditLogController } from "./audit-log.controller";
 import { RealmController } from "./realm.controller";
 import { RoleController } from "./role.controller";
 
-export const CONTROLLERS = [
+export const HTTP_CONTROLLERS = [
     RolePermissionAssignmentController,
     AccountRoleAssignmentController,
     RoleDelegationPolicyController,

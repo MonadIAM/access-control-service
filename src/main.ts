@@ -7,6 +7,7 @@ import cookie from "@fastify/cookie";
 
 import { KAFKA_MICROSERVICE_CONFIG } from "~infrastructure/kafka";
 import { BootstrapSecurity } from "~bootstrap/security.bootstrap";
+import { GRPC_MICROSERVICE_CONFIG } from "~infrastructure/grpc";
 import { BootstrapSwagger } from "~bootstrap/swagger.bootstrap";
 import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
 
@@ -36,8 +37,10 @@ async function bootstrap(): Promise<void> {
     await BootstrapSecurity.registerSecurityPlugins(application);
 
     const kafkaConfig = application.get<MicroserviceOptions>(KAFKA_MICROSERVICE_CONFIG);
+    const grpcConfig = application.get<MicroserviceOptions>(GRPC_MICROSERVICE_CONFIG);
 
     application.connectMicroservice(kafkaConfig);
+    application.connectMicroservice(grpcConfig);
 
     application.enableShutdownHooks();
 

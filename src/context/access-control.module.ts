@@ -9,8 +9,9 @@ import { COMMON_SERVICES } from "~common/services";
 import { PermissionGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
 import { REPOSITORIES } from "./infrastructure/repositories";
+import { HTTP_CONTROLLERS } from "./interface/controllers";
 import { PROCESSORS } from "./infrastructure/processors";
-import { CONTROLLERS } from "./interface/controllers";
+import { GRPC_CONTROLLERS } from "./interface/grpc";
 import { DOMAIN_SERVICES } from "./domain/services";
 import { CONSUMERS } from "./interface/consumers";
 import { COMMANDS } from "./application/commands";
@@ -46,6 +47,6 @@ import { QUERIES } from "./application/queries";
             useExisting: PermissionGuard,
         },
     ],
-    controllers: [...CONTROLLERS, ...CONSUMERS],
+    controllers: [...HTTP_CONTROLLERS, ...GRPC_CONTROLLERS, ...CONSUMERS],
 })
 export class AccessControlModule {}

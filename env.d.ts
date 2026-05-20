@@ -11,6 +11,8 @@ declare namespace NodeJS {
         APP_BASE_IMAGE: string;
         APP_HOST: string;
         APP_PORT: `${number}`;
+        GRPC_HOST: string;
+        GRPC_PORT: `${number}`;
         THROTTLE_LIMIT: `${number}`;
         THROTTLE_TTL: `${number}`;
         JWT_ISSUER: string;

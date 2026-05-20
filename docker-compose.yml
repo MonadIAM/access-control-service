@@ -140,6 +140,7 @@ services:
       POSTGRES_PORT: ${POSTGRES_CONTAINER_PORT}
       REDIS_PORT: ${REDIS_CONTAINER_PORT}
     ports:
+      - "${GRPC_PORT}:${GRPC_PORT}"
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
       postgresql-primary:

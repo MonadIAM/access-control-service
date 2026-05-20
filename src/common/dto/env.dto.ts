@@ -25,6 +25,13 @@ export class EnvironmentVariablesDTO {
     @Validator.Max(65535)
     declare public APP_PORT: number;
 
+    @Validator.IsString()
+    declare public GRPC_HOST: string;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public GRPC_PORT: number;
+
     @Validator.IsPositiveInt()
     declare public THROTTLE_LIMIT: number;
 
