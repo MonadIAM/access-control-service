@@ -1,5 +1,17 @@
 # access-control-service
 
+This repository contains the access control service for LIAM (Lambdius Identity & Access Management).
+
+The service implements several access control models and related mechanisms:
+
+1. HRBAC (Hierarchical Role-Based Access Control)
+2. DAC (Discretionary Access Control)
+3. SoD (Segregation of Duties)
+4. Delegation Policies
+5. Multitenancy
+
+For architecture and system design notes, see [DESIGN_NOTES.md](./DESIGN_NOTES.md).  
+
 ----
 
 <details>
