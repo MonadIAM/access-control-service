@@ -1,14 +1,5 @@
 export * from "@liam/contracts";
 
-export enum InvalidationScope {
-    /* eslint-disable prettier/prettier */
-    ACCOUNT_REALM = "ACCOUNT_REALM",
-    ACCOUNT       = "ACCOUNT",
-    GLOBAL        = "GLOBAL",
-    REALM         = "REALM",
-    /* eslint-enable prettier/prettier */
-}
-
 export enum MoveMode {
     /* eslint-disable prettier/prettier */
     PARALLEL = "PARALLEL",
