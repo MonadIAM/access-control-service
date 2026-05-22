@@ -5,6 +5,7 @@
     "PURGED": "Role successfully deleted.",
     "REVOKED": "Role successfully revoked.",
     "RESTORED": "Role successfully restored.",
+    "REPARENTED": "Role hierarchy successfully updated.",
 
     "SUBTREE_PURGED_COUNT": "Successfully deleted roles: {count}.",
     "BULK_REVOKED_COUNT": "Successfully revoked roles: {count}.",

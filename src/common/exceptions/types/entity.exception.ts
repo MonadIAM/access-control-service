@@ -8,7 +8,10 @@ export class EntityException extends BaseException {
         super(kind, statusCode, messageKey, params);
     }
 
-    public static invariantViolation(messageKey = "entity.invariant_violation", params?: UnknownObject): EntityException {
+    public static invariantViolation(
+        messageKey = "fallback.entity.INVARIANT_VIOLATION",
+        params?: UnknownObject,
+    ): EntityException {
         return new EntityException(EntityErrorKind.InvariantViolation, HttpStatus.BAD_REQUEST, messageKey, params);
     }
 }

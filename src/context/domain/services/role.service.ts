@@ -149,7 +149,7 @@ export class RoleService implements Services.Role.Contract {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_ALREADY_PARENT`);
         }
 
-        if (wouldFormCycle) {
+        if (mode === MoveMode.SUBTREE && wouldFormCycle) {
             throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_IN_SUBTREE`);
         }
 

@@ -39,6 +39,8 @@ import {
 const {
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
+    SERVICE_UNAVAILABLE,
+    REQUEST_TIMEOUT,
     UNAUTHORIZED,
     BAD_REQUEST,
     FORBIDDEN,
@@ -72,7 +74,15 @@ export class RolePermissionAssignmentController {
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_READ_COMMON)
     @ApiResponse({ status: OK, type: RolePermissionAssignmentDTO })
     @ApiOperation({ summary: "Returns a role-permission assignment by identifier" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public findUnique(
         @Query() { assignment, realm, view }: GetByIdQueryDTO,
     ): Queries.RolePermissionAssignment.FindUnique.Result {
@@ -85,7 +95,14 @@ export class RolePermissionAssignmentController {
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_READ_COMMON)
     @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({ summary: "Returns a paginated list of role-permission assignments" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { realm, view }: GetListQueryDTO,
@@ -99,7 +116,17 @@ export class RolePermissionAssignmentController {
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_CREATE)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Creates a new role-permission assignment" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
     public create(
         @Query() { realm }: CreateQueryDTO,
         @Body() input: CreateBodyDTO,
@@ -115,7 +142,16 @@ export class RolePermissionAssignmentController {
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Revokes a non-system role-permission assignment(s)" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public revoke(
         @Query() { realm }: RevokeQueryDTO,
         @Body() input: RevokeBodyDTO,
@@ -131,7 +167,16 @@ export class RolePermissionAssignmentController {
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_RESTORE)
     @ApiOperation({ summary: "Restores a non-system role-permission assignment(s)" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public restore(
         @Query() { realm }: RestoreQueryDTO,
         @Body() input: RestoreBodyDTO,
@@ -147,7 +192,16 @@ export class RolePermissionAssignmentController {
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Permanently deletes a revoked non-system role-permission assignment(s)" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public purge(
         @Query() { realm }: PurgeQueryDTO,
         @Body() input: PurgeBodyDTO,

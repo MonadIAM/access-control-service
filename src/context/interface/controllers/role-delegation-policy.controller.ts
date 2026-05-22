@@ -41,6 +41,8 @@ import {
 const {
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
+    SERVICE_UNAVAILABLE,
+    REQUEST_TIMEOUT,
     UNAUTHORIZED,
     BAD_REQUEST,
     FORBIDDEN,
@@ -75,7 +77,15 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_READ_COMMON)
     @ApiResponse({ status: OK, type: RoleDelegationPolicyDTO })
     @ApiOperation({ summary: "Returns a role delegation policy by identifier" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public findUnique(@Query() { policy, realm, view }: GetByIdQueryDTO): Queries.RoleDelegationPolicy.FindUnique.Result {
         return this.roleDelegationPolicyQueries.findUnique({ policy, realm, view });
     }
@@ -86,7 +96,14 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_READ_COMMON)
     @ApiOperation({ summary: "Returns a paginated list of role delegation policies" })
     @ApiResponse({ status: OK, type: ListDTO })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { realm, view }: GetListQueryDTO,
@@ -100,7 +117,17 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_CREATE)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Creates a new role delegation policy" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
     public create(
         @Query() { realm }: CreateQueryDTO,
         @Body() input: CreateBodyDTO,
@@ -116,7 +143,16 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_UPDATE)
     @ApiOperation({ summary: "Updates role delegation policy data" })
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public updateMetadata(
         @Query() { realm, id }: UpdateQueryDTO,
         @Body() input: UpdateBodyDTO,
@@ -132,7 +168,16 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Revokes one or more non-system role delegation policies" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public revoke(
         @Query() { realm }: RevokeQueryDTO,
         @Body() input: RevokeBodyDTO,
@@ -148,7 +193,16 @@ export class RoleDelegationPolicyController {
     @RequirePermission(ROLE_DELEGATION_POLICY_RESTORE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Restores one or more non-system role delegation policies" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public restore(
         @Query() { realm }: RestoreQueryDTO,
         @Body() input: RestoreBodyDTO,
@@ -163,7 +217,16 @@ export class RoleDelegationPolicyController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_DELEGATION_POLICY_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     @ApiOperation({ summary: "Permanently deletes one or more revoked non-system role delegation policies" })
     public purge(
         @Query() { realm }: PurgeQueryDTO,

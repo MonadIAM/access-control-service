@@ -3,7 +3,12 @@
     "CREATE_PARENT_NO_INHERITANCE": "Указанная родительская роль не допускает наследования.",
     "REALM_ROLE_LIMIT_EXCEEDED": "Превышен допустимый лимит ролей в домене.",
     "SUBTREE_SIZE_LIMIT_EXCEEDED": "Удаление невозможно: размер поддерева превышает установленный лимит.",
-    "CREATE_CHILD_NOT_DIRECT_DESCENDANT": "В качестве потомков могут быть указаны только текущие прямые потомки родительской роли."
+    "CREATE_CHILD_NOT_DIRECT_DESCENDANT": "В качестве потомков могут быть указаны только текущие прямые потомки родительской роли.",
+    "REPARENT_TARGET_NO_INHERITANCE": "Целевая родительская роль не допускает наследования.",
+    "REPARENT_TARGET_IS_SELF": "Роль нельзя переместить под саму себя.",
+    "REPARENT_ROOT_NOT_ALLOWED": "Корневую роль нельзя переместить.",
+    "REPARENT_TARGET_ALREADY_PARENT": "Указанная целевая родительская роль уже является текущим родителем роли.",
+    "REPARENT_TARGET_IN_SUBTREE": "Роль нельзя переместить под одного из ее собственных потомков."
   },
   "role-permission-assignment": {
     "ROLE_PERMISSION_LIMIT_EXCEEDED": "Превышен допустимый лимит разрешений для роли."

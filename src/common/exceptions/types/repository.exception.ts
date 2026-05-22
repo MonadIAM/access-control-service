@@ -13,7 +13,7 @@ export class RepositoryException extends BaseException {
         super(kind, statusCode, messageKey, params);
     }
 
-    public static notFound(messageKey = "repositories.not_found", params?: UnknownObject): RepositoryException {
+    public static notFound(messageKey = "fallback.repository.NOT_FOUND", params?: UnknownObject): RepositoryException {
         return new RepositoryException(RepositoryErrorKind.NotFound, HttpStatus.NOT_FOUND, messageKey, params);
     }
 }

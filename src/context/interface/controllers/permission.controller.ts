@@ -46,6 +46,8 @@ import {
 const {
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
+    SERVICE_UNAVAILABLE,
+    REQUEST_TIMEOUT,
     UNAUTHORIZED,
     BAD_REQUEST,
     FORBIDDEN,
@@ -82,7 +84,15 @@ export class PermissionController {
     @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: PermissionDTO })
     @ApiOperation({ summary: "Returns a permission by identifier" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, NOT_FOUND, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public findUnique(@Query() { realm, permission, view }: GetByIdQueryDTO): Queries.Permission.FindUnique.Result {
         return this.permissionQueries.findUnique({ permission, realm, view });
     }
@@ -93,7 +103,14 @@ export class PermissionController {
     @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({ summary: "Returns a paginated list of permissions" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
     public getList(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
         @Query() { realm, view }: GetListQueryDTO,
@@ -107,7 +124,14 @@ export class PermissionController {
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(PERMISSION_READ_ABSOLUTE, PERMISSION_READ_PERSONAL)
     @ApiOperation({ summary: "Returns a paginated list of effective permissions for the account" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
     public getEffectiveList(
         @Body() { pagination, filters, sort }: GetEffectiveListBodyDTO,
         @Query() { account, realm }: GetEffectiveListQueryDTO,
@@ -123,7 +147,14 @@ export class PermissionController {
     @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: LookupListDTO })
     @ApiOperation({ summary: "Returns a lookup list of permissions" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
     public getLookupList(
         @Query() { realm, term }: GetLookupListQueryDTO,
         @Body() { pagination }: GetLookupListBodyDTO,
@@ -137,7 +168,17 @@ export class PermissionController {
     @RequirePermission(PERMISSION_CREATE)
     @ApiOperation({ summary: "Creates a new permission" })
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN, CONFLICT)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+        CONFLICT,
+    )
     public create(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: CreateQueryDTO,
@@ -153,7 +194,16 @@ export class PermissionController {
     @RequirePermission(PERMISSION_UPDATE)
     @ApiOperation({ summary: "Updates permission metadata" })
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public updateMetadata(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm, id }: UpdateQueryDTO,
@@ -169,7 +219,16 @@ export class PermissionController {
     @RequirePermission(PERMISSION_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Revokes a non-system permission(s)" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public revoke(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: RevokeQueryDTO,
@@ -185,7 +244,16 @@ export class PermissionController {
     @RequirePermission(PERMISSION_RESTORE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Restores a non-system permission(s)" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public restore(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: RestoreQueryDTO,
@@ -201,7 +269,16 @@ export class PermissionController {
     @RequirePermission(PERMISSION_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({ summary: "Permanently deletes a revoked non-system permission(s)" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, BAD_REQUEST, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        BAD_REQUEST,
+        NOT_FOUND,
+        FORBIDDEN,
+    )
     public purge(
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: PurgeQueryDTO,

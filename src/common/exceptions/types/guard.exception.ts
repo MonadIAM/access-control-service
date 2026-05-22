@@ -8,11 +8,11 @@ export class GuardException extends BaseException {
         super(kind, statusCode, messageKey, params);
     }
 
-    public static unauthorized(messageKey = "guard.unauthorized", params?: UnknownObject): GuardException {
+    public static unauthorized(messageKey = "fallback.guard.UNAUTHORIZED", params?: UnknownObject): GuardException {
         return new GuardException(GuardErrorKind.Unauthorized, HttpStatus.UNAUTHORIZED, messageKey, params);
     }
 
-    public static forbidden(messageKey = "guard.forbidden", params?: UnknownObject): GuardException {
+    public static forbidden(messageKey = "fallback.guard.FORBIDDEN", params?: UnknownObject): GuardException {
         return new GuardException(GuardErrorKind.Forbidden, HttpStatus.FORBIDDEN, messageKey, params);
     }
 }

@@ -3,7 +3,12 @@
     "CREATE_PARENT_NO_INHERITANCE": "The specified parent role does not allow inheritance.",
     "REALM_ROLE_LIMIT_EXCEEDED": "The allowed role limit for the realm has been exceeded.",
     "SUBTREE_SIZE_LIMIT_EXCEEDED": "Deletion is not allowed: the subtree size exceeds the configured limit.",
-    "CREATE_CHILD_NOT_DIRECT_DESCENDANT": "Only the current direct descendants of the parent role can be specified as children."
+    "CREATE_CHILD_NOT_DIRECT_DESCENDANT": "Only the current direct descendants of the parent role can be specified as children.",
+    "REPARENT_TARGET_NO_INHERITANCE": "The target parent role does not allow inheritance.",
+    "REPARENT_TARGET_IS_SELF": "A role cannot be moved under itself.",
+    "REPARENT_ROOT_NOT_ALLOWED": "The root role cannot be moved.",
+    "REPARENT_TARGET_ALREADY_PARENT": "The specified target parent is already the current parent of the role.",
+    "REPARENT_TARGET_IN_SUBTREE": "A role cannot be moved under one of its own descendants."
   },
   "role-permission-assignment": {
     "ROLE_PERMISSION_LIMIT_EXCEEDED": "The allowed permission limit for the role has been exceeded."

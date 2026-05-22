@@ -8,7 +8,16 @@ import { PermissionCode } from "~context/enums";
 
 import { GetListBodyDTO, GetByIdQueryDTO, AuditLogDTO, ListDTO } from "../dto/audit-log";
 
-const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, OK } = HttpStatus;
+const {
+    INTERNAL_SERVER_ERROR,
+    UNPROCESSABLE_ENTITY,
+    SERVICE_UNAVAILABLE,
+    REQUEST_TIMEOUT,
+    UNAUTHORIZED,
+    FORBIDDEN,
+    NOT_FOUND,
+    OK,
+} = HttpStatus;
 const { AUDIT_LOG_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("AuditLog")
@@ -26,7 +35,15 @@ export class AuditLogController {
     @RequirePermission(AUDIT_LOG_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: AuditLogDTO })
     @ApiOperation({ summary: "Returns a audit log by identifier" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN, NOT_FOUND)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+        NOT_FOUND,
+    )
     public findUnique(@Query() { log }: GetByIdQueryDTO): Queries.AuditLog.FindUnique.Result {
         return this.auditLogQueries.findUnique({ log });
     }
@@ -37,7 +54,14 @@ export class AuditLogController {
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(AUDIT_LOG_READ_ABSOLUTE)
     @ApiOperation({ summary: "Returns a paginated list of audit logs" })
-    @Swagger.Exceptions(INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, UNAUTHORIZED, FORBIDDEN)
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
     public getList(@Body() { pagination, filters, sort }: GetListBodyDTO): Queries.AuditLog.FindMany.Result {
         return this.auditLogQueries.findMany({ pagination, filters, sort });
     }

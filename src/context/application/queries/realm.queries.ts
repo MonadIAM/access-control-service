@@ -29,7 +29,7 @@ export class RealmQueries implements Queries.Realm.Contract {
                 realm: props.realm,
             });
             if (!hasRealmRelation) {
-                throw CommandException.notFound(`${this.dictionaryPath}.`);
+                throw CommandException.notFound(`${this.dictionaryPath}.RELATION_NOT_FOUND`);
             }
         }
         return this.realmRepository.findUniqueOrThrow({

@@ -24,7 +24,10 @@ export class ServiceException extends BaseException {
         );
     }
 
-    public static invariantViolation(messageKey = "service.invariant_violation", params?: UnknownObject): ServiceException {
+    public static invariantViolation(
+        messageKey = "fallback.service.INVARIANT_VIOLATION",
+        params?: UnknownObject,
+    ): ServiceException {
         return new ServiceException(ServiceErrorKind.InvariantViolation, HttpStatus.BAD_REQUEST, messageKey, params);
     }
 }

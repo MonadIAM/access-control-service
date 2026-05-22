@@ -41,6 +41,14 @@ export const EXCEPTION_EXAMPLES = {
         message: "Resource with this data already exists",
     },
 
+    [HttpStatus.REQUEST_TIMEOUT]: {
+        timestamp: "2026-02-22T19:22:49.384Z",
+        path: "/api/resource",
+        statusCode: 408,
+        error: "DatabaseTimeout",
+        message: "Database lock wait timeout exceeded.",
+    },
+
     [HttpStatus.UNPROCESSABLE_ENTITY]: {
         timestamp: "2026-02-22T19:19:13.109Z",
         path: "/api/resource",
@@ -63,5 +71,13 @@ export const EXCEPTION_EXAMPLES = {
         statusCode: 500,
         error: "InternalServerError",
         message: "Internal Server Error",
+    },
+
+    [HttpStatus.SERVICE_UNAVAILABLE]: {
+        timestamp: "2026-02-22T19:24:31.762Z",
+        path: "/api/resource",
+        statusCode: 503,
+        error: "DatabaseConnectionError",
+        message: "The connection to the database was lost.",
     },
 } as const;
