@@ -64,7 +64,7 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
             KnexAdapter.applyStringFilter(query, filters.actorType, `${tableAlias}.actor_type`);
         }
         if (filters.prototype) {
-            KnexAdapter.applyStringFilter(query, filters.prototype, `${tableAlias}.proto_type`);
+            KnexAdapter.applyStringFilter(query, filters.prototype, `${tableAlias}.prototype`);
         }
         if (filters.code) {
             KnexAdapter.applyStringFilter(query, filters.code, `${tableAlias}.code`);

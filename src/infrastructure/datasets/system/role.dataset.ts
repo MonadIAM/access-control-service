@@ -19,7 +19,7 @@ const entry = (
     is_system_managed: true,
     non_delegable: nonDelegable,
     is_revoked: false,
-    proto_type: RolePrototype.COMPOSITE,
+    prototype: RolePrototype.COMPOSITE,
     actor_type: actorType,
     realm_id: SYSTEM_REALM,
     created_at: CREATED_AT,

@@ -241,7 +241,7 @@ export class RoleRepository
                     "role.id",
                     "role.name as label",
                     knex.raw(
-                        "jsonb_build_object('code', role.code, 'prototype', role.proto_type, 'isRevoked', role.is_revoked) AS attributes",
+                        "jsonb_build_object('code', role.code, 'prototype', role.prototype, 'isRevoked', role.is_revoked) AS attributes",
                     ),
                 )
                 .where("role.realm_id", realm);

@@ -12,7 +12,7 @@ const entry = (id: string, code: string, name: string, description: string, nonD
     is_system_managed: false,
     non_delegable: nonDelegable,
     is_revoked: false,
-    proto_type: RolePrototype.COMPOSITE,
+    prototype: RolePrototype.COMPOSITE,
     actor_type: RoleActorType.HUMAN,
     realm_id: DEMO_REALM,
     created_at: CREATED_AT,
