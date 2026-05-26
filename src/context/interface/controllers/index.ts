@@ -7,6 +7,7 @@ import { RoleConflictGroupController } from "./role-conflict-group.controller";
 import { PermissionController } from "./permission.controller";
 import { ChangeLogController } from "./change-log.controller";
 import { AuditLogController } from "./audit-log.controller";
+import { InviteController } from "./invite.controller";
 import { RealmController } from "./realm.controller";
 import { RoleController } from "./role.controller";
 
@@ -20,6 +21,7 @@ export const HTTP_CONTROLLERS = [
     PermissionController,
     ChangeLogController,
     AuditLogController,
+    InviteController,
     RealmController,
     RoleController,
 ];
@@ -34,6 +36,7 @@ export {
     PermissionController,
     ChangeLogController,
     AuditLogController,
+    InviteController,
     RealmController,
     RoleController,
 };

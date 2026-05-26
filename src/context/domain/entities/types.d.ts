@@ -8,6 +8,7 @@ import { PermissionOverride as PermissionOverrideEntity } from "./permission-ove
 import { RoleConflictGroup as RoleConflictGroupEntity } from "./role-conflict-group.entity";
 import { RoleClosure as RoleClosureEntity } from "./role-closure.entity";
 import { Permission as PermissionEntity } from "./permission.entity";
+import { Invite as InviteEntity } from "./invite.entity";
 import { Realm as RealmEntity } from "./realm.entity";
 import { Role as RoleEntity } from "./role.entity";
 
@@ -170,5 +171,16 @@ declare global {
         }
 
         type AccountRoleAssignment = AccountRoleAssignmentEntity;
+
+        namespace Invite {
+            type ConstructorProps = {
+                invitee: string;
+                inviter: string;
+                realm: RealmEntity;
+                role: RoleEntity;
+            };
+        }
+
+        type Invite = InviteEntity;
     }
 }

@@ -368,6 +368,30 @@ export const Permissions = [
         "Read Absolute Change Log",
         "View change logs within a realm.",
     ),
+    entry(
+        "00000003-0000-4000-8000-110000000059",
+        PermissionCode.INVITE_READ_PERSONAL,
+        "Read Personal Invites",
+        "View invites sent or received by the current account.",
+    ),
+    entry(
+        "00000003-0000-4000-8000-110000000060",
+        PermissionCode.INVITE_READ_ABSOLUTE,
+        "Read Absolute Invites",
+        "View all invites within a realm.",
+    ),
+    entry(
+        "00000003-0000-4000-8000-110000000061",
+        PermissionCode.INVITE_CREATE,
+        "Create Invite",
+        "Send an invite to an account for a role within a realm.",
+    ),
+    entry(
+        "00000003-0000-4000-8000-110000000062",
+        PermissionCode.INVITE_CHANGE_STATUS,
+        "Change Invite Status",
+        "Accept, decline, or cancel a pending invite.",
+    ),
     // ---------------------------------------------------------------------------
     // Identity
     // ---------------------------------------------------------------------------

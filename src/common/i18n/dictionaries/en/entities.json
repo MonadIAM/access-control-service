@@ -60,6 +60,11 @@
     "ALREADY_ACTIVE": "The override is already in an active state.",
     "CANNOT_PURGE_ACTIVE": "Deletion is not allowed: the override is active. Revoke it first."
   },
+  "invite": {
+    "CANNOT_CANCEL_INACTIVE": "The invite cannot be cancelled: it is no longer active.",
+    "CANNOT_ACCEPT_INACTIVE": "The invite cannot be accepted: it is no longer active.",
+    "CANNOT_DECLINE_INACTIVE": "The invite cannot be declined: it is no longer active."
+  },
   "account-role-assignment": {
     "ALREADY_REVOKED": "The role assignment is already in a revoked state.",
     "ALREADY_ACTIVE": "The role assignment is already in an active state.",

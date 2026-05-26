@@ -39,9 +39,24 @@ export enum EntityType {
     CONFLICT_MEMBER       = "CONFLICT_MEMBER",
     CONFLICT_GROUP        = "CONFLICT_GROUP",
     PERMISSION            = "PERMISSION",
+    INVITE                = "INVITE",
     REALM                 = "REALM",
     ROLE                  = "ROLE",
     /* eslint-enable prettier/prettier */
+}
+
+export enum InviteStatus {
+    /* eslint-disable prettier/prettier */
+    CANCELLED = "CANCELLED",
+    ACCEPTED  = "ACCEPTED",
+    DECLINED  = "DECLINED",
+    PENDING   = "PENDING",
+    /* eslint-enable prettier/prettier */
+}
+
+export enum InviteQueryScope {
+    AS_INVITER = "AS_INVITER",
+    AS_INVITEE = "AS_INVITEE",
 }
 
 export const AggregateType = EntityType;
@@ -49,12 +64,15 @@ export type AggregateType = EntityType;
 
 export enum EventType {
     /* eslint-disable prettier/prettier */
-    REPARENT = "REPARENT",
-    RESTORE  = "RESTORE",
-    REVOKE   = "REVOKE",
-    CREATE   = "CREATE",
-    UPDATE   = "UPDATE",
-    DELETE   = "DELETE",
+    REPARENT      = "REPARENT",
+    RESTORE       = "RESTORE",
+    DECLINE       = "DECLINE",
+    REVOKE        = "REVOKE",
+    CANCEL        = "CANCEL",
+    ACCEPT        = "ACCEPT",
+    CREATE        = "CREATE",
+    UPDATE        = "UPDATE",
+    DELETE        = "DELETE",
     /* eslint-enable prettier/prettier */
 }
 

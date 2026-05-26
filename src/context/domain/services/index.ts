@@ -7,6 +7,7 @@ import { RoleConflictMemberService } from "./role-conflict-member.service";
 import { PermissionOverrideService } from "./permission-override.service";
 import { RoleConflictGroupService } from "./role-conflict-group.service";
 import { PermissionService } from "./permission.service";
+import { InviteService } from "./invite.service";
 import { RealmService } from "./realm.service";
 import { RoleService } from "./role.service";
 import {
@@ -17,6 +18,7 @@ import {
     PERMISSION_OVERRIDE_SERVICE,
     ROLE_CONFLICT_GROUP_SERVICE,
     PERMISSION_SERVICE,
+    INVITE_SERVICE,
     REALM_SERVICE,
     ROLE_SERVICE,
 } from "./tokens";
@@ -51,6 +53,10 @@ export const DOMAIN_SERVICES: Provider[] = [
         useClass: PermissionService,
     },
     {
+        provide: INVITE_SERVICE,
+        useClass: InviteService,
+    },
+    {
         provide: REALM_SERVICE,
         useClass: RealmService,
     },
@@ -68,6 +74,7 @@ export {
     PERMISSION_OVERRIDE_SERVICE,
     ROLE_CONFLICT_GROUP_SERVICE,
     PERMISSION_SERVICE,
+    INVITE_SERVICE,
     REALM_SERVICE,
     ROLE_SERVICE,
 };

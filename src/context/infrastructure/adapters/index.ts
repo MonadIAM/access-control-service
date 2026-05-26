@@ -7,5 +7,6 @@ export { RoleConflictGroupAdapter } from "./role-conflict-group.adapter";
 export { PermissionAdapter } from "./permission.adapter";
 export { ChangeLogAdapter } from "./change-log.adapter";
 export { AuditLogAdapter } from "./audit-log.adapter";
+export { InviteAdapter } from "./invite.adapter";
 export { RealmAdapter } from "./realm.adapter";
 export { RoleAdapter } from "./role.adapter";

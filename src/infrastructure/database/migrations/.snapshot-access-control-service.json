@@ -1194,6 +1194,173 @@
           "nullable": false,
           "mappedType": "uuid"
         },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "CANCELLED",
+            "ACCEPTED",
+            "DECLINED",
+            "PENDING"
+          ],
+          "mappedType": "enum"
+        },
+        "invitee": {
+          "name": "invitee",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "inviter": {
+          "name": "inviter",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "realm_id": {
+          "name": "realm_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "role_id": {
+          "name": "role_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 3,
+          "mappedType": "datetime"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 3,
+          "mappedType": "datetime"
+        },
+        "version": {
+          "name": "version",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "1",
+          "mappedType": "integer"
+        }
+      },
+      "name": "invite",
+      "schema": "access_control",
+      "indexes": [
+        {
+          "keyName": "invite_invitee_idx",
+          "columnNames": [
+            "invitee"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "invite_inviter_idx",
+          "columnNames": [
+            "inviter"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "invite_realm_invitee_role_pending_unique",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE UNIQUE INDEX \"invite_realm_invitee_role_pending_unique\" ON \"access_control\".\"invite\" (\"realm_id\", \"invitee\", \"role_id\") WHERE \"status\" = 'PENDING'"
+        },
+        {
+          "keyName": "invite_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "invite_realm_id_foreign": {
+          "constraintName": "invite_realm_id_foreign",
+          "columnNames": [
+            "realm_id"
+          ],
+          "localTableName": "access_control.invite",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.realm",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "invite_role_id_foreign": {
+          "constraintName": "invite_role_id_foreign",
+          "columnNames": [
+            "role_id"
+          ],
+          "localTableName": "access_control.invite",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "access_control.role",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "uuid"
+        },
         "account": {
           "name": "account",
           "type": "uuid",

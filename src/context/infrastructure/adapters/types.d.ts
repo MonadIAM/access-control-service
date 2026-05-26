@@ -28,6 +28,29 @@ declare global {
             ) => void;
         }
 
+        namespace Invite {
+            type Filters = {
+                id?: StringFilterDTO;
+                status?: StringFilterDTO;
+                invitee?: LinkFilterDTO;
+                inviter?: LinkFilterDTO;
+                role?: LinkFilterDTO;
+                realm?: LinkFilterDTO;
+                updatedAt?: OrdinalFilterDTO<Date>;
+                createdAt?: OrdinalFilterDTO<Date>;
+            };
+
+            type Sort = {
+                createdAt?: QueryOrder;
+                updatedAt?: QueryOrder;
+            };
+
+            interface Types {
+                Filters: Filters;
+                Sort: Sort;
+            }
+        }
+
         namespace AccountRoleAssignment {
             type Filters = {
                 id?: StringFilterDTO;
