@@ -82,15 +82,19 @@ export class TransactionalService {
         result: T,
     ): void {
         if (params.projectionJournal) {
-            const payloads = [params.projectionJournal.payloadMapper(result)].flat();
+            const entries = [params.projectionJournal].flat();
 
-            for (const payload of payloads) {
-                transaction.persist(
-                    new ProjectionJournal({
-                        operationType: params.projectionJournal.operationType,
-                        payload,
-                    }),
-                );
+            for (const entry of entries) {
+                const payloads = [entry.payloadMapper(result)].flat();
+
+                for (const payload of payloads) {
+                    transaction.persist(
+                        new ProjectionJournal({
+                            operationType: entry.operationType,
+                            payload,
+                        }),
+                    );
+                }
             }
         }
     }

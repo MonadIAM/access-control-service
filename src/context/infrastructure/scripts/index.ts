@@ -3,6 +3,7 @@ export enum ProjectionScript {
     ROLE_PERMISSION_ASSIGNMENT_UPDATE = "role-permission-assignment/update",
     ROLE_PERMISSION_ASSIGNMENT_PURGE = "role-permission-assignment/purge",
 
+    ACCOUNT_ROLE_ASSIGNMENT_VALIDATE = "account-role-assignment/validate",
     ACCOUNT_ROLE_ASSIGNMENT_CREATE = "account-role-assignment/create",
     ACCOUNT_ROLE_ASSIGNMENT_UPDATE = "account-role-assignment/update",
     ACCOUNT_ROLE_ASSIGNMENT_PURGE = "account-role-assignment/purge",
@@ -34,6 +35,7 @@ export const PROJECTION_SCRIPT_FILES: Record<ProjectionScript, string> = {
     [ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE]: "role-permission-assignment/update.lua",
     [ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_PURGE]: "role-permission-assignment/purge.lua",
 
+    [ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_VALIDATE]: "account-role-assignment/validate.lua",
     [ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE]: "account-role-assignment/create.lua",
     [ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE]: "account-role-assignment/update.lua",
     [ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE]: "account-role-assignment/purge.lua",

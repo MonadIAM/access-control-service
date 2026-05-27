@@ -2,6 +2,7 @@ declare namespace Commands {
     namespace Realm {
         interface ControllerContract {
             restore: (props: Restore.Props) => Restore.Result;
+            exclude: (props: Exclude.Props) => Exclude.Result;
             create: (props: Create.Props) => Create.Result;
             update: (props: Update.Props) => Update.Result;
             revoke: (props: Revoke.Props) => Revoke.Result;
@@ -76,6 +77,25 @@ declare namespace Commands {
                     reason: string;
                 };
                 context: Extract.Meta;
+            };
+
+            type Result = Promise<MessageResult>;
+        }
+
+        namespace Exclude {
+            type Props = {
+                actor: string;
+                realm: string;
+                input: {
+                    account: string;
+                    reason: string;
+                };
+                context: Extract.Meta;
+            };
+
+            type ExecuteResult = {
+                assignments: Entities.AccountRoleAssignment[];
+                overrides: Entities.PermissionOverride[];
             };
 
             type Result = Promise<MessageResult>;

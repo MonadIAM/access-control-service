@@ -2,6 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { EventType, EntityType, KafkaTopic, AggregateType, InvalidationScope } from "~context/enums";
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services/tokens";
+import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { CommandException } from "~common/exceptions";
@@ -30,10 +31,21 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         private readonly roleRepository: Repositories.Role.Contract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_SERVICE)
         private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.Contract,
+        @Inject(PROJECTION_CACHE_SERVICE)
+        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
     ) {}
 
     public async create(props: Commands.AccountRoleAssignment.Create.Props): Commands.AccountRoleAssignment.Create.Result {
         const { input, actor, realm } = props;
+
+        const isAlreadyMember = await this.projectionCacheService.checkRealm({
+            account: input.account,
+            realm,
+        });
+
+        if (!isAlreadyMember) {
+            throw CommandException.conflict(`${this.dictionaryPath}.ACCOUNT_NOT_MEMBER`);
+        }
 
         await this.transactionalService.run({
             resource: this.resource,
@@ -92,7 +104,27 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     public async purge(props: Commands.AccountRoleAssignment.Purge.Props): Commands.AccountRoleAssignment.Purge.Result {
         const { input } = props;
 
-        const entities = await this.transactionalService.run({
+        const entities = await this.accountRoleAssignmentRepository.find({
+            where: { id: { $in: input.identifiers } },
+        });
+
+        const { missing, groups } = await this.projectionCacheService.validateAssignments({
+            items: entities.map(({ account, realm, role }) => ({
+                realm: realm.id,
+                role: role.id,
+                account,
+            })),
+        });
+
+        if (missing.length > 0) {
+            throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+        }
+
+        if (groups.some(({ remaining }) => remaining === 0)) {
+            throw CommandException.conflict(`${this.dictionaryPath}.CANNOT_PURGE_LAST_ASSIGNMENT`);
+        }
+
+        await this.transactionalService.run({
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
@@ -117,19 +149,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 ...props,
             },
             changeLog: true,
-            execute: async (transaction) => {
-                const entities = await this.accountRoleAssignmentRepository.find({
-                    where: { id: { $in: input.identifiers } },
-                    transaction,
-                });
-
-                if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
-                } else {
-                    this.accountRoleAssignmentService.purge({ transaction, entities });
-
-                    return entities;
-                }
+            execute: (transaction) => {
+                this.accountRoleAssignmentService.purge({ transaction, entities });
+                return entities;
             },
         });
 

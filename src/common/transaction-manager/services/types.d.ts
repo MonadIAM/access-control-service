@@ -9,6 +9,11 @@ declare global {
                 run: <T extends AnyEntity | AnyEntity[]>(props: Run<T>) => Promise<T>;
             }
 
+            type ProjectionJournalEntry<T> = {
+                operationType: string;
+                payloadMapper: (result: T) => UnknownObject | UnknownObject[];
+            };
+
             type Run<T extends AnyEntity | AnyEntity[]> =
                 | {
                       execute: (transaction: EntityManager) => Promise<T> | T;
@@ -20,10 +25,7 @@ declare global {
                           eventType: EventType;
                           metadata?: UnknownObject;
                       };
-                      projectionJournal?: {
-                          operationType: string;
-                          payloadMapper: (result: T) => UnknownObject | UnknownObject[];
-                      };
+                      projectionJournal?: ProjectionJournalEntry<T> | ProjectionJournalEntry<T>[];
                       changeLog?: boolean;
                       resource?: string;
                   }

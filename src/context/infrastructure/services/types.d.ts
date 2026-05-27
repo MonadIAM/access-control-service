@@ -33,6 +33,7 @@ declare global {
 
         namespace ProjectionCache {
             interface Contract {
+                validateAssignments: (props: ValidateAssignments) => Promise<ValidateAssignmentsResult>;
                 collectPermissions: (props: CollectPermissions) => Promise<Record<string, string>>;
                 checkPermissions: (props: CheckPermissions) => Promise<boolean>;
                 collectRealms: (props: CollectRealms) => Promise<string[]>;
@@ -57,6 +58,23 @@ declare global {
                 permissions: string[];
                 account: string;
                 realm: string;
+            };
+
+            type ValidateAssignments = {
+                items: {
+                    account: string;
+                    realm: string;
+                    role: string;
+                }[];
+            };
+
+            type ValidateAssignmentsResult = {
+                missing: string[];
+                groups: {
+                    remaining: number;
+                    account: string;
+                    realm: string;
+                }[];
             };
         }
     }

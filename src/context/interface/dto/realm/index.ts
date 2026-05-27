@@ -1,4 +1,5 @@
 export { GetLookupListQueryDTO, GetLookupListBodyDTO } from "./req/get-lookup-list.dto";
+export { ExcludeQueryDTO, ExcludeBodyDTO } from "./req/exclude.dto";
 export { UpdateQueryDTO, UpdateBodyDTO } from "./req/update.dto";
 export { GetByIdQueryDTO } from "./req/get-by-id.dto";
 export { GetListBodyDTO } from "./req/get-list.dto";

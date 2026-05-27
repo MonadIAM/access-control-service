@@ -67,6 +67,7 @@ export enum EventType {
     REPARENT      = "REPARENT",
     RESTORE       = "RESTORE",
     DECLINE       = "DECLINE",
+    EXCLUDE       = "EXCLUDE",
     REVOKE        = "REVOKE",
     CANCEL        = "CANCEL",
     ACCEPT        = "ACCEPT",

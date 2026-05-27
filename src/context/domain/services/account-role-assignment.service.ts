@@ -69,7 +69,6 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
 
     public purge(props: Services.AccountRoleAssignment.Purge.Props): Services.AccountRoleAssignment.Purge.Result {
         const { transaction, entities } = props;
-        transaction.clear();
         for (const entity of entities) {
             entity.canPurge();
             transaction.remove(entity);

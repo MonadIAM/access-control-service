@@ -41,6 +41,16 @@ export class ProjectionCacheService implements InfrastructureServices.Projection
         );
     }
 
+    public async validateAssignments(
+        props: InfrastructureServices.ProjectionCache.ValidateAssignments,
+    ): Promise<InfrastructureServices.ProjectionCache.ValidateAssignmentsResult> {
+        return JSON.parse(
+            await this.scriptExecutorService.execute<string>(ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_VALIDATE, [
+                JSON.stringify({ items: props.items }),
+            ]),
+        );
+    }
+
     public async checkRealm(props: InfrastructureServices.ProjectionCache.CheckRealm): Promise<boolean> {
         return JSON.parse(
             await this.scriptExecutorService.execute<string>(ProjectionScript.REALM_COLLECT, [
