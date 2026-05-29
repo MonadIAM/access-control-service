@@ -68,7 +68,7 @@ docker exec -it access-control-service-postgres-replica psql -U lambdius -d acce
 | `docker-compose up -d`                                          | `make up`                        | Start all services in detached mode.                  |
 | `docker-compose stop`                                           | `make stop`                      | Stop containers without removing them.                |
 | `docker-compose down`                                           | `make down`                      | Stop and remove containers and networks.              |
-| `docker-compose down && docker-compose up -d`                   | `make restart`                   | Restart the entire infrastructure.                    |
+| `make down && make up`                                          | `make restart`                   | Restart the entire infrastructure.                    |
 | `docker-compose build`                                          | `make build`                     | Build application Docker images.                      |
 | `docker-compose logs -f service`                                | `make logs`                      | Stream logs from the main service.                    |
 | `docker-compose logs -f`                                        | `make logs-all`                  | Stream combined logs from all services.               |
@@ -78,6 +78,7 @@ docker exec -it access-control-service-postgres-replica psql -U lambdius -d acce
 | **Development**                                                 |                                  |                                                       |
 | `npm run lint`                                                  | `make lint`                      | Run ESLint code checks.                               |
 | `npm run lint:fix`                                              | `make lint-fix`                  | Auto-fix formatting and log changed files.            |
+| `npm run knip`                                                  | `make knip`                      | Detect unused exports, files, and dependencies.       |
 | **Database**                                                    |                                  |                                                       |
 | `npx mikro-orm migration:create --name=$(name)`                 | `make migration name="*"`        | Generate a new migration based on entity changes.     |
 | `npx mikro-orm migration:up`                                    | `make migrate`                   | Apply all pending migrations to the database.         |
