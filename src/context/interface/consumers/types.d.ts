@@ -5,9 +5,7 @@ declare global {
         namespace DLQ {
             type Message = {
                 originalTopic: string;
-                retryCount: number;
-                timestamp: string;
-                payload: string;
+                payload: unknown;
                 error: string;
             };
         }
@@ -20,11 +18,11 @@ declare global {
             type Event = "ACCOUNT_REGISTERED" | "ACCOUNT_PURGED";
 
             type Register = {
-                accountId: string;
+                account: string;
             };
 
             type Purge = {
-                accountId: string;
+                account: string;
             };
 
             type Payload = {

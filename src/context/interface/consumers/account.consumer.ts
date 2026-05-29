@@ -1,12 +1,16 @@
-import { EventPattern, Payload, ClientKafka } from "@nestjs/microservices";
-import { Controller, Inject, OnModuleInit } from "@nestjs/common";
+import { EventPattern, Payload, ClientKafka, Ctx, KafkaContext } from "@nestjs/microservices";
+import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
+import { lastValueFrom } from "rxjs";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS, PERMISSION_OVERRIDE_COMMANDS } from "~context/application/commands";
-import { KAFKA_SERVICE } from "~infrastructure/kafka";
+import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
+import { RetryableException } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
 
 @Controller()
-export class AccountConsumer implements Consumers.Account.Contract, OnModuleInit {
+export class AccountConsumer implements OnModuleInit {
+    private readonly logger = new Logger(AccountConsumer.name);
+
     public constructor(
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_COMMANDS)
         private readonly accountRoleAssignmentCommands: Commands.AccountRoleAssignment.ConsumerContract,
@@ -26,26 +30,35 @@ export class AccountConsumer implements Consumers.Account.Contract, OnModuleInit
     };
 
     @EventPattern(KafkaTopic.ACCOUNT)
-    public async handle(@Payload() { eventType, payload }: Consumers.Account.Payload): Promise<void> {
+    public async handle(@Payload() message: Consumers.Account.Payload, @Ctx() context: KafkaContext): Promise<void> {
         try {
-            await this.handlers[eventType](payload);
+            await this.handlers[message.eventType](message.payload);
         } catch (error) {
-            this.kafkaClient.emit(KafkaTopic.ACCOUNT_DLQ, {
-                timestamp: new Date().toISOString(),
-                originalTopic: KafkaTopic.ACCOUNT,
-                error: String(error),
-                retryCount: 0,
-                payload,
-            });
+            if (RetryableException.is(error)) {
+                await lastValueFrom(
+                    this.kafkaClient.emit(KafkaTopic.ACCOUNT_RETRY, {
+                        value: {
+                            originalTopic: KafkaTopic.ACCOUNT,
+                            error: String(error),
+                            payload: message,
+                        },
+                        headers: {
+                            "x-retry-count": String(KafkaUtils.extractRetryCount(context)),
+                        },
+                    }),
+                );
+            } else {
+                this.logger.warn(`Non-retryable error in account consumer: ${String(error)}`);
+            }
         }
     }
 
-    private async handleRegistered({ accountId }: Consumers.Account.Register): Promise<void> {
-        await this.accountRoleAssignmentCommands.assign({ account: accountId });
+    private async handleRegistered({ account }: Consumers.Account.Register): Promise<void> {
+        await this.accountRoleAssignmentCommands.assign({ account });
     }
 
-    private async handlePurged({ accountId }: Consumers.Account.Purge): Promise<void> {
-        await this.accountRoleAssignmentCommands.clean({ account: accountId });
-        await this.permissionOverrideCommands.clean({ account: accountId });
+    private async handlePurged({ account }: Consumers.Account.Purge): Promise<void> {
+        await this.accountRoleAssignmentCommands.clean({ account });
+        await this.permissionOverrideCommands.clean({ account });
     }
 }

@@ -21,7 +21,7 @@ import { QUERIES } from "./application/queries";
 @Module({
     imports: [
         TransactionManagerModule,
-        BullModule.registerQueue({ name: "permission-cache-invalidation" }, { name: "dlq-retry" }),
+        BullModule.registerQueue({ name: "permission-cache-invalidation" }, { name: "kafka-retry" }),
     ],
     providers: [
         ...INFRASTRUCTURE_SERVICES,

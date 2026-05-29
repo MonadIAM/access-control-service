@@ -1,1 +1,1 @@
-export const DLQ_RETRY_PROCESSOR = Symbol("Processors.DLQRetry");
+export const RETRY_PROCESSOR = Symbol("Processors.Retry");
