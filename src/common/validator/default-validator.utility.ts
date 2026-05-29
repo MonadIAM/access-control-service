@@ -31,13 +31,14 @@ import {
 } from "class-validator";
 
 import { NotEqualTo } from "./algorithms/not-equal-to.validator";
+import { IsMsString } from "./algorithms/is-ms-string.validator";
 import { IsOrdinal } from "./algorithms/is-ordinal.validator";
 
 export abstract class StandardValidationDecorators {
     private static wrap(key: string, args: UnknownObject, options?: ValidationOptions, label?: string): ValidationOptions {
         return {
             ...options,
-            message: `validatior.${key}`,
+            message: `validator.${key}`,
             context: {
                 ...options?.context,
                 ...args,
@@ -192,5 +193,10 @@ export abstract class StandardValidationDecorators {
     public static NotEqualTo(property: string, options?: ValidationOptions, label?: string): PropertyDecorator {
         return (target, key) =>
             NotEqualTo(property, this.wrap("NOT_EQUAL_TO", { property: key }, options, label))(target, String(key));
+    }
+
+    public static IsMsString(options?: ValidationOptions, label?: string): PropertyDecorator {
+        return (target, key) =>
+            IsMsString(this.wrap("IS_MS_STRING", { property: key }, options, label))(target, String(key));
     }
 }

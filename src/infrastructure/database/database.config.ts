@@ -2,6 +2,7 @@ import { PostgreSqlDriver } from "@mikro-orm/postgresql";
 import { type Options } from "@mikro-orm/core";
 import { ConfigService } from "@nestjs/config";
 import path from "path";
+import ms from "ms";
 
 export abstract class MikroOrmConfig {
     public static buildOptions(config: ConfigService, kind: MikroORM.ConnectionKind = "write"): Options<PostgreSqlDriver> {
@@ -75,19 +76,19 @@ export abstract class MikroOrmConfig {
         if (cqrsEnabled) {
             if (kind === "read") {
                 return {
+                    idleTimeoutMillis: Number(ms(config.getOrThrow("POSTGRES_READ_POOL_IDLE_MS"))),
                     max: Number(config.getOrThrow<number>("POSTGRES_READ_POOL_MAX")),
-                    idleTimeoutMillis: Number(config.getOrThrow<number>("POSTGRES_READ_POOL_IDLE_MS")),
                 };
             } else {
                 return {
+                    idleTimeoutMillis: Number(ms(config.getOrThrow("POSTGRES_WRITE_POOL_IDLE_MS"))),
                     max: Number(config.getOrThrow<number>("POSTGRES_WRITE_POOL_MAX")),
-                    idleTimeoutMillis: Number(config.getOrThrow<number>("POSTGRES_WRITE_POOL_IDLE_MS")),
                 };
             }
         } else {
             return {
+                idleTimeoutMillis: Number(ms(config.getOrThrow("POSTGRES_POOL_IDLE_MS"))),
                 max: Number(config.getOrThrow<number>("POSTGRES_POOL_MAX")),
-                idleTimeoutMillis: Number(config.getOrThrow<number>("POSTGRES_POOL_IDLE_MS")),
             };
         }
     }

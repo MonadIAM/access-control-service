@@ -8,4 +8,4 @@ export { BaseException } from "./types/base.exception";
 
 export { GlobalExceptionFilter } from "./global-exception.filter";
 
-export { EXCEPTION_EXAMPLES } from "./exeption-examples";
+export { EXCEPTION_EXAMPLES } from "./exception-examples";

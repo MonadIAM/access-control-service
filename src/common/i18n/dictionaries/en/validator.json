@@ -26,5 +26,6 @@
   "IS_IN": "The \"{label}\" field must be one of the following values: {list}.",
   "IS_ORDINAL": "The \"{label}\" field must be an ordinal number.",
   "NOT_EQUAL_TO": "The \"{label}\" field must not match the value of another field.",
+  "IS_MS_STRING": "The \"{label}\" field must be a valid time string (e.g. \"1s\", \"5m\", \"1h\", \"1y\").",
   "COMMON_ERROR": "Validation error."
 }

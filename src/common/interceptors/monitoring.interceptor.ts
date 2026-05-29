@@ -43,7 +43,7 @@ export class MonitoringInterceptor implements NestInterceptor {
         const request = context.switchToHttp().getRequest<FastifyRequest>();
         const response = context.switchToHttp().getResponse();
 
-        const duration = (Date.now() - start) / 1000;
+        const duration = (Date.now() - start) / 1e3;
         const { method } = request;
 
         const route = request.routeOptions?.url ?? request.raw?.url ?? "unmapped";

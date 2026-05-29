@@ -16,7 +16,7 @@ import "./extensions";
 
 async function bootstrap(): Promise<void> {
     const fastifyAdapter = new FastifyAdapter({
-        bodyLimit: 5 * 1024 * 1024,
+        bodyLimit: Number(process.env.BODY_LIMIT_BYTES),
         trustProxy: true,
         logger: false,
     });

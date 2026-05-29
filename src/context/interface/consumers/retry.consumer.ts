@@ -1,10 +1,8 @@
 import { EventPattern, Payload, ClientKafka, Ctx, KafkaContext } from "@nestjs/microservices";
 import { Controller, Inject, OnModuleInit } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { InjectQueue } from "@nestjs/bullmq";
 import { lastValueFrom } from "rxjs";
-import { Queue } from "bullmq";
 
+import { KAFKA_RETRY_QUEUE } from "~context/infrastructure/queues";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { KafkaTopic } from "~context/enums";
 
@@ -17,21 +15,12 @@ const DEAD_TOPIC_MAP: Partial<Record<string, string>> = {
 
 @Controller()
 export class RetryConsumer implements OnModuleInit {
-    private readonly maxRetries: number;
-    private readonly baseDelay: number;
-    private readonly jitter: number;
-
     public constructor(
         @Inject(KAFKA_SERVICE)
         private readonly kafkaClient: ClientKafka,
-        @InjectQueue("kafka-retry")
-        private readonly retryQueue: Queue<Consumers.DLQ.Message & { retryCount: number }>,
-        private readonly configService: ConfigService,
-    ) {
-        this.baseDelay = this.configService.getOrThrow<number>("KAFKA_DLQ_RETRY_BASE_DELAY");
-        this.maxRetries = this.configService.getOrThrow<number>("KAFKA_DLQ_MAX_RETRIES");
-        this.jitter = this.configService.getOrThrow<number>("KAFKA_DLQ_RETRY_JITTER");
-    }
+        @Inject(KAFKA_RETRY_QUEUE)
+        private readonly kafkaRetryQueue: Queues.KafkaRetry.Contract,
+    ) {}
 
     public async onModuleInit(): Promise<void> {
         await this.kafkaClient.connect();
@@ -41,10 +30,10 @@ export class RetryConsumer implements OnModuleInit {
     public async handle(@Payload() message: Consumers.DLQ.Message, @Ctx() context: KafkaContext): Promise<void> {
         const retryCount = KafkaUtils.extractRetryCount(context);
 
-        if (retryCount >= this.maxRetries) {
+        if (retryCount >= this.kafkaRetryQueue.maxRetryCount) {
             await this.moveToDeadLetter(message);
         } else {
-            await this.scheduleRetry(message, retryCount);
+            await this.kafkaRetryQueue.schedule(message, retryCount);
         }
     }
 
@@ -53,22 +42,5 @@ export class RetryConsumer implements OnModuleInit {
         if (deadTopic) {
             await lastValueFrom(this.kafkaClient.emit(deadTopic, message));
         }
-    }
-
-    private async scheduleRetry(message: Consumers.DLQ.Message, retryCount: number): Promise<void> {
-        await this.retryQueue.add(
-            "retry",
-            { ...message, retryCount },
-            {
-                delay: this.baseDelay + Math.random() * this.jitter,
-                attempts: 3,
-                backoff: {
-                    type: "exponential",
-                    delay: this.baseDelay,
-                },
-                removeOnComplete: true,
-                removeOnFail: false,
-            },
-        );
     }
 }

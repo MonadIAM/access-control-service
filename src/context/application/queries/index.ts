@@ -1,7 +1,7 @@
 import { Provider } from "@nestjs/common";
 
 import { RolePermissionAssignmentQueries } from "./role-permission-assignment.queries";
-import { AccountRoleAssignmentQueries } from "./account-role-assignment.query";
+import { AccountRoleAssignmentQueries } from "./account-role-assignment.queries";
 import { RoleDelegationPolicyQueries } from "./role-delegation-policy.queries";
 import { RoleConflictMemberQueries } from "./role-conflict-member.queries";
 import { PermissionOverrideQueries } from "./permission-override.queries";

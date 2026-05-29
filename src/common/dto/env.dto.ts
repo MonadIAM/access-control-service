@@ -35,8 +35,14 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public THROTTLE_LIMIT: number;
 
+    @Validator.IsMsString()
+    declare public THROTTLE_TTL: string;
+
+    @Validator.IsMsString()
+    declare public HSTS_MAX_AGE: string;
+
     @Validator.IsPositiveInt()
-    declare public THROTTLE_TTL: number;
+    declare public BODY_LIMIT_BYTES: number;
 
     @Validator.IsString()
     declare public JWT_ISSUER: string;
@@ -78,9 +84,8 @@ export class EnvironmentVariablesDTO {
     @Validator.IsBoolean()
     declare public POSTGRES_SSL_REJECT_UNAUTHORIZED: boolean;
 
-    @Validator.IsInt()
-    @Validator.Min(0)
-    declare public POSTGRES_POOL_IDLE_MS: number;
+    @Validator.IsMsString()
+    declare public POSTGRES_POOL_IDLE_MS: string;
 
     @Validator.IsPositiveInt()
     declare public POSTGRES_POOL_MAX: number;
@@ -111,9 +116,8 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public POSTGRES_WRITE_POOL_MAX: number;
 
-    @Validator.IsInt()
-    @Validator.Min(0)
-    declare public POSTGRES_WRITE_POOL_IDLE_MS: number;
+    @Validator.IsMsString()
+    declare public POSTGRES_WRITE_POOL_IDLE_MS: string;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - read
@@ -131,9 +135,8 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public POSTGRES_READ_POOL_MAX: number;
 
-    @Validator.IsInt()
-    @Validator.Min(0)
-    declare public POSTGRES_READ_POOL_IDLE_MS: number;
+    @Validator.IsMsString()
+    declare public POSTGRES_READ_POOL_IDLE_MS: string;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - replication
@@ -183,13 +186,6 @@ export class EnvironmentVariablesDTO {
     declare public REDIS_DB_QUEUE: number;
 
     // ---------------------------------------------------------------------------
-    // Redis - services
-    // ---------------------------------------------------------------------------
-
-    @Validator.IsPositiveInt()
-    declare public PERMISSION_CACHE_TTL: number;
-
-    // ---------------------------------------------------------------------------
     // Kafka
     // ---------------------------------------------------------------------------
 
@@ -199,9 +195,8 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public KAFKA_RETRY_ATTEMPTS: number;
 
-    @Validator.IsInt()
-    @Validator.Min(0)
-    declare public KAFKA_RETRY_INITIAL_TIME: number;
+    @Validator.IsMsString()
+    declare public KAFKA_RETRY_INITIAL_TIME: string;
 
     @Validator.IsString()
     declare public DOCKER_NETWORK_NAME: string;
@@ -219,14 +214,11 @@ export class EnvironmentVariablesDTO {
     @Validator.IsInt()
     declare public KAFKA_DLQ_MAX_RETRIES: number;
 
-    @Validator.IsInt()
-    declare public KAFKA_DLQ_RETRY_BASE_DELAY: number;
+    @Validator.IsMsString()
+    declare public KAFKA_DLQ_RETRY_BASE_DELAY: string;
 
-    @Validator.IsInt()
-    declare public KAFKA_DLQ_RETRY_MAX_DELAY: number;
-
-    @Validator.IsInt()
-    declare public KAFKA_DLQ_RETRY_JITTER: number;
+    @Validator.IsMsString()
+    declare public KAFKA_DLQ_RETRY_JITTER: string;
 
     // ---------------------------------------------------------------------------
     // Debezium
@@ -271,11 +263,4 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsPositiveInt()
     declare public BULK_OPERATION_LIMIT: number;
-
-    // ---------------------------------------------------------------------------
-    // BullMQ
-    // ---------------------------------------------------------------------------
-
-    @Validator.IsPositiveInt()
-    declare public PERMISSION_CACHE_INVALIDATION_CHUNK_SIZE: number;
 }

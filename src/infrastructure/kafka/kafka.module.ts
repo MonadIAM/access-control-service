@@ -1,6 +1,7 @@
 import { ClientsModule, Transport, MicroserviceOptions } from "@nestjs/microservices";
 import { Global, Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import ms from "ms";
 
 import { KAFKA_SERVICE, KAFKA_CONFIG } from "./tokens";
 
@@ -36,7 +37,7 @@ import { KAFKA_SERVICE, KAFKA_CONFIG } from "./tokens";
                     client: {
                         brokers: [config.getOrThrow("KAFKA_BROKER")],
                         retry: {
-                            initialRetryTime: config.getOrThrow<number>("KAFKA_RETRY_INITIAL_TIME"),
+                            initialRetryTime: Number(ms(config.getOrThrow("KAFKA_RETRY_INITIAL_TIME"))),
                             retries: config.getOrThrow<number>("KAFKA_RETRY_ATTEMPTS"),
                         },
                     },

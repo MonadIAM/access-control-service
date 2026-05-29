@@ -14,7 +14,9 @@ declare namespace NodeJS {
         GRPC_HOST: string;
         GRPC_PORT: `${number}`;
         THROTTLE_LIMIT: `${number}`;
-        THROTTLE_TTL: `${number}`;
+        THROTTLE_TTL: string;
+        HSTS_MAX_AGE: string;
+        BODY_LIMIT_BYTES: `${number}`;
         JWT_ISSUER: string;
         JWT_JWKS_URL: string;
 
@@ -32,7 +34,7 @@ declare namespace NodeJS {
         POSTGRES_SSL: "true" | "false";
         POSTGRES_SSL_REJECT_UNAUTHORIZED: "true" | "false";
         POSTGRES_POOL_MAX: `${number}`;
-        POSTGRES_POOL_IDLE_MS: `${number}`;
+        POSTGRES_POOL_IDLE_MS: string;
         POSTGRES_LOGGING: "true" | "false";
         POSTGRES_CQRS_ENABLED: "true" | "false";
 
@@ -44,7 +46,7 @@ declare namespace NodeJS {
         POSTGRES_WRITE_HOST?: string;
         POSTGRES_WRITE_PORT?: `${number}`;
         POSTGRES_WRITE_POOL_MAX: `${number}`;
-        POSTGRES_WRITE_POOL_IDLE_MS: `${number}`;
+        POSTGRES_WRITE_POOL_IDLE_MS: string;
 
         // ---------------------------------------------------------------------------
         // PostgreSQL - read
@@ -53,7 +55,7 @@ declare namespace NodeJS {
         POSTGRES_READ_HOST?: string;
         POSTGRES_READ_PORT?: `${number}`;
         POSTGRES_READ_POOL_MAX: `${number}`;
-        POSTGRES_READ_POOL_IDLE_MS: `${number}`;
+        POSTGRES_READ_POOL_IDLE_MS: string;
 
         // ---------------------------------------------------------------------------
         // PostgreSQL - replication
@@ -77,26 +79,19 @@ declare namespace NodeJS {
         REDIS_DB_QUEUE: `${number}`;
 
         // ---------------------------------------------------------------------------
-        // Redis - services
-        // ---------------------------------------------------------------------------
-
-        PERMISSION_CACHE_TTL: `${number}`;
-
-        // ---------------------------------------------------------------------------
         // Kafka
         // ---------------------------------------------------------------------------
 
         KAFKA_BROKER: string;
         KAFKA_RETRY_ATTEMPTS: `${number}`;
-        KAFKA_RETRY_INITIAL_TIME: `${number}`;
+        KAFKA_RETRY_INITIAL_TIME: string;
         DOCKER_NETWORK_NAME: string;
         KAFKA_CONNECT_IMAGE: string;
         KAFKA_CONNECT_PORT: `${number}`;
         KAFKAJS_NO_PARTITIONER_WARNING: `${number}`;
         KAFKA_DLQ_MAX_RETRIES: `${number}`;
-        KAFKA_DLQ_RETRY_BASE_DELAY: `${number}`;
-        KAFKA_DLQ_RETRY_MAX_DELAY: `${number}`;
-        KAFKA_DLQ_RETRY_JITTER: `${number}`;
+        KAFKA_DLQ_RETRY_BASE_DELAY: string;
+        KAFKA_DLQ_RETRY_JITTER: string;
 
         // ---------------------------------------------------------------------------
         // Debezium
@@ -120,10 +115,5 @@ declare namespace NodeJS {
         MAX_ROLE_SUBTREE_SIZE_FOR_PURGE: `${number}`;
         BULK_OPERATION_LIMIT: `${number}`;
 
-        // ---------------------------------------------------------------------------
-        // BullMQ
-        // ---------------------------------------------------------------------------
-
-        PERMISSION_CACHE_INVALIDATION_CHUNK_SIZE: `${number}`;
     }
 }

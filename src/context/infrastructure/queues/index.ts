@@ -1,13 +1,15 @@
 import { Provider } from "@nestjs/common";
 
-import { PermissionCacheInvalidationQueue } from "./permission-invalidation.queue";
-import { PERMISSION_CACHE_INVALIDATION_QUEUE } from "./tokens";
+import { KafkaRetryProcessor, KafkaRetryQueue } from "./kafka-retry";
+import { KAFKA_RETRY_QUEUE } from "./tokens";
 
 export const QUEUES: Provider[] = [
+    KafkaRetryProcessor,
     {
-        provide: PERMISSION_CACHE_INVALIDATION_QUEUE,
-        useClass: PermissionCacheInvalidationQueue,
+        provide: KAFKA_RETRY_QUEUE,
+        useClass: KafkaRetryQueue,
     },
 ];
 
-export { PERMISSION_CACHE_INVALIDATION_QUEUE };
+export { BullQueue } from "./enums";
+export { KAFKA_RETRY_QUEUE };

@@ -6,12 +6,12 @@ import { Job } from "bullmq";
 
 import { KAFKA_SERVICE } from "~infrastructure/kafka";
 
-type RetryJobData = Consumers.DLQ.Message & { retryCount: number };
+import { BullQueue } from "../enums";
 
 @Injectable()
-@Processor("kafka-retry")
-export class RetryProcessor extends WorkerHost {
-    private readonly logger = new Logger(RetryProcessor.name);
+@Processor(BullQueue.KAFKA_RETRY)
+export class KafkaRetryProcessor extends WorkerHost {
+    private readonly logger = new Logger(KafkaRetryProcessor.name);
 
     public constructor(
         @Inject(KAFKA_SERVICE)
@@ -20,19 +20,21 @@ export class RetryProcessor extends WorkerHost {
         super();
     }
 
-    public async process(job: Job<RetryJobData>): Promise<void> {
+    public async process(job: Job<Queues.KafkaRetry.JobData>): Promise<void> {
         const { originalTopic, payload, retryCount } = job.data;
 
         await lastValueFrom(
             this.kafkaClient.emit(originalTopic, {
                 value: payload,
-                headers: { "x-retry-count": String(retryCount + 1) },
+                headers: {
+                    "x-retry-count": String(retryCount + 1),
+                },
             }),
         );
     }
 
     @OnWorkerEvent("failed")
-    public onFailed(job: Job<RetryJobData>): void {
+    public onFailed(job: Job<Queues.KafkaRetry.JobData>): void {
         this.logger.error(
             `Retry exhausted after ${job.attemptsMade} attempts for topic "${job.data.originalTopic}": ${job.data.error}`,
             job.failedReason,

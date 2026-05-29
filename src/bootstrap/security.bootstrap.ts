@@ -2,6 +2,7 @@ import { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { HttpStatus } from "@nestjs/common";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyCors from "@fastify/cors";
+import ms from "ms";
 
 export abstract class BootstrapSecurity {
     private constructor() {}
@@ -12,9 +13,11 @@ export abstract class BootstrapSecurity {
      * @param application Nest Fastify application instance.
      */
     public static async registerSecurityPlugins(application: NestFastifyApplication): Promise<void> {
+        const hstsMaxAge = ms(process.env.HSTS_MAX_AGE ?? "1y") / 1e3;
+
         this.enforceAllowedOrigins(application);
         await this.configureCrossOriginResourceSharing(application);
-        await this.configureSecurityHeaders(application);
+        await this.configureSecurityHeaders(application, hstsMaxAge);
         this.removeServerHeader(application);
         this.blockUnsafeHttpMethods(application);
     }
@@ -92,7 +95,7 @@ export abstract class BootstrapSecurity {
      * @see CORP [Cross-Origin Resource Policy](https://developer.mozilla.org/docs/Web/HTTP/Headers/Cross-Origin-Resource-Policy)
      * @see OWASP [Secure Headers Project](https://owasp.org/www-community/OWASP_Secure_Headers_Project#x-content-type-options)
      */
-    private static async configureSecurityHeaders(application: NestFastifyApplication): Promise<void> {
+    private static async configureSecurityHeaders(application: NestFastifyApplication, hstsMaxAge: number): Promise<void> {
         await application.register(fastifyHelmet, {
             crossOriginEmbedderPolicy: true,
             crossOriginOpenerPolicy: { policy: "same-origin" },
@@ -107,7 +110,7 @@ export abstract class BootstrapSecurity {
                 },
             },
             hsts: {
-                maxAge: 31536000,
+                maxAge: hstsMaxAge,
                 includeSubDomains: true,
                 preload: true,
             },

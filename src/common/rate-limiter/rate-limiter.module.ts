@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { Module, Global } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
 import { Redis } from "ioredis";
+import ms from "ms";
 
 import { RedisModule, REDIS_LIMITER_CLIENT } from "~infrastructure/redis";
 
@@ -17,7 +18,7 @@ import { RedisModule, REDIS_LIMITER_CLIENT } from "~infrastructure/redis";
                 throttlers: [
                     {
                         limit: configService.getOrThrow<number>("THROTTLE_LIMIT"),
-                        ttl: configService.getOrThrow<number>("THROTTLE_TTL"),
+                        ttl: Number(ms(configService.getOrThrow("THROTTLE_TTL"))),
                         name: "default",
                     },
                 ],

@@ -18,7 +18,7 @@ export class ServiceException extends BaseException {
         return new ServiceException(
             ServiceErrorKind.Unprocessable,
             HttpStatus.UNPROCESSABLE_ENTITY,
-            "validatior.COMMON_ERROR",
+            "validator.COMMON_ERROR",
             {},
             details,
         );

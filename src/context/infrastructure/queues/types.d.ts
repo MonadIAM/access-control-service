@@ -1,23 +1,10 @@
-declare namespace Processors {
-    namespace PermissionInvalidation {
-        type Props = {
-            accounts: string[];
-            offset?: number;
-        };
-        type Result = {
-            invalidated: number;
-        };
-    }
-}
-
 declare namespace Queues {
-    namespace PermissionInvalidation {
+    namespace KafkaRetry {
         interface Contract {
-            add: (props: Add) => Promise<void>;
+            readonly maxRetryCount: number;
+            schedule: (message: Consumers.DLQ.Message, retryCount: number) => Promise<void>;
         }
 
-        type Add = {
-            accounts: string[];
-        };
+        type JobData = Consumers.DLQ.Message & { retryCount: number };
     }
 }
