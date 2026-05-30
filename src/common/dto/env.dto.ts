@@ -1,3 +1,5 @@
+import { StringValue } from "ms";
+
 import { Validator } from "~common/validator";
 import { NodeEnv } from "~common/enums";
 
@@ -36,10 +38,10 @@ export class EnvironmentVariablesDTO {
     declare public THROTTLE_LIMIT: number;
 
     @Validator.IsMsString()
-    declare public THROTTLE_TTL: string;
+    declare public THROTTLE_TTL: StringValue;
 
     @Validator.IsMsString()
-    declare public HSTS_MAX_AGE: string;
+    declare public HSTS_MAX_AGE: StringValue;
 
     @Validator.IsPositiveInt()
     declare public BODY_LIMIT_BYTES: number;
@@ -66,17 +68,20 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public POSTGRES_PASSWORD: string;
 
+    @Validator.IsString()
+    declare public POSTGRES_HOST: string;
+
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     declare public POSTGRES_PORT: number;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    declare public POSTGRES_REPLICA_PORT: number;
+    declare public POSTGRES_PRIMARY_PUBLISHED_PORT: number;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    declare public POSTGRES_CONTAINER_PORT: number;
+    declare public POSTGRES_REPLICA_PUBLISHED_PORT: number;
 
     @Validator.IsBoolean()
     declare public POSTGRES_SSL: boolean;
@@ -84,11 +89,11 @@ export class EnvironmentVariablesDTO {
     @Validator.IsBoolean()
     declare public POSTGRES_SSL_REJECT_UNAUTHORIZED: boolean;
 
-    @Validator.IsMsString()
-    declare public POSTGRES_POOL_IDLE_MS: string;
-
     @Validator.IsPositiveInt()
     declare public POSTGRES_POOL_MAX: number;
+
+    @Validator.IsMsString()
+    declare public POSTGRES_POOL_IDLE_MS: StringValue;
 
     @Validator.IsBoolean()
     declare public POSTGRES_LOGGING: boolean;
@@ -101,42 +106,26 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    @Validator.IsOptional()
-    declare public POSTGRES_HOST?: string;
-
-    @Validator.IsString()
-    @Validator.IsOptional()
-    declare public POSTGRES_WRITE_HOST?: string;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    @Validator.IsOptional()
-    declare public POSTGRES_WRITE_PORT?: number;
+    declare public POSTGRES_WRITE_HOST: string;
 
     @Validator.IsPositiveInt()
     declare public POSTGRES_WRITE_POOL_MAX: number;
 
     @Validator.IsMsString()
-    declare public POSTGRES_WRITE_POOL_IDLE_MS: string;
+    declare public POSTGRES_WRITE_POOL_IDLE_MS: StringValue;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - read
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    @Validator.IsOptional()
-    declare public POSTGRES_READ_HOST?: string;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    @Validator.IsOptional()
-    declare public POSTGRES_READ_PORT?: number;
+    declare public POSTGRES_READ_HOST: string;
 
     @Validator.IsPositiveInt()
     declare public POSTGRES_READ_POOL_MAX: number;
 
     @Validator.IsMsString()
-    declare public POSTGRES_READ_POOL_IDLE_MS: string;
+    declare public POSTGRES_READ_POOL_IDLE_MS: StringValue;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - replication
@@ -159,8 +148,7 @@ export class EnvironmentVariablesDTO {
     declare public REDIS_IMAGE: string;
 
     @Validator.IsString()
-    @Validator.IsOptional()
-    declare public REDIS_HOST?: string;
+    declare public REDIS_HOST: string;
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
@@ -168,7 +156,7 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    declare public REDIS_CONTAINER_PORT: number;
+    declare public REDIS_PUBLISHED_PORT: number;
 
     @Validator.IsString()
     declare public REDIS_PASSWORD: string;
@@ -196,7 +184,7 @@ export class EnvironmentVariablesDTO {
     declare public KAFKA_RETRY_ATTEMPTS: number;
 
     @Validator.IsMsString()
-    declare public KAFKA_RETRY_INITIAL_TIME: string;
+    declare public KAFKA_RETRY_INITIAL_TIME: StringValue;
 
     @Validator.IsString()
     declare public DOCKER_NETWORK_NAME: string;
@@ -215,10 +203,10 @@ export class EnvironmentVariablesDTO {
     declare public KAFKA_DLQ_MAX_RETRIES: number;
 
     @Validator.IsMsString()
-    declare public KAFKA_DLQ_RETRY_BASE_DELAY: string;
+    declare public KAFKA_DLQ_RETRY_BASE_DELAY: StringValue;
 
     @Validator.IsMsString()
-    declare public KAFKA_DLQ_RETRY_JITTER: string;
+    declare public KAFKA_DLQ_RETRY_JITTER: StringValue;
 
     // ---------------------------------------------------------------------------
     // Debezium

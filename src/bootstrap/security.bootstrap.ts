@@ -13,7 +13,7 @@ export abstract class BootstrapSecurity {
      * @param application Nest Fastify application instance.
      */
     public static async registerSecurityPlugins(application: NestFastifyApplication): Promise<void> {
-        const hstsMaxAge = ms(process.env.HSTS_MAX_AGE ?? "1y") / 1e3;
+        const hstsMaxAge = ms(process.env.HSTS_MAX_AGE) / 1e3;
 
         this.enforceAllowedOrigins(application);
         await this.configureCrossOriginResourceSharing(application);

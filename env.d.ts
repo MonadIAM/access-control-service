@@ -1,119 +1,120 @@
-declare namespace NodeJS {
-    interface ProcessEnv {
-        // ---------------------------------------------------------------------------
-        // App
-        // ---------------------------------------------------------------------------
+import { StringValue } from "ms";
 
-        SERVICE_NAME: string;
-        NODE_ENV: "development" | "production" | "test";
-        API_VERSION: `${number}`;
+declare global {
+    namespace NodeJS {
+        interface ProcessEnv {
+            // ---------------------------------------------------------------------------
+            // App
+            // ---------------------------------------------------------------------------
 
-        APP_BASE_IMAGE: string;
-        APP_HOST: string;
-        APP_PORT: `${number}`;
-        GRPC_HOST: string;
-        GRPC_PORT: `${number}`;
-        THROTTLE_LIMIT: `${number}`;
-        THROTTLE_TTL: string;
-        HSTS_MAX_AGE: string;
-        BODY_LIMIT_BYTES: `${number}`;
-        JWT_ISSUER: string;
-        JWT_JWKS_URL: string;
+            SERVICE_NAME: string;
+            NODE_ENV: "development" | "production" | "test";
+            API_VERSION: `${number}`;
 
-        // ---------------------------------------------------------------------------
-        // PostgreSQL - common
-        // ---------------------------------------------------------------------------
+            APP_BASE_IMAGE: string;
+            APP_HOST: string;
+            APP_PORT: `${number}`;
+            GRPC_HOST: string;
+            GRPC_PORT: `${number}`;
+            THROTTLE_LIMIT: `${number}`;
+            THROTTLE_TTL: StringValue;
+            HSTS_MAX_AGE: StringValue;
+            BODY_LIMIT_BYTES: `${number}`;
+            JWT_ISSUER: string;
+            JWT_JWKS_URL: string;
 
-        POSTGRES_IMAGE: string;
-        POSTGRES_DB: string;
-        POSTGRES_USER: string;
-        POSTGRES_PASSWORD: string;
-        POSTGRES_PORT: `${number}`;
-        POSTGRES_REPLICA_PORT: `${number}`;
-        POSTGRES_CONTAINER_PORT: `${number}`;
-        POSTGRES_SSL: "true" | "false";
-        POSTGRES_SSL_REJECT_UNAUTHORIZED: "true" | "false";
-        POSTGRES_POOL_MAX: `${number}`;
-        POSTGRES_POOL_IDLE_MS: string;
-        POSTGRES_LOGGING: "true" | "false";
-        POSTGRES_CQRS_ENABLED: "true" | "false";
+            // ---------------------------------------------------------------------------
+            // PostgreSQL - common
+            // ---------------------------------------------------------------------------
 
-        // ---------------------------------------------------------------------------
-        // PostgreSQL - write
-        // ---------------------------------------------------------------------------
+            POSTGRES_IMAGE: string;
+            POSTGRES_DB: string;
+            POSTGRES_USER: string;
+            POSTGRES_PASSWORD: string;
+            POSTGRES_HOST: string;
+            POSTGRES_PORT: `${number}`;
+            POSTGRES_PRIMARY_PUBLISHED_PORT: `${number}`;
+            POSTGRES_REPLICA_PUBLISHED_PORT: `${number}`;
+            POSTGRES_SSL: "true" | "false";
+            POSTGRES_SSL_REJECT_UNAUTHORIZED: "true" | "false";
+            POSTGRES_POOL_MAX: `${number}`;
+            POSTGRES_POOL_IDLE_MS: StringValue;
+            POSTGRES_LOGGING: "true" | "false";
+            POSTGRES_CQRS_ENABLED: "true" | "false";
 
-        POSTGRES_HOST?: string;
-        POSTGRES_WRITE_HOST?: string;
-        POSTGRES_WRITE_PORT?: `${number}`;
-        POSTGRES_WRITE_POOL_MAX: `${number}`;
-        POSTGRES_WRITE_POOL_IDLE_MS: string;
+            // ---------------------------------------------------------------------------
+            // PostgreSQL - write
+            // ---------------------------------------------------------------------------
 
-        // ---------------------------------------------------------------------------
-        // PostgreSQL - read
-        // ---------------------------------------------------------------------------
+            POSTGRES_WRITE_POOL_MAX: `${number}`;
+            POSTGRES_WRITE_POOL_IDLE_MS: StringValue;
+            POSTGRES_WRITE_HOST: string;
 
-        POSTGRES_READ_HOST?: string;
-        POSTGRES_READ_PORT?: `${number}`;
-        POSTGRES_READ_POOL_MAX: `${number}`;
-        POSTGRES_READ_POOL_IDLE_MS: string;
+            // ---------------------------------------------------------------------------
+            // PostgreSQL - read
+            // ---------------------------------------------------------------------------
 
-        // ---------------------------------------------------------------------------
-        // PostgreSQL - replication
-        // ---------------------------------------------------------------------------
+            POSTGRES_READ_POOL_MAX: `${number}`;
+            POSTGRES_READ_POOL_IDLE_MS: StringValue;
+            POSTGRES_READ_HOST: string;
 
-        POSTGRES_REPLICATION_USER: string;
-        POSTGRES_REPLICATION_PASSWORD: string;
-        POSTGRES_REPLICATION_SLOT: string;
+            // ---------------------------------------------------------------------------
+            // PostgreSQL - replication
+            // ---------------------------------------------------------------------------
 
-        // ---------------------------------------------------------------------------
-        // Redis
-        // ---------------------------------------------------------------------------
+            POSTGRES_REPLICATION_USER: string;
+            POSTGRES_REPLICATION_PASSWORD: string;
+            POSTGRES_REPLICATION_SLOT: string;
 
-        REDIS_IMAGE: string;
-        REDIS_HOST?: string;
-        REDIS_PORT: `${number}`;
-        REDIS_CONTAINER_PORT: `${number}`;
-        REDIS_PASSWORD: string;
-        REDIS_DB_CACHE: `${number}`;
-        REDIS_DB_LIMITER: `${number}`;
-        REDIS_DB_QUEUE: `${number}`;
+            // ---------------------------------------------------------------------------
+            // Redis
+            // ---------------------------------------------------------------------------
 
-        // ---------------------------------------------------------------------------
-        // Kafka
-        // ---------------------------------------------------------------------------
+            REDIS_IMAGE: string;
+            REDIS_HOST: string;
+            REDIS_PORT: `${number}`;
+            REDIS_PUBLISHED_PORT: `${number}`;
+            REDIS_PASSWORD: string;
+            REDIS_DB_CACHE: `${number}`;
+            REDIS_DB_LIMITER: `${number}`;
+            REDIS_DB_QUEUE: `${number}`;
 
-        KAFKA_BROKER: string;
-        KAFKA_RETRY_ATTEMPTS: `${number}`;
-        KAFKA_RETRY_INITIAL_TIME: string;
-        DOCKER_NETWORK_NAME: string;
-        KAFKA_CONNECT_IMAGE: string;
-        KAFKA_CONNECT_PORT: `${number}`;
-        KAFKAJS_NO_PARTITIONER_WARNING: `${number}`;
-        KAFKA_DLQ_MAX_RETRIES: `${number}`;
-        KAFKA_DLQ_RETRY_BASE_DELAY: string;
-        KAFKA_DLQ_RETRY_JITTER: string;
+            // ---------------------------------------------------------------------------
+            // Kafka
+            // ---------------------------------------------------------------------------
 
-        // ---------------------------------------------------------------------------
-        // Debezium
-        // ---------------------------------------------------------------------------
+            KAFKA_BROKER: string;
+            KAFKA_RETRY_ATTEMPTS: `${number}`;
+            KAFKA_RETRY_INITIAL_TIME: StringValue;
+            DOCKER_NETWORK_NAME: string;
+            KAFKA_CONNECT_IMAGE: string;
+            KAFKA_CONNECT_PORT: `${number}`;
+            KAFKAJS_NO_PARTITIONER_WARNING: `${number}`;
+            KAFKA_DLQ_MAX_RETRIES: `${number}`;
+            KAFKA_DLQ_RETRY_BASE_DELAY: StringValue;
+            KAFKA_DLQ_RETRY_JITTER: StringValue;
 
-        DEBEZIUM_INIT_IMAGE: string;
+            // ---------------------------------------------------------------------------
+            // Debezium
+            // ---------------------------------------------------------------------------
 
-        // ---------------------------------------------------------------------------
-        // Domain-specific limits
-        // ---------------------------------------------------------------------------
+            DEBEZIUM_INIT_IMAGE: string;
 
-        REALM_LIMIT: `${number}`;
-        ROLE_PER_REALM_LIMIT: `${number}`;
-        ROLE_PER_ACCOUNT_LIMIT: `${number}`;
-        PERMISSION_PER_REALM_LIMIT: `${number}`;
-        PERMISSION_PER_ROLE_LIMIT: `${number}`;
-        PERMISSION_OVERRIDE_PER_ACCOUNT_LIMIT: `${number}`;
-        CONFLICT_GROUP_PER_REALM_LIMIT: `${number}`;
-        MAX_CONFLICT_MEMBERS_COUNT: `${number}`;
-        DELEGATION_POLICY_PER_ROLE_LIMIT: `${number}`;
-        MAX_ROLE_SUBTREE_SIZE_FOR_PURGE: `${number}`;
-        BULK_OPERATION_LIMIT: `${number}`;
+            // ---------------------------------------------------------------------------
+            // Domain-specific limits
+            // ---------------------------------------------------------------------------
 
+            REALM_LIMIT: `${number}`;
+            ROLE_PER_REALM_LIMIT: `${number}`;
+            ROLE_PER_ACCOUNT_LIMIT: `${number}`;
+            PERMISSION_PER_REALM_LIMIT: `${number}`;
+            PERMISSION_PER_ROLE_LIMIT: `${number}`;
+            PERMISSION_OVERRIDE_PER_ACCOUNT_LIMIT: `${number}`;
+            CONFLICT_GROUP_PER_REALM_LIMIT: `${number}`;
+            MAX_CONFLICT_MEMBERS_COUNT: `${number}`;
+            DELEGATION_POLICY_PER_ROLE_LIMIT: `${number}`;
+            MAX_ROLE_SUBTREE_SIZE_FOR_PURGE: `${number}`;
+            BULK_OPERATION_LIMIT: `${number}`;
+        }
     }
 }

@@ -11,7 +11,7 @@ if [ -s "$PGDATA/PG_VERSION" ]; then
 fi
 
 echo "Waiting for primary server to be ready..."
-until PGPASSWORD="$POSTGRES_REPLICATION_PASSWORD" pg_isready -h "$POSTGRES_PRIMARY_HOST" -p "$POSTGRES_PRIMARY_PORT" -U "$POSTGRES_REPLICATION_USER"; do
+until PGPASSWORD="$POSTGRES_REPLICATION_PASSWORD" pg_isready -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_REPLICATION_USER"; do
     echo "Primary server is not ready yet, waiting..."
     sleep 2
 done
@@ -21,8 +21,8 @@ echo "Primary server is ready, creating base backup..."
 rm -rf "$PGDATA"/*
 
 PGPASSWORD="$POSTGRES_REPLICATION_PASSWORD" pg_basebackup \
-    -h "$POSTGRES_PRIMARY_HOST" \
-    -p "$POSTGRES_PRIMARY_PORT" \
+    -h "$POSTGRES_HOST" \
+    -p "$POSTGRES_PORT" \
     -U "$POSTGRES_REPLICATION_USER" \
     -D "$PGDATA" \
     -Fp \

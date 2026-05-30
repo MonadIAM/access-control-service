@@ -5,7 +5,7 @@ apk add --no-cache curl gettext jq
 
 CONNECT_URL="http://${SERVICE_NAME}-kafka-connect:8083"
 
-ENVS='${POSTGRES_CONTAINER_PORT} ${POSTGRES_USER} ${POSTGRES_PASSWORD} ${POSTGRES_DB} ${SERVICE_NAME}'
+ENVS='${POSTGRES_PORT} ${POSTGRES_USER} ${POSTGRES_PASSWORD} ${POSTGRES_DB} ${SERVICE_NAME}'
 
 until curl -fsS "$CONNECT_URL/connectors" >/dev/null; do
     echo "Waiting for Kafka Connect..."

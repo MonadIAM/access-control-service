@@ -11,7 +11,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${POSTGRES_PORT}:${POSTGRES_CONTAINER_PORT}"
+      - "${POSTGRES_PRIMARY_PUBLISHED_PORT}:${POSTGRES_PORT}"
     volumes:
       - postgres_primary_data:/var/lib/postgresql/data
       - ./docker/postgres/setup-replication.sh:/docker-entrypoint-initdb.d/99-setup-replication.sh:ro
@@ -27,7 +27,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h 127.0.0.1 -p ${POSTGRES_CONTAINER_PORT}",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h 127.0.0.1 -p ${POSTGRES_PORT}",
         ]
       interval: 10s
       timeout: 5s
@@ -40,11 +40,8 @@ services:
     container_name: ${SERVICE_NAME}-postgres-replica
     env_file:
       - .env
-    environment:
-      POSTGRES_PRIMARY_HOST: postgresql-primary
-      POSTGRES_PRIMARY_PORT: ${POSTGRES_CONTAINER_PORT}
     ports:
-      - "${POSTGRES_REPLICA_PORT}:${POSTGRES_CONTAINER_PORT}"
+      - "${POSTGRES_REPLICA_PUBLISHED_PORT}:${POSTGRES_PORT}"
     depends_on:
       postgresql-primary:
         condition: service_healthy
@@ -58,7 +55,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h 127.0.0.1 -p ${POSTGRES_CONTAINER_PORT} && PGPASSWORD=${POSTGRES_PASSWORD} psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h 127.0.0.1 -p ${POSTGRES_CONTAINER_PORT} -tAc \"SELECT pg_is_in_recovery()\" | grep -q t",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h 127.0.0.1 -p ${POSTGRES_PORT} && PGPASSWORD=${POSTGRES_PASSWORD} psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h 127.0.0.1 -p ${POSTGRES_PORT} -tAc \"SELECT pg_is_in_recovery()\" | grep -q t",
         ]
       interval: 10s
       timeout: 5s
@@ -113,7 +110,7 @@ services:
     image: ${REDIS_IMAGE:?}
     container_name: ${SERVICE_NAME}-redis
     ports:
-      - "${REDIS_PORT}:${REDIS_CONTAINER_PORT}"
+      - "${REDIS_PUBLISHED_PORT}:${REDIS_PORT}"
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     volumes:
       - redis_data:/data
@@ -130,15 +127,6 @@ services:
     container_name: ${SERVICE_NAME}-app
     env_file:
       - .env
-    environment:
-      POSTGRES_HOST: postgresql-primary
-      POSTGRES_WRITE_HOST: postgresql-primary
-      POSTGRES_READ_HOST: postgresql-replica
-      REDIS_HOST: redis
-      POSTGRES_WRITE_PORT: ${POSTGRES_CONTAINER_PORT}
-      POSTGRES_READ_PORT: ${POSTGRES_CONTAINER_PORT}
-      POSTGRES_PORT: ${POSTGRES_CONTAINER_PORT}
-      REDIS_PORT: ${REDIS_CONTAINER_PORT}
     ports:
       - "${GRPC_PORT}:${GRPC_PORT}"
       - "${APP_PORT}:${APP_PORT}"
@@ -186,7 +174,7 @@ networks:
     driver: bridge
   kafka_net:
     external: true
-    name: ${DOCKER_NETWORK_NAME:-kafka-net}
+    name: ${DOCKER_NETWORK_NAME}
   monitoring-shared:
     external: true
     name: monitoring-network

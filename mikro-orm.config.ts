@@ -3,6 +3,7 @@ import { Migrator } from "@mikro-orm/migrations";
 import { type Options } from "@mikro-orm/core";
 import dotenv from "dotenv";
 import path from "path";
+import ms from "ms";
 
 dotenv.config();
 
@@ -12,16 +13,13 @@ const rejectUnauthorized: boolean = process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED
 const cqrsEnabled: boolean = process.env.POSTGRES_CQRS_ENABLED === "true";
 
 const host: string = process.env.POSTGRES_WRITE_HOST ?? process.env.POSTGRES_HOST ?? "127.0.0.1";
-const isLocal: boolean = host === "127.0.0.1" || host === "localhost";
 
-const port: number = Number(isLocal ? process.env.POSTGRES_PORT : process.env.POSTGRES_WRITE_PORT);
+const port: number = Number(process.env.POSTGRES_PORT);
 const poolMax: number = Number(cqrsEnabled ? process.env.POSTGRES_WRITE_POOL_MAX : process.env.POSTGRES_POOL_MAX);
 
 const poolIdleTimeoutMillis: Optional<number> = cqrsEnabled
-    ? Number(process.env.POSTGRES_WRITE_POOL_IDLE_MS ?? process.env.POSTGRES_POOL_IDLE_MS)
-    : process.env.POSTGRES_POOL_IDLE_MS
-      ? Number(process.env.POSTGRES_POOL_IDLE_MS)
-      : undefined;
+    ? ms(process.env.POSTGRES_WRITE_POOL_IDLE_MS ?? process.env.POSTGRES_POOL_IDLE_MS)
+    : ms(process.env.POSTGRES_POOL_IDLE_MS);
 
 const config: Options<PostgreSqlDriver> = {
     driver: PostgreSqlDriver,

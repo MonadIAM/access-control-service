@@ -3,7 +3,7 @@
     "config": {
         "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
         "database.hostname": "postgresql-primary",
-        "database.port": "${POSTGRES_CONTAINER_PORT}",
+        "database.port": "${POSTGRES_PORT}",
         "database.user": "${POSTGRES_USER}",
         "database.password": "${POSTGRES_PASSWORD}",
         "database.dbname": "${POSTGRES_DB}",

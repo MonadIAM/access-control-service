@@ -1,8 +1,8 @@
 import { ConfigService } from "@nestjs/config";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Injectable } from "@nestjs/common";
+import ms, { StringValue } from "ms";
 import { Queue } from "bullmq";
-import ms from "ms";
 
 import { BullJobName, BullQueue } from "../enums";
 
@@ -17,8 +17,8 @@ export class KafkaRetryQueue implements Queues.KafkaRetry.Contract {
         private readonly queue: Queue<Queues.KafkaRetry.JobData>,
         private readonly configService: ConfigService,
     ) {
-        this.baseDelay = Number(ms(this.configService.getOrThrow("KAFKA_DLQ_RETRY_BASE_DELAY")));
-        this.jitter = Number(ms(this.configService.getOrThrow("KAFKA_DLQ_RETRY_JITTER")));
+        this.baseDelay = ms(this.configService.getOrThrow<StringValue>("KAFKA_DLQ_RETRY_BASE_DELAY"));
+        this.jitter = ms(this.configService.getOrThrow<StringValue>("KAFKA_DLQ_RETRY_JITTER"));
         this.maxRetries = this.configService.getOrThrow<number>("KAFKA_DLQ_MAX_RETRIES");
     }
 
