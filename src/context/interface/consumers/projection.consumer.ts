@@ -40,6 +40,16 @@ export class ProjectionConsumer implements OnModuleInit {
                 );
             } else {
                 this.logger.warn(`Non-retryable error in projection consumer: ${String(error)}`);
+
+                await lastValueFrom(
+                    this.kafkaClient.emit(KafkaTopic.PROJECTION_JOURNAL_DEAD, {
+                        value: {
+                            originalTopic: KafkaTopic.PROJECTION_JOURNAL,
+                            payload: message,
+                            error: String(error),
+                        },
+                    }),
+                );
             }
         }
     }

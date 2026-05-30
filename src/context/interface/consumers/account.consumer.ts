@@ -49,6 +49,16 @@ export class AccountConsumer implements OnModuleInit {
                 );
             } else {
                 this.logger.warn(`Non-retryable error in account consumer: ${String(error)}`);
+
+                await lastValueFrom(
+                    this.kafkaClient.emit(KafkaTopic.ACCOUNT_DEAD, {
+                        value: {
+                            originalTopic: KafkaTopic.ACCOUNT,
+                            error: String(error),
+                            payload: message,
+                        },
+                    }),
+                );
             }
         }
     }
