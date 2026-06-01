@@ -2,6 +2,26 @@ import { ProjectionScript } from "../scripts";
 
 declare global {
     namespace InfrastructureServices {
+        namespace ElevatedAccessCache {
+            interface Contract {
+                set: (props: Set) => Promise<void>;
+                exists: (props: Exists) => Promise<boolean>;
+                delete: (props: Delete) => Promise<void>;
+            }
+
+            type Set = {
+                session: string;
+                ttl: number;
+            };
+
+            type Exists = {
+                session: string;
+            };
+
+            type Delete = {
+                session: string;
+            };
+        }
         namespace BlacklistCache {
             interface Contract {
                 exists: (props: Exists) => Promise<boolean>;

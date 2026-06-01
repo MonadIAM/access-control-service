@@ -1,10 +1,12 @@
 import { Provider } from "@nestjs/common";
 
+import { ElevatedAccessCacheService } from "./elevated-access-cache.service";
 import { ProjectionCacheService } from "./projection-cache.service";
 import { BlacklistCacheService } from "./blacklist-cache.service";
 import { ScriptExecutorService } from "./script-executor.service";
 import { ScriptLoaderService } from "./script-loader.service";
 import {
+    ELEVATED_ACCESS_CACHE_SERVICE,
     PROJECTION_CACHE_SERVICE,
     BLACKLIST_CACHE_SERVICE,
     SCRIPT_EXECUTOR_SERVICE,
@@ -12,6 +14,10 @@ import {
 } from "./tokens";
 
 export const INFRASTRUCTURE_SERVICES: Provider[] = [
+    {
+        provide: ELEVATED_ACCESS_CACHE_SERVICE,
+        useClass: ElevatedAccessCacheService,
+    },
     {
         provide: PROJECTION_CACHE_SERVICE,
         useClass: ProjectionCacheService,
@@ -29,3 +35,11 @@ export const INFRASTRUCTURE_SERVICES: Provider[] = [
         useClass: ScriptLoaderService,
     },
 ];
+
+export {
+    ELEVATED_ACCESS_CACHE_SERVICE,
+    PROJECTION_CACHE_SERVICE,
+    BLACKLIST_CACHE_SERVICE,
+    SCRIPT_EXECUTOR_SERVICE,
+    SCRIPT_LOADER_SERVICE,
+};

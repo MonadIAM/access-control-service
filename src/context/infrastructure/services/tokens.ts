@@ -1,3 +1,4 @@
+export const ELEVATED_ACCESS_CACHE_SERVICE = Symbol("InfrastructureServices.ElevatedAccessCache.Contract");
 export const PROJECTION_CACHE_SERVICE = Symbol("InfrastructureServices.ProjectionCache.Contract");
 export const BLACKLIST_CACHE_SERVICE = Symbol("InfrastructureServices.BlacklistCache.Contract");
 export const SCRIPT_EXECUTOR_SERVICE = Symbol("InfrastructureServices.ScriptExecutor.Contract");

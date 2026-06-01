@@ -35,6 +35,22 @@ declare global {
             };
         }
 
+        namespace ElevatedAccess {
+            interface Contract {
+                handle: (props: Payload) => Promise<void>;
+            }
+
+            type Event = "ELEVATED_ACCESS_GRANTED";
+
+            type Payload = {
+                eventType: Event;
+                payload: {
+                    expiresAt: number;
+                    session: string;
+                };
+            };
+        }
+
         namespace Blacklist {
             interface Contract {
                 handle: (props: Payload) => Promise<void>;
