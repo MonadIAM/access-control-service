@@ -90,7 +90,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     }
 
     public async purge(props: Commands.PermissionOverride.Purge.Props): Commands.PermissionOverride.Purge.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -120,7 +120,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 
@@ -142,7 +142,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     }
 
     public async revoke(props: Commands.PermissionOverride.Revoke.Props): Commands.PermissionOverride.Revoke.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -176,7 +176,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             execute: async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
                     options: { populate: ["permission.realm"] },
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 
@@ -198,7 +198,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     }
 
     public async restore(props: Commands.PermissionOverride.Restore.Props): Commands.PermissionOverride.Restore.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -232,7 +232,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             execute: async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
                     options: { populate: ["permission.realm"] },
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 

@@ -80,7 +80,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                         transaction,
                     }),
                     this.roleRepository.find({
-                        where: { id: { $in: input.roles } },
+                        where: { id: { $in: input.roles }, realm },
                         transaction,
                     }),
                 ]);
@@ -102,10 +102,10 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     }
 
     public async purge(props: Commands.AccountRoleAssignment.Purge.Props): Commands.AccountRoleAssignment.Purge.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.accountRoleAssignmentRepository.find({
-            where: { id: { $in: input.identifiers } },
+            where: { id: { $in: input.identifiers }, realm },
         });
 
         const { missing, groups } = await this.projectionCacheService.validateAssignments({
@@ -163,7 +163,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     }
 
     public async revoke(props: Commands.AccountRoleAssignment.Revoke.Props): Commands.AccountRoleAssignment.Revoke.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -194,7 +194,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.accountRoleAssignmentRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 
@@ -218,7 +218,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     public async restore(
         props: Commands.AccountRoleAssignment.Restore.Props,
     ): Commands.AccountRoleAssignment.Restore.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -249,7 +249,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.accountRoleAssignmentRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 

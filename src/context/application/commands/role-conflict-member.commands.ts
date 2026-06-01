@@ -66,7 +66,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
     }
 
     public async purge(props: Commands.RoleConflictMember.Purge.Props): Commands.RoleConflictMember.Purge.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const { count } = await this.transactionalService.run({
             resource: this.resource,
@@ -78,7 +78,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.roleConflictMemberRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, group: { realm } },
                     transaction,
                 });
 

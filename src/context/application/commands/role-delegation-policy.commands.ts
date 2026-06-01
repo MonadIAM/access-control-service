@@ -38,7 +38,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             execute: async (transaction) => {
                 const [roleEntities, realmEntity] = await Promise.all([
                     this.roleRepository.find({
-                        where: { id: { $in: [input.delegator, input.target] } },
+                        where: { id: { $in: [input.delegator, input.target] }, realm },
                         transaction,
                     }),
                     this.realmRepository.findUniqueOrThrow({
@@ -101,7 +101,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
     }
 
     public async purge(props: Commands.RoleDelegationPolicy.Purge.Props): Commands.RoleDelegationPolicy.Purge.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const { count } = await this.transactionalService.run({
             resource: this.resource,
@@ -113,7 +113,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 
@@ -134,7 +134,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
     }
 
     public async revoke(props: Commands.RoleDelegationPolicy.Revoke.Props): Commands.RoleDelegationPolicy.Revoke.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -146,7 +146,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 
@@ -167,7 +167,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
     }
 
     public async restore(props: Commands.RoleDelegationPolicy.Restore.Props): Commands.RoleDelegationPolicy.Restore.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -179,7 +179,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 

@@ -104,7 +104,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     public async purge(
         props: Commands.RolePermissionAssignment.Purge.Props,
     ): Commands.RolePermissionAssignment.Purge.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -135,7 +135,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             execute: async (transaction) => {
                 const entities = await this.rolePermissionAssignmentRepository.find({
                     options: { populate: ["permission.realm"] },
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 
@@ -158,7 +158,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     public async revoke(
         props: Commands.RolePermissionAssignment.Revoke.Props,
     ): Commands.RolePermissionAssignment.Revoke.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -193,7 +193,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             execute: async (transaction) => {
                 const entities = await this.rolePermissionAssignmentRepository.find({
                     options: { populate: ["permission.realm"] },
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 
@@ -216,7 +216,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     public async restore(
         props: Commands.RolePermissionAssignment.Restore.Props,
     ): Commands.RolePermissionAssignment.Restore.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -251,7 +251,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             execute: async (transaction) => {
                 const entities = await this.rolePermissionAssignmentRepository.find({
                     options: { populate: ["permission.realm"] },
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 

@@ -42,7 +42,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                         transaction,
                     }),
                     this.roleRepository.find({
-                        where: { id: { $in: input.members } },
+                        where: { id: { $in: input.members }, realm },
                         transaction,
                     }),
                 ]);
@@ -87,7 +87,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
     }
 
     public async purge(props: Commands.RoleConflictGroup.Purge.Props): Commands.RoleConflictGroup.Purge.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const { count } = await this.transactionalService.run({
             resource: this.resource,
@@ -99,7 +99,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.roleConflictGroupRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 
@@ -120,7 +120,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
     }
 
     public async revoke(props: Commands.RoleConflictGroup.Revoke.Props): Commands.RoleConflictGroup.Revoke.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -132,7 +132,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.roleConflictGroupRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 
@@ -153,7 +153,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
     }
 
     public async restore(props: Commands.RoleConflictGroup.Restore.Props): Commands.RoleConflictGroup.Restore.Result {
-        const { input } = props;
+        const { input, realm } = props;
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
@@ -165,7 +165,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.roleConflictGroupRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                    where: { id: { $in: input.identifiers }, realm },
                     transaction,
                 });
 
