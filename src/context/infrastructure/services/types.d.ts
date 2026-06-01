@@ -9,12 +9,12 @@ declare global {
             }
 
             type Set = {
-                sessionId: string;
+                session: string;
                 ttl: number;
             };
 
             type Exists = {
-                sessionId: string;
+                session: string;
             };
         }
 

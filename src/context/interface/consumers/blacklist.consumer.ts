@@ -22,10 +22,10 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModule
     @EventPattern(KafkaTopic.BLACKLIST)
     public async handle(@Payload() message: Consumers.Blacklist.Payload): Promise<void> {
         try {
-            await this.blacklistCacheService.set({
-                sessionId: message.payload.sessionId,
-                ttl: message.payload.ttl,
-            });
+            const ttl = Math.floor((message.payload.expiresAt - Date.now()) / 1e3);
+            if (ttl > 0) {
+                await this.blacklistCacheService.set({ session: message.payload.session, ttl });
+            }
         } catch (error) {
             await lastValueFrom(
                 this.kafkaClient.emit(KafkaTopic.BLACKLIST_DEAD, {

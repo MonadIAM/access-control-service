@@ -45,8 +45,8 @@ declare global {
             type Payload = {
                 eventType: Event;
                 payload: {
-                    sessionId: string;
-                    ttl: number;
+                    expiresAt: number;
+                    session: string;
                 };
             };
         }
