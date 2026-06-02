@@ -9,6 +9,7 @@ const config: Config.InitialOptions = {
     testMatch: ["**/?*.spec.ts"],
 
     collectCoverageFrom: [
+        "<rootDir>/src/common/transaction-manager/entities/**/*.ts",
         "<rootDir>/src/context/domain/entities/**/*.ts",
         "!src/**/*.schema.ts",
         "!**/*.unit.spec.ts",
