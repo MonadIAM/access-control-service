@@ -2,6 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
 import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services/tokens";
+import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { CommandException } from "~common/exceptions";
@@ -27,10 +28,21 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(PERMISSION_OVERRIDE_SERVICE)
         private readonly permissionOverrideService: Services.PermissionOverride.Contract,
+        @Inject(PROJECTION_CACHE_SERVICE)
+        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
     ) {}
 
     public async create(props: Commands.PermissionOverride.Create.Props): Commands.PermissionOverride.Create.Result {
         const { input, realm } = props;
+
+        const isAlreadyMember = await this.projectionCacheService.checkRealm({
+            account: input.account,
+            realm,
+        });
+
+        if (!isAlreadyMember) {
+            throw CommandException.conflict(`${this.dictionaryPath}.ACCOUNT_NOT_MEMBER`);
+        }
 
         await this.transactionalService.run({
             resource: this.resource,

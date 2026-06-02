@@ -27,7 +27,7 @@ declare global {
                     scope?: InviteQueryScope;
                     view: ResponseViewType;
                     pagination: Pagination;
-                    realm: string;
+                    realm?: string;
                     actor: string;
                 };
 

@@ -2,6 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
+import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { CommandException } from "~common/exceptions";
@@ -74,11 +75,11 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                         transaction,
                     }),
                     this.roleRepository.findUniqueOrThrow({
-                        where: { id: input.role },
+                        where: { id: input.role, realm },
                         transaction,
                     }),
                     this.permissionRepository.find({
-                        where: { id: { $in: input.permissions } },
+                        where: { id: { $in: input.permissions }, realm: { $in: [realm, SystemRealm.id] } },
                         transaction,
                     }),
                 ]);

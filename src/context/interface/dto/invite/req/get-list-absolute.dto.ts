@@ -2,7 +2,7 @@ import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { IsNotEmptyObject } from "class-validator";
 import { Expose, Type } from "class-transformer";
 
-import { BaseReadQueryDTO, PaginationDTO } from "~common/dto";
+import { PaginationDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 import { AbsoluteFiltersDTO } from "../utils/filters-absolute.dto";
@@ -30,12 +30,4 @@ export class GetListAbsoluteBodyDTO {
     @Type(() => SortDTO)
     @ApiProperty({ required: false, type: SortDTO })
     declare public sort: SortDTO;
-}
-
-@ApiSchema({ name: "InviteAbsoluteListQuery" })
-export class GetListAbsoluteQueryDTO extends BaseReadQueryDTO {
-    @Expose()
-    @Validator.IsUUID()
-    @ApiProperty({ required: true, type: String, format: "uuid" })
-    declare public realm: string;
 }

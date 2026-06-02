@@ -2,22 +2,21 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Patch, Query
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
+import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
 import { INVITE_COMMANDS } from "~context/application/commands";
 import { INVITE_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
-import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
     GetListAbsoluteBodyDTO,
-    GetListAbsoluteQueryDTO,
-    ChangeStatusBodyDTO,
     ChangeStatusQueryDTO,
-    GetListBodyDTO,
+    ChangeStatusBodyDTO,
     GetListQueryDTO,
     GetByIdQueryDTO,
-    CreateBodyDTO,
     CreateQueryDTO,
+    GetListBodyDTO,
+    CreateBodyDTO,
     InviteDTO,
     ListDTO,
 } from "../dto/invite";
@@ -108,11 +107,11 @@ export class InviteController {
         FORBIDDEN,
     )
     public getList(
-        @Query() { realm, view }: GetListAbsoluteQueryDTO,
         @Body() { pagination, filters, sort }: GetListAbsoluteBodyDTO,
+        @Query() { view }: BaseReadQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
     ): Queries.Invite.FindMany.Result {
-        return this.inviteQueries.findMany({ pagination, filters, realm, actor, sort, view });
+        return this.inviteQueries.findMany({ pagination, filters, actor, sort, view });
     }
 
     @Post("create")

@@ -1,6 +1,6 @@
-export { GetListAbsoluteBodyDTO, GetListAbsoluteQueryDTO } from "./req/get-list-absolute.dto";
 export { ChangeStatusBodyDTO, ChangeStatusQueryDTO } from "./req/change-status.dto";
 export { GetListBodyDTO, GetListQueryDTO } from "./req/get-list.dto";
+export { GetListAbsoluteBodyDTO } from "./req/get-list-absolute.dto";
 export { CreateBodyDTO, CreateQueryDTO } from "./req/create.dto";
 export { GetByIdQueryDTO } from "./req/get-by-id.dto";
 

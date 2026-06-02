@@ -7,13 +7,14 @@ import { Validator } from "~common/validator";
 export class CreateBodyDTO {
     @Expose()
     @Validator.IsUniqueArray()
+    @Validator.ArrayMinSize(2)
     @Validator.ArrayMaxSize(Number(process.env.BULK_OPERATION_LIMIT))
     @Validator.IsUUID("4", { each: true })
     @ApiProperty({ required: true, type: [String], format: "uuid" })
     declare public members: string[];
 
     @Expose()
-    @Validator.IsInt()
+    @Validator.IsPositiveInt()
     @ApiProperty({ required: true, type: Number })
     declare public maxAllowed: number;
 

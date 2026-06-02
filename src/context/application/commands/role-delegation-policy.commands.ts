@@ -173,7 +173,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             resource: this.resource,
             audit: {
                 entityType: EntityType.DELEGATION_POLICY,
-                actionType: EventType.REVOKE,
+                actionType: EventType.RESTORE,
                 ...props,
             },
             changeLog: true,

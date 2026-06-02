@@ -108,6 +108,10 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             where: { id: { $in: input.identifiers }, realm },
         });
 
+        if (entities.length < input.identifiers.length) {
+            throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+        }
+
         const { missing, groups } = await this.projectionCacheService.validateAssignments({
             items: entities.map(({ account, realm, role }) => ({
                 realm: realm.id,
