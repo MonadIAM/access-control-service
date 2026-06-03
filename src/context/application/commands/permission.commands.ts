@@ -1,7 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { AccessCacheTopicAction } from "@liam/contracts";
 
 import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories/tokens";
-import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
+import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
 import { PERMISSION_SERVICE } from "~context/domain/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
@@ -38,7 +39,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
             },
             audit: {
                 entityType: EntityType.PERMISSION,
-                actionType: EventType.CREATE,
+                actionType: ActionType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -66,7 +67,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
             resource: this.resource,
             audit: {
                 entityType: EntityType.PERMISSION,
-                actionType: EventType.UPDATE,
+                actionType: ActionType.UPDATE,
                 ...props,
             },
             changeLog: true,
@@ -96,15 +97,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 }),
             },
             outbox: {
-                eventType: EventType.DELETE,
-                aggregateType: AggregateType.PERMISSION,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.Permission[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Permission[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.PERMISSION,
-                actionType: EventType.DELETE,
+                actionType: ActionType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -144,15 +143,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 }),
             },
             outbox: {
-                eventType: EventType.REVOKE,
-                aggregateType: AggregateType.PERMISSION,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.Permission[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Permission[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.PERMISSION,
-                actionType: EventType.REVOKE,
+                actionType: ActionType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -193,15 +190,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 }),
             },
             outbox: {
-                eventType: EventType.RESTORE,
-                aggregateType: AggregateType.PERMISSION,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.Permission[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Permission[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.PERMISSION,
-                actionType: EventType.RESTORE,
+                actionType: ActionType.RESTORE,
                 ...props,
             },
             changeLog: true,

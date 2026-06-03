@@ -1,6 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { AccessCacheTopicAction } from "@liam/contracts";
 
-import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
+import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
@@ -56,15 +57,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 }),
             },
             outbox: {
-                eventType: EventType.CREATE,
-                aggregateType: AggregateType.PERMISSION_ASSIGNMENT,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
-                actionType: EventType.CREATE,
+                actionType: ActionType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -121,15 +120,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 }),
             },
             outbox: {
-                eventType: EventType.DELETE,
-                aggregateType: AggregateType.PERMISSION_ASSIGNMENT,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
-                actionType: EventType.DELETE,
+                actionType: ActionType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -179,15 +176,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 }),
             },
             outbox: {
-                eventType: EventType.REVOKE,
-                aggregateType: AggregateType.PERMISSION_ASSIGNMENT,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
-                actionType: EventType.REVOKE,
+                actionType: ActionType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -237,15 +232,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 }),
             },
             outbox: {
-                eventType: EventType.RESTORE,
-                aggregateType: AggregateType.PERMISSION_ASSIGNMENT,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
-                actionType: EventType.RESTORE,
+                actionType: ActionType.RESTORE,
                 ...props,
             },
             changeLog: true,

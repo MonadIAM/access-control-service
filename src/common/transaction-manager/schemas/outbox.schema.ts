@@ -12,10 +12,6 @@ export const OutboxSchema = new EntitySchema<Outbox>({
             name: "outbox_sequence_number_idx",
             properties: ["sequenceNumber"],
         },
-        {
-            name: "outbox_aggregate_idx",
-            properties: ["aggregateType"],
-        },
     ],
 
     properties: {
@@ -23,8 +19,7 @@ export const OutboxSchema = new EntitySchema<Outbox>({
 
         sequenceNumber: { type: "bigint", serializedPrimaryKey: false, autoincrement: true },
 
-        eventType: { type: "string", length: 64 },
-        aggregateType: { type: "string", length: 64 },
+        actionType: { type: "string", length: 64 },
         destinationTopic: { type: "string", length: 128 },
 
         payload: { type: "jsonb" },

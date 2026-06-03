@@ -71,7 +71,7 @@ declare namespace Commands {
 
         namespace OutboxPayloadMapper {
             type Props = Entities.RolePermissionAssignment[];
-            type Result = Events.AccessCache.Invalidation;
+            type Result = Topics.AccessCache.Message["payload"];
         }
     }
 }

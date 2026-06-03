@@ -31,7 +31,7 @@
         "transforms.unwrap.delete.handling.mode": "drop",
 
         "transforms.rename.type": "org.apache.kafka.connect.transforms.ReplaceField$Value",
-        "transforms.rename.renames": "sequence_number:sequenceNumber,event_type:eventType,aggregate_type:aggregateType,destination_topic:destinationTopic,created_at:createdAt",
+        "transforms.rename.renames": "sequence_number:sequenceNumber,event_type:actionType,aggregate_type:aggregateType,destination_topic:destinationTopic,created_at:createdAt",
 
         "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
         "transforms.route.regex": ".*",

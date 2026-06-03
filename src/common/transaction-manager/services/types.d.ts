@@ -1,6 +1,6 @@
 import { AnyEntity, EntityManager } from "@mikro-orm/postgresql";
 
-import { AggregateType, EventType, KafkaTopic } from "~context/enums";
+import { KafkaTopic } from "~context/enums";
 
 declare global {
     namespace TransactionManager {
@@ -21,9 +21,8 @@ declare global {
                       outbox?: {
                           payloadMapper?: (result: T) => AnyEntity | AnyEntity[];
                           destinationTopic: KafkaTopic;
-                          aggregateType: AggregateType;
-                          eventType: EventType;
                           metadata?: UnknownObject;
+                          actionType: string;
                       };
                       projectionJournal?: ProjectionJournalEntry<T> | ProjectionJournalEntry<T>[];
                       changeLog?: boolean;

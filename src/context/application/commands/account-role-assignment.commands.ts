@@ -1,6 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { AccessCacheTopicAction } from "@liam/contracts";
 
-import { EventType, EntityType, KafkaTopic, AggregateType, InvalidationScope } from "~context/enums";
+import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services/tokens";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
@@ -61,15 +62,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                eventType: EventType.CREATE,
-                aggregateType: AggregateType.ROLE_ASSIGNMENT,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
-                actionType: EventType.CREATE,
+                actionType: ActionType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -141,15 +140,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                eventType: EventType.DELETE,
-                aggregateType: AggregateType.ROLE_ASSIGNMENT,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
-                actionType: EventType.DELETE,
+                actionType: ActionType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -184,15 +181,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                eventType: EventType.REVOKE,
-                aggregateType: AggregateType.ROLE_ASSIGNMENT,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
-                actionType: EventType.REVOKE,
+                actionType: ActionType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -239,15 +234,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                eventType: EventType.RESTORE,
-                aggregateType: AggregateType.ROLE_ASSIGNMENT,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
-                actionType: EventType.RESTORE,
+                actionType: ActionType.RESTORE,
                 ...props,
             },
             changeLog: true,
@@ -291,11 +284,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                eventType: EventType.CREATE,
-                aggregateType: AggregateType.ROLE_ASSIGNMENT,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             execute: async (transaction) => {
                 const [realmEntity, roleEntity] = await Promise.all([
@@ -337,11 +328,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                eventType: EventType.DELETE,
-                aggregateType: AggregateType.ROLE_ASSIGNMENT,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             execute: async (transaction) => {
                 const entities = await this.accountRoleAssignmentRepository.find({

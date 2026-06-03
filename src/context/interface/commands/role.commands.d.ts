@@ -127,7 +127,7 @@ declare global {
 
             namespace OutboxPayloadMapper {
                 type Props = Entities.Role[] | { realm: string }[];
-                type Result = Events.AccessCache.Invalidation;
+                type Result = Topics.AccessCache.Message["payload"];
             }
         }
     }

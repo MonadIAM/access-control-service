@@ -271,18 +271,8 @@
           "nullable": false,
           "mappedType": "bigint"
         },
-        "event_type": {
-          "name": "event_type",
-          "type": "varchar(64)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 64,
-          "mappedType": "string"
-        },
-        "aggregate_type": {
-          "name": "aggregate_type",
+        "action_type": {
+          "name": "action_type",
           "type": "varchar(64)",
           "unsigned": false,
           "autoincrement": false,
@@ -337,16 +327,6 @@
           "keyName": "outbox_sequence_number_idx",
           "columnNames": [
             "sequence_number"
-          ],
-          "composite": false,
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
-          "keyName": "outbox_aggregate_idx",
-          "columnNames": [
-            "aggregate_type"
           ],
           "composite": false,
           "constraint": false,

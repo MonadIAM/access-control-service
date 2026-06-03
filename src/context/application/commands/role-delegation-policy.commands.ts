@@ -3,7 +3,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ROLE_DELEGATION_POLICY_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_DELEGATION_POLICY_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { EventType, EntityType } from "~context/enums";
+import { ActionType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -31,7 +31,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             resource: this.resource,
             audit: {
                 entityType: EntityType.DELEGATION_POLICY,
-                actionType: EventType.CREATE,
+                actionType: ActionType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -83,7 +83,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             resource: this.resource,
             audit: {
                 entityType: EntityType.DELEGATION_POLICY,
-                actionType: EventType.UPDATE,
+                actionType: ActionType.UPDATE,
                 ...props,
             },
             changeLog: true,
@@ -107,7 +107,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             resource: this.resource,
             audit: {
                 entityType: EntityType.DELEGATION_POLICY,
-                actionType: EventType.DELETE,
+                actionType: ActionType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -140,7 +140,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             resource: this.resource,
             audit: {
                 entityType: EntityType.DELEGATION_POLICY,
-                actionType: EventType.REVOKE,
+                actionType: ActionType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -173,7 +173,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             resource: this.resource,
             audit: {
                 entityType: EntityType.DELEGATION_POLICY,
-                actionType: EventType.RESTORE,
+                actionType: ActionType.RESTORE,
                 ...props,
             },
             changeLog: true,

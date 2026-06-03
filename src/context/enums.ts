@@ -59,21 +59,18 @@ export enum InviteQueryScope {
     AS_INVITEE = "AS_INVITEE",
 }
 
-export const AggregateType = EntityType;
-export type AggregateType = EntityType;
-
-export enum EventType {
+export enum ActionType {
     /* eslint-disable prettier/prettier */
-    REPARENT      = "REPARENT",
-    RESTORE       = "RESTORE",
-    DECLINE       = "DECLINE",
-    EXCLUDE       = "EXCLUDE",
-    REVOKE        = "REVOKE",
-    CANCEL        = "CANCEL",
-    ACCEPT        = "ACCEPT",
-    CREATE        = "CREATE",
-    UPDATE        = "UPDATE",
-    DELETE        = "DELETE",
+    REPARENT = "REPARENT",
+    RESTORE  = "RESTORE",
+    DECLINE  = "DECLINE",
+    EXCLUDE  = "EXCLUDE",
+    REVOKE   = "REVOKE",
+    CANCEL   = "CANCEL",
+    ACCEPT   = "ACCEPT",
+    CREATE   = "CREATE",
+    UPDATE   = "UPDATE",
+    DELETE   = "DELETE",
     /* eslint-enable prettier/prettier */
 }
 

@@ -1,6 +1,6 @@
 import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
-import { EventType, EntityType } from "~context/enums";
+import { ActionType, EntityType } from "~context/enums";
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { AuditLog } from "~common/transaction-manager";
 
@@ -24,7 +24,7 @@ export class AuditLogAdapter implements Adapters.Contract<AuditLog, Adapters.Aud
             where.userAgent = MikroAdapter.applyStringFilter(filters.userAgent);
         }
         if (filters.actionType) {
-            where.actionType = MikroAdapter.applyStringFilter<EventType>(filters.actionType);
+            where.actionType = MikroAdapter.applyStringFilter<ActionType>(filters.actionType);
         }
         if (filters.entityType) {
             where.entityType = MikroAdapter.applyStringFilter<EntityType>(filters.entityType);

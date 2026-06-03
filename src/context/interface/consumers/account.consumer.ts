@@ -1,5 +1,6 @@
 import { EventPattern, Payload, ClientKafka, Ctx, KafkaContext } from "@nestjs/microservices";
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
+import { AccountTopicAction } from "@liam/contracts";
 import { lastValueFrom } from "rxjs";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS, PERMISSION_OVERRIDE_COMMANDS } from "~context/application/commands";
@@ -25,14 +26,14 @@ export class AccountConsumer implements OnModuleInit {
     }
 
     private readonly handlers: Consumers.Account.Handlers = {
-        ACCOUNT_REGISTERED: (payload) => this.handleRegistered(payload),
-        ACCOUNT_PURGED: (payload) => this.handlePurged(payload),
+        [AccountTopicAction.CREATE]: this.handleRegistered,
+        [AccountTopicAction.PURGE]: this.handlePurged,
     };
 
     @EventPattern(KafkaTopic.ACCOUNT)
     public async handle(@Payload() message: Consumers.Account.Payload, @Ctx() context: KafkaContext): Promise<void> {
         try {
-            await this.handlers[message.eventType](message.payload);
+            await this.handlers[message.actionType](message.payload);
         } catch (error) {
             if (RetryableException.is(error)) {
                 await lastValueFrom(
@@ -63,11 +64,11 @@ export class AccountConsumer implements OnModuleInit {
         }
     }
 
-    private async handleRegistered({ account }: Consumers.Account.Register): Promise<void> {
+    private async handleRegistered({ account }: Topics.Account.Message["payload"]): Promise<void> {
         await this.accountRoleAssignmentCommands.assign({ account });
     }
 
-    private async handlePurged({ account }: Consumers.Account.Purge): Promise<void> {
+    private async handlePurged({ account }: Topics.Account.Message["payload"]): Promise<void> {
         await this.accountRoleAssignmentCommands.clean({ account });
         await this.permissionOverrideCommands.clean({ account });
     }

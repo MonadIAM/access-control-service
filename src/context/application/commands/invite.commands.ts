@@ -1,12 +1,13 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { AccessCacheTopicAction } from "@liam/contracts";
 
 import { INVITE_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories/tokens";
+import { EntityType, ActionType, InvalidationScope, InviteStatus, KafkaTopic } from "~context/enums";
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, INVITE_SERVICE } from "~context/domain/services/tokens";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { CommandException } from "~common/exceptions";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { AggregateType, EntityType, EventType, InvalidationScope, InviteStatus, KafkaTopic } from "~context/enums";
+import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InviteCommands implements Commands.Invite.Contract {
@@ -46,7 +47,7 @@ export class InviteCommands implements Commands.Invite.Contract {
             resource: this.resource,
             audit: {
                 entityType: EntityType.INVITE,
-                actionType: EventType.CREATE,
+                actionType: ActionType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -105,10 +106,9 @@ export class InviteCommands implements Commands.Invite.Contract {
                 }),
             },
             outbox: {
-                eventType: EventType.CREATE,
-                aggregateType: AggregateType.ROLE_ASSIGNMENT,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Events.AccessCache.Invalidation => ({
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
                     items: entities.map(({ account, realm }) => ({
                         scope: InvalidationScope.ACCOUNT_REALM,
                         realm: realm.id,
@@ -117,7 +117,7 @@ export class InviteCommands implements Commands.Invite.Contract {
                 }),
             },
             audit: {
-                actionType: EventType.ACCEPT,
+                actionType: ActionType.ACCEPT,
                 entityType: EntityType.INVITE,
                 ...props,
             },
@@ -150,7 +150,7 @@ export class InviteCommands implements Commands.Invite.Contract {
             resource: this.resource,
             audit: {
                 entityType: EntityType.INVITE,
-                actionType: EventType.CANCEL,
+                actionType: ActionType.CANCEL,
                 ...props,
             },
             changeLog: true,
@@ -175,8 +175,8 @@ export class InviteCommands implements Commands.Invite.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
+                actionType: ActionType.DECLINE,
                 entityType: EntityType.INVITE,
-                actionType: EventType.DECLINE,
                 ...props,
             },
             changeLog: true,

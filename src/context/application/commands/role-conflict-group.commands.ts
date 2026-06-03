@@ -3,7 +3,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ROLE_CONFLICT_GROUP_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_CONFLICT_GROUP_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { EventType, EntityType } from "~context/enums";
+import { ActionType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -31,7 +31,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             resource: this.resource,
             audit: {
                 entityType: EntityType.CONFLICT_GROUP,
-                actionType: EventType.CREATE,
+                actionType: ActionType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -69,7 +69,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             resource: this.resource,
             audit: {
                 entityType: EntityType.CONFLICT_GROUP,
-                actionType: EventType.UPDATE,
+                actionType: ActionType.UPDATE,
                 ...props,
             },
             changeLog: true,
@@ -93,7 +93,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             resource: this.resource,
             audit: {
                 entityType: EntityType.CONFLICT_GROUP,
-                actionType: EventType.DELETE,
+                actionType: ActionType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -126,7 +126,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             resource: this.resource,
             audit: {
                 entityType: EntityType.CONFLICT_GROUP,
-                actionType: EventType.REVOKE,
+                actionType: ActionType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -159,7 +159,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             resource: this.resource,
             audit: {
                 entityType: EntityType.CONFLICT_GROUP,
-                actionType: EventType.RESTORE,
+                actionType: ActionType.RESTORE,
                 ...props,
             },
             changeLog: true,

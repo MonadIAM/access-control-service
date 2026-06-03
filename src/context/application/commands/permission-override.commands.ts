@@ -1,6 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { AccessCacheTopicAction } from "@liam/contracts";
 
-import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
+import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
 import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services/tokens";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
@@ -60,15 +61,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 }),
             },
             outbox: {
-                eventType: EventType.CREATE,
-                aggregateType: AggregateType.PERMISSION_OVERRIDE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.PermissionOverride[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.PermissionOverride[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
-                actionType: EventType.CREATE,
+                actionType: ActionType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -118,15 +117,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 }),
             },
             outbox: {
-                eventType: EventType.DELETE,
-                aggregateType: AggregateType.PERMISSION_OVERRIDE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.PermissionOverride[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.PermissionOverride[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
-                actionType: EventType.DELETE,
+                actionType: ActionType.DELETE,
                 ...props,
             },
             changeLog: true,
@@ -173,15 +170,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 }),
             },
             outbox: {
-                eventType: EventType.REVOKE,
-                aggregateType: AggregateType.PERMISSION_OVERRIDE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.PermissionOverride[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.PermissionOverride[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
-                actionType: EventType.REVOKE,
+                actionType: ActionType.REVOKE,
                 ...props,
             },
             changeLog: true,
@@ -229,15 +224,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 }),
             },
             outbox: {
-                eventType: EventType.RESTORE,
-                aggregateType: AggregateType.PERMISSION_OVERRIDE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.PermissionOverride[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.PermissionOverride[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
-                actionType: EventType.RESTORE,
+                actionType: ActionType.RESTORE,
                 ...props,
             },
             changeLog: true,
@@ -280,11 +273,9 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 }),
             },
             outbox: {
-                eventType: EventType.DELETE,
-                aggregateType: AggregateType.PERMISSION_OVERRIDE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.PermissionOverride[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.PermissionOverride[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             execute: async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({

@@ -1,7 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { AccessCacheTopicAction } from "@liam/contracts";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE, REALM_SERVICE } from "~context/domain/services";
-import { EventType, EntityType, AggregateType, KafkaTopic, InvalidationScope } from "~context/enums";
+import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
@@ -72,7 +73,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                 }),
             },
             audit: {
-                actionType: EventType.CREATE,
+                actionType: ActionType.CREATE,
                 entityType: EntityType.REALM,
                 ...props,
             },
@@ -95,7 +96,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: EventType.UPDATE,
+                actionType: ActionType.UPDATE,
                 entityType: EntityType.REALM,
                 ...props,
             },
@@ -125,14 +126,12 @@ export class RealmCommands implements Commands.Realm.Contract {
                 }),
             },
             outbox: {
-                eventType: EventType.DELETE,
-                aggregateType: AggregateType.REALM,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.Realm[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
-                actionType: EventType.DELETE,
+                actionType: ActionType.DELETE,
                 entityType: EntityType.REALM,
                 ...props,
             },
@@ -172,14 +171,12 @@ export class RealmCommands implements Commands.Realm.Contract {
                 }),
             },
             outbox: {
-                eventType: EventType.REVOKE,
-                aggregateType: AggregateType.REALM,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.Realm[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
-                actionType: EventType.REVOKE,
+                actionType: ActionType.REVOKE,
                 entityType: EntityType.REALM,
                 ...props,
             },
@@ -219,14 +216,12 @@ export class RealmCommands implements Commands.Realm.Contract {
                 }),
             },
             outbox: {
-                eventType: EventType.RESTORE,
-                aggregateType: AggregateType.REALM,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.Realm[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
-                actionType: EventType.RESTORE,
+                actionType: ActionType.RESTORE,
                 entityType: EntityType.REALM,
                 ...props,
             },
@@ -295,15 +290,14 @@ export class RealmCommands implements Commands.Realm.Contract {
                 },
             ],
             outbox: {
-                eventType: EventType.EXCLUDE,
-                aggregateType: AggregateType.REALM,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (): Events.AccessCache.Invalidation => ({
+                payloadMapper: () => ({
                     items: [{ scope: InvalidationScope.ACCOUNT_REALM, realm, account: input.account }],
                 }),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
-                actionType: EventType.EXCLUDE,
+                actionType: ActionType.EXCLUDE,
                 entityType: EntityType.REALM,
                 ...props,
             },

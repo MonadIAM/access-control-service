@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ROLE_CONFLICT_MEMBER_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
-import { EventType, EntityType } from "~context/enums";
+import { ActionType, EntityType } from "~context/enums";
 import { CommandException } from "~common/exceptions";
 import {
     ROLE_CONFLICT_MEMBER_REPOSITORY,
@@ -35,7 +35,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
             resource: this.resource,
             audit: {
                 entityType: EntityType.CONFLICT_MEMBER,
-                actionType: EventType.CREATE,
+                actionType: ActionType.CREATE,
                 ...props,
             },
             changeLog: true,
@@ -72,7 +72,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
             resource: this.resource,
             audit: {
                 entityType: EntityType.CONFLICT_MEMBER,
-                actionType: EventType.DELETE,
+                actionType: ActionType.DELETE,
                 ...props,
             },
             changeLog: true,

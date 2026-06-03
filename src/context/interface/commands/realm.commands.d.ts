@@ -102,7 +102,7 @@ declare namespace Commands {
         }
 
         namespace OutboxPayloadMapper {
-            type Result = Events.AccessCache.Invalidation;
+            type Result = Topics.AccessCache.Message["payload"];
             type Props = Entities.Realm[];
         }
     }

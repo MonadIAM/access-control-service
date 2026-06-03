@@ -1,6 +1,6 @@
 import { ChangeSetType } from "@mikro-orm/postgresql";
 
-import { AggregateType, EventType, KafkaTopic } from "~context/enums";
+import { KafkaTopic } from "~context/enums";
 
 import { ProjectionJournal as ProjectionJournalEntity } from "./projection-journal.entity";
 import { ChangeLog as ChangeLogEntity } from "./change-log.entity";
@@ -39,9 +39,8 @@ declare global {
         namespace Outbox {
             type ConstructorProps = {
                 destinationTopic: KafkaTopic;
-                aggregateType: AggregateType;
-                eventType: EventType;
                 metadata?: UnknownObject;
+                actionType: string;
                 payload: UnknownObject;
             };
         }

@@ -1,7 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { AccessCacheTopicAction } from "@liam/contracts";
 
-import { EventType, EntityType, InvalidationScope, AggregateType, KafkaTopic } from "~context/enums";
 import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
+import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { ROLE_SERVICE } from "~context/domain/services";
@@ -37,7 +38,7 @@ export class RoleCommands implements Commands.Role.Contract {
                 }),
             },
             audit: {
-                actionType: EventType.CREATE,
+                actionType: ActionType.CREATE,
                 entityType: EntityType.ROLE,
                 ...props,
             },
@@ -71,7 +72,7 @@ export class RoleCommands implements Commands.Role.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             audit: {
-                actionType: EventType.UPDATE,
+                actionType: ActionType.UPDATE,
                 entityType: EntityType.ROLE,
                 ...props,
             },
@@ -102,14 +103,12 @@ export class RoleCommands implements Commands.Role.Contract {
                 }),
             },
             outbox: {
-                eventType: EventType.DELETE,
-                aggregateType: AggregateType.ROLE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.Role[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Role[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
-                actionType: EventType.DELETE,
+                actionType: ActionType.DELETE,
                 entityType: EntityType.ROLE,
                 ...props,
             },
@@ -146,14 +145,12 @@ export class RoleCommands implements Commands.Role.Contract {
                 }),
             },
             outbox: {
-                eventType: EventType.DELETE,
-                aggregateType: AggregateType.ROLE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.Role[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Role[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
-                actionType: EventType.DELETE,
+                actionType: ActionType.DELETE,
                 entityType: EntityType.ROLE,
                 ...props,
             },
@@ -189,14 +186,12 @@ export class RoleCommands implements Commands.Role.Contract {
                 }),
             },
             outbox: {
-                eventType: EventType.REVOKE,
-                aggregateType: AggregateType.ROLE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.Role[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Role[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
-                actionType: EventType.REVOKE,
+                actionType: ActionType.REVOKE,
                 entityType: EntityType.ROLE,
                 ...props,
             },
@@ -237,14 +232,12 @@ export class RoleCommands implements Commands.Role.Contract {
                 }),
             },
             outbox: {
-                eventType: EventType.RESTORE,
-                aggregateType: AggregateType.ROLE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (entities: Entities.Role[]): Events.AccessCache.Invalidation =>
-                    this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Role[]) => this.outboxPayloadMapper(entities),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
-                actionType: EventType.RESTORE,
+                actionType: ActionType.RESTORE,
                 entityType: EntityType.ROLE,
                 ...props,
             },
@@ -277,17 +270,16 @@ export class RoleCommands implements Commands.Role.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             projectionJournal: {
-                operationType: ProjectionScript.ROLE_CLOSURE_UPDATE,
                 payloadMapper: (steps: Awaited<Services.Role.Move.Result>): Scripts.Role.Move => ({ steps, realm }),
+                operationType: ProjectionScript.ROLE_CLOSURE_UPDATE,
             },
             outbox: {
-                eventType: EventType.REPARENT,
-                aggregateType: AggregateType.ROLE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE_INVALIDATION,
-                payloadMapper: (): Events.AccessCache.Invalidation => this.outboxPayloadMapper([{ realm }]),
+                payloadMapper: (): Topics.AccessCache.Message["payload"] => this.outboxPayloadMapper([{ realm }]),
+                actionType: AccessCacheTopicAction.INVALIDATE,
+                destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
             audit: {
-                actionType: EventType.REPARENT,
+                actionType: ActionType.REPARENT,
                 entityType: EntityType.ROLE,
                 ...props,
             },

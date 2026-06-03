@@ -1,37 +1,18 @@
+import { AccountTopicAction } from "@liam/contracts";
+
 import { ProjectionScript } from "~context/infrastructure/scripts";
 
 declare global {
     namespace Consumers {
-        namespace DLQ {
-            type Message = {
-                originalTopic: string;
-                payload: unknown;
-                error: string;
-            };
-        }
-
         namespace Account {
             interface Contract {
                 handle: (message: Payload) => Promise<void>;
             }
 
-            type Event = "ACCOUNT_REGISTERED" | "ACCOUNT_PURGED";
-
-            type Register = {
-                account: string;
-            };
-
-            type Purge = {
-                account: string;
-            };
-
-            type Payload = {
-                payload: Register | Purge;
-                eventType: Event;
-            };
+            type Payload = Topics.Account.Message;
 
             type Handlers = {
-                [K in Event]: (payload: Register | Purge) => Promise<void>;
+                [K in AccountTopicAction]: (payload: Topics.Account.Message["payload"]) => Promise<void>;
             };
         }
 
@@ -40,15 +21,7 @@ declare global {
                 handle: (props: Payload) => Promise<void>;
             }
 
-            type Event = "ELEVATED_ACCESS_GRANTED";
-
-            type Payload = {
-                eventType: Event;
-                payload: {
-                    expiresAt: number;
-                    session: string;
-                };
-            };
+            type Payload = Topics.ElevatedAccess.Message;
         }
 
         namespace Blacklist {
@@ -56,15 +29,7 @@ declare global {
                 handle: (props: Payload) => Promise<void>;
             }
 
-            type Event = "SESSION_REVOKED";
-
-            type Payload = {
-                eventType: Event;
-                payload: {
-                    expiresAt: number;
-                    session: string;
-                };
-            };
+            type Payload = Topics.Blacklist.Message;
         }
 
         namespace Projection {
