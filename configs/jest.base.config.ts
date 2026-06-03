@@ -39,11 +39,8 @@ const config: Config.InitialOptions = {
         "^~infrastructure/(.*)$": "<rootDir>/src/infrastructure/$1",
         "^~observability$": "<rootDir>/src/observability",
         "^~observability/(.*)$": "<rootDir>/src/observability/$1",
-        "^~bootstrap$": "<rootDir>/src/bootstrap",
         "^~bootstrap/(.*)$": "<rootDir>/src/bootstrap/$1",
-        "^~context$": "<rootDir>/src/context",
         "^~context/(.*)$": "<rootDir>/src/context/$1",
-        "^~common$": "<rootDir>/src/common",
         "^~common/(.*)$": "<rootDir>/src/common/$1",
     },
 

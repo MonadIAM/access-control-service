@@ -2,7 +2,6 @@ import type { KnipConfig } from "knip";
 
 const config: KnipConfig = {
     ignoreExportsUsedInFile: true, // reduces noise from re-exports inside index.ts
-    ignore: ["jest*.config.ts"],
     project: ["src/**/*.ts"],
     entry: [
         "mikro-orm.config.ts",
@@ -29,9 +28,6 @@ const config: KnipConfig = {
         "tsconfig-paths",
         "ts-node",
     ],
-    rules: {
-        duplicates: "off",
-    },
 };
 
 export default config;

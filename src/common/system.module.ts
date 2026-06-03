@@ -1,4 +1,3 @@
-import { EventEmitterModule } from "@nestjs/event-emitter";
 import { ConfigModule } from "@nestjs/config";
 import { Module } from "@nestjs/common";
 
@@ -10,7 +9,6 @@ import { I18nModule } from "./i18n";
 @Module({
     imports: [
         ConfigModule.forRoot({ validate: validateEnv, envFilePath: ".env", isGlobal: true, cache: true }),
-        EventEmitterModule.forRoot(),
         RateLimiterModule,
         BullMQModule,
         I18nModule,
