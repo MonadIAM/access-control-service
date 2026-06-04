@@ -14,16 +14,18 @@ declare global {
                 payloadMapper: (result: T) => UnknownObject | UnknownObject[];
             };
 
+            type OutboxConfig<T> = {
+                payloadMapper?: (result: T) => AnyEntity | AnyEntity[];
+                destinationTopic: KafkaTopic;
+                metadata?: UnknownObject;
+                actionType: string;
+            };
+
             type Run<T extends AnyEntity | AnyEntity[]> =
                 | {
                       execute: (transaction: EntityManager) => Promise<T> | T;
                       audit?: Entities.AuditLog.ConstructorProps;
-                      outbox?: {
-                          payloadMapper?: (result: T) => AnyEntity | AnyEntity[];
-                          destinationTopic: KafkaTopic;
-                          metadata?: UnknownObject;
-                          actionType: string;
-                      };
+                      outbox?: OutboxConfig<T> | OutboxConfig<T>[];
                       projectionJournal?: ProjectionJournalEntry<T> | ProjectionJournalEntry<T>[];
                       changeLog?: boolean;
                       resource?: string;

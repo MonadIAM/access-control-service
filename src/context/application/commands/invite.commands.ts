@@ -1,5 +1,5 @@
+import { AccessCacheTopicAction, MembershipTopicAction } from "@liam/contracts";
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccessCacheTopicAction } from "@liam/contracts";
 
 import { INVITE_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories/tokens";
 import { EntityType, ActionType, InvalidationScope, InviteStatus, KafkaTopic } from "~context/enums";
@@ -92,30 +92,42 @@ export class InviteCommands implements Commands.Invite.Contract {
     public async accept(props: Commands.Invite.Accept.Props): Commands.Invite.Accept.Result {
         const { input, actor, realm } = props;
 
-        await this.transactionalService.run({
+        await this.transactionalService.run<Commands.Invite.Accept.ExecuteResult>({
             resource: this.resource,
             projectionJournal: {
                 operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Create => ({
-                    assignments: entities.map(({ id, role }) => ({
+                payloadMapper: ({ assignments }) => ({
+                    assignments: assignments.map(({ id, role }) => ({
                         assignment: id,
                         role: role.id,
                     })),
-                    account: entities[0].account,
-                    realm: entities[0].realm.id,
+                    account: assignments[0].account,
+                    realm: assignments[0].realm.id,
                 }),
             },
-            outbox: {
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => ({
-                    items: entities.map(({ account, realm }) => ({
-                        scope: InvalidationScope.ACCOUNT_REALM,
-                        realm: realm.id,
-                        account,
-                    })),
-                }),
-            },
+            outbox: [
+                {
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    payloadMapper: ({ assignments }) => ({
+                        items: assignments.map(({ account, realm }) => ({
+                            scope: InvalidationScope.ACCOUNT_REALM,
+                            realm: realm.id,
+                            account,
+                        })),
+                    }),
+                },
+                {
+                    actionType: MembershipTopicAction.GRANT,
+                    destinationTopic: KafkaTopic.MEMBERSHIP,
+                    payloadMapper: ({ invitedBy }) => ({
+                        joinedAt: Date.now(),
+                        account: actor,
+                        invitedBy,
+                        realm,
+                    }),
+                },
+            ],
             audit: {
                 actionType: ActionType.ACCEPT,
                 entityType: EntityType.INVITE,
@@ -131,12 +143,14 @@ export class InviteCommands implements Commands.Invite.Contract {
 
                 this.inviteService.accept({ entity });
 
-                return this.accountRoleAssignmentService.create({
+                const assignments = await this.accountRoleAssignmentService.create({
                     input: { account: actor, roles: [entity.role] },
                     actor: entity.inviter,
                     realm: entity.realm,
                     transaction,
                 });
+
+                return { assignments, invitedBy: entity.inviter };
             },
         });
 

@@ -52,6 +52,11 @@ declare global {
                     context: Extract.Meta;
                 };
 
+                type ExecuteResult = {
+                    assignments: Entities.AccountRoleAssignment[];
+                    invitedBy: string;
+                };
+
                 type Result = Promise<MessageResult>;
             }
 

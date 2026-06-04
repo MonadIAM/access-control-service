@@ -1,5 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccessCacheTopicAction } from "@liam/contracts";
+import { AccessCacheTopicAction, MembershipTopicAction } from "@liam/contracts";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE, REALM_SERVICE } from "~context/domain/services";
 import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";
@@ -260,14 +260,12 @@ export class RealmCommands implements Commands.Realm.Contract {
             throw CommandException.notFound(`${this.dictionaryPath}.ACCOUNT_NOT_MEMBER`);
         }
 
-        await this.transactionalService.run({
+        await this.transactionalService.run<Commands.Realm.Exclude.ExecuteResult>({
             resource: this.resource,
             projectionJournal: [
                 {
                     operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
-                    payloadMapper: ({
-                        assignments,
-                    }: Commands.Realm.Exclude.ExecuteResult): Scripts.AccountRoleAssignment.Purge => ({
+                    payloadMapper: ({ assignments }) => ({
                         items: assignments.map(({ realm, account, role }) => ({
                             realm: realm.id,
                             role: role.id,
@@ -277,9 +275,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                 },
                 {
                     operationType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
-                    payloadMapper: ({
-                        overrides,
-                    }: Commands.Realm.Exclude.ExecuteResult): Scripts.PermissionOverride.Purge => ({
+                    payloadMapper: ({ overrides }) => ({
                         items: overrides.map(({ permission, account, realm }) => ({
                             permissionRealm: SystemRealm.id,
                             permission: permission.id,
@@ -289,13 +285,20 @@ export class RealmCommands implements Commands.Realm.Contract {
                     }),
                 },
             ],
-            outbox: {
-                payloadMapper: () => ({
-                    items: [{ scope: InvalidationScope.ACCOUNT_REALM, realm, account: input.account }],
-                }),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: () => ({
+                        items: [{ scope: InvalidationScope.ACCOUNT_REALM, account: input.account, realm }],
+                    }),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+                {
+                    payloadMapper: () => ({ account: input.account, realm }),
+                    actionType: MembershipTopicAction.REVOKE,
+                    destinationTopic: KafkaTopic.MEMBERSHIP,
+                },
+            ],
             audit: {
                 actionType: ActionType.EXCLUDE,
                 entityType: EntityType.REALM,

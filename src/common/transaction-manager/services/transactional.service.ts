@@ -67,11 +67,14 @@ export class TransactionalService {
         result: T,
     ): void {
         if (params.outbox) {
-            const { payloadMapper, ...outboxProps } = params.outbox;
-            const payloads = payloadMapper ? [payloadMapper(result)].flat() : [result].flat();
+            const entries = [params.outbox].flat();
 
-            for (const payload of payloads) {
-                transaction.persist(new Outbox({ ...outboxProps, payload }));
+            for (const { payloadMapper, ...outboxProps } of entries) {
+                const payloads = payloadMapper ? [payloadMapper(result)].flat() : [result].flat();
+
+                for (const payload of payloads) {
+                    transaction.persist(new Outbox({ ...outboxProps, payload }));
+                }
             }
         }
     }
