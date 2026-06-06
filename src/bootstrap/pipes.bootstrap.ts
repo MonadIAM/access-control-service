@@ -1,6 +1,6 @@
 import { INestApplication, ValidationError, ValidationPipe } from "@nestjs/common";
 
-import { ServiceException } from "~common/exceptions/types/service.exception";
+import { Exception } from "~common/exceptions";
 
 export abstract class BootstrapPipes {
     public static applyGlobalPipes(application: INestApplication): void {
@@ -11,7 +11,7 @@ export abstract class BootstrapPipes {
                 forbidNonWhitelisted: true,
                 exceptionFactory: (validationErrors: ValidationError[]) => {
                     const details = this.formatValidationErrors(validationErrors);
-                    return ServiceException.validationFailed(details);
+                    return Exception.validationFailed(details);
                 },
             }),
         );

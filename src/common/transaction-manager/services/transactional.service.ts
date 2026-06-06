@@ -2,7 +2,7 @@ import { AnyEntity, EntityManager } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable } from "@nestjs/common";
 
-import { ServiceException } from "~common/exceptions";
+import { ExceptionMapper } from "~common/exceptions";
 
 import { OperationContext } from "../utilities/operation-context";
 import { ProjectionJournal, AuditLog, Outbox } from "../entities";
@@ -41,7 +41,7 @@ export class TransactionalService {
                 });
             }
         } catch (error) {
-            throw ServiceException.fromOrmError(error, params.resource);
+            throw ExceptionMapper.fromORM(error, params.resource);
         }
     }
 

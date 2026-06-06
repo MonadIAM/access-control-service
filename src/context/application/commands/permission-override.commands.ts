@@ -6,7 +6,7 @@ import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services/tokens";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import {
     PERMISSION_OVERRIDE_REPOSITORY,
     PERMISSION_REPOSITORY,
@@ -42,7 +42,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         });
 
         if (!isAlreadyMember) {
-            throw CommandException.conflict(`${this.dictionaryPath}.ACCOUNT_NOT_MEMBER`);
+            throw Exception.conflict({ messageKey: `${this.dictionaryPath}.ACCOUNT_NOT_MEMBER` });
         }
 
         await this.transactionalService.run({
@@ -134,7 +134,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.OVERRIDES_NOT_FOUND` });
                 } else {
                     this.permissionOverrideService.purge({ transaction, entities });
 
@@ -188,7 +188,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.OVERRIDES_NOT_FOUND` });
                 } else {
                     this.permissionOverrideService.revoke({ entities });
 
@@ -242,7 +242,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.OVERRIDES_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.OVERRIDES_NOT_FOUND` });
                 } else {
                     this.permissionOverrideService.restore({ entities });
 

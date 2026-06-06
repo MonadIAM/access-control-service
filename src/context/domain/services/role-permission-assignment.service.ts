@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ROLE_PERMISSION_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { RolePermissionAssignment } from "~context/domain/entities";
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RolePermissionAssignmentService implements Services.RolePermissionAssignment.Contract {
@@ -24,7 +24,7 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
         });
 
         if (limitExceeded) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.ROLE_PERMISSION_LIMIT_EXCEEDED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ROLE_PERMISSION_LIMIT_EXCEEDED` });
         } else {
             const entities: Entities.RolePermissionAssignment[] = [];
 

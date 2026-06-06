@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { EntityException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 import { RoleConflictGroup } from "./role-conflict-group.entity";
 import { Role } from "./role.entity";
@@ -34,7 +34,7 @@ export class RoleConflictMember {
 
     public canPurge(): void {
         if (this.isSystemManaged) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_SYSTEM`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
         }
     }
 }

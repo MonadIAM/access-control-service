@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import { Permission } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -21,7 +21,7 @@ export class PermissionService implements Services.Permission.Contract {
         });
 
         if (limitExceeded) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.LIMIT_EXCEEDED` });
         } else {
             const entity = new Permission({ ...input, realm });
 

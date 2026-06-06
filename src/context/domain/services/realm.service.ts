@@ -4,7 +4,7 @@ import { RolePermissionAssignment, AccountRoleAssignment, RoleClosure, Realm, Ro
 import { ADMIN_PERMISSION_CODES, USER_PERMISSION_CODES } from "~infrastructure/datasets/bootstrap";
 import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { RoleActorType, RolePrototype } from "~context/enums";
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmService implements Services.Realm.Contract {
@@ -25,7 +25,7 @@ export class RealmService implements Services.Realm.Contract {
         });
 
         if (limitExceeded) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.LIMIT_EXCEEDED` });
         } else {
             const realm = new Realm({ ...input, owner: actor });
 
@@ -148,7 +148,7 @@ export class RealmService implements Services.Realm.Contract {
         });
 
         if (permissions.length !== ADMIN_PERMISSION_CODES.length) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.MISSING_SYSTEM_PERMISSIONS`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.MISSING_SYSTEM_PERMISSIONS` });
         }
 
         const assignments: Entities.RolePermissionAssignment[] = [];

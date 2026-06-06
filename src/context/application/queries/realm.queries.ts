@@ -3,7 +3,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { PublicStringOperator } from "~infrastructure/database";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import { PermissionCode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -29,7 +29,7 @@ export class RealmQueries implements Queries.Realm.Contract {
                 realm: props.realm,
             });
             if (!hasRealmRelation) {
-                throw CommandException.notFound(`${this.dictionaryPath}.RELATION_NOT_FOUND`);
+                throw Exception.notFound({ messageKey: `${this.dictionaryPath}.RELATION_NOT_FOUND` });
             }
         }
         return this.realmRepository.findUniqueOrThrow({

@@ -3,7 +3,7 @@ import { Reflector } from "@nestjs/core";
 
 import { ELEVATED_ACCESS_CACHE_SERVICE } from "~context/infrastructure/services";
 import { ELEVATED_ACCESS } from "~common/decorators";
-import { GuardException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable()
 export class ElevatedAccessGuard implements CanActivate {
@@ -31,10 +31,10 @@ export class ElevatedAccessGuard implements CanActivate {
                 if (active) {
                     return true;
                 } else {
-                    throw GuardException.forbidden(`${this.dictionaryPath}.ELEVATED_ACCESS_REQUIRED`);
+                    throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ELEVATED_ACCESS_REQUIRED` });
                 }
             } else {
-                throw GuardException.unauthorized(`${this.dictionaryPath}.NOT_AUTHENTICATED`);
+                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.NOT_AUTHENTICATED` });
             }
         }
 

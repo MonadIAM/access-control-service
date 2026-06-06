@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ROLE_DELEGATION_POLICY_REPOSITORY } from "~context/infrastructure/repositories";
 import { RoleDelegationPolicy } from "~context/domain/entities";
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyService implements Services.RoleDelegationPolicy.Contract {
@@ -28,9 +28,9 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
         ]);
 
         if (limitExceeded) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.LIMIT_EXCEEDED` });
         } else if (existsTransitivePath) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.EXISTS_TRANSITIVE_PATH`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EXISTS_TRANSITIVE_PATH` });
         } else {
             const entity = new RoleDelegationPolicy({
                 description: input.description,

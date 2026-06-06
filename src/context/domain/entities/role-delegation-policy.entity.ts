@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { EntityException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
@@ -53,15 +53,15 @@ export class RoleDelegationPolicy {
         if (affected) {
             this.updatedAt = now;
         } else if (Object.keys(patch).length) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.NO_CHANGES_DETECTED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NO_CHANGES_DETECTED` });
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.EMPTY_UPDATE_PATCH`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EMPTY_UPDATE_PATCH` });
         }
     }
 
     public revoke(): void {
         if (this.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_REVOKED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
             this.isRevoked = true;
@@ -75,25 +75,25 @@ export class RoleDelegationPolicy {
             this.isRevoked = false;
             this.updatedAt = now;
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
     public canPurge(): void {
         if (!this.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_ACTIVE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
         } else if (this.isSystemManaged) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_SYSTEM`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
         }
     }
 
     public canCreate(): void {
         if (this.target.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_DELEGATE_REVOKED_TARGET`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_DELEGATE_REVOKED_TARGET` });
         } else if (this.target.isSystemManaged) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_DELEGATE_SYSTEM_TARGET`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_DELEGATE_SYSTEM_TARGET` });
         } else if (this.delegator.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.REVOKED_ROLE_CANNOT_DELEGATE_ROLES`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REVOKED_ROLE_CANNOT_DELEGATE_ROLES` });
         }
     }
 }

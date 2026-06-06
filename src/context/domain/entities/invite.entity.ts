@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { EntityException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import { InviteStatus } from "~context/enums";
 
 import { Realm } from "./realm.entity";
@@ -40,7 +40,7 @@ export class Invite {
             this.status = InviteStatus.CANCELLED;
             this.updatedAt = new Date();
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_CANCEL_INACTIVE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_CANCEL_INACTIVE` });
         }
     }
 
@@ -49,7 +49,7 @@ export class Invite {
             this.status = InviteStatus.ACCEPTED;
             this.updatedAt = new Date();
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ACCEPT_INACTIVE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ACCEPT_INACTIVE` });
         }
     }
 
@@ -58,7 +58,7 @@ export class Invite {
             this.status = InviteStatus.DECLINED;
             this.updatedAt = new Date();
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_DECLINE_INACTIVE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_DECLINE_INACTIVE` });
         }
     }
 }

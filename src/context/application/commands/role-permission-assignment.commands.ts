@@ -6,7 +6,7 @@ import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import {
     ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
     PERMISSION_REPOSITORY,
@@ -84,7 +84,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 ]);
 
                 if (permissionEntities.length < input.permissions.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
                 } else {
                     return this.rolePermissionAssignmentService.create({
                         input: {
@@ -138,7 +138,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
                 } else {
                     this.rolePermissionAssignmentService.purge({ transaction, entities });
                     return entities;
@@ -194,7 +194,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
                 } else {
                     this.rolePermissionAssignmentService.revoke({ entities });
                     return entities;
@@ -250,7 +250,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
                 } else {
                     this.rolePermissionAssignmentService.restore({ entities });
                     return entities;

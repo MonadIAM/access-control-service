@@ -5,7 +5,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { PermissionOverrideAdapter } from "~context/infrastructure/adapters";
 import { PermissionOverride } from "~context/domain/entities";
-import { RepositoryException } from "~common/exceptions";
+import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -43,7 +43,7 @@ export class PermissionOverrideRepository
 
             return Number(total) + (count ?? 1) > this.overrideLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 }

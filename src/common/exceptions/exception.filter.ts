@@ -1,19 +1,21 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from "@nestjs/common";
+import { ArgumentsHost, Catch, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { InjectMetric } from "@willsoto/nestjs-prometheus";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { I18nContext, I18nService } from "nestjs-i18n";
 import { ThrottlerException } from "@nestjs/throttler";
 import { Counter } from "prom-client";
 
-import { RepositoryException } from "./types/repository.exception";
-import { BaseException } from "./types/base.exception";
+import { ExceptionMapper } from "./exception.mapper";
+import { Exception } from "./exception";
+import { ErrorKind } from "./enums";
 
 @Catch()
-export class GlobalExceptionFilter implements ExceptionFilter {
-    private readonly logger = new Logger(GlobalExceptionFilter.name);
+export class ExceptionFilter implements Exception.Filter.Contract {
+    private readonly logger = new Logger(ExceptionFilter.name);
 
     public constructor(
-        @InjectMetric("app_unhandled_errors_total") private readonly unhandledErrorsCounter: Counter<string>,
+        @InjectMetric("app_server_errors_total")
+        private readonly serverErrorsCounter: Counter<string>,
         private readonly i18n: I18nService,
     ) {}
 
@@ -31,11 +33,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             error: "InternalServerError",
         };
 
-        if (exception instanceof BaseException) {
+        if (exception instanceof Exception && exception.kind !== ErrorKind.Internal) {
             result.statusCode = exception.statusCode;
             result.timestamp = exception.timestamp;
-            result.message = await this.i18n.translate(exception.message, {
-                defaultValue: exception.message,
+            result.message = await this.i18n.translate(exception.messageKey, {
+                defaultValue: exception.messageKey,
                 args: exception.params,
                 lang: lang,
             });
@@ -64,45 +66,17 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             result.error = exception.name;
         } else if (exception instanceof HttpException) {
             result.statusCode = exception.getStatus();
-            const response = exception.getResponse();
-
-            if (typeof response === "string") {
-                result.message = response;
-                result.error = exception.name;
-            } else if (response && typeof response === "object") {
-                const { message, error, details } = response as Partial<Exception.ResponseBody>;
-                result.message = message;
-                result.details = details;
-                result.error = typeof error === "string" ? error : exception.name;
-            } else {
+            if (result.statusCode < HttpStatus.INTERNAL_SERVER_ERROR) {
+                result.message = await this.i18n.translate(exception.message, {
+                    defaultValue: exception.message,
+                    lang,
+                });
                 result.error = exception.name;
             }
-        } else if (exception instanceof Error) {
-            result.message = exception.message;
-            result.error = exception.name;
         }
 
-        const logPayload = {
-            path: request.url,
-            method: request.method,
-            statusCode: result.statusCode,
-        };
-
-        if (result.statusCode !== 404) {
-            if (exception instanceof ThrottlerException) {
-                this.unhandledErrorsCounter.inc({ type: "Throttling" });
-            } else if (exception instanceof RepositoryException) {
-                this.unhandledErrorsCounter.inc({ type: "Database" });
-            } else if (result.statusCode! >= 500) {
-                this.unhandledErrorsCounter.inc({ type: "Internal" });
-            }
-        }
-
-        if (result.statusCode! >= 500) {
-            this.logger.error({ ...logPayload, err: exception }, "Internal Server Error");
-        } else {
-            this.logger.warn({ ...logPayload, kind: result.error }, "Client Error");
-        }
+        this.metrics({ exception, statusCode: result.statusCode! });
+        this.log({ exception, request, result });
 
         const body: Partial<Exception.ResponseBody> = {
             timestamp: new Date().toISOString(),
@@ -110,6 +84,33 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             ...result,
         };
 
+        if (exception instanceof Exception && exception.headers) {
+            response.headers(exception.headers);
+        }
+
         response.status(body.statusCode!).send(body);
+    }
+
+    public metrics(props: Exception.Filter.Metrics.Props): Exception.Filter.Metrics.Result {
+        if (props.statusCode >= HttpStatus.INTERNAL_SERVER_ERROR) {
+            this.serverErrorsCounter.inc({
+                type: ExceptionMapper.isORM(props.exception) ? "Database" : "Internal",
+            });
+        }
+    }
+
+    public log(props: Exception.Filter.Log.Props): Exception.Filter.Log.Result {
+        if (props.result.statusCode! >= HttpStatus.INTERNAL_SERVER_ERROR) {
+            this.logger.error(
+                {
+                    statusCode: props.result.statusCode,
+                    method: props.request.method,
+                    kind: props.result.error,
+                    path: props.request.url,
+                    err: props.exception,
+                },
+                "Internal Error",
+            );
+        }
     }
 }

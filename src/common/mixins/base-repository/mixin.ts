@@ -1,6 +1,6 @@
 import { AnyEntity, EntityManager, Loaded } from "@mikro-orm/postgresql";
 
-import { RepositoryException } from "~common/exceptions";
+import { ExceptionMapper, Exception } from "~common/exceptions";
 
 export function BaseRepository<
     E extends AnyEntity,
@@ -24,7 +24,7 @@ export function BaseRepository<
                 const entityManager = transaction ?? this.readManager.fork();
                 return await entityManager.findOne(Entity, where, options);
             } catch (error) {
-                throw RepositoryException.fromOrmError(error, this.constructor.name);
+                throw ExceptionMapper.fromORM(error, this.constructor.name);
             }
         }
 
@@ -39,10 +39,10 @@ export function BaseRepository<
                 if (result) {
                     return result;
                 } else {
-                    throw RepositoryException.notFound(`${this.dictionaryPath}.NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.NOT_FOUND` });
                 }
             } catch (error) {
-                throw RepositoryException.fromOrmError(error, this.constructor.name);
+                throw ExceptionMapper.fromORM(error, this.constructor.name);
             }
         }
 
@@ -55,7 +55,7 @@ export function BaseRepository<
                 const entityManager = transaction ?? this.readManager.fork();
                 return await entityManager.find(Entity, where, options);
             } catch (error) {
-                throw RepositoryException.fromOrmError(error, this.constructor.name);
+                throw ExceptionMapper.fromORM(error, this.constructor.name);
             }
         }
 
@@ -75,7 +75,7 @@ export function BaseRepository<
                     return await entityManager.findAndCount(Entity, where, opts);
                 }
             } catch (error) {
-                throw RepositoryException.fromOrmError(error, this.constructor.name);
+                throw ExceptionMapper.fromORM(error, this.constructor.name);
             }
         }
     };

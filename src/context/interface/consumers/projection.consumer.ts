@@ -4,7 +4,7 @@ import { lastValueFrom } from "rxjs";
 
 import { SCRIPT_EXECUTOR_SERVICE } from "~context/infrastructure/services/tokens";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
-import { RetryableException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
 
 @Controller()
@@ -27,7 +27,7 @@ export class ProjectionConsumer implements OnModuleInit {
         try {
             await this.scriptExecutorService.execute<string>(message.operationType, [message.payload]);
         } catch (error) {
-            if (RetryableException.is(error)) {
+            if (Exception.isRetryable(error)) {
                 await lastValueFrom(
                     this.kafkaClient.emit(KafkaTopic.PROJECTION_JOURNAL_RETRY, {
                         headers: { "x-retry-count": String(KafkaUtils.extractRetryCount(context)) },

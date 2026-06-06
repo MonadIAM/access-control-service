@@ -5,7 +5,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { RoleDelegationPolicyAdapter } from "~context/infrastructure/adapters";
 import { RoleDelegationPolicy } from "~context/domain/entities";
-import { RepositoryException } from "~common/exceptions";
+import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -68,7 +68,7 @@ export class RoleDelegationPolicyRepository
 
             return Boolean(result);
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -108,7 +108,7 @@ export class RoleDelegationPolicyRepository
             const [result] = await entityManager.getConnection().execute(sql, [...bindings]);
             return result?.result === true;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -127,7 +127,7 @@ export class RoleDelegationPolicyRepository
 
             return Number(total) + (count ?? 1) > this.policyLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 }

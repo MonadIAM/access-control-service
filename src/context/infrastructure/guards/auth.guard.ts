@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { GuardException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import { JWT_SERVICE } from "~common/services";
 import { IS_PUBLIC } from "~common/decorators";
 
@@ -27,13 +27,13 @@ export class AuthGuard implements CanActivate {
             const token = this.extractToken(request);
 
             if (!token) {
-                throw GuardException.unauthorized(`${this.dictionaryPath}.TOKEN_MISSING`);
+                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.TOKEN_MISSING` });
             }
 
             const payload = await this.jwtService.verify(token);
 
             if (!payload.sub) {
-                throw GuardException.unauthorized(`${this.dictionaryPath}.INVALID_TOKEN`);
+                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOKEN` });
             }
 
             const isBlacklisted = await this.blacklistCacheService.exists({
@@ -41,7 +41,7 @@ export class AuthGuard implements CanActivate {
             });
 
             if (isBlacklisted) {
-                throw GuardException.unauthorized(`${this.dictionaryPath}.SESSION_REVOKED`);
+                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.SESSION_REVOKED` });
             }
 
             request.session = {
@@ -53,10 +53,10 @@ export class AuthGuard implements CanActivate {
         } catch (error) {
             if (isPublic) {
                 return true;
-            } else if (error instanceof GuardException) {
+            } else if (error instanceof Exception) {
                 throw error;
             } else {
-                throw GuardException.unauthorized(`${this.dictionaryPath}.INVALID_TOKEN`);
+                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.INVALID_TOKEN` });
             }
         }
     }

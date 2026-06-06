@@ -4,7 +4,7 @@ import { ROLE_CONFLICT_GROUP_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } fro
 import { ROLE_CONFLICT_GROUP_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ActionType, EntityType } from "~context/enums";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Contract {
@@ -48,7 +48,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                 ]);
 
                 if (roleEntities.length < input.members.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
                 } else {
                     await this.roleConflictGroupService.create({
                         input: { ...input, members: roleEntities },
@@ -104,7 +104,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.GROUPS_NOT_FOUND` });
                 } else {
                     this.roleConflictGroupService.purge({ transaction, entities });
                     return { count: entities.length };
@@ -137,7 +137,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.GROUPS_NOT_FOUND` });
                 } else {
                     this.roleConflictGroupService.revoke({ entities });
                     return entities;
@@ -170,7 +170,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.GROUPS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.GROUPS_NOT_FOUND` });
                 } else {
                     this.roleConflictGroupService.restore({ entities });
                     return entities;

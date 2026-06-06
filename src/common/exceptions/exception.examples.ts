@@ -33,20 +33,20 @@ export const EXCEPTION_EXAMPLES = {
         message: "Resource not found",
     },
 
-    [HttpStatus.CONFLICT]: {
-        timestamp: "2026-02-22T19:22:15.692Z",
-        path: "/api/resource",
-        statusCode: 409,
-        error: "UniqueViolation",
-        message: "Resource with this data already exists",
-    },
-
     [HttpStatus.REQUEST_TIMEOUT]: {
         timestamp: "2026-02-22T19:22:49.384Z",
         path: "/api/resource",
         statusCode: 408,
         error: "DatabaseTimeout",
         message: "Database lock wait timeout exceeded.",
+    },
+
+    [HttpStatus.CONFLICT]: {
+        timestamp: "2026-02-22T19:22:15.692Z",
+        path: "/api/resource",
+        statusCode: 409,
+        error: "UniqueViolation",
+        message: "Resource with this data already exists",
     },
 
     [HttpStatus.UNPROCESSABLE_ENTITY]: {
@@ -71,6 +71,14 @@ export const EXCEPTION_EXAMPLES = {
         statusCode: 500,
         error: "InternalServerError",
         message: "Internal Server Error",
+    },
+
+    [HttpStatus.BAD_GATEWAY]: {
+        timestamp: "2026-02-22T19:24:02.667Z",
+        path: "/api/resource",
+        statusCode: 502,
+        error: "ExternalServiceFailed",
+        message: "External service request failed.",
     },
 
     [HttpStatus.SERVICE_UNAVAILABLE]: {

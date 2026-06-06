@@ -6,7 +6,7 @@ import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services/tokens
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
     REALM_REPOSITORY,
@@ -45,7 +45,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         });
 
         if (!isAlreadyMember) {
-            throw CommandException.conflict(`${this.dictionaryPath}.ACCOUNT_NOT_MEMBER`);
+            throw Exception.conflict({ messageKey: `${this.dictionaryPath}.ACCOUNT_NOT_MEMBER` });
         }
 
         await this.transactionalService.run({
@@ -85,7 +85,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 ]);
 
                 if (roleEntities.length < input.roles.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
                 } else {
                     return this.accountRoleAssignmentService.create({
                         input: { account: input.account, roles: roleEntities },
@@ -108,7 +108,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         });
 
         if (entities.length < input.identifiers.length) {
-            throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
         }
 
         const { missing, groups } = await this.projectionCacheService.validateAssignments({
@@ -120,11 +120,11 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         });
 
         if (missing.length > 0) {
-            throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
         }
 
         if (groups.some(({ remaining }) => remaining === 0)) {
-            throw CommandException.conflict(`${this.dictionaryPath}.CANNOT_PURGE_LAST_ASSIGNMENT`);
+            throw Exception.conflict({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_LAST_ASSIGNMENT` });
         }
 
         await this.transactionalService.run({
@@ -198,7 +198,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
                 } else {
                     this.accountRoleAssignmentService.revoke({ entities });
 
@@ -251,7 +251,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
                 } else {
                     this.accountRoleAssignmentService.restore({ entities });
 

@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { AccountRoleAssignment } from "~context/domain/entities";
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
     ROLE_DELEGATION_POLICY_REPOSITORY,
@@ -45,11 +45,11 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         ]);
 
         if (!isDelegationAllowed) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.DELEGATION_NOT_ALLOWED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.DELEGATION_NOT_ALLOWED` });
         } else if (limitExceeded) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.ACCOUNT_ROLE_LIMIT_EXCEEDED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ACCOUNT_ROLE_LIMIT_EXCEEDED` });
         } else if (hasSoDViolations) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.HAS_SoD_VIOLATIONS`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.HAS_SoD_VIOLATIONS` });
         } else {
             const entities: Entities.AccountRoleAssignment[] = [];
             for (const role of input.roles) {

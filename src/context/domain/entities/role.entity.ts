@@ -2,7 +2,7 @@ import { Collection } from "@mikro-orm/core";
 import { randomUUID } from "node:crypto";
 
 import { RoleActorType, RolePrototype } from "~context/enums";
-import { EntityException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 import { RolePermissionAssignment } from "./role-permission-assignment.entity";
 import { AccountRoleAssignment } from "./account-role-assignment.entity";
@@ -68,15 +68,15 @@ export class Role {
         if (affected) {
             this.updatedAt = now;
         } else if (Object.keys(patch).length) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.NO_CHANGES_DETECTED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NO_CHANGES_DETECTED` });
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.EMPTY_UPDATE_PATCH`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EMPTY_UPDATE_PATCH` });
         }
     }
 
     public revoke(): void {
         if (this.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_REVOKED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
             this.isRevoked = true;
@@ -90,15 +90,15 @@ export class Role {
             this.isRevoked = false;
             this.updatedAt = now;
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
     public canPurge(): void {
         if (!this.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_ACTIVE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
         } else if (this.isSystemManaged) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_SYSTEM`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
         }
     }
 }

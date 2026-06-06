@@ -1,6 +1,6 @@
 import { Injectable, Scope } from "@nestjs/common";
 
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import { Invite } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -14,7 +14,7 @@ export class InviteService implements Services.Invite.Contract {
             transaction.persist(entity);
             return entity;
         } else {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.ROLE_NOT_IN_REALM`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ROLE_NOT_IN_REALM` });
         }
     }
 

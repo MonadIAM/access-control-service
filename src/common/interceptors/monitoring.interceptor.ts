@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
+import { CallHandler, ExecutionContext, HttpException, Injectable, NestInterceptor } from "@nestjs/common";
 import { InjectMetric } from "@willsoto/nestjs-prometheus";
 import { Counter, Histogram } from "prom-client";
 import { catchError, tap } from "rxjs/operators";
@@ -7,6 +7,7 @@ import { FastifyRequest } from "fastify";
 import { Reflector } from "@nestjs/core";
 
 import { SKIP_INTERCEPTORS } from "~common/decorators";
+import { Exception } from "~common/exceptions";
 
 @Injectable()
 export class MonitoringInterceptor implements NestInterceptor {
@@ -39,7 +40,7 @@ export class MonitoringInterceptor implements NestInterceptor {
         );
     }
 
-    private collect(context: ExecutionContext, start: number, error?: Exception.ResponseBody): void {
+    private collect(context: ExecutionContext, start: number, error?: unknown): void {
         const request = context.switchToHttp().getRequest<FastifyRequest>();
         const response = context.switchToHttp().getResponse();
 
@@ -48,7 +49,7 @@ export class MonitoringInterceptor implements NestInterceptor {
 
         const route = request.routeOptions?.url ?? request.raw?.url ?? "unmapped";
 
-        const status = error ? (error.statusCode ?? 500) : response.statusCode;
+        const status = error ? this.resolveErrorStatus(error) : response.statusCode;
 
         this.recordMetrics(method, route, status, duration);
     }
@@ -57,5 +58,15 @@ export class MonitoringInterceptor implements NestInterceptor {
         const labels = { method, route, status };
         this.counter.inc(labels);
         this.histogram.observe(labels, duration);
+    }
+
+    private resolveErrorStatus(error: unknown): number {
+        if (error instanceof Exception) {
+            return error.statusCode;
+        }
+        if (error instanceof HttpException) {
+            return error.getStatus();
+        }
+        return 500;
     }
 }

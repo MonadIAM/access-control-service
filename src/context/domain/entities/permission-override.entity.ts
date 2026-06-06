@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { PermissionOverrideEffect } from "~context/enums";
-import { EntityException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 import { Permission } from "./permission.entity";
 import { Realm } from "./realm.entity";
@@ -38,7 +38,7 @@ export class PermissionOverride {
 
     public revoke(): void {
         if (this.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_REVOKED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
             this.isRevoked = true;
@@ -52,13 +52,13 @@ export class PermissionOverride {
             this.isRevoked = false;
             this.updatedAt = now;
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
     public canPurge(): void {
         if (!this.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_ACTIVE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
         }
     }
 }

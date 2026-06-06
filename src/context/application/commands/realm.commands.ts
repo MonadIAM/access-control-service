@@ -7,7 +7,7 @@ import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/token
 import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
     PERMISSION_OVERRIDE_REPOSITORY,
@@ -143,7 +143,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
                 } else {
                     this.realmService.purge({ transaction, entities });
                     return entities;
@@ -188,7 +188,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
                 } else {
                     this.realmService.revoke({ entities });
                     return entities;
@@ -233,7 +233,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.REALMS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
                 } else {
                     this.realmService.restore({ entities });
                     return entities;
@@ -257,7 +257,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         });
 
         if (!isAlreadyMember) {
-            throw CommandException.notFound(`${this.dictionaryPath}.ACCOUNT_NOT_MEMBER`);
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ACCOUNT_NOT_MEMBER` });
         }
 
         await this.transactionalService.run<Commands.Realm.Exclude.ExecuteResult>({

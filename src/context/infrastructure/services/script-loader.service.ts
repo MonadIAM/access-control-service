@@ -4,7 +4,7 @@ import { join } from "node:path";
 import Redis from "ioredis";
 
 import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/tokens";
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 import { PROJECTION_SCRIPT_FILES, ProjectionScript } from "../scripts";
 
@@ -28,7 +28,7 @@ export class ScriptLoaderService implements OnModuleInit, InfrastructureServices
             this.scriptHashes.set(script, hash);
             return hash;
         } else {
-            throw ServiceException.invariantViolation("Redis returned an invalid Lua script hash.");
+            throw Exception.invariantViolation({ messageKey: "Redis returned an invalid Lua script hash." });
         }
     }
 
@@ -37,7 +37,7 @@ export class ScriptLoaderService implements OnModuleInit, InfrastructureServices
         if (hash) {
             return hash;
         } else {
-            throw ServiceException.invariantViolation(`Projection Lua script is not loaded: ${script}`);
+            throw Exception.invariantViolation({ messageKey: `Projection Lua script is not loaded: ${script}` });
         }
     }
 }

@@ -4,7 +4,7 @@ import { Reflector } from "@nestjs/core";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
 import { REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
-import { GuardException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import { PermissionCode } from "~context/enums";
 
 @Injectable()
@@ -38,7 +38,7 @@ export class PermissionGuard implements CanActivate {
         const account = request.session?.account;
 
         if (!account) {
-            throw GuardException.forbidden(`${this.dictionaryPath}.ACCOUNT_REQUIRED`);
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ACCOUNT_REQUIRED` });
         }
 
         const allowed = await this.projectionCacheService.checkPermissions({
@@ -48,7 +48,7 @@ export class PermissionGuard implements CanActivate {
         });
 
         if (!allowed) {
-            throw GuardException.forbidden(`${this.dictionaryPath}.INSUFFICIENT_PERMISSIONS`);
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.INSUFFICIENT_PERMISSIONS` });
         }
 
         request.metadata = {

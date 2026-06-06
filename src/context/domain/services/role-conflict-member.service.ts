@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/infrastructure/repositories";
 import { RoleConflictMember } from "~context/domain/entities";
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberService implements Services.RoleConflictMember.Contract {
@@ -22,7 +22,7 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
         });
 
         if (limitExceeded) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED` });
         } else {
             for (const role of input.roles) {
                 transaction.persist(new RoleConflictMember({ group: input.group, role }));

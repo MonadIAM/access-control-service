@@ -5,7 +5,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { PermissionAdapter } from "~context/infrastructure/adapters";
 import { PermissionOverrideEffect } from "~context/enums";
-import { RepositoryException } from "~common/exceptions";
+import { ExceptionMapper } from "~common/exceptions";
 import { Permission } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 
@@ -52,7 +52,7 @@ export class PermissionRepository
 
             return await builder.getResultAndCount();
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -142,7 +142,7 @@ export class PermissionRepository
 
             return [permissions, total];
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -212,7 +212,7 @@ export class PermissionRepository
 
             return results;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -257,7 +257,7 @@ export class PermissionRepository
 
             return Number(total) + (count ?? 1) > this.permissionLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 }

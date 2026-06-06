@@ -5,7 +5,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { RoleConflictGroupAdapter } from "~context/infrastructure/adapters";
 import { RoleConflictGroup } from "~context/domain/entities";
-import { RepositoryException } from "~common/exceptions";
+import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -47,7 +47,7 @@ export class RoleConflictGroupRepository
 
             return rawRows.map((row) => entityManager.map(RoleConflictGroup, row));
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -65,7 +65,7 @@ export class RoleConflictGroupRepository
 
             return existsRow.length > 0;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -89,7 +89,7 @@ export class RoleConflictGroupRepository
 
             return result.length > 0;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -108,7 +108,7 @@ export class RoleConflictGroupRepository
 
             return Number(total) + (count ?? 1) > this.groupLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 

@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { ROLE_CONFLICT_GROUP_REPOSITORY } from "~context/infrastructure/repositories";
 import { RoleConflictGroup, RoleConflictMember } from "~context/domain/entities";
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupService implements Services.RoleConflictGroup.Contract {
@@ -21,7 +21,7 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
     public async create(props: Services.RoleConflictGroup.Create.Props): Services.RoleConflictGroup.Create.Result {
         const { transaction, input, realm } = props;
         if (input.members.length > this.membersLimit) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED` });
         } else {
             const limitExceeded = await this.roleConflictGroupRepository.wouldExceedGroupLimit({
                 realm: realm.id,
@@ -29,7 +29,7 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
             });
 
             if (limitExceeded) {
-                throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
+                throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.LIMIT_EXCEEDED` });
             } else {
                 const group = new RoleConflictGroup({
                     description: input.description,

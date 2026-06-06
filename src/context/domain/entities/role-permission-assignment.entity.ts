@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { EntityException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import { AssignmentScope } from "~context/enums";
 
 import { Permission } from "./permission.entity";
@@ -41,7 +41,7 @@ export class RolePermissionAssignment {
 
     public revoke(): void {
         if (this.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_REVOKED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
             this.isRevoked = true;
@@ -55,27 +55,27 @@ export class RolePermissionAssignment {
             this.isRevoked = false;
             this.updatedAt = now;
         } else {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.ALREADY_ACTIVE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
     public canPurge(): void {
         if (!this.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_ACTIVE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
         } else if (this.isSystemManaged) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_PURGE_SYSTEM`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
         }
     }
 
     public canAssign(): void {
         if (this.role.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_TO_REVOKED_ROLE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_TO_REVOKED_ROLE` });
         } else if (this.permission.isRevoked) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_REVOKED_PERMISSION`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_REVOKED_PERMISSION` });
         } else if (this.role.isSystemManaged) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_TO_SYSTEM_ROLE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_TO_SYSTEM_ROLE` });
         } else if (this.permission.isSystemManaged) {
-            throw EntityException.invariantViolation(`${this.dictionaryPath}.CANNOT_ASSIGN_SYSTEM_PERMISSION`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_SYSTEM_PERMISSION` });
         }
     }
 }

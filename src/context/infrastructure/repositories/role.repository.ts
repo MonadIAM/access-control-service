@@ -5,7 +5,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { RoleAdapter } from "~context/infrastructure/adapters";
 import { RoleClosure, Role } from "~context/domain/entities";
-import { RepositoryException } from "~common/exceptions";
+import { ExceptionMapper } from "~common/exceptions";
 import { MikroAdapter } from "~infrastructure/database";
 import { BaseRepository } from "~common/mixins";
 
@@ -43,7 +43,7 @@ export class RoleRepository
                 })
                 .then((relations) => relations.map(({ ancestor }) => ancestor));
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -68,7 +68,7 @@ export class RoleRepository
                     total,
                 ]);
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -89,7 +89,7 @@ export class RoleRepository
                     return relations.map(({ descendant }) => descendant);
                 });
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -114,7 +114,7 @@ export class RoleRepository
                     total,
                 ]);
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -140,7 +140,7 @@ export class RoleRepository
 
             return await builder.getResultAndCount();
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -192,7 +192,7 @@ export class RoleRepository
 
             return [mappedRoles, total];
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -225,7 +225,7 @@ export class RoleRepository
 
             return [roles, total];
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -270,7 +270,7 @@ export class RoleRepository
                 edges: result?.edges ?? [],
             };
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -304,7 +304,7 @@ export class RoleRepository
 
             return Number(total) + (count ?? 1) > this.roleLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 }

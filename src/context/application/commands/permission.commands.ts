@@ -6,7 +6,7 @@ import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/
 import { PERMISSION_SERVICE } from "~context/domain/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionCommands implements Commands.Permission.Contract {
@@ -114,7 +114,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
                 } else {
                     this.permissionService.purge({ transaction, entities });
                     return entities;
@@ -160,7 +160,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
                 } else {
                     this.permissionService.revoke({ entities });
 
@@ -207,7 +207,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.PERMISSIONS_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
                 } else {
                     this.permissionService.restore({ entities });
 

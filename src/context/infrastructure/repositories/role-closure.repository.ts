@@ -1,7 +1,7 @@
 import { Injectable, Scope } from "@nestjs/common";
 import { Knex } from "@mikro-orm/postgresql";
 
-import { RepositoryException } from "~common/exceptions";
+import { ExceptionMapper } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleClosureRepository implements Repositories.RoleClosure.Contract {
@@ -36,7 +36,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                         ),
                 );
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -103,7 +103,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                 })),
             };
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -135,7 +135,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                     depth: knex.raw("depth - 1"),
                 });
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -213,7 +213,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                 })),
             };
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 
@@ -234,7 +234,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
 
             return Boolean(result);
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 }

@@ -5,7 +5,7 @@ import { lastValueFrom } from "rxjs";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS, PERMISSION_OVERRIDE_COMMANDS } from "~context/application/commands";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
-import { RetryableException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
 
 @Controller()
@@ -35,7 +35,7 @@ export class AccountConsumer implements OnModuleInit {
         try {
             await this.handlers[message.actionType](message.payload);
         } catch (error) {
-            if (RetryableException.is(error)) {
+            if (Exception.isRetryable(error)) {
                 await lastValueFrom(
                     this.kafkaClient.emit(KafkaTopic.ACCOUNT_RETRY, {
                         value: {

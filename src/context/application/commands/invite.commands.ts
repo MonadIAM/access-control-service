@@ -7,7 +7,7 @@ import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, INVITE_SERVICE } from "~context/domain
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InviteCommands implements Commands.Invite.Contract {
@@ -40,7 +40,7 @@ export class InviteCommands implements Commands.Invite.Contract {
         });
 
         if (isAlreadyMember) {
-            throw CommandException.conflict(`${this.dictionaryPath}.INVITEE_ALREADY_MEMBER`);
+            throw Exception.conflict({ messageKey: `${this.dictionaryPath}.INVITEE_ALREADY_MEMBER` });
         }
 
         await this.transactionalService.run({

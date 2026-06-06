@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { ROLE_CLOSURE_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { RolePrototype, MoveMode } from "~context/enums";
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 import { Role } from "~context/domain/entities";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -24,7 +24,7 @@ export class RoleService implements Services.Role.Contract {
     public async create(props: Services.Role.Create.Props): Services.Role.Create.Result {
         const { transaction, input, realm } = props;
         if (input.parent.prototype === RolePrototype.ATOMIC) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE` });
         } else {
             const limitExceeded = await this.roleRepository.wouldExceedRoleLimit({
                 realm: realm.id,
@@ -32,7 +32,7 @@ export class RoleService implements Services.Role.Contract {
             });
 
             if (limitExceeded) {
-                throw ServiceException.invariantViolation(`${this.dictionaryPath}.REALM_ROLE_LIMIT_EXCEEDED`);
+                throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REALM_ROLE_LIMIT_EXCEEDED` });
             } else {
                 const entity = new Role({
                     description: input.description,
@@ -91,8 +91,9 @@ export class RoleService implements Services.Role.Contract {
         transaction.clear();
 
         if (descendants.length > this.purgeSubtreeSizeLimit) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.SUBTREE_SIZE_LIMIT_EXCEEDED`, {
-                limit: this.purgeSubtreeSizeLimit,
+            throw Exception.invariantViolation({
+                messageKey: `${this.dictionaryPath}.SUBTREE_SIZE_LIMIT_EXCEEDED`,
+                params: { limit: this.purgeSubtreeSizeLimit },
             });
         } else {
             for (const descendant of descendants) {
@@ -120,11 +121,11 @@ export class RoleService implements Services.Role.Contract {
     public async move(props: Services.Role.Move.Props): Services.Role.Move.Result {
         const { targetParent, transaction, target, realm, mode } = props;
         if (targetParent.prototype === RolePrototype.ATOMIC) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_NO_INHERITANCE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REPARENT_TARGET_NO_INHERITANCE` });
         }
 
         if (targetParent.id === target.id) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_IS_SELF`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REPARENT_TARGET_IS_SELF` });
         }
 
         const [[currentParent], wouldFormCycle] = await Promise.all([
@@ -142,15 +143,15 @@ export class RoleService implements Services.Role.Contract {
         ]);
 
         if (!currentParent) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_ROOT_NOT_ALLOWED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REPARENT_ROOT_NOT_ALLOWED` });
         }
 
         if (mode !== MoveMode.LINEAR && currentParent.id === targetParent.id) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_ALREADY_PARENT`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REPARENT_TARGET_ALREADY_PARENT` });
         }
 
         if (mode === MoveMode.SUBTREE && wouldFormCycle) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.REPARENT_TARGET_IN_SUBTREE`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REPARENT_TARGET_IN_SUBTREE` });
         }
 
         const steps: Awaited<Services.Role.Move.Result> = [];
@@ -230,7 +231,9 @@ export class RoleService implements Services.Role.Contract {
 
             for (const child of children) {
                 if (!descendantsSet.has(child)) {
-                    throw ServiceException.invariantViolation(`${this.dictionaryPath}.CREATE_CHILD_NOT_DIRECT_DESCENDANT`);
+                    throw Exception.invariantViolation({
+                        messageKey: `${this.dictionaryPath}.CREATE_CHILD_NOT_DIRECT_DESCENDANT`,
+                    });
                 }
             }
 

@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/infrastructure/repositories";
 import { PermissionOverride } from "~context/domain/entities";
-import { ServiceException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideService implements Services.PermissionOverride.Contract {
@@ -22,7 +22,7 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
         });
 
         if (limitExceeded) {
-            throw ServiceException.invariantViolation(`${this.dictionaryPath}.LIMIT_EXCEEDED`);
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.LIMIT_EXCEEDED` });
         } else {
             const entity = new PermissionOverride({ ...input, realm });
             transaction.persist(entity);

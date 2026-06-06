@@ -6,7 +6,7 @@ import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { ROLE_SERVICE } from "~context/domain/services";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleCommands implements Commands.Role.Contract {
@@ -203,7 +203,7 @@ export class RoleCommands implements Commands.Role.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
                 } else {
                     this.roleService.revoke({ entities });
                     return entities;
@@ -249,7 +249,7 @@ export class RoleCommands implements Commands.Role.Contract {
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.ROLES_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
                 } else {
                     this.roleService.restore({ entities });
                     return entities;

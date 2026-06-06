@@ -4,7 +4,7 @@ import { ROLE_DELEGATION_POLICY_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } 
 import { ROLE_DELEGATION_POLICY_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ActionType, EntityType } from "~context/enums";
-import { CommandException } from "~common/exceptions";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPolicy.Contract {
@@ -49,11 +49,11 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
 
                 if (roleEntities.length < 2) {
                     if (roleEntities[0].id === input.delegator) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.TARGET_ROLE_NOT_FOUND`);
+                        throw Exception.notFound({ messageKey: `${this.dictionaryPath}.TARGET_ROLE_NOT_FOUND` });
                     } else if (roleEntities[0].id === input.target) {
-                        throw CommandException.notFound(`${this.dictionaryPath}.DELEGATOR_ROLE_NOT_FOUND`);
+                        throw Exception.notFound({ messageKey: `${this.dictionaryPath}.DELEGATOR_ROLE_NOT_FOUND` });
                     } else {
-                        throw CommandException.notFound(`${this.dictionaryPath}.BOTH_ROLES_NOT_FOUND`);
+                        throw Exception.notFound({ messageKey: `${this.dictionaryPath}.BOTH_ROLES_NOT_FOUND` });
                     }
                 } else {
                     const [delegatorEntity, targetEntity] =
@@ -118,7 +118,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.POLICIES_NOT_FOUND` });
                 } else {
                     this.roleDelegationPolicyService.purge({ transaction, entities });
                     return { count: entities.length };
@@ -151,7 +151,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.POLICIES_NOT_FOUND` });
                 } else {
                     this.roleDelegationPolicyService.revoke({ entities });
                     return entities;
@@ -184,7 +184,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
                 });
 
                 if (entities.length < input.identifiers.length) {
-                    throw CommandException.notFound(`${this.dictionaryPath}.POLICIES_NOT_FOUND`);
+                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.POLICIES_NOT_FOUND` });
                 } else {
                     this.roleDelegationPolicyService.restore({ entities });
                     return entities;

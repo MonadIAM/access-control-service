@@ -24,14 +24,14 @@ const EVENT_LOOP_LAG_PROVIDER = makeGaugeProvider({
     help: "Node.js event loop lag in seconds",
 });
 
-const UNHANDLED_ERRORS_PROVIDER = makeCounterProvider({
-    name: "app_unhandled_errors_total",
-    help: "Total number of unhandled critical errors",
+const SERVER_ERRORS_PROVIDER = makeCounterProvider({
+    name: "app_server_errors_total",
+    help: "Total number of HTTP server errors",
     labelNames: ["type"],
 });
 
 export const POVIDERS = [
-    UNHANDLED_ERRORS_PROVIDER,
+    SERVER_ERRORS_PROVIDER,
     EVENT_LOOP_LAG_PROVIDER,
     APP_STATUS_PROVIDER,
     DURATION_PROVIDER,

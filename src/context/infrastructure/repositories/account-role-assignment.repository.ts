@@ -5,7 +5,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { AccountRoleAssignmentAdapter } from "~context/infrastructure/adapters";
 import { AccountRoleAssignment } from "~context/domain/entities";
-import { RepositoryException } from "~common/exceptions";
+import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -45,7 +45,7 @@ export class AccountRoleAssignmentRepository
 
             return Number(total) + roles.length - Number(overlap) > this.accountRoleLimit;
         } catch (error) {
-            throw RepositoryException.fromOrmError(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
     }
 }
