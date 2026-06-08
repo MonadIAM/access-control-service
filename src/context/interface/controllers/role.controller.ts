@@ -1,4 +1,4 @@
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -84,6 +84,7 @@ const {
 
 @ApiTags("Role")
 @Controller("/role")
+@ApiBearerAuth("access-token")
 @UseInterceptors(MonitoringInterceptor)
 export class RoleController {
     public constructor(

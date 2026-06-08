@@ -1,4 +1,4 @@
-.PHONY: coverage
+.PHONY: coverage swagger postman docs
 
 dataset ?= system
 class ?= System
@@ -33,6 +33,11 @@ lint-fix:
 	npm run lint:fix
 knip:
 	npm run knip
+swagger:
+	npm run swagger
+postman:
+	npm run postman
+docs: swagger postman
 
 # Database
 migrate:

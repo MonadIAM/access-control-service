@@ -28,7 +28,24 @@ export abstract class BootstrapSwagger {
         if (process.env.NODE_ENV === "development") {
             const description = readFileSync(join(__dirname, "./swagger.md"), "utf-8");
 
-            const config = new DocumentBuilder().setTitle(name).setDescription(description).setVersion(version);
+            const config = new DocumentBuilder()
+                .setDescription(description)
+                .setVersion(version)
+                .setTitle(name)
+                .addOAuth2(
+                    {
+                        type: "oauth2",
+                        description: "Authenticate through identity-service",
+                        flows: {
+                            password: {
+                                tokenUrl: `${process.env.IDENTITY_SERVICE_URL}/api/v1/authn/token/external`,
+                                scopes: {},
+                            },
+                        },
+                    },
+                    "identity",
+                )
+                .addSecurityRequirements("identity");
 
             Object.entries(SWAGGER_TAGS).forEach(([name, description]) => {
                 config.addTag(name, description);
@@ -40,6 +57,11 @@ export abstract class BootstrapSwagger {
                 jsonDocumentUrl: "/docs-json",
                 swaggerOptions: {
                     persistAuthorization: true,
+                    initOAuth: {
+                        useBasicAuthenticationWithAccessCodeGrant: false,
+                        clientId: "web-dev",
+                        appName: name,
+                    },
                 },
             });
         }

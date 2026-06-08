@@ -1,4 +1,4 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
 import { ElevatedAccessCacheService } from "./elevated-access-cache.service";
 import { ProjectionCacheService } from "./projection-cache.service";
@@ -13,7 +13,7 @@ import {
     SCRIPT_LOADER_SERVICE,
 } from "./tokens";
 
-export const INFRASTRUCTURE_SERVICES: Provider[] = [
+export const INFRASTRUCTURE_SERVICES: ClassProvider[] = [
     {
         provide: ELEVATED_ACCESS_CACHE_SERVICE,
         useClass: ElevatedAccessCacheService,

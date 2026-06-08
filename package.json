@@ -1,6 +1,6 @@
 {
   "name": "@liam/access-control-service",
-  "description": "",
+  "description": "Access Control Service implementing HRBAC, DAC, SoD (N-of-M), Delegation Policies, Multitenancy and Invitation mechanics, with Audit and Change Log support.",
   "author": "Daniil Egorov (https://github.com/Lambdius)",
   "license": "SEE LICENSE IN LICENSE",
   "version": "0.0.1",
@@ -14,11 +14,13 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint --config ./prettier.config.mjs --fix --format json | node -e \"process.stdin.on('data',d=>JSON.parse(d).forEach(f=>f.output && console.log(f.filePath)));\"",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:prod": "node dist/index.js",
+    "swagger": "ts-node --transpile-only -r tsconfig-paths/register cli/swagger/main.ts",
+    "postman": "ts-node --transpile-only cli/postman/main.ts",
+    "knip": "knip --config configs/knip.config.ts",
     "build": "nest build",
-    "knip": "knip --config configs/knip.config.ts"
+    "start": "nest start",
+    "start:prod": "node dist/index.js",
+    "start:dev": "nest start --watch"
   },
   "repository": {
     "type": "git",
@@ -84,6 +86,7 @@
     "globals": "16.4.0",
     "jest": "30.2.0",
     "knip": "6.15.0",
+    "openapi-to-postmanv2": "6.0.1",
     "prettier": "3.6.2",
     "ts-jest": "29.4.6",
     "ts-node": "10.9.2",

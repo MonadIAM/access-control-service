@@ -79,6 +79,9 @@ docker exec -it access-control-service-postgres-replica psql -U lambdius -d acce
 | `npm run lint`                                                  | `make lint`                      | Run ESLint code checks.                               |
 | `npm run lint:fix`                                              | `make lint-fix`                  | Auto-fix formatting and log changed files.            |
 | `npm run knip`                                                  | `make knip`                      | Detect unused exports, files, and dependencies.       |
+| `npm run swagger`                                               | `make swagger`                   | Generate the OpenAPI Swagger JSON file.               |
+| `npm run postman`                                               | `make postman`                   | Generate and patch the Postman collection JSON file.  |
+| `npm run swagger && npm run postman`                            | `make docs`                      | Generate Swagger and Postman documentation artifacts. |
 | **Database**                                                    |                                  |                                                       |
 | `npx mikro-orm migration:create --name=$(name)`                 | `make migration name="*"`        | Generate a new migration based on entity changes.     |
 | `npx mikro-orm migration:up`                                    | `make migrate`                   | Apply all pending migrations to the database.         |

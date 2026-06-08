@@ -1,4 +1,4 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
 import { RolePermissionAssignmentCommands } from "./role-permission-assignment.commands";
 import { AccountRoleAssignmentCommands } from "./account-role-assignment.commands";
@@ -23,7 +23,7 @@ import {
     ROLE_COMMANDS,
 } from "./tokens";
 
-export const COMMANDS: Provider[] = [
+export const COMMANDS: ClassProvider[] = [
     {
         provide: ROLE_PERMISSION_ASSIGNMENT_COMMANDS,
         useClass: RolePermissionAssignmentCommands,

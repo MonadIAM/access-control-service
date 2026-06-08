@@ -1,4 +1,4 @@
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -63,6 +63,7 @@ const {
 } = PermissionCode;
 
 @ApiTags("RoleConflictGroup")
+@ApiBearerAuth("access-token")
 @Controller("/role-conflict-group")
 @UseInterceptors(MonitoringInterceptor)
 export class RoleConflictGroupController {

@@ -103,6 +103,7 @@ export abstract class BootstrapSecurity {
             contentSecurityPolicy: {
                 directives: {
                     defaultSrc: ["'self'"],
+                    connectSrc: ["'self'", process.env.IDENTITY_SERVICE_URL!],
                     styleSrc: ["'self'", "'unsafe-inline'"],
                     imgSrc: ["'self'", "data:", "validator.swagger.io"],
                     scriptSrc: ["'self'", "https:", "'unsafe-inline'"],

@@ -1,5 +1,5 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Delete, Inject, Query, Body, Post, Get } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { ROLE_CONFLICT_MEMBER_COMMANDS } from "~context/application/commands";
@@ -36,6 +36,7 @@ const {
 } = HttpStatus;
 
 @ApiTags("RoleConflictMember")
+@ApiBearerAuth("access-token")
 @Controller("/role-conflict-member")
 @UseInterceptors(MonitoringInterceptor)
 export class RoleConflictMemberController {

@@ -1,5 +1,5 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Patch, Query, Body, Post, Get } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
@@ -38,6 +38,7 @@ const {
 
 @ApiTags("Invite")
 @Controller("/invite")
+@ApiBearerAuth("access-token")
 @UseInterceptors(MonitoringInterceptor)
 export class InviteController {
     public constructor(

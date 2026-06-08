@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger } from "~common/decorators";
 import { CHANGE_LOG_QUERIES } from "~context/application/queries";
@@ -22,6 +22,7 @@ const { CHANGE_LOG_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("ChangeLog")
 @Controller("/change-log")
+@ApiBearerAuth("access-token")
 @UseInterceptors(MonitoringInterceptor)
 export class ChangeLogController {
     public constructor(

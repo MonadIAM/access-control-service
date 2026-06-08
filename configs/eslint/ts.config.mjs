@@ -43,7 +43,7 @@ const disabledRules = {
  */
 const tsConfig = [
     {
-        files: ["src/**/*.{ts,tsx}"],
+        files: ["{src,cli}/**/*.{ts,tsx}"],
         languageOptions: {
             parser: tslint.parser,
             parserOptions: {

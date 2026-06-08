@@ -1,9 +1,9 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
 import { JWTService } from "./jwt.service";
 import { JWT_SERVICE } from "./tokens";
 
-export const COMMON_SERVICES: Provider[] = [
+export const COMMON_SERVICES: ClassProvider[] = [
     {
         provide: JWT_SERVICE,
         useClass: JWTService,

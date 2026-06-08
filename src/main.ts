@@ -14,7 +14,7 @@ import { GRPC_CONFIG } from "~infrastructure/grpc";
 import { MainModule } from "./main.module";
 import "./extensions";
 
-async function bootstrap(): Promise<void> {
+void (async function (): Promise<void> {
     const fastifyAdapter = new FastifyAdapter({
         bodyLimit: Number(process.env.BODY_LIMIT_BYTES),
         trustProxy: true,
@@ -49,5 +49,4 @@ async function bootstrap(): Promise<void> {
 
     await application.startAllMicroservices();
     await application.listen({ port, host });
-}
-bootstrap();
+})();

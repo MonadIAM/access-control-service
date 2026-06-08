@@ -1,4 +1,4 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
 import { RolePermissionAssignmentQueries } from "./role-permission-assignment.queries";
 import { AccountRoleAssignmentQueries } from "./account-role-assignment.queries";
@@ -27,7 +27,7 @@ import {
     ROLE_QUERIES,
 } from "./tokens";
 
-export const QUERIES: Provider[] = [
+export const QUERIES: ClassProvider[] = [
     {
         provide: ROLE_PERMISSION_ASSIGNMENT_QUERIES,
         useClass: RolePermissionAssignmentQueries,

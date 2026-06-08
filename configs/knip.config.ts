@@ -15,18 +15,13 @@ const config: KnipConfig = {
         "src/context/infrastructure/schemas/*.ts",
     ],
     ignoreDependencies: [
-        // MikroORM CLI tools - used via makefile/npx, not imported
+        "openapi-to-postmanv2",
         "@mikro-orm/entity-generator",
         "@mikro-orm/cli",
-        // Peer deps of @nestjs/swagger required by Fastify adapter - not imported directly
         "@fastify/swagger-ui",
         "@fastify/swagger",
-        // Transitive - provided by @nestjs/platform-fastify and jest respectively
         "@jest/globals",
         "fastify",
-        // CLI and path resolver for ts-node/jest
-        "tsconfig-paths",
-        "ts-node",
     ],
 };
 

@@ -1,4 +1,4 @@
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -59,6 +59,7 @@ const {
 } = PermissionCode;
 
 @ApiTags("PermissionOverride")
+@ApiBearerAuth("access-token")
 @Controller("/permission-override")
 @UseInterceptors(MonitoringInterceptor)
 export class PermissionOverrideController {

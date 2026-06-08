@@ -18,7 +18,7 @@ export default [
         ]
     },
     {
-        files: ["src/**/*.ts"],
+        files: ["{src,cli}/**/*.ts"],
         languageOptions: {
             parser: tslint.parser,
             parserOptions: {

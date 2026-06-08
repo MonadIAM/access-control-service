@@ -1,4 +1,4 @@
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -57,6 +57,7 @@ const {
     ACCOUNT_ROLE_ASSIGNMENT_PURGE,
 } = PermissionCode;
 
+@ApiBearerAuth("access-token")
 @ApiTags("AccountRoleAssignment")
 @Controller("/account-role-assignment")
 @UseInterceptors(MonitoringInterceptor)

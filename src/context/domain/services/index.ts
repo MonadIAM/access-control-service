@@ -1,4 +1,4 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
 import { RolePermissionAssignmentService } from "./role-permission-assignment.service";
 import { AccountRoleAssignmentService } from "./account-role-assignment.service";
@@ -23,7 +23,7 @@ import {
     ROLE_SERVICE,
 } from "./tokens";
 
-export const DOMAIN_SERVICES: Provider[] = [
+export const DOMAIN_SERVICES: ClassProvider[] = [
     {
         provide: ROLE_PERMISSION_ASSIGNMENT_SERVICE,
         useClass: RolePermissionAssignmentService,

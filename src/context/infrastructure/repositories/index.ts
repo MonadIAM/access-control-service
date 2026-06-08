@@ -1,4 +1,4 @@
-import { Provider } from "@nestjs/common";
+import { ClassProvider } from "@nestjs/common";
 
 import { RolePermissionAssignmentRepository } from "./role-permission-assignment.repository";
 import { AccountRoleAssignmentRepository } from "./account-role-assignment.repository";
@@ -29,7 +29,7 @@ import {
     ROLE_REPOSITORY,
 } from "./tokens";
 
-export const REPOSITORIES: Provider[] = [
+export const REPOSITORIES: ClassProvider[] = [
     {
         provide: ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
         useClass: RolePermissionAssignmentRepository,
