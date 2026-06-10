@@ -433,15 +433,15 @@ export const Permissions = [
     ),
     entry(
         "00000003-0000-4000-8000-120000000006",
-        PermissionCode.ELEVATED_ACCESS_CONFIRM_PASSWORD,
-        "Confirm Elevated Access by Password",
-        "Confirm elevated access using the current account password.",
+        PermissionCode.REAUTHENTICATION_CONFIRM_PASSWORD,
+        "Confirm Reauthentication by Password",
+        "Confirm reauthentication using the current account password.",
     ),
     entry(
         "00000003-0000-4000-8000-120000000007",
-        PermissionCode.ELEVATED_ACCESS_CONFIRM_SECOND_FACTOR,
-        "Confirm Elevated Access by Second Factor",
-        "Confirm elevated access using a second factor.",
+        PermissionCode.REAUTHENTICATION_CONFIRM_SECOND_FACTOR,
+        "Confirm Reauthentication by Second Factor",
+        "Confirm reauthentication using a second factor.",
     ),
     entry(
         "00000003-0000-4000-8000-120000000008",

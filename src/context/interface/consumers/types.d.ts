@@ -16,12 +16,12 @@ declare global {
             };
         }
 
-        namespace ElevatedAccess {
+        namespace Reauthentication {
             interface Contract {
                 handle: (props: Payload) => Promise<void>;
             }
 
-            type Payload = Topics.ElevatedAccess.Message;
+            type Payload = Topics.Reauthentication.Message;
         }
 
         namespace Blacklist {

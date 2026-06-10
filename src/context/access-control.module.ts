@@ -6,7 +6,7 @@ import { TransactionManagerModule } from "~common/transaction-manager";
 import { FormatResponseInterceptor } from "~common/interceptors";
 import { COMMON_SERVICES } from "~common/services";
 
-import { ElevatedAccessGuard, PermissionGuard, AuthGuard } from "./infrastructure/guards";
+import { ReauthenticationGuard, PermissionGuard, AuthGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
 import { REPOSITORIES } from "./infrastructure/repositories";
 import { BullQueue, QUEUES } from "./infrastructure/queues";
@@ -27,7 +27,7 @@ import { QUERIES } from "./application/queries";
         ...QUEUES,
         ...COMMANDS,
         ...QUERIES,
-        ElevatedAccessGuard,
+        ReauthenticationGuard,
         PermissionGuard,
         AuthGuard,
         {
@@ -44,7 +44,7 @@ import { QUERIES } from "./application/queries";
         },
         {
             provide: APP_GUARD,
-            useExisting: ElevatedAccessGuard,
+            useExisting: ReauthenticationGuard,
         },
     ],
     controllers: [...HTTP_CONTROLLERS, ...GRPC_CONTROLLERS, ...CONSUMERS],

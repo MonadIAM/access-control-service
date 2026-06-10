@@ -13,7 +13,7 @@ import {
     Get,
 } from "@nestjs/common";
 
-import { RequirePermission, FormatResponse, Swagger, Extract, ElevatedAccess } from "~common/decorators";
+import { RequirePermission, FormatResponse, Swagger, Extract, Reauthentication } from "~common/decorators";
 import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
 import { REALM_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
@@ -242,7 +242,7 @@ export class RealmController {
 
     @HttpCode(OK)
     @Delete("purge")
-    @ElevatedAccess()
+    @Reauthentication()
     @RequirePermission(REALM_PURGE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })

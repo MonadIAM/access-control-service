@@ -2,7 +2,7 @@ import { ProjectionScript } from "../scripts";
 
 declare global {
     namespace InfrastructureServices {
-        namespace ElevatedAccessCache {
+        namespace ReauthenticationCache {
             interface Contract {
                 set: (props: Set) => Promise<void>;
                 exists: (props: Exists) => Promise<boolean>;

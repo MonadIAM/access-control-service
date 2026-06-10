@@ -7,5 +7,9 @@
     "INVALID_TOKEN": "The authentication token is invalid or expired.",
     "TOKEN_MISSING": "An authentication token is required.",
     "SESSION_REVOKED": "The session has been revoked."
+  },
+  "reauthentication": {
+    "REAUTHENTICATION_REQUIRED": "Reauthentication is required to perform this operation.",
+    "NOT_AUTHENTICATED": "Authentication is required to reauthenticate."
   }
 }
