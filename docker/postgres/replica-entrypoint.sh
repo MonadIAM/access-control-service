@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+export POSTGRES_REPLICATION_PASSWORD="$(cat /vault/secrets/postgresql_replication_password)"
+export POSTGRES_PASSWORD="$(cat /vault/secrets/postgresql_password)"
+
 PGDATA="/var/lib/postgresql/data"
 
 echo "Starting replica initialization..."

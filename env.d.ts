@@ -63,7 +63,6 @@ declare global {
             // ---------------------------------------------------------------------------
 
             POSTGRES_REPLICATION_USER: string;
-            POSTGRES_REPLICATION_PASSWORD: string;
             POSTGRES_REPLICATION_SLOT: string;
 
             // ---------------------------------------------------------------------------
@@ -99,6 +98,18 @@ declare global {
             // ---------------------------------------------------------------------------
 
             DEBEZIUM_INIT_IMAGE: string;
+
+            // ---------------------------------------------------------------------------
+            // Vault
+            // ---------------------------------------------------------------------------
+
+            VAULT_IMAGE: string;
+            VAULT_PORT: `${number}`;
+            VAULT_PUBLISHED_PORT: `${number}`;
+            VAULT_ROOT_TOKEN: string;
+            VAULT_KV_MOUNT: string;
+            VAULT_KV_RUNTIME_PATH: string;
+            VAULT_KV_REPLICATION_PATH: string;
 
             // ---------------------------------------------------------------------------
             // Domain-specific limits

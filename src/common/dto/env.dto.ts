@@ -135,9 +135,6 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_REPLICATION_USER: string;
 
     @Validator.IsString()
-    declare public POSTGRES_REPLICATION_PASSWORD: string;
-
-    @Validator.IsString()
     declare public POSTGRES_REPLICATION_SLOT: string;
 
     // ---------------------------------------------------------------------------
@@ -214,6 +211,33 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     declare public DEBEZIUM_INIT_IMAGE: string;
+
+    // ---------------------------------------------------------------------------
+    // Vault
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsString()
+    declare public VAULT_IMAGE: string;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public VAULT_PORT: number;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public VAULT_PUBLISHED_PORT: number;
+
+    @Validator.IsString()
+    declare public VAULT_ROOT_TOKEN: string;
+
+    @Validator.IsString()
+    declare public VAULT_KV_MOUNT: string;
+
+    @Validator.IsString()
+    declare public VAULT_KV_RUNTIME_PATH: string;
+
+    @Validator.IsString()
+    declare public VAULT_KV_REPLICATION_PATH: string;
 
     // ---------------------------------------------------------------------------
     // Domain-specific limits

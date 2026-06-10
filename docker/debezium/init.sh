@@ -1,6 +1,8 @@
 #!/bin/sh
 set -eu
 
+export POSTGRES_PASSWORD="$(cat /vault/secrets/postgresql_password)"
+
 apk add --no-cache curl gettext jq
 
 CONNECT_URL="http://${SERVICE_NAME}-kafka-connect:8083"
