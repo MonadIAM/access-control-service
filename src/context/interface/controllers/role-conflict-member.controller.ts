@@ -1,5 +1,5 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Delete, Inject, Query, Body, Post, Get } from "@nestjs/common";
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { ROLE_CONFLICT_MEMBER_COMMANDS } from "~context/application/commands";
@@ -36,7 +36,6 @@ const {
 } = HttpStatus;
 
 @ApiTags("RoleConflictMember")
-@ApiBearerAuth("access-token")
 @Controller("/role-conflict-member")
 @UseInterceptors(MonitoringInterceptor)
 export class RoleConflictMemberController {
@@ -52,7 +51,10 @@ export class RoleConflictMemberController {
     @FormatResponse(RoleConflictMemberDTO)
     @RequirePermission(ROLE_CONFLICT_MEMBER_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: RoleConflictMemberDTO })
-    @ApiOperation({ summary: "Returns a role conflict member by identifier" })
+    @ApiOperation({
+        summary: "Returns a role conflict member by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -71,9 +73,12 @@ export class RoleConflictMemberController {
     @Post("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
-    @RequirePermission(ROLE_CONFLICT_MEMBER_READ_ABSOLUTE)
-    @ApiOperation({ summary: "Returns a paginated list of role conflict members" })
     @ApiResponse({ status: OK, type: ListDTO })
+    @RequirePermission(ROLE_CONFLICT_MEMBER_READ_ABSOLUTE)
+    @ApiOperation({
+        summary: "Returns a paginated list of role conflict members",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -94,7 +99,10 @@ export class RoleConflictMemberController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_CONFLICT_MEMBER_CREATE)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Creates a new role conflict member(s)" })
+    @ApiOperation({
+        summary: "Creates a new role conflict member(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -120,7 +128,10 @@ export class RoleConflictMemberController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_CONFLICT_MEMBER_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system role conflict member(s)" })
+    @ApiOperation({
+        summary: "Permanently deletes a revoked non-system role conflict member(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -133,8 +144,8 @@ export class RoleConflictMemberController {
     )
     public purge(
         @Query() { realm }: PurgeQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Body() input: PurgeBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.roleConflictMemberCommands.purge({ actor, context, input, realm });

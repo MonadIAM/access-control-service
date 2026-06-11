@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger } from "~common/decorators";
 import { CHANGE_LOG_QUERIES } from "~context/application/queries";
@@ -22,7 +22,6 @@ const { CHANGE_LOG_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("ChangeLog")
 @Controller("/change-log")
-@ApiBearerAuth("access-token")
 @UseInterceptors(MonitoringInterceptor)
 export class ChangeLogController {
     public constructor(
@@ -35,7 +34,10 @@ export class ChangeLogController {
     @FormatResponse(ChangeLogDTO)
     @RequirePermission(CHANGE_LOG_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ChangeLogDTO })
-    @ApiOperation({ summary: "Returns a change log by identifier" })
+    @ApiOperation({
+        summary: "Returns a change log by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -54,7 +56,10 @@ export class ChangeLogController {
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(CHANGE_LOG_READ_ABSOLUTE)
-    @ApiOperation({ summary: "Returns a paginated list of change logs" })
+    @ApiOperation({
+        summary: "Returns a paginated list of change logs",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

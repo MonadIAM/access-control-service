@@ -1,4 +1,4 @@
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -59,7 +59,6 @@ const {
 } = PermissionCode;
 
 @ApiTags("PermissionOverride")
-@ApiBearerAuth("access-token")
 @Controller("/permission-override")
 @UseInterceptors(MonitoringInterceptor)
 export class PermissionOverrideController {
@@ -74,8 +73,11 @@ export class PermissionOverrideController {
     @HttpCode(OK)
     @FormatResponse(PermissionOverrideDTO)
     @ApiResponse({ status: OK, type: PermissionOverrideDTO })
-    @ApiOperation({ summary: "Returns a permission override by identifier" })
     @RequirePermission(PERMISSION_OVERRIDE_READ_ABSOLUTE, PERMISSION_OVERRIDE_READ_PERSONAL)
+    @ApiOperation({
+        summary: "Returns a permission override by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -97,8 +99,11 @@ export class PermissionOverrideController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @ApiOperation({ summary: "Returns a paginated list of permission overrides" })
     @RequirePermission(PERMISSION_OVERRIDE_READ_ABSOLUTE, PERMISSION_OVERRIDE_READ_PERSONAL)
+    @ApiOperation({
+        summary: "Returns a paginated list of permission overrides",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -121,7 +126,10 @@ export class PermissionOverrideController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PERMISSION_OVERRIDE_CREATE)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Creates a new permission override" })
+    @ApiOperation({
+        summary: "Creates a new permission override",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -135,8 +143,8 @@ export class PermissionOverrideController {
     )
     public create(
         @Query() { realm }: CreateQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Body() input: CreateBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionOverrideCommands.create({ context, realm, actor, input });
@@ -147,7 +155,10 @@ export class PermissionOverrideController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PERMISSION_OVERRIDE_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Revokes a non-system permission override(s)" })
+    @ApiOperation({
+        summary: "Revokes a non-system permission override(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -160,8 +171,8 @@ export class PermissionOverrideController {
     )
     public revoke(
         @Query() { realm }: RevokeQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Body() input: RevokeBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionOverrideCommands.revoke({ context, realm, actor, input });
@@ -172,7 +183,10 @@ export class PermissionOverrideController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PERMISSION_OVERRIDE_RESTORE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Restores a non-system permission override(s)" })
+    @ApiOperation({
+        summary: "Restores a non-system permission override(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -185,8 +199,8 @@ export class PermissionOverrideController {
     )
     public restore(
         @Query() { realm }: RestoreQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Body() input: RestoreBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionOverrideCommands.restore({ context, realm, actor, input });
@@ -197,7 +211,10 @@ export class PermissionOverrideController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PERMISSION_OVERRIDE_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system permission override(s)" })
+    @ApiOperation({
+        summary: "Permanently deletes a revoked non-system permission override(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -210,8 +227,8 @@ export class PermissionOverrideController {
     )
     public purge(
         @Query() { realm }: PurgeQueryDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Body() input: PurgeBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionOverrideCommands.purge({ context, realm, actor, input });

@@ -1,4 +1,4 @@
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -64,7 +64,6 @@ const {
 
 @ApiTags("Realm")
 @Controller("/realm")
-@ApiBearerAuth("access-token")
 @UseInterceptors(MonitoringInterceptor)
 export class RealmController {
     public constructor(
@@ -78,8 +77,11 @@ export class RealmController {
     @HttpCode(OK)
     @FormatResponse(RealmDTO)
     @ApiResponse({ status: OK, type: RealmDTO })
-    @ApiOperation({ summary: "Returns a realm by identifier" })
     @RequirePermission(REALM_READ_ABSOLUTE, REALM_READ_PERSONAL)
+    @ApiOperation({
+        summary: "Returns a realm by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -102,7 +104,10 @@ export class RealmController {
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(REALM_READ_ABSOLUTE, REALM_READ_PERSONAL)
-    @ApiOperation({ summary: "Returns a paginated list of realms" })
+    @ApiOperation({
+        summary: "Returns a paginated list of realms",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -113,8 +118,8 @@ export class RealmController {
     )
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
-        @Extract.Session() { account }: Extract.Session.Auth,
         @Query() { view }: BaseReadQueryDTO,
+        @Extract.Session() { account }: Extract.Session.Auth,
         @Extract.Permissions() permissions?: string[],
     ): Queries.Realm.FindMany.Result {
         return this.realmQueries.findMany({ permissions, pagination, filters, account, view, sort });
@@ -125,7 +130,10 @@ export class RealmController {
     @FormatResponse(LookupListDTO)
     @ApiResponse({ status: OK, type: LookupListDTO })
     @RequirePermission(REALM_READ_ABSOLUTE, REALM_READ_PERSONAL)
-    @ApiOperation({ summary: "Returns a lookup list of realms" })
+    @ApiOperation({
+        summary: "Returns a lookup list of realms",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -147,8 +155,11 @@ export class RealmController {
     @HttpCode(CREATED)
     @RequirePermission(REALM_CREATE)
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Creates a new realm" })
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
+    @ApiOperation({
+        summary: "Creates a new realm",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -160,9 +171,9 @@ export class RealmController {
         CONFLICT,
     )
     public create(
+        @Body() input: CreateBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: CreateBodyDTO,
     ): Promise<MessageResult> {
         return this.realmCommands.create({ context, actor, input });
     }
@@ -171,8 +182,11 @@ export class RealmController {
     @Patch("update")
     @RequirePermission(REALM_UPDATE)
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Updates realm metadata" })
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({
+        summary: "Updates realm metadata",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -184,10 +198,10 @@ export class RealmController {
         FORBIDDEN,
     )
     public updateMetadata(
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Extract.Meta() context: Extract.Meta,
         @Query() { id }: UpdateQueryDTO,
         @Body() input: UpdateBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.realmCommands.update({ context, actor, input, id });
     }
@@ -197,7 +211,10 @@ export class RealmController {
     @RequirePermission(REALM_REVOKE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Revokes a non-system realm(s)" })
+    @ApiOperation({
+        summary: "Revokes a non-system realm(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -209,9 +226,9 @@ export class RealmController {
         FORBIDDEN,
     )
     public revoke(
+        @Body() input: RevokeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: RevokeBodyDTO,
     ): Promise<MessageResult> {
         return this.realmCommands.revoke({ context, actor, input });
     }
@@ -221,7 +238,10 @@ export class RealmController {
     @RequirePermission(REALM_RESTORE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Restores a non-system realm(s)" })
+    @ApiOperation({
+        summary: "Restores a non-system realm(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -233,9 +253,9 @@ export class RealmController {
         FORBIDDEN,
     )
     public restore(
+        @Body() input: RestoreBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: RestoreBodyDTO,
     ): Promise<MessageResult> {
         return this.realmCommands.restore({ context, actor, input });
     }
@@ -246,7 +266,10 @@ export class RealmController {
     @RequirePermission(REALM_PURGE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system realm(s)" })
+    @ApiOperation({
+        summary: "Permanently deletes a revoked non-system realm(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -258,9 +281,9 @@ export class RealmController {
         FORBIDDEN,
     )
     public purge(
+        @Body() input: PurgeBodyDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
-        @Body() input: PurgeBodyDTO,
     ): Promise<MessageResult> {
         return this.realmCommands.purge({ context, actor, input });
     }
@@ -270,7 +293,10 @@ export class RealmController {
     @RequirePermission(REALM_EXCLUDE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Excludes an account from a realm, removing all assignments and overrides" })
+    @ApiOperation({
+        summary: "Excludes an account from a realm, removing all assignments and overrides",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -282,10 +308,10 @@ export class RealmController {
         FORBIDDEN,
     )
     public exclude(
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Extract.Meta() context: Extract.Meta,
         @Query() { realm }: ExcludeQueryDTO,
         @Body() input: ExcludeBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.realmCommands.exclude({ context, actor, realm, input });
     }

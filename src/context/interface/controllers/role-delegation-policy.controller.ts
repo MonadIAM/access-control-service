@@ -1,4 +1,4 @@
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -60,7 +60,6 @@ const {
     ROLE_DELEGATION_POLICY_PURGE,
 } = PermissionCode;
 
-@ApiBearerAuth("access-token")
 @ApiTags("RoleDelegationPolicy")
 @Controller("/role-delegation-policy")
 @UseInterceptors(MonitoringInterceptor)
@@ -77,7 +76,10 @@ export class RoleDelegationPolicyController {
     @FormatResponse(RoleDelegationPolicyDTO)
     @RequirePermission(ROLE_DELEGATION_POLICY_READ_COMMON)
     @ApiResponse({ status: OK, type: RoleDelegationPolicyDTO })
-    @ApiOperation({ summary: "Returns a role delegation policy by identifier" })
+    @ApiOperation({
+        summary: "Returns a role delegation policy by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -94,9 +96,12 @@ export class RoleDelegationPolicyController {
     @Post("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
-    @RequirePermission(ROLE_DELEGATION_POLICY_READ_COMMON)
-    @ApiOperation({ summary: "Returns a paginated list of role delegation policies" })
     @ApiResponse({ status: OK, type: ListDTO })
+    @RequirePermission(ROLE_DELEGATION_POLICY_READ_COMMON)
+    @ApiOperation({
+        summary: "Returns a paginated list of role delegation policies",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -117,7 +122,10 @@ export class RoleDelegationPolicyController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_DELEGATION_POLICY_CREATE)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Creates a new role delegation policy" })
+    @ApiOperation({
+        summary: "Creates a new role delegation policy",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -142,8 +150,11 @@ export class RoleDelegationPolicyController {
     @Patch("update")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_DELEGATION_POLICY_UPDATE)
-    @ApiOperation({ summary: "Updates role delegation policy data" })
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({
+        summary: "Updates role delegation policy data",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -168,7 +179,10 @@ export class RoleDelegationPolicyController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_DELEGATION_POLICY_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Revokes one or more non-system role delegation policies" })
+    @ApiOperation({
+        summary: "Revokes one or more non-system role delegation policies",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -193,7 +207,10 @@ export class RoleDelegationPolicyController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_DELEGATION_POLICY_RESTORE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Restores one or more non-system role delegation policies" })
+    @ApiOperation({
+        summary: "Restores one or more non-system role delegation policies",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -218,6 +235,10 @@ export class RoleDelegationPolicyController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_DELEGATION_POLICY_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({
+        summary: "Permanently deletes one or more revoked non-system role delegation policies",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -228,7 +249,6 @@ export class RoleDelegationPolicyController {
         NOT_FOUND,
         FORBIDDEN,
     )
-    @ApiOperation({ summary: "Permanently deletes one or more revoked non-system role delegation policies" })
     public purge(
         @Query() { realm }: PurgeQueryDTO,
         @Body() input: PurgeBodyDTO,

@@ -22,6 +22,9 @@ declare global {
             BODY_LIMIT_BYTES: `${number}`;
             JWT_ISSUER: string;
             JWT_JWKS_URL: string;
+            IDENTITY_SERVICE_URL: string;
+            ACCESS_CONTROL_SERVICE_URL: string;
+            ALLOWED_ORIGINS: string;
 
             // ---------------------------------------------------------------------------
             // PostgreSQL - common

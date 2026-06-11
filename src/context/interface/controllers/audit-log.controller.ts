@@ -1,5 +1,5 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger } from "~common/decorators";
 import { AUDIT_LOG_QUERIES } from "~context/application/queries";
@@ -22,7 +22,6 @@ const { AUDIT_LOG_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("AuditLog")
 @Controller("/audit-log")
-@ApiBearerAuth("access-token")
 @UseInterceptors(MonitoringInterceptor)
 export class AuditLogController {
     public constructor(
@@ -35,7 +34,10 @@ export class AuditLogController {
     @FormatResponse(AuditLogDTO)
     @RequirePermission(AUDIT_LOG_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: AuditLogDTO })
-    @ApiOperation({ summary: "Returns a audit log by identifier" })
+    @ApiOperation({
+        summary: "Returns a audit log by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -54,7 +56,10 @@ export class AuditLogController {
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(AUDIT_LOG_READ_ABSOLUTE)
-    @ApiOperation({ summary: "Returns a paginated list of audit logs" })
+    @ApiOperation({
+        summary: "Returns a paginated list of audit logs",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

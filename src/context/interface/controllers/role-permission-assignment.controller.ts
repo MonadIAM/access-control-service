@@ -1,4 +1,4 @@
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -57,7 +57,6 @@ const {
     ROLE_PERMISSION_ASSIGNMENT_PURGE,
 } = PermissionCode;
 
-@ApiBearerAuth("access-token")
 @ApiTags("RolePermissionAssignment")
 @Controller("/role-permission-assignment")
 @UseInterceptors(MonitoringInterceptor)
@@ -74,7 +73,10 @@ export class RolePermissionAssignmentController {
     @FormatResponse(RolePermissionAssignmentDTO)
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_READ_COMMON)
     @ApiResponse({ status: OK, type: RolePermissionAssignmentDTO })
-    @ApiOperation({ summary: "Returns a role-permission assignment by identifier" })
+    @ApiOperation({
+        summary: "Returns a role-permission assignment by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -93,9 +95,12 @@ export class RolePermissionAssignmentController {
     @Post("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
-    @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_READ_COMMON)
     @ApiResponse({ status: OK, type: ListDTO })
-    @ApiOperation({ summary: "Returns a paginated list of role-permission assignments" })
+    @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_READ_COMMON)
+    @ApiOperation({
+        summary: "Returns a paginated list of role-permission assignments",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -116,7 +121,10 @@ export class RolePermissionAssignmentController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_CREATE)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Creates a new role-permission assignment" })
+    @ApiOperation({
+        summary: "Creates a new role-permission assignment",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -142,7 +150,10 @@ export class RolePermissionAssignmentController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Revokes a non-system role-permission assignment(s)" })
+    @ApiOperation({
+        summary: "Revokes a non-system role-permission assignment(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -167,7 +178,10 @@ export class RolePermissionAssignmentController {
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_RESTORE)
-    @ApiOperation({ summary: "Restores a non-system role-permission assignment(s)" })
+    @ApiOperation({
+        summary: "Restores a non-system role-permission assignment(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -192,7 +206,10 @@ export class RolePermissionAssignmentController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system role-permission assignment(s)" })
+    @ApiOperation({
+        summary: "Permanently deletes a revoked non-system role-permission assignment(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

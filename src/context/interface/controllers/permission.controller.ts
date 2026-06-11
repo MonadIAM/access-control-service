@@ -1,4 +1,4 @@
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -69,7 +69,6 @@ const {
 
 @ApiTags("Permission")
 @Controller("/permission")
-@ApiBearerAuth("access-token")
 @UseInterceptors(MonitoringInterceptor)
 export class PermissionController {
     public constructor(
@@ -84,7 +83,10 @@ export class PermissionController {
     @FormatResponse(PermissionDTO)
     @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: PermissionDTO })
-    @ApiOperation({ summary: "Returns a permission by identifier" })
+    @ApiOperation({
+        summary: "Returns a permission by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -103,7 +105,10 @@ export class PermissionController {
     @FormatResponse(ListDTO)
     @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: ListDTO })
-    @ApiOperation({ summary: "Returns a paginated list of permissions" })
+    @ApiOperation({
+        summary: "Returns a paginated list of permissions",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -124,7 +129,10 @@ export class PermissionController {
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(PERMISSION_READ_ABSOLUTE, PERMISSION_READ_PERSONAL)
-    @ApiOperation({ summary: "Returns a paginated list of effective permissions for the account" })
+    @ApiOperation({
+        summary: "Returns a paginated list of effective permissions for the account",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -147,7 +155,10 @@ export class PermissionController {
     @FormatResponse(LookupListDTO)
     @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: LookupListDTO })
-    @ApiOperation({ summary: "Returns a lookup list of permissions" })
+    @ApiOperation({
+        summary: "Returns a lookup list of permissions",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -167,8 +178,11 @@ export class PermissionController {
     @HttpCode(CREATED)
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PERMISSION_CREATE)
-    @ApiOperation({ summary: "Creates a new permission" })
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
+    @ApiOperation({
+        summary: "Creates a new permission",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -181,20 +195,23 @@ export class PermissionController {
         CONFLICT,
     )
     public create(
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: CreateQueryDTO,
-        @Extract.Meta() context: Extract.Meta,
         @Body() input: CreateBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionCommands.create({ context, realm, actor, input });
     }
 
-    @Patch("update")
     @HttpCode(OK)
+    @Patch("update")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PERMISSION_UPDATE)
-    @ApiOperation({ summary: "Updates permission metadata" })
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({
+        summary: "Updates permission metadata",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -206,10 +223,10 @@ export class PermissionController {
         FORBIDDEN,
     )
     public updateMetadata(
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm, id }: UpdateQueryDTO,
-        @Extract.Meta() context: Extract.Meta,
         @Body() input: UpdateBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionCommands.update({ context, realm, actor, input, id });
     }
@@ -219,7 +236,10 @@ export class PermissionController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PERMISSION_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Revokes a non-system permission(s)" })
+    @ApiOperation({
+        summary: "Revokes a non-system permission(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -231,10 +251,10 @@ export class PermissionController {
         FORBIDDEN,
     )
     public revoke(
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: RevokeQueryDTO,
-        @Extract.Meta() context: Extract.Meta,
         @Body() input: RevokeBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionCommands.revoke({ context, realm, actor, input });
     }
@@ -244,7 +264,10 @@ export class PermissionController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PERMISSION_RESTORE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Restores a non-system permission(s)" })
+    @ApiOperation({
+        summary: "Restores a non-system permission(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -256,10 +279,10 @@ export class PermissionController {
         FORBIDDEN,
     )
     public restore(
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: RestoreQueryDTO,
-        @Extract.Meta() context: Extract.Meta,
         @Body() input: RestoreBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionCommands.restore({ context, realm, actor, input });
     }
@@ -269,7 +292,10 @@ export class PermissionController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(PERMISSION_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system permission(s)" })
+    @ApiOperation({
+        summary: "Permanently deletes a revoked non-system permission(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -281,10 +307,10 @@ export class PermissionController {
         FORBIDDEN,
     )
     public purge(
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Query() { realm }: PurgeQueryDTO,
-        @Extract.Meta() context: Extract.Meta,
         @Body() input: PurgeBodyDTO,
+        @Extract.Session() { account: actor }: Extract.Session.Auth,
+        @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.permissionCommands.purge({ context, realm, actor, input });
     }

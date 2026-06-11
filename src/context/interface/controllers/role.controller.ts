@@ -1,4 +1,4 @@
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -84,7 +84,6 @@ const {
 
 @ApiTags("Role")
 @Controller("/role")
-@ApiBearerAuth("access-token")
 @UseInterceptors(MonitoringInterceptor)
 export class RoleController {
     public constructor(
@@ -99,7 +98,10 @@ export class RoleController {
     @FormatResponse(RoleDTO)
     @RequirePermission(ROLE_READ_COMMON)
     @ApiResponse({ status: OK, type: RoleDTO })
-    @ApiOperation({ summary: "Returns a role by identifier" })
+    @ApiOperation({
+        summary: "Returns a role by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -118,7 +120,10 @@ export class RoleController {
     @FormatResponse(ListDTO)
     @RequirePermission(ROLE_READ_COMMON)
     @ApiResponse({ status: OK, type: ListDTO })
-    @ApiOperation({ summary: "Returns a paginated list of roles" })
+    @ApiOperation({
+        summary: "Returns a paginated list of roles",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -139,6 +144,10 @@ export class RoleController {
     @RequirePermission(ROLE_READ_COMMON)
     @FormatResponse(HierarchyListDTO)
     @ApiResponse({ status: OK, type: HierarchyListDTO })
+    @ApiOperation({
+        summary: "Returns a paginated list of ancestor roles of the specified role, including itself",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -147,7 +156,6 @@ export class RoleController {
         UNAUTHORIZED,
         FORBIDDEN,
     )
-    @ApiOperation({ summary: "Returns a paginated list of ancestor roles of the specified role, including itself" })
     public findAncestors(
         @Query() { descendant, realm, view }: GetAncestorsListQueryDTO,
         @Body() { pagination, filters }: GetAncestorsListBodyDTO,
@@ -160,6 +168,10 @@ export class RoleController {
     @RequirePermission(ROLE_READ_COMMON)
     @FormatResponse(HierarchyListDTO)
     @ApiResponse({ status: OK, type: HierarchyListDTO })
+    @ApiOperation({
+        summary: "Returns a paginated list of descendant roles of the specified role, including itself",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -168,7 +180,6 @@ export class RoleController {
         UNAUTHORIZED,
         FORBIDDEN,
     )
-    @ApiOperation({ summary: "Returns a paginated list of descendant roles of the specified role, including itself" })
     public findDescendants(
         @Query() { ancestor, realm, view }: GetDescendantsListQueryDTO,
         @Body() { pagination, filters }: GetDescendantsListBodyDTO,
@@ -181,6 +192,10 @@ export class RoleController {
     @Post("list/delegable/by-account")
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(ROLE_READ_PERSONAL, ROLE_READ_ABSOLUTE)
+    @ApiOperation({
+        summary: "Returns a paginated list of roles that can be delegated by the specified account",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -189,7 +204,6 @@ export class RoleController {
         UNAUTHORIZED,
         FORBIDDEN,
     )
-    @ApiOperation({ summary: "Returns a paginated list of roles that can be delegated by the specified account" })
     public findDelegableByAccount(
         @Body() { pagination, filters, sort }: GetDelegableListBodyDTO,
         @Query() { realm, id }: GetDelegableListQueryDTO,
@@ -204,6 +218,10 @@ export class RoleController {
     @Post("list/delegable/by-role")
     @RequirePermission(ROLE_READ_COMMON)
     @ApiResponse({ status: OK, type: ListDTO })
+    @ApiOperation({
+        summary: "Returns a paginated list of roles that can be delegated from the specified role",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -212,7 +230,6 @@ export class RoleController {
         UNAUTHORIZED,
         FORBIDDEN,
     )
-    @ApiOperation({ summary: "Returns a paginated list of roles that can be delegated from the specified role" })
     public findDelegableByRole(
         @Body() { pagination, filters, sort }: GetDelegableListBodyDTO,
         @Query() { realm, id }: GetDelegableListQueryDTO,
@@ -225,7 +242,10 @@ export class RoleController {
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
     @RequirePermission(ROLE_READ_PERSONAL, ROLE_READ_ABSOLUTE)
-    @ApiOperation({ summary: "Returns a paginated list of effective roles for the account" })
+    @ApiOperation({
+        summary: "Returns a paginated list of effective roles for the account",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -248,7 +268,10 @@ export class RoleController {
     @FormatResponse(LookupListDTO)
     @RequirePermission(ROLE_READ_COMMON)
     @ApiResponse({ status: OK, type: LookupListDTO })
-    @ApiOperation({ summary: "Returns a lookup list of roles" })
+    @ApiOperation({
+        summary: "Returns a lookup list of roles",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -269,7 +292,10 @@ export class RoleController {
     @RequirePermission(ROLE_READ_COMMON)
     @FormatResponse(RoleHierarchyGraphDTO)
     @ApiResponse({ status: OK, type: RoleHierarchyGraphDTO })
-    @ApiOperation({ summary: "Returns the role hierarchy graph (nodes and edges)" })
+    @ApiOperation({
+        summary: "Returns the role hierarchy graph (nodes and edges)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -286,8 +312,11 @@ export class RoleController {
     @HttpCode(CREATED)
     @RequirePermission(ROLE_CREATE)
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Creates a new role" })
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
+    @ApiOperation({
+        summary: "Creates a new role",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -312,8 +341,11 @@ export class RoleController {
     @Patch("update")
     @RequirePermission(ROLE_UPDATE)
     @FormatResponse(SuccessMessageDTO)
-    @ApiOperation({ summary: "Updates role metadata" })
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
+    @ApiOperation({
+        summary: "Updates role metadata",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -338,7 +370,10 @@ export class RoleController {
     @RequirePermission(ROLE_REVOKE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Revokes a non-system role" })
+    @ApiOperation({
+        summary: "Revokes a non-system role",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -363,7 +398,10 @@ export class RoleController {
     @RequirePermission(ROLE_RESTORE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Restores a non-system role" })
+    @ApiOperation({
+        summary: "Restores a non-system role",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -388,7 +426,10 @@ export class RoleController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_HIERARCHY_UPDATE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Move a non-system role/subtree within the hierarchy" })
+    @ApiOperation({
+        summary: "Move a non-system role/subtree within the hierarchy",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -413,7 +454,10 @@ export class RoleController {
     @RequirePermission(ROLE_PURGE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system role" })
+    @ApiOperation({
+        summary: "Permanently deletes a revoked non-system role",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -438,7 +482,10 @@ export class RoleController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ROLE_PURGE_SUBTREE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Permanently deletes a role and its entire subtree" })
+    @ApiOperation({
+        summary: "Permanently deletes a role and its entire subtree",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

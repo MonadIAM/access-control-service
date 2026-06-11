@@ -1,4 +1,4 @@
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import {
     UseInterceptors,
     Controller,
@@ -57,7 +57,6 @@ const {
     ACCOUNT_ROLE_ASSIGNMENT_PURGE,
 } = PermissionCode;
 
-@ApiBearerAuth("access-token")
 @ApiTags("AccountRoleAssignment")
 @Controller("/account-role-assignment")
 @UseInterceptors(MonitoringInterceptor)
@@ -74,7 +73,10 @@ export class AccountRoleAssignmentController {
     @FormatResponse(AccountRoleAssignmentDTO)
     @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON)
     @ApiResponse({ status: OK, type: AccountRoleAssignmentDTO })
-    @ApiOperation({ summary: "Returns a account role assignment by identifier" })
+    @ApiOperation({
+        summary: "Returns a account role assignment by identifier",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -93,9 +95,12 @@ export class AccountRoleAssignmentController {
     @Post("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
-    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON)
     @ApiResponse({ status: OK, type: ListDTO })
-    @ApiOperation({ summary: "Returns a paginated list of account role assignments" })
+    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON)
+    @ApiOperation({
+        summary: "Returns a paginated list of account role assignments",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -116,7 +121,10 @@ export class AccountRoleAssignmentController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_CREATE)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Creates a new account role assignment" })
+    @ApiOperation({
+        summary: "Creates a new account role assignment",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -142,7 +150,10 @@ export class AccountRoleAssignmentController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_REVOKE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Revokes a non-system account role assignment(s)" })
+    @ApiOperation({
+        summary: "Revokes a non-system account role assignment(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -167,7 +178,10 @@ export class AccountRoleAssignmentController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_RESTORE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Restores a non-system account role assignment(s)" })
+    @ApiOperation({
+        summary: "Restores a non-system account role assignment(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -192,7 +206,10 @@ export class AccountRoleAssignmentController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_PURGE)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Permanently deletes a revoked non-system account role assignment(s)" })
+    @ApiOperation({
+        summary: "Permanently deletes a revoked non-system account role assignment(s)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,

@@ -1,5 +1,5 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Patch, Query, Body, Post, Get } from "@nestjs/common";
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
@@ -38,7 +38,6 @@ const {
 
 @ApiTags("Invite")
 @Controller("/invite")
-@ApiBearerAuth("access-token")
 @UseInterceptors(MonitoringInterceptor)
 export class InviteController {
     public constructor(
@@ -52,7 +51,10 @@ export class InviteController {
     @HttpCode(OK)
     @FormatResponse(InviteDTO)
     @ApiResponse({ status: OK, type: InviteDTO })
-    @ApiOperation({ summary: "Returns an invite by identifier" })
+    @ApiOperation({
+        summary: "Returns an invite by identifier",
+        security: [{ identity: [] }],
+    })
     @RequirePermission(INVITE_READ_PERSONAL, INVITE_READ_ABSOLUTE)
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
@@ -75,7 +77,10 @@ export class InviteController {
     @Post("list/personal")
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @ApiOperation({ summary: "Returns a paginated list of invites for the current account (sent or received)" })
+    @ApiOperation({
+        summary: "Returns a paginated list of invites for the current account (sent or received)",
+        security: [{ identity: [] }],
+    })
     @RequirePermission(INVITE_READ_PERSONAL)
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
@@ -97,7 +102,10 @@ export class InviteController {
     @Post("list/absolute")
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @ApiOperation({ summary: "Returns a paginated list of all invites" })
+    @ApiOperation({
+        summary: "Returns a paginated list of all invites",
+        security: [{ identity: [] }],
+    })
     @RequirePermission(INVITE_READ_ABSOLUTE)
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
@@ -120,7 +128,10 @@ export class InviteController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(INVITE_CREATE)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Sends an invite to an account for a role within a realm" })
+    @ApiOperation({
+        summary: "Sends an invite to an account for a role within a realm",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -146,7 +157,10 @@ export class InviteController {
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(INVITE_CHANGE_STATUS)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({ summary: "Changes the status of a pending invite (cancel / accept / decline)" })
+    @ApiOperation({
+        summary: "Changes the status of a pending invite (cancel / accept / decline)",
+        security: [{ identity: [] }],
+    })
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
