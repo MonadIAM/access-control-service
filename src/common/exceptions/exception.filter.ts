@@ -7,7 +7,7 @@ import { Counter } from "prom-client";
 
 import { ExceptionMapper } from "./exception.mapper";
 import { Exception } from "./exception";
-import { ErrorKind } from "./enums";
+import { ErrorCode, ErrorKind } from "./enums";
 
 @Catch()
 export class ExceptionFilter implements Exception.Filter.Contract {
@@ -30,10 +30,11 @@ export class ExceptionFilter implements Exception.Filter.Contract {
         const result: Partial<Exception.ResponseBody> = {
             statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
             message: "Internal Server Error",
-            error: "InternalServerError",
+            error: ErrorKind.INTERNAL,
+            code: ErrorCode.INTERNAL,
         };
 
-        if (exception instanceof Exception && exception.kind !== ErrorKind.Internal) {
+        if (exception instanceof Exception && exception.kind !== ErrorKind.INTERNAL) {
             result.statusCode = exception.statusCode;
             result.timestamp = exception.timestamp;
             result.message = await this.i18n.translate(exception.messageKey, {
@@ -56,6 +57,7 @@ export class ExceptionFilter implements Exception.Filter.Contract {
                 );
             }
             result.error = exception.kind;
+            result.code = exception.code;
             result.details = details;
         } else if (exception instanceof ThrottlerException) {
             result.statusCode = exception.getStatus();
@@ -64,6 +66,7 @@ export class ExceptionFilter implements Exception.Filter.Contract {
                 lang,
             });
             result.error = exception.name;
+            result.code = exception.name;
         } else if (exception instanceof HttpException) {
             result.statusCode = exception.getStatus();
             if (result.statusCode < HttpStatus.INTERNAL_SERVER_ERROR) {
@@ -72,6 +75,7 @@ export class ExceptionFilter implements Exception.Filter.Contract {
                     lang,
                 });
                 result.error = exception.name;
+                result.code = exception.name;
             }
         }
 
@@ -105,7 +109,8 @@ export class ExceptionFilter implements Exception.Filter.Contract {
                 {
                     statusCode: props.result.statusCode,
                     method: props.request.method,
-                    kind: props.result.error,
+                    kind: props.exception instanceof Exception ? props.exception.kind : undefined,
+                    code: props.result.code,
                     path: props.request.url,
                     err: props.exception,
                 },

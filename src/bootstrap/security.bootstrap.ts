@@ -1,8 +1,10 @@
 import { NestFastifyApplication } from "@nestjs/platform-fastify";
-import { HttpStatus } from "@nestjs/common";
+import { FastifyReply, FastifyRequest } from "fastify";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyCors from "@fastify/cors";
 import ms from "ms";
+
+import { ErrorCode, Exception } from "~common/exceptions";
 
 export abstract class BootstrapSecurity {
     private constructor() {}
@@ -48,26 +50,26 @@ export abstract class BootstrapSecurity {
                         reply.header("Vary", "Origin");
                         done();
                     } else {
-                        const body: Exception.ResponseBody = {
-                            statusCode: HttpStatus.FORBIDDEN,
-                            error: "Forbidden",
-                            message: `CORS origin is not allowed: ${originHeader}`,
-                            timestamp: new Date().toISOString(),
-                            path: request.url,
-                        };
-                        reply.code(HttpStatus.FORBIDDEN).type("application/json; charset=utf-8").send(body);
+                        this.sendException(
+                            reply,
+                            request,
+                            Exception.forbidden({
+                                code: ErrorCode.CORS_ORIGIN_FORBIDDEN,
+                                messageKey: `CORS origin is not allowed: ${originHeader}`,
+                            }),
+                        );
                     }
                 } else if (isDevelopment) {
                     done();
                 } else {
-                    const body: Exception.ResponseBody = {
-                        statusCode: HttpStatus.FORBIDDEN,
-                        error: "Forbidden",
-                        message: "CORS origin is required",
-                        timestamp: new Date().toISOString(),
-                        path: request.url,
-                    };
-                    reply.code(HttpStatus.FORBIDDEN).type("application/json; charset=utf-8").send(body);
+                    this.sendException(
+                        reply,
+                        request,
+                        Exception.forbidden({
+                            code: ErrorCode.CORS_ORIGIN_REQUIRED,
+                            messageKey: "CORS origin is required",
+                        }),
+                    );
                 }
             });
     }
@@ -162,17 +164,33 @@ export abstract class BootstrapSecurity {
             .addHook("onRequest", (request, reply, done) => {
                 const method = String(request.method ?? "").toUpperCase();
                 if (method === "TRACE" || method === "TRACK") {
-                    const body: Exception.ResponseBody = {
-                        statusCode: HttpStatus.METHOD_NOT_ALLOWED,
-                        error: "Method Not Allowed",
-                        message: `HTTP method is not allowed: ${method}`,
-                        timestamp: new Date().toISOString(),
-                        path: request.url,
-                    };
-                    reply.code(HttpStatus.METHOD_NOT_ALLOWED).type("application/json; charset=utf-8").send(body);
+                    this.sendException(
+                        reply,
+                        request,
+                        Exception.methodNotAllowed({
+                            messageKey: `HTTP method is not allowed: ${method}`,
+                        }),
+                    );
                     return;
                 }
                 done();
             });
+    }
+
+    private static sendException(reply: FastifyReply, request: FastifyRequest, exception: Exception): void {
+        const body: Exception.ResponseBody = {
+            statusCode: exception.statusCode,
+            timestamp: exception.timestamp,
+            message: exception.messageKey,
+            error: exception.kind,
+            code: exception.code,
+            path: request.url,
+        };
+
+        if (exception.headers) {
+            reply.headers(exception.headers);
+        }
+
+        reply.code(exception.statusCode).type("application/json; charset=utf-8").send(body);
     }
 }

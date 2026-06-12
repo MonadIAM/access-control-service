@@ -1,7 +1,7 @@
 import { ExceptionFilter as NestExceptionFilter } from "@nestjs/common";
 import { FastifyRequest } from "fastify";
 
-import { ErrorKind } from "./enums";
+import { ErrorCode, ErrorKind } from "./enums";
 
 declare global {
     namespace Exception {
@@ -33,26 +33,25 @@ declare global {
             }
         }
 
-        type Headers = {
-            "WWW-Authenticate"?: string;
-            "Retry-After"?: string | number;
-        };
+        type Headers = Record<string, string | number>;
 
         type Props = {
             statusCode: number;
             messageKey: string;
             kind: ErrorKind;
+            code: ErrorCode;
             cause?: unknown;
             details?: ValidationDetail[];
             params?: UnknownObject;
             headers?: Headers;
         };
 
-        type StatusProps = Pick<Props, "messageKey" | "params" | "headers">;
+        type StatusProps = Pick<Props, "messageKey" | "params" | "headers"> & Partial<Pick<Props, "code">>;
 
         type ResponseBody = {
             /* eslint-disable prettier/prettier */
-            error: string;                // Error type/code (e.g., "Bad Request", "Forbidden").
+            error: string;                // Error kind.
+            code: string;                 // Public error code.
             path?: string;                // Request path.
             statusCode: number;           // HTTP status code.
             timestamp?: string;           // Response creation timestamp in ISO format.

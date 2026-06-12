@@ -10,7 +10,7 @@ import {
     NotFoundError,
 } from "@mikro-orm/core";
 
-import { ErrorKind } from "./enums";
+import { ErrorCode, ErrorKind } from "./enums";
 import { Exception } from "./exception";
 
 export abstract class ExceptionMapper {
@@ -27,7 +27,8 @@ export abstract class ExceptionMapper {
 
         if (error instanceof NotFoundError) {
             return this.createORMException({
-                kind: ErrorKind.NotFound,
+                code: ErrorCode.NOT_FOUND,
+                kind: ErrorKind.NOT_FOUND,
                 statusCode: HttpStatus.NOT_FOUND,
                 messageKey: "db.NOT_FOUND",
                 cause: error,
@@ -36,7 +37,8 @@ export abstract class ExceptionMapper {
         }
         if (error instanceof DeadlockException) {
             return this.createORMException({
-                kind: ErrorKind.Deadlock,
+                code: ErrorCode.DEADLOCK,
+                kind: ErrorKind.DEADLOCK,
                 statusCode: HttpStatus.CONFLICT,
                 messageKey: "db.DEADLOCK",
                 cause: error,
@@ -45,7 +47,8 @@ export abstract class ExceptionMapper {
         }
         if (error instanceof ConnectionException) {
             return this.createORMException({
-                kind: ErrorKind.ConnectionError,
+                code: ErrorCode.CONNECTION_ERROR,
+                kind: ErrorKind.CONNECTION_ERROR,
                 statusCode: HttpStatus.SERVICE_UNAVAILABLE,
                 messageKey: "db.CONNECTION_LOST",
                 cause: error,
@@ -54,7 +57,8 @@ export abstract class ExceptionMapper {
         }
         if (error instanceof NotNullConstraintViolationException) {
             return this.createORMException({
-                kind: ErrorKind.NotNullViolation,
+                code: ErrorCode.NOT_NULL_VIOLATION,
+                kind: ErrorKind.NOT_NULL_VIOLATION,
                 statusCode: HttpStatus.BAD_REQUEST,
                 messageKey: "db.NOT_NULL_VIOLATION",
                 cause: error,
@@ -63,7 +67,8 @@ export abstract class ExceptionMapper {
         }
         if (error instanceof UniqueConstraintViolationException) {
             return this.createORMException({
-                kind: ErrorKind.UniqueViolation,
+                code: ErrorCode.UNIQUE_VIOLATION,
+                kind: ErrorKind.UNIQUE_VIOLATION,
                 statusCode: HttpStatus.CONFLICT,
                 messageKey: "db.UNIQUE_VIOLATION",
                 cause: error,
@@ -72,7 +77,8 @@ export abstract class ExceptionMapper {
         }
         if (error instanceof ForeignKeyConstraintViolationException) {
             return this.createORMException({
-                kind: ErrorKind.ForeignKeyViolation,
+                code: ErrorCode.FOREIGN_KEY_VIOLATION,
+                kind: ErrorKind.FOREIGN_KEY_VIOLATION,
                 statusCode: HttpStatus.CONFLICT,
                 messageKey: "db.FK_VIOLATION",
                 cause: error,
@@ -81,7 +87,8 @@ export abstract class ExceptionMapper {
         }
         if (error instanceof LockWaitTimeoutException) {
             return this.createORMException({
-                kind: ErrorKind.Timeout,
+                code: ErrorCode.TIMEOUT,
+                kind: ErrorKind.TIMEOUT,
                 statusCode: HttpStatus.REQUEST_TIMEOUT,
                 messageKey: "db.LOCK_TIMEOUT",
                 cause: error,
@@ -90,7 +97,8 @@ export abstract class ExceptionMapper {
         }
         if (error instanceof DriverException) {
             return this.createORMException({
-                kind: ErrorKind.Internal,
+                code: ErrorCode.INTERNAL,
+                kind: ErrorKind.INTERNAL,
                 statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
                 messageKey: "db.INTERNAL_DRIVER_ERROR",
                 cause: error,
@@ -102,7 +110,8 @@ export abstract class ExceptionMapper {
         }
 
         return new Exception({
-            kind: ErrorKind.Internal,
+            code: ErrorCode.INTERNAL,
+            kind: ErrorKind.INTERNAL,
             statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
             messageKey: "db.INTERNAL_DRIVER_ERROR",
             cause: error,
