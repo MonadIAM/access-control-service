@@ -1,1 +1,1 @@
-Access Control Service implementing HRBAC, DAC, SoD (N-of-M), Delegation Policies, Multitenancy and Invitation mechanics, with Audit and Change Log support.
+After authenticating, the access token is valid for 15 minutes. Swagger UI does not support grant_type: refresh_token as defined in RFC 6749, so token renewal is not automatic — once the token expires, requests will return 401 Unauthorized. Re-authorize using the form. Refresh token support in the UI will be added in a future update.

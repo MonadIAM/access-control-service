@@ -54,14 +54,29 @@ export abstract class BootstrapSwagger {
             const document = SwaggerModule.createDocument(application, config.build());
 
             SwaggerModule.setup("/docs", application, document, {
+                customSiteTitle: "LIAM API",
                 jsonDocumentUrl: "/docs-json",
+                explorer: true,
                 swaggerOptions: {
                     persistAuthorization: true,
+                    docExpansion: "none",
+                    filter: true,
                     initOAuth: {
                         useBasicAuthenticationWithAccessCodeGrant: false,
                         clientId: "web-dev",
                         appName: name,
                     },
+                    urls: [
+                        {
+                            url: `${process.env.ACCESS_CONTROL_SERVICE_URL}/docs-json`,
+                            name: "AccessControl",
+                        },
+                        {
+                            url: `${process.env.IDENTITY_SERVICE_URL}/docs-json`,
+                            name: "Identity",
+                        },
+                    ],
+                    "urls.primaryName": "AccessControl",
                 },
             });
         }

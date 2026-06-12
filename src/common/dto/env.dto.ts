@@ -59,7 +59,10 @@ export class EnvironmentVariablesDTO {
     declare public ACCESS_CONTROL_SERVICE_URL: string;
 
     @Validator.IsString()
-    declare public ALLOWED_ORIGINS: string;
+    declare public ALLOWED_SERVICE_ORIGINS: string;
+
+    @Validator.IsString()
+    declare public ALLOWED_UI_ORIGINS: string;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - common

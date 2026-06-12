@@ -24,7 +24,8 @@ declare global {
             JWT_JWKS_URL: string;
             IDENTITY_SERVICE_URL: string;
             ACCESS_CONTROL_SERVICE_URL: string;
-            ALLOWED_ORIGINS: string;
+            ALLOWED_SERVICE_ORIGINS: string;
+            ALLOWED_UI_ORIGINS: string;
 
             // ---------------------------------------------------------------------------
             // PostgreSQL - common
