@@ -46,8 +46,6 @@ export abstract class BootstrapSecurity {
                 if (originHeader) {
                     const isAllowed: boolean = allowedOrigins.length === 0 || allowedOrigins.includes(originHeader);
                     if (isAllowed) {
-                        reply.header("Access-Control-Allow-Origin", originHeader);
-                        reply.header("Vary", "Origin");
                         done();
                     } else {
                         this.sendException(
@@ -85,7 +83,10 @@ export abstract class BootstrapSecurity {
     private static async configureCrossOriginResourceSharing(application: NestFastifyApplication): Promise<void> {
         await application.register(fastifyCors, {
             origin: (_origin, callback) => callback(null, true),
+            methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            allowedHeaders: ["Authorization", "Content-Type"],
             credentials: true,
+            maxAge: 86400,
         });
     }
 
