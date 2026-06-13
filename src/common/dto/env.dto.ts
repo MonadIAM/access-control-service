@@ -53,6 +53,15 @@ export class EnvironmentVariablesDTO {
     declare public JWT_JWKS_URL: string;
 
     @Validator.IsString()
+    declare public JWT_JWKS_COOLDOWN_DURATION: StringValue;
+
+    @Validator.IsString()
+    declare public JWT_JWKS_TIMEOUT_DURATION: StringValue;
+
+    @Validator.IsString()
+    declare public JWT_JWKS_CACHE_MAX_AGE: StringValue;
+
+    @Validator.IsString()
     declare public IDENTITY_SERVICE_URL: string;
 
     @Validator.IsString()

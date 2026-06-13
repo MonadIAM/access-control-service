@@ -22,6 +22,9 @@ declare global {
             BODY_LIMIT_BYTES: `${number}`;
             JWT_ISSUER: string;
             JWT_JWKS_URL: string;
+            JWT_JWKS_COOLDOWN_DURATION: StringValue;
+            JWT_JWKS_TIMEOUT_DURATION: StringValue;
+            JWT_JWKS_CACHE_MAX_AGE: StringValue;
             IDENTITY_SERVICE_URL: string;
             ACCESS_CONTROL_SERVICE_URL: string;
             ALLOWED_SERVICE_ORIGINS: string;
