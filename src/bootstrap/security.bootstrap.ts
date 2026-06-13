@@ -104,7 +104,7 @@ export abstract class BootstrapSecurity {
      */
     private static async configureSecurityHeaders(application: NestFastifyApplication, hstsMaxAge: number): Promise<void> {
         const serviceOrigins: string[] = JSON.parse(process.env.ALLOWED_SERVICE_ORIGINS);
-        const swagger = serviceOrigins.map((url) => `${url}/docs-json`);
+        const swagger = serviceOrigins.map((url) => [`${url}/docs-json`, `${url}/docs`, `${url}/api/`]).flat();
 
         await application.register(fastifyHelmet, {
             crossOriginEmbedderPolicy: true,
