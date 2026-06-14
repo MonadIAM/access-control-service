@@ -4,8 +4,7 @@ import { join } from "node:path";
 import dotenv from "dotenv";
 import Redis from "ioredis";
 
-import SystemDatasets from "../datasets/system";
-import DemoDatasets from "../datasets/demo";
+import datasets from "../datasets";
 
 dotenv.config();
 
@@ -21,24 +20,14 @@ class ProjectionSeed {
     });
 
     public static async run(): Promise<void> {
-        const args = process.argv.slice(2);
-        const datasetArg = args.find((arg) => arg.startsWith("--dataset="))?.split("=")[1];
-
-        if (!datasetArg || !["system", "demo"].includes(datasetArg)) {
-            process.exit(1);
-        }
-
-        const isSystem = datasetArg === "system";
-        const selected = isSystem ? SystemDatasets : DemoDatasets;
-
         try {
             await this.redis.connect();
 
             const cleanScript = await this.loadScript("clean.lua");
             const seedScript = await this.loadScript("seed.lua");
 
-            isSystem && (await this.redis.evalsha(cleanScript, 0));
-            await this.redis.evalsha(seedScript, 0, this.getPayload(selected));
+            await this.redis.evalsha(cleanScript, 0);
+            await this.redis.evalsha(seedScript, 0, this.getPayload());
         } catch (_error) {
             process.exit(1);
         } finally {
@@ -57,14 +46,14 @@ class ProjectionSeed {
         }
     }
 
-    private static getPayload(data: Dataset): string {
+    private static getPayload(): string {
         return JSON.stringify({
-            rolePermissionAssignments: data.RolePermissionAssignments,
-            accountRoleAssignments: data.AccountRoleAssignments,
-            roleClosures: data.RoleClosures,
-            permissions: data.Permissions,
-            realms: data.Realms,
-            roles: data.Roles,
+            rolePermissionAssignments: datasets.RolePermissionAssignments,
+            accountRoleAssignments: datasets.AccountRoleAssignments,
+            roleClosures: datasets.RoleClosures,
+            permissions: datasets.Permissions,
+            realms: datasets.Realms,
+            roles: datasets.Roles,
         });
     }
 }

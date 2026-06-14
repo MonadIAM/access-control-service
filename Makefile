@@ -1,8 +1,5 @@
 .PHONY: coverage swagger postman docs
 
-dataset ?= system
-class ?= System
-
 # Infrastructure
 env:
 	[ -f .env.example ] && cp -f .env.example .env || echo '.env.example not found'
@@ -44,10 +41,11 @@ migrate:
 	npx mikro-orm migration:up
 migration:
 	npx mikro-orm migration:create --name=$(name)
-seed:
-	npx mikro-orm seeder:run --class=${class}Seeder
+seed: seed-pg seed-redis
+seed-pg:
+	npx mikro-orm seeder:run
 seed-redis:
-	npx tsx ./src/infrastructure/redis/seeder.ts --dataset=$(dataset)
+	npx tsx ./src/infrastructure/redis/seeder.ts
 
 # Test
 test:

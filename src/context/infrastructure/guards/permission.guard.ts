@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/commo
 import { Reflector } from "@nestjs/core";
 
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
-import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
+import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
 import { REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
 import { Exception } from "~common/exceptions";
 import { PermissionCode } from "~context/enums";

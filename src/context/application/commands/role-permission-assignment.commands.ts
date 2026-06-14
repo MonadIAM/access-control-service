@@ -3,7 +3,7 @@ import { AccessCacheTopicAction } from "@liam/contracts";
 
 import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
-import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
+import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";

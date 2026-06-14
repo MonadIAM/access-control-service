@@ -4,7 +4,7 @@ import { AccessCacheTopicAction, MembershipTopicAction } from "@liam/contracts";
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE, REALM_SERVICE } from "~context/domain/services";
 import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
-import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
+import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 
-import { SystemRealm } from "~infrastructure/datasets/system/realm.dataset";
+import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
 
 import { SCRIPT_EXECUTOR_SERVICE } from "./tokens";
 import { ProjectionScript } from "../scripts";

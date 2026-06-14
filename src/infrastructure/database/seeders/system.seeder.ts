@@ -1,9 +1,9 @@
 import { EntityManager } from "@mikro-orm/core";
 import { Seeder } from "@mikro-orm/seeder";
 
-import datasets from "../../datasets/system";
+import datasets from "../../datasets";
 
-export class SystemSeeder extends Seeder {
+export class System extends Seeder {
     public async run(entityManager: EntityManager): Promise<void> {
         await entityManager.getConnection().execute(`
             TRUNCATE TABLE

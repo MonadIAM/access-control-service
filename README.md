@@ -85,10 +85,9 @@ docker exec -it access-control-service-postgres-replica psql -U lambdius -d acce
 | **Database**                                                    |                                  |                                                       |
 | `npx mikro-orm migration:create --name=$(name)`                 | `make migration name="*"`        | Generate a new migration based on entity changes.     |
 | `npx mikro-orm migration:up`                                    | `make migrate`                   | Apply all pending migrations to the database.         |
-| `npx mikro-orm seeder:run --class=SystemSeeder`                 | `make seed`                      | Run the default system seeder.                        |
-| `npx mikro-orm seeder:run --class=DemoSeeder`                   | `make seed class=Demo`           | Run a specific MikroORM seeder by class prefix.       |
-| `npx tsx ./src/infrastructure/redis/seeder.ts --dataset=system` | `make seed-redis`                | Seed Redis using the default `system` dataset.        |
-| `npx tsx ./src/infrastructure/redis/seeder.ts --dataset=demo`   | `make seed-redis dataset=demo`   | Seed Redis using a specific dataset.                  |
+| `make seed-pg && make seed-redis`                               | `make seed`                      | Seed PostgreSQL and Redis (full seed).                |
+| `npx mikro-orm seeder:run`                                      | `make seed-pg`                   | Seed PostgreSQL.                                      |
+| `npx tsx ./src/infrastructure/redis/seeder.ts`                  | `make seed-redis`                | Seed Redis projection cache.                          |
 | **Test**                                                        |                                  |                                                       |
 | `npx jest --config ./jest.unit.config.ts`                       | `make test`                      | Run unit tests.                                       |
 | `npx jest --config ./jest.unit.config.ts --coverage`            | `make coverage`                  | Run unit tests with coverage report.                  |
