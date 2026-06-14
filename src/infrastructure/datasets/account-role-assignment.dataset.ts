@@ -19,7 +19,12 @@ const ADMINISTRATOR = "00000002-0000-4000-8000-100000000003";
 const ADMINISTRATOR_ACCOUNT = "00000000-0000-4000-8000-000000000001";
 const USER_ACCOUNT          = "00000000-0000-4000-8000-000000000002";
 
-export const AccountRoleAssignments = [
+const dataset = [
     entry("00000010-0000-4000-8000-100000000001", ADMINISTRATOR, ADMINISTRATOR_ACCOUNT),
     entry("00000010-0000-4000-8000-100000000002", SYSTEM_USER,   USER_ACCOUNT),
 ];
+
+export const AccountRoleAssignments = {
+    postgresql: dataset,
+    redis: dataset,
+}

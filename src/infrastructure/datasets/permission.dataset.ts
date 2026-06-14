@@ -16,7 +16,7 @@ const entry = (id: string, code: string, name: string, description: string) => (
     version: 1,
 });
 
-export const Permissions = [
+const dataset = [
     // ---------------------------------------------------------------------------
     // AccessControl
     // ---------------------------------------------------------------------------
@@ -576,3 +576,8 @@ export const Permissions = [
         "Revoke all sessions for the current account.",
     ),
 ];
+
+export const Permissions = {
+    postgresql: dataset,
+    redis: dataset,
+}

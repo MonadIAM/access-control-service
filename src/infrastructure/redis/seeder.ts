@@ -6,17 +6,17 @@ import Redis from "ioredis";
 
 import datasets from "../datasets";
 
-dotenv.config();
+dotenv.config({ path: [".vault.env", ".env"] });
 
 class ProjectionSeed {
     private static readonly redis = new Redis({
+        port: Number(process.env.REDIS_PUBLISHED_PORT),
         db: Number(process.env.REDIS_DB_CACHE),
-        port: Number(process.env.REDIS_PORT),
         password: process.env.REDIS_PASSWORD,
-        host: process.env.REDIS_HOST,
         enableAutoPipelining: true,
         maxRetriesPerRequest: 20,
         lazyConnect: true,
+        host: "127.0.0.1",
     });
 
     public static async run(): Promise<void> {
@@ -48,12 +48,12 @@ class ProjectionSeed {
 
     private static getPayload(): string {
         return JSON.stringify({
-            rolePermissionAssignments: datasets.RolePermissionAssignments,
-            accountRoleAssignments: datasets.AccountRoleAssignments,
-            roleClosures: datasets.RoleClosures,
-            permissions: datasets.Permissions,
-            realms: datasets.Realms,
-            roles: datasets.Roles,
+            rolePermissionAssignments: datasets.RolePermissionAssignments.redis,
+            accountRoleAssignments: datasets.AccountRoleAssignments.redis,
+            roleClosures: datasets.RoleClosures.redis,
+            permissions: datasets.Permissions.redis,
+            realms: datasets.Realms.redis,
+            roles: datasets.Roles.redis,
         });
     }
 }

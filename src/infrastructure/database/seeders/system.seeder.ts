@@ -24,11 +24,17 @@ export class System extends Seeder {
             RESTART IDENTITY CASCADE
         `);
 
-        await entityManager.insertMany("access_control.realm", datasets.Realms);
-        await entityManager.insertMany("access_control.permission", datasets.Permissions);
-        await entityManager.insertMany("access_control.role", datasets.Roles);
-        await entityManager.insertMany("access_control.role_closure", datasets.RoleClosures);
-        await entityManager.insertMany("access_control.role_permission_assignment", datasets.RolePermissionAssignments);
-        await entityManager.insertMany("access_control.account_role_assignment", datasets.AccountRoleAssignments);
+        await entityManager.insertMany("access_control.realm", datasets.Realms.postgresql);
+        await entityManager.insertMany("access_control.permission", datasets.Permissions.postgresql);
+        await entityManager.insertMany("access_control.role", datasets.Roles.postgresql);
+        await entityManager.insertMany("access_control.role_closure", datasets.RoleClosures.postgresql);
+        await entityManager.insertMany(
+            "access_control.role_permission_assignment",
+            datasets.RolePermissionAssignments.postgresql,
+        );
+        await entityManager.insertMany(
+            "access_control.account_role_assignment",
+            datasets.AccountRoleAssignments.postgresql,
+        );
     }
 }

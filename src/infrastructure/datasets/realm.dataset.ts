@@ -13,4 +13,9 @@ export const SystemRealm = {
     version: 1,
 };
 
-export const Realms = [SystemRealm];
+const dataset = [SystemRealm];
+
+export const Realms = {
+    postgresql: dataset,
+    redis: dataset,
+}

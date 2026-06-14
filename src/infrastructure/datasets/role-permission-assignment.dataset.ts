@@ -4,10 +4,17 @@ import { AssignmentScope } from "~context/enums";
 const SYSTEM_REALM = "00000001-0000-4000-8000-100000000001";
 const CREATED_AT   = new Date("2026-01-01T00:00:00.000Z");
 
-const entry = (id: string, role: string, permission: string, scope: AssignmentScope = AssignmentScope.REALM) => ({
+const entry = (
+    id: string,
+    role: string,
+    permission: string,
+    scope: AssignmentScope = AssignmentScope.REALM,
+    permission_realm_id: string = SYSTEM_REALM
+) => ({
     id,
     role_id: role,
     permission_id: permission,
+    permission_realm_id,
     realm_id: SYSTEM_REALM,
     scope,
     is_system_managed: true,
@@ -138,7 +145,7 @@ const SESSION_LOGOUT        = "00000003-0000-4000-8000-120000000027";
 const SESSION_REVOKE        = "00000003-0000-4000-8000-120000000028";
 const SESSION_REVOKE_ALL    = "00000003-0000-4000-8000-120000000029";
 
-export const RolePermissionAssignments = [
+const dataset = [
     entry("00000004-0000-4000-8000-110000000001", SYSTEM_USER, REALM_READ_PERSONAL),
     entry("00000004-0000-4000-8000-110000000002", SYSTEM_USER, REALM_CREATE),
 
@@ -283,3 +290,8 @@ export const RolePermissionAssignments = [
     entry("00000004-0000-4000-8000-120000000051", ADMINISTRATOR, SESSION_REVOKE,                         AssignmentScope.GLOBAL),
     entry("00000004-0000-4000-8000-120000000052", ADMINISTRATOR, SESSION_REVOKE_ALL,                     AssignmentScope.GLOBAL),
 ];
+
+export const RolePermissionAssignments = {
+    postgresql: dataset.map(({ permission_realm_id: _, ...rest }) => rest),
+    redis: dataset,
+}

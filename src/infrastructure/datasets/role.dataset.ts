@@ -26,7 +26,7 @@ const entry = (
     version: 1,
 });
 
-export const Roles = [
+const dataset = [
     entry(
         "00000002-0000-4000-8000-100000000001",
         "system.root",
@@ -50,3 +50,8 @@ export const Roles = [
         true,
     ),
 ];
+
+export const Roles = {
+    postgresql: dataset,
+    redis: dataset,
+}
