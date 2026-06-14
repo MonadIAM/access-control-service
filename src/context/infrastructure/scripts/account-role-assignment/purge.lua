@@ -7,11 +7,7 @@ local function make_key(...)
 end
 
 local function maybe_remove_account_realm(realm_id, account_id)
-    local active_roles_count = redis.call("SCARD", make_key("account-roles", realm_id, account_id))
-    local active_allow_count = redis.call("SCARD", make_key("account-overrides-allow", realm_id, account_id))
-    local active_deny_count = redis.call("SCARD", make_key("account-overrides-deny", realm_id, account_id))
-
-    if active_roles_count == 0 and active_allow_count == 0 and active_deny_count == 0 then
+    if redis.call("SCARD", make_key("account-roles", realm_id, account_id)) == 0 then
         redis.call("SREM", make_key("realm-accounts", realm_id), account_id)
         redis.call("SREM", make_key("account-realms", account_id), realm_id)
     end

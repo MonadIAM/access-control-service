@@ -184,8 +184,6 @@ for _, override in ipairs(payload.permissionOverrides or {}) do
 
         if effect == "ALLOW" or effect == "DENY" then
             redis.call("SADD", make_key("permission-override-accounts", realm_id, permission_id), account_id)
-            redis.call("SADD", make_key("realm-accounts", realm_id), account_id)
-            redis.call("SADD", make_key("account-realms", account_id), realm_id)
         end
     end
 end
