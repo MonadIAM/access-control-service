@@ -55,7 +55,7 @@ declare global {
             interface Contract {
                 validateAssignments: (props: ValidateAssignments) => Promise<ValidateAssignmentsResult>;
                 collectPermissions: (props: CollectPermissions) => Promise<Record<string, string>>;
-                checkPermissions: (props: CheckPermissions) => Promise<boolean>;
+                checkPermissions: (props: CheckPermissions) => Promise<string[]>;
                 collectRealms: (props: CollectRealms) => Promise<string[]>;
                 checkRealm: (props: CheckRealm) => Promise<boolean>;
             }

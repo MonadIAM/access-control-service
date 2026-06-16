@@ -12,9 +12,9 @@ export class ProjectionCacheService implements InfrastructureServices.Projection
         private readonly scriptExecutorService: InfrastructureServices.ScriptExecutor.Contract,
     ) {}
 
-    public async checkPermissions(props: InfrastructureServices.ProjectionCache.CheckPermissions): Promise<boolean> {
-        return Boolean(
-            await this.scriptExecutorService.execute<number>(ProjectionScript.PERMISSION_CHECK, [
+    public async checkPermissions(props: InfrastructureServices.ProjectionCache.CheckPermissions): Promise<string[]> {
+        return JSON.parse(
+            await this.scriptExecutorService.execute<string>(ProjectionScript.PERMISSION_CHECK, [
                 JSON.stringify({
                     permissionRealm: SystemRealm.id,
                     permissions: props.permissions,

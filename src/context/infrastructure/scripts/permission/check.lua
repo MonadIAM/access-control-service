@@ -43,25 +43,26 @@ local function has_global_role_permission(permission_id)
     return false
 end
 
+local matched = {}
+local total = #permission_codes
+
 for _, permission in ipairs(permission_codes) do
     local permission_code = tostring(permission)
     local permission_id = redis.call("HGET", make_key("permission-id-by-code", permission_realm_id), permission_code)
 
     if permission_id then
         if redis.call("SISMEMBER", make_key("account-overrides-deny", realm_id, account_id), permission_id) ~= 1 then
-            if redis.call("SISMEMBER", make_key("account-overrides-allow", realm_id, account_id), permission_id) == 1 then
-                return 1
-            end
+            if redis.call("SISMEMBER", make_key("account-overrides-allow", realm_id, account_id), permission_id) == 1
+                or has_role_permission(permission_id)
+                or has_global_role_permission(permission_id) then
+                table.insert(matched, permission_code)
 
-            if has_role_permission(permission_id) then
-                return 1
-            end
-
-            if has_global_role_permission(permission_id) then
-                return 1
+                if #matched == total then
+                    break
+                end
             end
         end
     end
 end
 
-return 0
+return cjson.encode(matched)
