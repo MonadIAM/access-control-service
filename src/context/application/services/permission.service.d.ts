@@ -4,11 +4,11 @@ declare global {
     namespace Services {
         namespace Permission {
             interface Contract {
-                restore: (props: Restore.Props) => Restore.Result;
-                revoke: (props: Revoke.Props) => Revoke.Result;
-                create: (props: Create.Props) => Create.Result;
-                update: (props: Update.Props) => Update.Result;
-                purge: (props: Purge.Props) => Purge.Result;
+                restore(props: Restore.Props): Restore.Result;
+                revoke(props: Revoke.Props): Revoke.Result;
+                create(props: Create.Props): Create.Result;
+                update(props: Update.Props): Update.Result;
+                purge(props: Purge.Props): Purge.Result;
             }
 
             namespace Create {

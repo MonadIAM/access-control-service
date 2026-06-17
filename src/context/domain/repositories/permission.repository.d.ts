@@ -6,11 +6,11 @@ declare global {
     namespace Repositories {
         namespace Permission {
             interface Contract extends Repositories.Base.Contract<Entities.Permission, Adapters.Permission.Types> {
-                wouldExceedPermissionLimit: (props: WouldExceedPermissionLimit.Props) => WouldExceedPermissionLimit.Result;
-                findAccountsByPermissions: (props: FindAccountsByPermissions.Props) => FindAccountsByPermissions.Result;
-                collectEffective: (props: CollectEffective.Props) => Promise<CollectEffective.Result>;
-                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
-                findEffective: (props: FindEffective.Props) => FindEffective.Result;
+                wouldExceedPermissionLimit(props: WouldExceedPermissionLimit.Props): WouldExceedPermissionLimit.Result;
+                findAccountsByPermissions(props: FindAccountsByPermissions.Props): FindAccountsByPermissions.Result;
+                collectEffective(props: CollectEffective.Props): Promise<CollectEffective.Result>;
+                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
+                findEffective(props: FindEffective.Props): FindEffective.Result;
             }
 
             interface QueryContract

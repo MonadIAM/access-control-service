@@ -5,7 +5,7 @@ declare global {
         namespace PermissionOverride {
             interface Contract
                 extends Repositories.Base.Contract<Entities.PermissionOverride, Adapters.PermissionOverride.Types> {
-                wouldExceedOverrideLimit: (props: WouldExceedOverrideLimit.Props) => WouldExceedOverrideLimit.Result;
+                wouldExceedOverrideLimit(props: WouldExceedOverrideLimit.Props): WouldExceedOverrideLimit.Result;
             }
 
             interface QueryContract extends Pick<Contract, "findUniqueOrThrow" | "findMany"> {}

@@ -4,11 +4,11 @@ declare global {
     namespace Services {
         namespace AccountRoleAssignment {
             interface Contract {
-                restore: (props: Restore.Props) => Restore.Result;
-                revoke: (props: Revoke.Props) => Revoke.Result;
-                create: (props: Create.Props) => Create.Result;
-                assign: (props: Assign.Props) => Assign.Result;
-                purge: (props: Purge.Props) => Purge.Result;
+                restore(props: Restore.Props): Restore.Result;
+                revoke(props: Revoke.Props): Revoke.Result;
+                create(props: Create.Props): Create.Result;
+                assign(props: Assign.Props): Assign.Result;
+                purge(props: Purge.Props): Purge.Result;
             }
 
             namespace Create {

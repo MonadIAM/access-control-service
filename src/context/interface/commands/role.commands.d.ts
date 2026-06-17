@@ -4,17 +4,17 @@ declare global {
     namespace Commands {
         namespace Role {
             interface ControllerContract {
-                purgeSubtree: (props: PurgeSubtree.Props) => PurgeSubtree.Result;
-                restore: (props: Restore.Props) => Restore.Result;
-                create: (props: Create.Props) => Create.Result;
-                update: (props: Update.Props) => Update.Result;
-                revoke: (props: Revoke.Props) => Revoke.Result;
-                purge: (props: Purge.Props) => Purge.Result;
-                move: (props: Move.Props) => Move.Result;
+                purgeSubtree(props: PurgeSubtree.Props): PurgeSubtree.Result;
+                restore(props: Restore.Props): Restore.Result;
+                create(props: Create.Props): Create.Result;
+                update(props: Update.Props): Update.Result;
+                revoke(props: Revoke.Props): Revoke.Result;
+                purge(props: Purge.Props): Purge.Result;
+                move(props: Move.Props): Move.Result;
             }
 
             interface PrivateContract {
-                outboxPayloadMapper: (props: OutboxPayloadMapper.Props) => OutboxPayloadMapper.Result;
+                outboxPayloadMapper(props: OutboxPayloadMapper.Props): OutboxPayloadMapper.Result;
             }
 
             interface Contract extends ControllerContract, PrivateContract {}

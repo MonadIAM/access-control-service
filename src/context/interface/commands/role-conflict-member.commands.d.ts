@@ -1,8 +1,8 @@
 declare namespace Commands {
     namespace RoleConflictMember {
         interface ControllerContract {
-            create: (props: Create.Props) => Create.Result;
-            purge: (props: Purge.Props) => Purge.Result;
+            create(props: Create.Props): Create.Result;
+            purge(props: Purge.Props): Purge.Result;
         }
 
         interface Contract extends ControllerContract {}

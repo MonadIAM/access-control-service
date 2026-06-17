@@ -2,13 +2,13 @@ declare namespace CLI {
     namespace Postman {
         namespace Patcher {
             interface PrivateContract {
-                upsertEvent: (collection: Postman.Collection, event: Postman.Event) => void;
-                ensureVariable: (collection: Postman.Collection, key: string) => void;
-                createScript: (path: string) => Postman.Script;
+                upsertEvent(collection: Postman.Collection, event: Postman.Event): void;
+                ensureVariable(collection: Postman.Collection, key: string): void;
+                createScript(path: string): Postman.Script;
             }
 
             interface Contract extends PrivateContract {
-                patch: () => void;
+                patch(): void;
             }
         }
 

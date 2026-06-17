@@ -8,7 +8,7 @@ declare global {
                     Entities.RolePermissionAssignment,
                     Adapters.RolePermissionAssignment.Types
                 > {
-                wouldExceedPermissionLimit: (props: WouldExceedPermissionLimit.Props) => WouldExceedPermissionLimit.Result;
+                wouldExceedPermissionLimit(props: WouldExceedPermissionLimit.Props): WouldExceedPermissionLimit.Result;
             }
 
             interface QueryContract extends Pick<Contract, "findUniqueOrThrow" | "findMany"> {}

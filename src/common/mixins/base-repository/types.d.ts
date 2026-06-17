@@ -25,21 +25,19 @@ declare global {
             }
 
             interface Contract<E, A extends Adapters.Meta> {
-                findUnique: <P extends string = never, F extends string = "*">(
+                find<P extends string = never, F extends string = "*">(props: Find<E, P, F>): Promise<Loaded<E, P, F>[]>;
+
+                findUnique<P extends string = never, F extends string = "*">(
                     props: FindUnique<E, P, F>,
-                ) => Promise<Nullable<Loaded<E, P, F>>>;
+                ): Promise<Nullable<Loaded<E, P, F>>>;
 
-                findUniqueOrThrow: <P extends string = never, F extends string = "*">(
+                findUniqueOrThrow<P extends string = never, F extends string = "*">(
                     props: FindUniqueOrThrow<E, P, F>,
-                ) => Promise<Loaded<E, P, F>>;
+                ): Promise<Loaded<E, P, F>>;
 
-                find: <P extends string = never, F extends string = "*">(
-                    props: Find<E, P, F>,
-                ) => Promise<Loaded<E, P, F>[]>;
-
-                findMany: <P extends string = never, F extends string = "*">(
+                findMany<P extends string = never, F extends string = "*">(
                     props: FindMany<E, A, P, F>,
-                ) => Promise<[Loaded<E, P, F>[], number]>;
+                ): Promise<[Loaded<E, P, F>[], number]>;
             }
 
             type FindUnique<E, P extends string, F extends string> = {

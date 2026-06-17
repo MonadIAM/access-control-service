@@ -7,8 +7,8 @@ declare global {
     namespace Exception {
         namespace Filter {
             interface PrivateContract {
-                metrics: (props: Metrics.Props) => Metrics.Result;
-                log: (props: Log.Props) => Log.Result;
+                metrics(props: Metrics.Props): Metrics.Result;
+                log(props: Log.Props): Log.Result;
             }
 
             interface Contract extends NestExceptionFilter, PrivateContract {}

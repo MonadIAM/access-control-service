@@ -5,9 +5,9 @@ declare global {
         namespace RoleDelegationPolicy {
             interface Contract
                 extends Repositories.Base.Contract<Entities.RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types> {
-                wouldExceedPolicyLimit: (props: WouldExceedPolicyLimit.Props) => WouldExceedPolicyLimit.Result;
-                existsTransitivePath: (props: ExistsTransitivePath.Props) => ExistsTransitivePath.Result;
-                isDelegationAllowed: (props: IsDelegationAllowed.Props) => IsDelegationAllowed.Result;
+                wouldExceedPolicyLimit(props: WouldExceedPolicyLimit.Props): WouldExceedPolicyLimit.Result;
+                existsTransitivePath(props: ExistsTransitivePath.Props): ExistsTransitivePath.Result;
+                isDelegationAllowed(props: IsDelegationAllowed.Props): IsDelegationAllowed.Result;
             }
 
             interface QueryContract extends Pick<Contract, "findUniqueOrThrow" | "findMany"> {}

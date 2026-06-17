@@ -10,22 +10,17 @@ declare global {
         };
 
         interface Contract<E, A extends Meta> {
-            buildOptionsORM: <P extends string, F extends string>(
+            buildOptionsORM<P extends string, F extends string>(
                 sort: A["Sort"],
                 pagination: Pagination,
                 options?: FindOptions<E, P, F>,
-            ) => FindOptions<E, P, F>;
+            ): FindOptions<E, P, F>;
 
-            buildWhereORM: (filters: A["Filters"], basic?: ObjectQuery<E>) => FilterQuery<E>;
+            buildWhereORM(filters: A["Filters"], basic?: ObjectQuery<E>): FilterQuery<E>;
 
-            buildWhereKnex?: (query: Knex.QueryBuilder, filters: A["Filters"], tableAlias: string) => void;
+            buildWhereKnex?(query: Knex.QueryBuilder, filters: A["Filters"], tableAlias: string): void;
 
-            buildOptionsKnex?: (
-                query: Knex.QueryBuilder,
-                sort: A["Sort"],
-                pagination: Pagination,
-                tableAlias: string,
-            ) => void;
+            buildOptionsKnex?(query: Knex.QueryBuilder, sort: A["Sort"], pagination: Pagination, tableAlias: string): void;
         }
 
         namespace Invite {

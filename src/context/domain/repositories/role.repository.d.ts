@@ -31,16 +31,16 @@ declare global {
             }
 
             interface Contract extends Repositories.Base.Contract<Entities.Role, Adapters.RolePermissionAssignment.Types> {
-                wouldExceedRoleLimit: (props: WouldExceedRoleLimit.Props) => WouldExceedRoleLimit.Result;
-                findAccountsByRoles: (props: FindAccountsByRoles.Props) => FindAccountsByRoles.Result;
-                getHierarchyGraph: (props: GetHierarchyGraph.Props) => GetHierarchyGraph.Result;
-                findDelegable: (props: FindDelegable.Props) => FindDelegable.Result;
-                findDescendants: (props: FindDescendants.Props) => FindDescendants.Result;
-                getDescendants: (props: GetDescendants.Props) => GetDescendants.Result;
-                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
-                findEffective: (props: FindEffective.Props) => FindEffective.Result;
-                findAncestors: (props: FindAncestors.Props) => FindAncestors.Result;
-                getAncestors: (props: GetAncestors.Props) => GetAncestors.Result;
+                wouldExceedRoleLimit(props: WouldExceedRoleLimit.Props): WouldExceedRoleLimit.Result;
+                findAccountsByRoles(props: FindAccountsByRoles.Props): FindAccountsByRoles.Result;
+                getHierarchyGraph(props: GetHierarchyGraph.Props): GetHierarchyGraph.Result;
+                findDelegable(props: FindDelegable.Props): FindDelegable.Result;
+                findDescendants(props: FindDescendants.Props): FindDescendants.Result;
+                getDescendants(props: GetDescendants.Props): GetDescendants.Result;
+                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
+                findEffective(props: FindEffective.Props): FindEffective.Result;
+                findAncestors(props: FindAncestors.Props): FindAncestors.Result;
+                getAncestors(props: GetAncestors.Props): GetAncestors.Result;
             }
 
             interface QueryContract

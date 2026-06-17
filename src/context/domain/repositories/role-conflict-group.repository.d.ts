@@ -3,15 +3,15 @@ declare global {
     namespace Repositories {
         namespace RoleConflictGroup {
             interface PrivateContract {
-                getViolationsQuery: (props: GetViolationsQuery.Props) => GetViolationsQuery.Result;
+                getViolationsQuery(props: GetViolationsQuery.Props): GetViolationsQuery.Result;
             }
             interface Contract
                 extends PrivateContract,
                     Repositories.Base.Contract<Entities.RoleConflictGroup, Adapters.Realm.Types> {
-                wouldExceedGroupLimit: (props: WouldExceedGroupLimit.Props) => WouldExceedGroupLimit.Result;
-                findViolationDetails: (props: FindViolationDetails.Props) => FindViolationDetails.Result;
-                hasAccountViolating: (props: HasAccountViolating.Props) => HasAccountViolating.Result;
-                hasViolations: (props: HasViolations.Props) => HasViolations.Result;
+                wouldExceedGroupLimit(props: WouldExceedGroupLimit.Props): WouldExceedGroupLimit.Result;
+                findViolationDetails(props: FindViolationDetails.Props): FindViolationDetails.Result;
+                hasAccountViolating(props: HasAccountViolating.Props): HasAccountViolating.Result;
+                hasViolations(props: HasViolations.Props): HasViolations.Result;
             }
 
             interface QueryContract extends Pick<Contract, "findViolationDetails" | "findUniqueOrThrow" | "findMany"> {}

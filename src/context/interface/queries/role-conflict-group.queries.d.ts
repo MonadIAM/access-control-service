@@ -4,9 +4,9 @@ declare global {
     namespace Queries {
         namespace RoleConflictGroup {
             interface Contract {
-                findViolationDetails: (props: FindViolationDetails.Props) => FindViolationDetails.Result;
-                findUnique: (props: FindUnique.Props) => FindUnique.Result;
-                findMany: (props: FindMany.Props) => FindMany.Result;
+                findViolationDetails(props: FindViolationDetails.Props): FindViolationDetails.Result;
+                findUnique(props: FindUnique.Props): FindUnique.Result;
+                findMany(props: FindMany.Props): FindMany.Result;
             }
 
             namespace FindMany {

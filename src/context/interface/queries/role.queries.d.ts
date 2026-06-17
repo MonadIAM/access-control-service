@@ -9,15 +9,15 @@ declare global {
             type Graph = Repositories.Role.Graph.Data;
 
             interface Contract {
-                findDelegableByAccount: (props: FindDelegableByAccount.Props) => FindDelegableByAccount.Result;
-                findDelegableByRole: (props: FindDelegableByRole.Props) => FindDelegableByRole.Result;
-                getHierarchyGraph: (props: GetHierarchyGraph.Props) => GetHierarchyGraph.Result;
-                findDescendants: (props: FindDescendants.Props) => FindDescendants.Result;
-                findAncestors: (props: FindAncestors.Props) => FindAncestors.Result;
-                findEffective: (props: FindEffective.Props) => FindEffective.Result;
-                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
-                findUnique: (props: FindUnique.Props) => FindUnique.Result;
-                findMany: (props: FindMany.Props) => FindMany.Result;
+                findDelegableByAccount(props: FindDelegableByAccount.Props): FindDelegableByAccount.Result;
+                findDelegableByRole(props: FindDelegableByRole.Props): FindDelegableByRole.Result;
+                getHierarchyGraph(props: GetHierarchyGraph.Props): GetHierarchyGraph.Result;
+                findDescendants(props: FindDescendants.Props): FindDescendants.Result;
+                findAncestors(props: FindAncestors.Props): FindAncestors.Result;
+                findEffective(props: FindEffective.Props): FindEffective.Result;
+                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
+                findUnique(props: FindUnique.Props): FindUnique.Result;
+                findMany(props: FindMany.Props): FindMany.Result;
             }
 
             namespace FindDelegableByAccount {

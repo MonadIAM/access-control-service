@@ -6,16 +6,16 @@ declare global {
     namespace TransactionManager {
         namespace Service {
             interface Contract {
-                run: <T extends AnyEntity | AnyEntity[]>(props: Run<T>) => Promise<T>;
+                run<T extends AnyEntity | AnyEntity[]>(props: Run<T>): Promise<T>;
             }
 
             type ProjectionJournalEntry<T> = {
                 operationType: string;
-                payloadMapper: (result: T) => UnknownObject | UnknownObject[];
+                payloadMapper(result: T): UnknownObject | UnknownObject[];
             };
 
             type OutboxConfig<T> = {
-                payloadMapper?: (result: T) => AnyEntity | AnyEntity[];
+                payloadMapper?(result: T): AnyEntity | AnyEntity[];
                 destinationTopic: KafkaTopic;
                 metadata?: UnknownObject;
                 actionType: string;
@@ -23,7 +23,7 @@ declare global {
 
             type Run<T extends AnyEntity | AnyEntity[]> =
                 | {
-                      execute: (transaction: EntityManager) => Promise<T> | T;
+                      execute(transaction: EntityManager): Promise<T> | T;
                       audit?: Entities.AuditLog.ConstructorProps;
                       outbox?: OutboxConfig<T> | OutboxConfig<T>[];
                       projectionJournal?: ProjectionJournalEntry<T> | ProjectionJournalEntry<T>[];
@@ -31,7 +31,7 @@ declare global {
                       resource?: string;
                   }
                 | {
-                      execute: (transaction: EntityManager) => Promise<void> | void;
+                      execute(transaction: EntityManager): Promise<void> | void;
                       audit?: Entities.AuditLog.ConstructorProps;
                       projectionJournal?: never;
                       changeLog?: never;

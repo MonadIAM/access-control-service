@@ -4,7 +4,7 @@ declare global {
     namespace CommonServices {
         namespace JWT {
             interface Contract {
-                verifyAccess: (token: string) => Promise<JWTPayload>;
+                verifyAccess(token: string): Promise<JWTPayload>;
             }
         }
     }

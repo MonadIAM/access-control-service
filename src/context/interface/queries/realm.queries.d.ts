@@ -4,9 +4,9 @@ declare global {
     namespace Queries {
         namespace Realm {
             interface Contract {
-                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
-                findUnique: (props: FindUnique.Props) => FindUnique.Result;
-                findMany: (props: FindMany.Props) => FindMany.Result;
+                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
+                findUnique(props: FindUnique.Props): FindUnique.Result;
+                findMany(props: FindMany.Props): FindMany.Result;
             }
 
             namespace GetLookupList {

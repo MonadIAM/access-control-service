@@ -4,8 +4,8 @@ declare global {
     namespace Repositories {
         namespace Realm {
             interface Contract extends Repositories.Base.Contract<Entities.Realm, Adapters.Realm.Types> {
-                wouldExceedRealmLimit: (props: WouldExceedRealmLimit.Props) => WouldExceedRealmLimit.Result;
-                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
+                wouldExceedRealmLimit(props: WouldExceedRealmLimit.Props): WouldExceedRealmLimit.Result;
+                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
             }
 
             interface QueryContract extends Pick<Contract, "getLookupList" | "findUniqueOrThrow" | "findMany"> {}

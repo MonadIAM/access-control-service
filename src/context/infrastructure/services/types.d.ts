@@ -4,9 +4,9 @@ declare global {
     namespace InfrastructureServices {
         namespace ReauthenticationCache {
             interface Contract {
-                set: (props: Set) => Promise<void>;
-                exists: (props: Exists) => Promise<boolean>;
-                delete: (props: Delete) => Promise<void>;
+                set(props: Set): Promise<void>;
+                exists(props: Exists): Promise<boolean>;
+                delete(props: Delete): Promise<void>;
             }
 
             type Set = {
@@ -24,8 +24,8 @@ declare global {
         }
         namespace BlacklistCache {
             interface Contract {
-                exists: (props: Exists) => Promise<boolean>;
-                set: (props: Set) => Promise<void>;
+                exists(props: Exists): Promise<boolean>;
+                set(props: Set): Promise<void>;
             }
 
             type Set = {
@@ -40,24 +40,24 @@ declare global {
 
         namespace ScriptLoader {
             interface Contract {
-                reload: (script: ProjectionScript) => Promise<string>;
-                getHash: (script: ProjectionScript) => string;
+                reload(script: ProjectionScript): Promise<string>;
+                getHash(script: ProjectionScript): string;
             }
         }
 
         namespace ScriptExecutor {
             interface Contract {
-                execute: <T>(props: ProjectionScript, args: string[], keys?: string[]) => Promise<T>;
+                execute<T>(props: ProjectionScript, args: string[], keys?: string[]): Promise<T>;
             }
         }
 
         namespace ProjectionCache {
             interface Contract {
-                validateAssignments: (props: ValidateAssignments) => Promise<ValidateAssignmentsResult>;
-                collectPermissions: (props: CollectPermissions) => Promise<Record<string, string>>;
-                checkPermissions: (props: CheckPermissions) => Promise<string[]>;
-                collectRealms: (props: CollectRealms) => Promise<string[]>;
-                checkRealm: (props: CheckRealm) => Promise<boolean>;
+                validateAssignments(props: ValidateAssignments): Promise<ValidateAssignmentsResult>;
+                collectPermissions(props: CollectPermissions): Promise<Record<string, string>>;
+                checkPermissions(props: CheckPermissions): Promise<string[]>;
+                collectRealms(props: CollectRealms): Promise<string[]>;
+                checkRealm(props: CheckRealm): Promise<boolean>;
             }
 
             type CollectPermissions = {

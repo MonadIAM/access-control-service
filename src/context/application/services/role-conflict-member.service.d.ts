@@ -4,8 +4,8 @@ declare global {
     namespace Services {
         namespace RoleConflictMember {
             interface Contract {
-                create: (props: Create.Props) => Create.Result;
-                purge: (props: Purge.Props) => Purge.Result;
+                create(props: Create.Props): Create.Result;
+                purge(props: Purge.Props): Purge.Result;
             }
 
             namespace Create {

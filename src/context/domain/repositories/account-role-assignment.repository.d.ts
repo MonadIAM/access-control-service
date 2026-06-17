@@ -5,7 +5,7 @@ declare global {
         namespace AccountRoleAssignment {
             interface Contract
                 extends Repositories.Base.Contract<Entities.AccountRoleAssignment, Adapters.AccountRoleAssignment.Types> {
-                wouldExceedRoleLimit: (props: WouldExceedRoleLimit.Props) => WouldExceedRoleLimit.Result;
+                wouldExceedRoleLimit(props: WouldExceedRoleLimit.Props): WouldExceedRoleLimit.Result;
             }
 
             interface QueryContract extends Pick<Contract, "findUniqueOrThrow" | "findMany"> {}

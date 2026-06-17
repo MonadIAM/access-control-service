@@ -6,10 +6,10 @@ declare global {
     namespace Queries {
         namespace Permission {
             interface Contract {
-                findEffective: (props: FindEffective.Props) => FindEffective.Result;
-                getLookupList: (props: GetLookupList.Props) => GetLookupList.Result;
-                findUnique: (props: FindUnique.Props) => FindUnique.Result;
-                findMany: (props: FindMany.Props) => FindMany.Result;
+                findEffective(props: FindEffective.Props): FindEffective.Result;
+                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
+                findUnique(props: FindUnique.Props): FindUnique.Result;
+                findMany(props: FindMany.Props): FindMany.Result;
             }
 
             namespace FindEffective {

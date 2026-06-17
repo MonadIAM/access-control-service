@@ -4,8 +4,8 @@ declare global {
     namespace Queries {
         namespace AccountRoleAssignment {
             interface Contract {
-                findUnique: (props: FindUnique.Props) => FindUnique.Result;
-                findMany: (props: FindMany.Props) => FindMany.Result;
+                findUnique(props: FindUnique.Props): FindUnique.Result;
+                findMany(props: FindMany.Props): FindMany.Result;
             }
 
             namespace FindUnique {

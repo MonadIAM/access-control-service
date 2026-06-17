@@ -6,17 +6,17 @@ declare global {
     namespace Services {
         namespace Role {
             interface PrivateContract {
-                buildHierarchy: (props: BuildHierarchy.Props) => BuildHierarchy.Result;
+                buildHierarchy(props: BuildHierarchy.Props): BuildHierarchy.Result;
             }
 
             interface Contract extends PrivateContract {
-                purgeSubtree: (props: PurgeSubtree.Props) => PurgeSubtree.Result;
-                restore: (props: Restore.Props) => Restore.Result;
-                revoke: (props: Revoke.Props) => Revoke.Result;
-                update: (props: Update.Props) => Update.Result;
-                create: (props: Create.Props) => Create.Result;
-                purge: (props: Purge.Props) => Purge.Result;
-                move: (props: Move.Props) => Move.Result;
+                purgeSubtree(props: PurgeSubtree.Props): PurgeSubtree.Result;
+                restore(props: Restore.Props): Restore.Result;
+                revoke(props: Revoke.Props): Revoke.Result;
+                update(props: Update.Props): Update.Result;
+                create(props: Create.Props): Create.Result;
+                purge(props: Purge.Props): Purge.Result;
+                move(props: Move.Props): Move.Result;
             }
 
             namespace PurgeSubtree {

@@ -19,8 +19,8 @@ const enabledRules = {
     "@typescript-eslint/no-misused-promises": ["error"],
     // Prefer T[] over Array<T>
     "@typescript-eslint/array-type": ["error", { default: "array" }],
-    // Enforce methods in interfaces as function properties, not method signatures
-    "@typescript-eslint/method-signature-style": ["error", "property"],
+    // Enforce method signatures style (method allows overloads in interfaces)
+    "@typescript-eslint/method-signature-style": ["error", "method"],
     // Disallow using variables/classes before declaration, but allow functions
     "@typescript-eslint/no-use-before-define": ["error", { functions: false }],
     // Require explicit public/private/protected for class fields and methods

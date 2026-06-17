@@ -4,11 +4,11 @@ declare global {
     namespace Repositories {
         namespace RoleClosure {
             interface Contract {
-                decreaseTransitiveDepth: (props: DecreaseTransitiveDepth.Props) => DecreaseTransitiveDepth.Result;
-                existsTransitivePath: (props: ExistsTransitivePath.Props) => ExistsTransitivePath.Result;
-                insertNewHierarchy: (props: InsertNewHierarchy.Props) => InsertNewHierarchy.Result;
-                moveSubtrees: (props: MoveSubtrees.Props) => MoveSubtrees.Result;
-                move: (props: Move.Props) => Move.Result;
+                decreaseTransitiveDepth(props: DecreaseTransitiveDepth.Props): DecreaseTransitiveDepth.Result;
+                existsTransitivePath(props: ExistsTransitivePath.Props): ExistsTransitivePath.Result;
+                insertNewHierarchy(props: InsertNewHierarchy.Props): InsertNewHierarchy.Result;
+                moveSubtrees(props: MoveSubtrees.Props): MoveSubtrees.Result;
+                move(props: Move.Props): Move.Result;
             }
 
             namespace Move {

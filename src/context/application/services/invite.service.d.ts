@@ -4,10 +4,10 @@ declare global {
     namespace Services {
         namespace Invite {
             interface Contract {
-                create: (props: Create.Props) => Create.Result;
-                accept: (props: Accept.Props) => Accept.Result;
-                decline: (props: Decline.Props) => Decline.Result;
-                cancel: (props: Cancel.Props) => Cancel.Result;
+                create(props: Create.Props): Create.Result;
+                accept(props: Accept.Props): Accept.Result;
+                decline(props: Decline.Props): Decline.Result;
+                cancel(props: Cancel.Props): Cancel.Result;
             }
 
             namespace Create {

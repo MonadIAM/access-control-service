@@ -4,18 +4,18 @@ declare global {
     namespace Commands {
         namespace PermissionOverride {
             interface ControllerContract {
-                restore: (props: Restore.Props) => Restore.Result;
-                create: (props: Create.Props) => Create.Result;
-                revoke: (props: Revoke.Props) => Revoke.Result;
-                purge: (props: Purge.Props) => Purge.Result;
+                restore(props: Restore.Props): Restore.Result;
+                create(props: Create.Props): Create.Result;
+                revoke(props: Revoke.Props): Revoke.Result;
+                purge(props: Purge.Props): Purge.Result;
             }
 
             interface ConsumerContract {
-                clean: (props: Clean.Props) => Clean.Result;
+                clean(props: Clean.Props): Clean.Result;
             }
 
             interface PrivateContract {
-                outboxPayloadMapper: (props: OutboxPayloadMapper.Props) => OutboxPayloadMapper.Result;
+                outboxPayloadMapper(props: OutboxPayloadMapper.Props): OutboxPayloadMapper.Result;
             }
 
             interface Contract extends ControllerContract, ConsumerContract, PrivateContract {}

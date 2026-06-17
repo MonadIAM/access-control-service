@@ -1,14 +1,14 @@
 declare namespace Commands {
     namespace RolePermissionAssignment {
         interface ControllerContract {
-            restore: (props: Restore.Props) => Restore.Result;
-            create: (props: Create.Props) => Create.Result;
-            revoke: (props: Revoke.Props) => Revoke.Result;
-            purge: (props: Purge.Props) => Purge.Result;
+            restore(props: Restore.Props): Restore.Result;
+            create(props: Create.Props): Create.Result;
+            revoke(props: Revoke.Props): Revoke.Result;
+            purge(props: Purge.Props): Purge.Result;
         }
 
         interface PrivateContract {
-            outboxPayloadMapper: (props: OutboxPayloadMapper.Props) => OutboxPayloadMapper.Result;
+            outboxPayloadMapper(props: OutboxPayloadMapper.Props): OutboxPayloadMapper.Result;
         }
 
         interface Contract extends ControllerContract, PrivateContract {}

@@ -4,14 +4,14 @@ declare global {
     namespace Commands {
         namespace Invite {
             interface ControllerContract {
-                changeStatus: (props: ChangeStatus.Props) => ChangeStatus.Result;
-                create: (props: Create.Props) => Create.Result;
+                changeStatus(props: ChangeStatus.Props): ChangeStatus.Result;
+                create(props: Create.Props): Create.Result;
             }
 
             interface PrivateContract {
-                accept: (props: Accept.Props) => Accept.Result;
-                cancel: (props: Cancel.Props) => Cancel.Result;
-                decline: (props: Decline.Props) => Decline.Result;
+                accept(props: Accept.Props): Accept.Result;
+                cancel(props: Cancel.Props): Cancel.Result;
+                decline(props: Decline.Props): Decline.Result;
             }
 
             interface Contract extends ControllerContract, PrivateContract {}

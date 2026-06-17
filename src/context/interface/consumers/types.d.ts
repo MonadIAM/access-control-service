@@ -6,7 +6,7 @@ declare global {
     namespace Consumers {
         namespace Account {
             interface Contract {
-                handle: (message: Payload) => Promise<void>;
+                handle(message: Payload): Promise<void>;
             }
 
             type Payload = Topics.Account.Message;
@@ -18,7 +18,7 @@ declare global {
 
         namespace Reauthentication {
             interface Contract {
-                handle: (props: Payload) => Promise<void>;
+                handle(props: Payload): Promise<void>;
             }
 
             type Payload = Topics.Reauthentication.Message;
@@ -26,7 +26,7 @@ declare global {
 
         namespace Blacklist {
             interface Contract {
-                handle: (props: Payload) => Promise<void>;
+                handle(props: Payload): Promise<void>;
             }
 
             type Payload = Topics.Blacklist.Message;
@@ -34,7 +34,7 @@ declare global {
 
         namespace Projection {
             interface Contract {
-                handle: (props: Payload) => Promise<void>;
+                handle(props: Payload): Promise<void>;
             }
 
             type Payload = {
