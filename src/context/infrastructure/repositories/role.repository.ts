@@ -173,7 +173,11 @@ export class RoleRepository
             const baseQuery = (): Knex.QueryBuilder =>
                 knex
                     .from({ R: "access_control.role" })
-                    .where("R.realm_id", where.realm)
+                    .modify((qb) => {
+                        if (where.realm) {
+                            qb.where("R.realm_id", where.realm);
+                        }
+                    })
                     .whereIn("R.id", allowedIdsSubquery);
 
             const dataQuery = baseQuery().distinct("R.id").select("R.*");
@@ -208,7 +212,11 @@ export class RoleRepository
                     .join({ RC: "access_control.role_closure" }, "R.id", "RC.ancestor_id")
                     .join({ ARM: "access_control.account_role_assignment" }, "RC.descendant_id", "ARM.role_id")
                     .where("ARM.account", where.account)
-                    .andWhere("ARM.realm_id", where.realm)
+                    .modify((qb) => {
+                        if (where.realm) {
+                            qb.andWhere("ARM.realm_id", where.realm);
+                        }
+                    })
                     .andWhere("ARM.is_revoked", false);
 
             const dataQuery = baseQuery().distinct("R.id").select("R.*");

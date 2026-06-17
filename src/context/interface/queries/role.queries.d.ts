@@ -1,6 +1,6 @@
 import { FindOptions } from "@mikro-orm/postgresql";
 
-import { ResponseViewType } from "~context/enums";
+import { QueryMode, ResponseViewType } from "~context/enums";
 
 declare global {
     namespace Queries {
@@ -9,34 +9,45 @@ declare global {
             type Graph = Repositories.Role.Graph.Data;
 
             interface Contract {
-                findDelegableByAccount(props: FindDelegableByAccount.Props): FindDelegableByAccount.Result;
+                findDelegableByAccount(props: FindDelegableByAccount.DefaultProps): FindDelegableByAccount.Result;
+                findDelegableByAccount(props: FindDelegableByAccount.ManageProps): FindDelegableByAccount.Result;
                 findDelegableByRole(props: FindDelegableByRole.Props): FindDelegableByRole.Result;
                 getHierarchyGraph(props: GetHierarchyGraph.Props): GetHierarchyGraph.Result;
+                findEffective(props: FindEffective.DefaultProps): FindEffective.Result;
+                findEffective(props: FindEffective.ManageProps): FindEffective.Result;
                 findDescendants(props: FindDescendants.Props): FindDescendants.Result;
                 findAncestors(props: FindAncestors.Props): FindAncestors.Result;
-                findEffective(props: FindEffective.Props): FindEffective.Result;
                 getLookupList(props: GetLookupList.Props): GetLookupList.Result;
+                findMany(props: FindMany.DefaultProps): FindMany.Result;
+                findMany(props: FindMany.ManageProps): FindMany.Result;
                 findUnique(props: FindUnique.Props): FindUnique.Result;
-                findMany(props: FindMany.Props): FindMany.Result;
             }
 
             namespace FindDelegableByAccount {
-                type Props = {
-                    permissions?: string[];
-                    filters: Adapters.Role.Filters;
+                type DefaultProps = {
+                    mode: QueryMode.DEFAULT;
+                    filters: Adapters.Role.DefaultFilters;
                     sort: Adapters.Role.Sort;
                     pagination: Pagination;
                     realm: string;
                     actor: string;
-                    id?: string;
                 };
 
+                type ManageProps = {
+                    mode: QueryMode.MANAGE;
+                    filters: Adapters.Role.ManageFilters;
+                    sort: Adapters.Role.Sort;
+                    pagination: Pagination;
+                    account: string;
+                };
+
+                type Props = DefaultProps | ManageProps;
                 type Result = Promise<[Entities.Role[], number]>;
             }
 
             namespace FindDelegableByRole {
                 type Props = {
-                    filters: Adapters.Role.Filters;
+                    filters: Adapters.Role.DefaultFilters;
                     sort: Adapters.Role.Sort;
                     pagination: Pagination;
                     realm: string;
@@ -48,7 +59,7 @@ declare global {
 
             namespace FindDescendants {
                 type Props = {
-                    filters: Adapters.Role.Filters;
+                    filters: Adapters.Role.DefaultFilters;
                     view: ResponseViewType;
                     pagination: Pagination;
                     ancestor: string;
@@ -60,7 +71,7 @@ declare global {
 
             namespace FindAncestors {
                 type Props = {
-                    filters: Adapters.Role.Filters;
+                    filters: Adapters.Role.DefaultFilters;
                     view: ResponseViewType;
                     pagination: Pagination;
                     descendant: string;
@@ -71,16 +82,24 @@ declare global {
             }
 
             namespace FindEffective {
-                type Props = {
-                    permissions?: string[];
-                    filters: Adapters.Role.Filters;
+                type DefaultProps = {
+                    mode: QueryMode.DEFAULT;
+                    filters: Adapters.Role.DefaultFilters;
                     sort: Adapters.Role.Sort;
                     pagination: Pagination;
-                    account?: string;
                     realm: string;
                     actor: string;
                 };
 
+                type ManageProps = {
+                    mode: QueryMode.MANAGE;
+                    filters: Adapters.Role.ManageFilters;
+                    sort: Adapters.Role.Sort;
+                    pagination: Pagination;
+                    account: string;
+                };
+
+                type Props = DefaultProps | ManageProps;
                 type Result = Promise<[Entities.Role[], number]>;
             }
 
@@ -104,14 +123,24 @@ declare global {
             }
 
             namespace FindMany {
-                type Props = {
-                    filters: Adapters.Role.Filters;
+                type DefaultProps = {
+                    mode: QueryMode.DEFAULT;
+                    filters: Adapters.Role.DefaultFilters;
                     sort: Adapters.Role.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
                     realm: string;
                 };
 
+                type ManageProps = {
+                    mode: QueryMode.MANAGE;
+                    filters: Adapters.Role.ManageFilters;
+                    sort: Adapters.Role.Sort;
+                    view: ResponseViewType;
+                    pagination: Pagination;
+                };
+
+                type Props = DefaultProps | ManageProps;
                 type Result = Promise<[Entities.Role[], number]>;
             }
 

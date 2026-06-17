@@ -59,6 +59,13 @@ export enum InviteQueryScope {
     AS_INVITEE = "AS_INVITEE",
 }
 
+export enum QueryMode {
+    /* eslint-disable prettier/prettier */
+    DEFAULT = "DEFAULT",
+    MANAGE  = "MANAGE",
+    /* eslint-enable prettier/prettier */
+}
+
 export enum ActionType {
     /* eslint-disable prettier/prettier */
     REPARENT = "REPARENT",

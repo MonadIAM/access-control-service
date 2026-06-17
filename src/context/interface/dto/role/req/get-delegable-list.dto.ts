@@ -1,11 +1,11 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { IsNotEmptyObject } from "class-validator";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
-import { PaginationDTO } from "~common/dto";
 import { Validator } from "~common/validator";
+import { PaginationDTO } from "~common/dto";
 
-import { FiltersDTO } from "../utils/filters.dto";
+import { DefaultFiltersDTO } from "../utils/filters.dto";
 import { SortDTO } from "../utils/sort.dto";
 
 @ApiSchema({ name: "RoleDelegableListBody" })
@@ -20,9 +20,9 @@ export class GetDelegableListBodyDTO {
     @Expose()
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => FiltersDTO)
-    @ApiProperty({ required: true, type: FiltersDTO })
-    declare public filters: FiltersDTO;
+    @Type(() => DefaultFiltersDTO)
+    @ApiProperty({ required: true, type: DefaultFiltersDTO })
+    declare public filters: DefaultFiltersDTO;
 
     @Expose()
     @IsNotEmptyObject()

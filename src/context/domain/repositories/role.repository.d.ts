@@ -90,7 +90,7 @@ declare global {
             namespace FindAncestors {
                 type Props = {
                     populate: readonly EntityKey<Entities.Role>[];
-                    filters: Adapters.Role.Filters;
+                    filters: Adapters.Role.DefaultFilters;
                     pagination: Pagination;
                     descendant: string;
                     realm: string;
@@ -114,7 +114,7 @@ declare global {
             namespace FindDescendants {
                 type Props = {
                     populate: readonly EntityKey<Entities.Role>[];
-                    filters: Adapters.Role.Filters;
+                    filters: Adapters.Role.DefaultFilters;
                     pagination: Pagination;
                     ancestor: string;
                     realm: string;
@@ -130,7 +130,7 @@ declare global {
                     pagination: Pagination;
                     where: {
                         type: DelegatorType;
-                        realm: string;
+                        realm?: string;
                         id: string;
                     };
                 };
@@ -145,7 +145,7 @@ declare global {
                     pagination: Pagination;
                     where: {
                         account: string;
-                        realm: string;
+                        realm?: string;
                     };
                 };
 

@@ -1,9 +1,9 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { IsNotEmptyObject } from "class-validator";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
-import { PaginationDTO } from "~common/dto";
 import { Validator } from "~common/validator";
+import { PaginationDTO } from "~common/dto";
 
 @ApiSchema({ name: "RoleLookupListBody" })
 export class GetLookupListBodyDTO {

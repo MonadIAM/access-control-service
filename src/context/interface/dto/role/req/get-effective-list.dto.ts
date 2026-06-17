@@ -1,11 +1,12 @@
 import { IsNotEmptyObject, ValidateIf } from "class-validator";
-import { Expose, Type } from "class-transformer";
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import { Expose, Type } from "class-transformer";
 
-import { PaginationDTO } from "~common/dto";
 import { Validator } from "~common/validator";
+import { PaginationDTO } from "~common/dto";
+import { QueryMode } from "~context/enums";
 
-import { FiltersDTO } from "../utils/filters.dto";
+import { ManageFiltersDTO, DefaultFiltersDTO } from "../utils/filters.dto";
 import { SortDTO } from "../utils/sort.dto";
 
 @ApiSchema({ name: "RoleEffectiveListBody" })
@@ -22,9 +23,35 @@ export class GetEffectiveListBodyDTO {
     @ValidateIf(({ filters }) => filters)
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => FiltersDTO)
-    @ApiProperty({ required: false, type: FiltersDTO })
-    declare public filters: FiltersDTO;
+    @Type(() => DefaultFiltersDTO)
+    @ApiProperty({ required: false, type: DefaultFiltersDTO })
+    declare public filters: DefaultFiltersDTO;
+
+    @Expose()
+    @IsNotEmptyObject()
+    @Validator.ValidateNested()
+    @Type(() => SortDTO)
+    @ApiProperty({ required: true, type: SortDTO })
+    declare public sort: SortDTO;
+}
+
+@ApiSchema({ name: "RoleManageEffectiveListBody" })
+export class ManageGetEffectiveListBodyDTO {
+    @Expose()
+    @ValidateIf(({ pagination }) => pagination)
+    @IsNotEmptyObject()
+    @Validator.ValidateNested()
+    @Type(() => PaginationDTO)
+    @ApiProperty({ required: false, type: PaginationDTO })
+    declare public pagination: PaginationDTO;
+
+    @Expose()
+    @ValidateIf(({ filters }) => filters)
+    @IsNotEmptyObject()
+    @Validator.ValidateNested()
+    @Type(() => ManageFiltersDTO)
+    @ApiProperty({ required: false, type: ManageFiltersDTO })
+    declare public filters: ManageFiltersDTO;
 
     @Expose()
     @IsNotEmptyObject()
@@ -41,9 +68,19 @@ export class GetEffectiveListQueryDTO {
     @ApiProperty({ required: true, type: String, format: "uuid" })
     declare public realm: string;
 
+    public get mode(): QueryMode.DEFAULT {
+        return QueryMode.DEFAULT;
+    }
+}
+
+@ApiSchema({ name: "RoleManageEffectiveListQuery" })
+export class ManageGetEffectiveListQueryDTO {
     @Expose()
     @Validator.IsUUID()
-    @Validator.IsOptional()
-    @ApiProperty({ required: false, type: String, format: "uuid" })
-    declare public account?: string;
+    @ApiProperty({ required: true, type: String, format: "uuid" })
+    declare public account: string;
+
+    public get mode(): QueryMode.MANAGE {
+        return QueryMode.MANAGE;
+    }
 }

@@ -43,6 +43,9 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
         if (filters.permission) {
             where.permissionAssignments = { permission: MikroAdapter.applyStringFilter(filters.permission) };
         }
+        if (filters.realm) {
+            where.realm = MikroAdapter.applyStringFilter(filters.realm);
+        }
 
         return where;
     }
@@ -60,6 +63,9 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
     }
 
     public buildWhereKnex(query: Knex.QueryBuilder, filters: Adapters.Role.Filters, tableAlias: string): void {
+        if (filters.realm) {
+            KnexAdapter.applyStringFilter(query, filters.realm, `${tableAlias}.realm_id`);
+        }
         if (filters.actorType) {
             KnexAdapter.applyStringFilter(query, filters.actorType, `${tableAlias}.actor_type`);
         }
@@ -76,6 +82,9 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
             KnexAdapter.applyStringFilter(query, filters.id, `${tableAlias}.id`);
         }
 
+        if (filters.updatedAt) {
+            KnexAdapter.applyOrdinalFilter(query, filters.updatedAt, `${tableAlias}.updated_at`);
+        }
         if (filters.createdAt) {
             KnexAdapter.applyOrdinalFilter(query, filters.createdAt, `${tableAlias}.created_at`);
         }

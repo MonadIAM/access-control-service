@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ROLE_REPOSITORY } from "~context/infrastructure/repositories";
-import { DelegatorType, PermissionCode } from "~context/enums";
+import { DelegatorType, QueryMode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleQueries implements Queries.Role.Contract {
@@ -23,9 +23,12 @@ export class RoleQueries implements Queries.Role.Contract {
     }
 
     public findMany(props: Queries.Role.FindMany.Props): Queries.Role.FindMany.Result {
+        const isManage = props.mode === QueryMode.MANAGE;
+        const realm = isManage ? undefined : props.realm;
+
         return this.roleRepository.findMany({
             options: { populate: this.populate[props.view] },
-            prefilter: { realm: props.realm },
+            prefilter: isManage ? undefined : { realm },
             pagination: props.pagination,
             filters: props.filters,
             sort: props.sort,
@@ -55,15 +58,19 @@ export class RoleQueries implements Queries.Role.Contract {
     public findDelegableByAccount(
         props: Queries.Role.FindDelegableByAccount.Props,
     ): Queries.Role.FindDelegableByAccount.Result {
-        let id = props.actor;
-        if (props.permissions?.includes(PermissionCode.ROLE_READ_ABSOLUTE)) {
-            id = props.id ?? props.actor;
-        }
+        const isManage = props.mode === QueryMode.MANAGE;
+        const id = isManage ? props.account : props.actor;
+        const where = {
+            realm: isManage ? undefined : props.realm,
+            type: DelegatorType.ACCOUNT,
+            id,
+        };
+
         return this.roleRepository.findDelegable({
-            where: { type: DelegatorType.ACCOUNT, realm: props.realm, id },
             pagination: props.pagination,
             filters: props.filters,
             sort: props.sort,
+            where,
         });
     }
 
@@ -81,15 +88,18 @@ export class RoleQueries implements Queries.Role.Contract {
     }
 
     public findEffective(props: Queries.Role.FindEffective.Props): Queries.Role.FindEffective.Result {
-        let account = props.actor;
-        if (props.permissions?.includes(PermissionCode.ROLE_READ_ABSOLUTE)) {
-            account = props.account ?? props.actor;
-        }
+        const isManage = props.mode === QueryMode.MANAGE;
+        const account = isManage ? props.account : props.actor;
+        const where = {
+            realm: isManage ? undefined : props.realm,
+            account,
+        };
+
         return this.roleRepository.findEffective({
-            where: { realm: props.realm, account },
             pagination: props.pagination,
             filters: props.filters,
             sort: props.sort,
+            where,
         });
     }
 

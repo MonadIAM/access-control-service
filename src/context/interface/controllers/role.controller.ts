@@ -21,6 +21,8 @@ import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
+    GetDelegableByAccountListQueryDTO,
+    GetDelegableByAccountListBodyDTO,
     GetDescendantsListQueryDTO,
     GetDescendantsListBodyDTO,
     GetHierarchyGraphQueryDTO,
@@ -96,7 +98,7 @@ export class RoleController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(RoleDTO)
-    @RequirePermission(ROLE_READ_COMMON)
+    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: RoleDTO })
     @ApiOperation({
         summary: "Returns a role by identifier",
@@ -118,7 +120,7 @@ export class RoleController {
     @HttpCode(OK)
     @Post("list")
     @FormatResponse(ListDTO)
-    @RequirePermission(ROLE_READ_COMMON)
+    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({
         summary: "Returns a paginated list of roles",
@@ -133,15 +135,15 @@ export class RoleController {
         FORBIDDEN,
     )
     public findMany(
-        @Query() { realm, view }: GetListQueryDTO,
+        @Query() { realm, view, mode }: GetListQueryDTO,
         @Body() { pagination, filters, sort }: GetListBodyDTO,
     ): Queries.Role.FindMany.Result {
-        return this.roleQueries.findMany({ pagination, filters, realm, sort, view });
+        return this.roleQueries.findMany({ mode, pagination, filters, realm, sort, view });
     }
 
     @HttpCode(OK)
     @Post("list/ancestors")
-    @RequirePermission(ROLE_READ_COMMON)
+    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @FormatResponse(HierarchyListDTO)
     @ApiResponse({ status: OK, type: HierarchyListDTO })
     @ApiOperation({
@@ -165,7 +167,7 @@ export class RoleController {
 
     @HttpCode(OK)
     @Post("list/descendants")
-    @RequirePermission(ROLE_READ_COMMON)
+    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @FormatResponse(HierarchyListDTO)
     @ApiResponse({ status: OK, type: HierarchyListDTO })
     @ApiOperation({
@@ -190,10 +192,10 @@ export class RoleController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @Post("list/delegable/by-account")
+    @RequirePermission(ROLE_READ_PERSONAL)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(ROLE_READ_PERSONAL, ROLE_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Returns a paginated list of roles that can be delegated by the specified account",
+        summary: "Returns a paginated list of roles that can be delegated by the current account",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -205,18 +207,17 @@ export class RoleController {
         FORBIDDEN,
     )
     public findDelegableByAccount(
-        @Body() { pagination, filters, sort }: GetDelegableListBodyDTO,
-        @Query() { realm, id }: GetDelegableListQueryDTO,
+        @Body() { pagination, filters, sort }: GetDelegableByAccountListBodyDTO,
+        @Query() { realm, mode }: GetDelegableByAccountListQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Extract.Permissions() permissions?: string[],
     ): Queries.Role.FindDelegableByAccount.Result {
-        return this.roleQueries.findDelegableByAccount({ permissions, pagination, filters, sort, realm, actor, id });
+        return this.roleQueries.findDelegableByAccount({ mode, pagination, filters, sort, realm, actor });
     }
 
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @Post("list/delegable/by-role")
-    @RequirePermission(ROLE_READ_COMMON)
+    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({
         summary: "Returns a paginated list of roles that can be delegated from the specified role",
@@ -240,10 +241,10 @@ export class RoleController {
     @HttpCode(OK)
     @Post("list/effective")
     @FormatResponse(ListDTO)
+    @RequirePermission(ROLE_READ_PERSONAL)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(ROLE_READ_PERSONAL, ROLE_READ_ABSOLUTE)
     @ApiOperation({
-        summary: "Returns a paginated list of effective roles for the account",
+        summary: "Returns a paginated list of effective roles for the current account",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -256,17 +257,16 @@ export class RoleController {
     )
     public findEffective(
         @Body() { pagination, filters, sort }: GetEffectiveListBodyDTO,
-        @Query() { realm, account }: GetEffectiveListQueryDTO,
+        @Query() { realm, mode }: GetEffectiveListQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Extract.Permissions() permissions?: string[],
     ): Queries.Role.FindEffective.Result {
-        return this.roleQueries.findEffective({ permissions, pagination, filters, sort, account, actor, realm });
+        return this.roleQueries.findEffective({ mode, pagination, filters, sort, actor, realm });
     }
 
     @HttpCode(OK)
     @Post("list/lookup")
     @FormatResponse(LookupListDTO)
-    @RequirePermission(ROLE_READ_COMMON)
+    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: LookupListDTO })
     @ApiOperation({
         summary: "Returns a lookup list of roles",
@@ -289,7 +289,7 @@ export class RoleController {
 
     @HttpCode(OK)
     @Get("hierarchy-graph")
-    @RequirePermission(ROLE_READ_COMMON)
+    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @FormatResponse(RoleHierarchyGraphDTO)
     @ApiResponse({ status: OK, type: RoleHierarchyGraphDTO })
     @ApiOperation({

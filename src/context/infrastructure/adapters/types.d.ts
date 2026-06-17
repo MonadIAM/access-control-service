@@ -275,7 +275,7 @@ declare global {
         }
 
         namespace Role {
-            type Filters = {
+            type DefaultFilters = {
                 updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
                 actorType?: StringFilterDTO;
@@ -288,6 +288,10 @@ declare global {
                 nonDelegable?: boolean;
                 isRevoked?: boolean;
             };
+
+            type ManageFilters = DefaultFilters & { realm?: LinkFilterDTO };
+
+            type Filters = DefaultFilters & ManageFilters;
 
             type Sort = {
                 updatedAt?: QueryOrder;
