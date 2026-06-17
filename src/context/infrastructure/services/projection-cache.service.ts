@@ -18,6 +18,7 @@ export class ProjectionCacheService implements InfrastructureServices.Projection
                 JSON.stringify({
                     permissionRealm: SystemRealm.id,
                     permissions: props.permissions,
+                    globalOnly: props.globalOnly,
                     systemRealm: SystemRealm.id,
                     account: props.account,
                     realm: props.realm,

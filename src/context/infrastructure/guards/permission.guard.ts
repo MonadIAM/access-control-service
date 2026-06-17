@@ -3,7 +3,7 @@ import { Reflector } from "@nestjs/core";
 
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
-import { REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
+import { REQUIRE_GLOBAL_PERMISSION, REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
 import { Exception } from "~common/exceptions";
 import { PermissionCode } from "~context/enums";
 
@@ -24,10 +24,17 @@ export class PermissionGuard implements CanActivate {
             return true;
         }
 
-        const permissions = this.reflector.getAllAndOverride<PermissionCode[]>(REQUIRE_PERMISSION, [
+        const globalPermissions = this.reflector.getAllAndOverride<PermissionCode[]>(REQUIRE_GLOBAL_PERMISSION, [
             context.getHandler(),
             context.getClass(),
         ]);
+
+        const permissions =
+            globalPermissions ??
+            this.reflector.getAllAndOverride<PermissionCode[]>(REQUIRE_PERMISSION, [
+                context.getHandler(),
+                context.getClass(),
+            ]);
 
         if (!permissions?.length) {
             return true;
@@ -42,6 +49,7 @@ export class PermissionGuard implements CanActivate {
         }
 
         const matched = await this.projectionCacheService.checkPermissions({
+            globalOnly: !!globalPermissions,
             permissions,
             account,
             realm,

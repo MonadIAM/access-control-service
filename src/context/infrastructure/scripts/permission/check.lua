@@ -10,6 +10,7 @@ local account_id = tostring(payload.account)
 local realm_id = tostring(payload.realm)
 local permission_realm_id = tostring(payload.permissionRealm)
 local system_realm_id = tostring(payload.systemRealm)
+local global_only = payload.globalOnly == true
 
 local permission_codes = payload.permissions
 if type(permission_codes) ~= "table" then
@@ -51,15 +52,23 @@ for _, permission in ipairs(permission_codes) do
     local permission_id = redis.call("HGET", make_key("permission-id-by-code", permission_realm_id), permission_code)
 
     if permission_id then
-        if redis.call("SISMEMBER", make_key("account-overrides-deny", realm_id, account_id), permission_id) ~= 1 then
-            if redis.call("SISMEMBER", make_key("account-overrides-allow", realm_id, account_id), permission_id) == 1
-                or has_role_permission(permission_id)
-                or has_global_role_permission(permission_id) then
-                table.insert(matched, permission_code)
+        local granted = false
 
-                if #matched == total then
-                    break
-                end
+        if global_only then
+            granted = has_global_role_permission(permission_id)
+        else
+            if redis.call("SISMEMBER", make_key("account-overrides-deny", realm_id, account_id), permission_id) ~= 1 then
+                granted = redis.call("SISMEMBER", make_key("account-overrides-allow", realm_id, account_id), permission_id) == 1
+                    or has_role_permission(permission_id)
+                    or has_global_role_permission(permission_id)
+            end
+        end
+
+        if granted then
+            table.insert(matched, permission_code)
+
+            if #matched == total then
+                break
             end
         end
     end

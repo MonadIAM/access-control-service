@@ -76,6 +76,7 @@ declare global {
 
             type CheckPermissions = {
                 permissions: string[];
+                globalOnly?: boolean;
                 account: string;
                 realm: string;
             };

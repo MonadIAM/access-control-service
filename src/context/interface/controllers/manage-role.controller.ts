@@ -1,7 +1,7 @@
 import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Query, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import { RequirePermission, FormatResponse, Swagger } from "~common/decorators";
+import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { ROLE_QUERIES } from "~context/application/queries";
 import { PermissionCode } from "~context/enums";
@@ -32,7 +32,7 @@ export class RoleManageController {
     @HttpCode(OK)
     @Post("list")
     @FormatResponse(ListDTO)
-    @RequirePermission(ROLE_READ_ABSOLUTE)
+    @RequireGlobalPermission(ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({
         summary: "Returns a paginated list of roles across realms",
@@ -56,7 +56,7 @@ export class RoleManageController {
     @HttpCode(OK)
     @Post("list/effective")
     @FormatResponse(ListDTO)
-    @RequirePermission(ROLE_READ_ABSOLUTE)
+    @RequireGlobalPermission(ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({
         summary: "Returns a paginated list of effective roles for the specified account",
@@ -80,7 +80,7 @@ export class RoleManageController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @Post("list/delegable/by-account")
-    @RequirePermission(ROLE_READ_ABSOLUTE)
+    @RequireGlobalPermission(ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({
         summary: "Returns a paginated list of roles that can be delegated by the specified account",
