@@ -6,7 +6,7 @@ import { AUDIT_LOG_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
-import { GetListBodyDTO, GetByIdQueryDTO, AuditLogDTO, ListDTO } from "../dto/audit-log";
+import { GetListBodyDTO, GetListQueryDTO, GetByIdQueryDTO, AuditLogDTO, ListDTO } from "../dto/audit-log";
 
 const {
     INTERNAL_SERVER_ERROR,
@@ -47,8 +47,8 @@ export class AuditLogController {
         FORBIDDEN,
         NOT_FOUND,
     )
-    public findUnique(@Query() { log }: GetByIdQueryDTO): Queries.AuditLog.FindUnique.Result {
-        return this.auditLogQueries.findUnique({ log });
+    public findUnique(@Query() { log, realm, mode }: GetByIdQueryDTO): Queries.AuditLog.FindUnique.Result {
+        return this.auditLogQueries.findUnique({ mode, log, realm });
     }
 
     @Post("list")
@@ -68,7 +68,10 @@ export class AuditLogController {
         UNAUTHORIZED,
         FORBIDDEN,
     )
-    public getList(@Body() { pagination, filters, sort }: GetListBodyDTO): Queries.AuditLog.FindMany.Result {
-        return this.auditLogQueries.findMany({ pagination, filters, sort });
+    public findMany(
+        @Body() { pagination, filters, sort }: GetListBodyDTO,
+        @Query() { realm, mode }: GetListQueryDTO,
+    ): Queries.AuditLog.FindMany.Result {
+        return this.auditLogQueries.findMany({ mode, pagination, filters, sort, realm });
     }
 }

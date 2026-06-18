@@ -1,26 +1,52 @@
-declare namespace Queries {
-    namespace AuditLog {
-        interface Contract {
-            findUnique(props: FindUnique.Props): FindUnique.Result;
-            findMany(props: FindMany.Props): FindMany.Result;
-        }
+import { QueryMode } from "~context/enums";
 
-        namespace FindUnique {
-            type Props = {
-                log: string;
-            };
+declare global {
+    namespace Queries {
+        namespace AuditLog {
+            interface Contract {
+                findUnique(props: FindUnique.DefaultProps): FindUnique.Result;
+                findUnique(props: FindUnique.ManageProps): FindUnique.Result;
+                findMany(props: FindMany.DefaultProps): FindMany.Result;
+                findMany(props: FindMany.ManageProps): FindMany.Result;
+            }
 
-            type Result = Promise<Entities.AuditLog>;
-        }
+            namespace FindUnique {
+                type DefaultProps = {
+                    mode: QueryMode.DEFAULT;
+                    realm: string;
+                    log: string;
+                };
 
-        namespace FindMany {
-            type Props = {
-                filters: Adapters.AuditLog.Filters;
-                sort: Adapters.AuditLog.Sort;
-                pagination: Pagination;
-            };
+                type ManageProps = {
+                    mode: QueryMode.MANAGE;
+                    log: string;
+                };
 
-            type Result = Promise<[Entities.AuditLog[], number]>;
+                type Props = DefaultProps | ManageProps;
+
+                type Result = Promise<Entities.AuditLog>;
+            }
+
+            namespace FindMany {
+                type DefaultProps = {
+                    mode: QueryMode.DEFAULT;
+                    filters: Adapters.AuditLog.Filters;
+                    sort: Adapters.AuditLog.Sort;
+                    pagination: Pagination;
+                    realm: string;
+                };
+
+                type ManageProps = {
+                    mode: QueryMode.MANAGE;
+                    filters: Adapters.AuditLog.Filters;
+                    sort: Adapters.AuditLog.Sort;
+                    pagination: Pagination;
+                };
+
+                type Props = DefaultProps | ManageProps;
+
+                type Result = Promise<[Entities.AuditLog[], number]>;
+            }
         }
     }
 }
