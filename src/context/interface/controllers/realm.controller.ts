@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 
 import { RequirePermission, FormatResponse, Swagger, Extract, Reauthentication } from "~common/decorators";
-import { BaseReadQueryDTO, SuccessMessageDTO } from "~common/dto";
+import { SuccessMessageDTO } from "~common/dto";
 import { REALM_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { REALM_QUERIES } from "~context/application/queries";
@@ -26,6 +26,7 @@ import {
     GetByIdQueryDTO,
     ExcludeQueryDTO,
     ExcludeBodyDTO,
+    GetListQueryDTO,
     GetListBodyDTO,
     UpdateQueryDTO,
     RestoreBodyDTO,
@@ -38,16 +39,8 @@ import {
     ListDTO,
 } from "../dto/realm";
 
-const {
-    REALM_READ_PERSONAL,
-    REALM_READ_ABSOLUTE,
-    REALM_RESTORE,
-    REALM_EXCLUDE,
-    REALM_CREATE,
-    REALM_UPDATE,
-    REALM_REVOKE,
-    REALM_PURGE,
-} = PermissionCode;
+const { REALM_READ_PERSONAL, REALM_RESTORE, REALM_EXCLUDE, REALM_CREATE, REALM_UPDATE, REALM_REVOKE, REALM_PURGE } =
+    PermissionCode;
 const {
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
@@ -76,8 +69,8 @@ export class RealmController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(RealmDTO)
+    @RequirePermission(REALM_READ_PERSONAL)
     @ApiResponse({ status: OK, type: RealmDTO })
-    @RequirePermission(REALM_READ_ABSOLUTE, REALM_READ_PERSONAL)
     @ApiOperation({
         summary: "Returns a realm by identifier",
         security: [{ identity: [] }],
@@ -92,18 +85,17 @@ export class RealmController {
         FORBIDDEN,
     )
     public findUnique(
-        @Query() { realm, view }: GetByIdQueryDTO,
+        @Query() { realm, view, mode }: GetByIdQueryDTO,
         @Extract.Session() { account }: Extract.Session.Auth,
-        @Extract.Permissions() permissions?: string[],
     ): Queries.Realm.FindUnique.Result {
-        return this.realmQueries.findUnique({ permissions, account, realm, view });
+        return this.realmQueries.findUnique({ mode, account, realm, view });
     }
 
     @Post("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
+    @RequirePermission(REALM_READ_PERSONAL)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(REALM_READ_ABSOLUTE, REALM_READ_PERSONAL)
     @ApiOperation({
         summary: "Returns a paginated list of realms",
         security: [{ identity: [] }],
@@ -118,18 +110,17 @@ export class RealmController {
     )
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
-        @Query() { view }: BaseReadQueryDTO,
+        @Query() { view, mode }: GetListQueryDTO,
         @Extract.Session() { account }: Extract.Session.Auth,
-        @Extract.Permissions() permissions?: string[],
     ): Queries.Realm.FindMany.Result {
-        return this.realmQueries.findMany({ permissions, pagination, filters, account, view, sort });
+        return this.realmQueries.findMany({ mode, pagination, filters, account, view, sort });
     }
 
     @HttpCode(OK)
     @Post("list/lookup")
     @FormatResponse(LookupListDTO)
+    @RequirePermission(REALM_READ_PERSONAL)
     @ApiResponse({ status: OK, type: LookupListDTO })
-    @RequirePermission(REALM_READ_ABSOLUTE, REALM_READ_PERSONAL)
     @ApiOperation({
         summary: "Returns a lookup list of realms",
         security: [{ identity: [] }],
@@ -144,11 +135,10 @@ export class RealmController {
     )
     public getLookupList(
         @Body() { pagination }: GetLookupListBodyDTO,
-        @Query() { term }: GetLookupListQueryDTO,
+        @Query() { term, mode }: GetLookupListQueryDTO,
         @Extract.Session() { account }: Extract.Session.Auth,
-        @Extract.Permissions() permissions?: string[],
     ): Queries.Realm.GetLookupList.Result {
-        return this.realmQueries.getLookupList({ permissions, pagination, account, term });
+        return this.realmQueries.getLookupList({ mode, pagination, account, term });
     }
 
     @Post("create")

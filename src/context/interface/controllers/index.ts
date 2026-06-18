@@ -6,6 +6,7 @@ import { PermissionOverrideController } from "./permission-override.controller";
 import { RoleConflictGroupController } from "./role-conflict-group.controller";
 import { PermissionManageController } from "./manage-permission.controller";
 import { RoleManageController } from "./manage-role.controller";
+import { RealmManageController } from "./manage-realm.controller";
 import { PermissionController } from "./permission.controller";
 import { ChangeLogController } from "./change-log.controller";
 import { AuditLogController } from "./audit-log.controller";
@@ -22,6 +23,7 @@ export const HTTP_CONTROLLERS = [
     RoleConflictGroupController,
     PermissionManageController,
     RoleManageController,
+    RealmManageController,
     PermissionController,
     ChangeLogController,
     AuditLogController,
@@ -39,6 +41,7 @@ export {
     RoleConflictGroupController,
     PermissionManageController,
     RoleManageController,
+    RealmManageController,
     PermissionController,
     ChangeLogController,
     AuditLogController,

@@ -4,7 +4,7 @@ import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/token
 import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { PublicStringOperator } from "~infrastructure/database";
 import { Exception } from "~common/exceptions";
-import { PermissionCode } from "~context/enums";
+import { QueryMode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmQueries implements Queries.Realm.Contract {
@@ -23,7 +23,7 @@ export class RealmQueries implements Queries.Realm.Contract {
     ) {}
 
     public async findUnique(props: Queries.Realm.FindUnique.Props): Queries.Realm.FindUnique.Result {
-        if (!props.permissions?.includes(PermissionCode.REALM_READ_ABSOLUTE)) {
+        if (props.mode === QueryMode.DEFAULT) {
             const hasRealmRelation = await this.projectionCacheService.checkRealm({
                 account: props.account,
                 realm: props.realm,
@@ -40,7 +40,7 @@ export class RealmQueries implements Queries.Realm.Contract {
 
     public async findMany(props: Queries.Realm.FindMany.Props): Queries.Realm.FindMany.Result {
         const filters = { ...props.filters };
-        if (!props.permissions?.includes(PermissionCode.REALM_READ_ABSOLUTE)) {
+        if (props.mode === QueryMode.DEFAULT) {
             const realms = await this.projectionCacheService.collectRealms({ account: props.account });
             if (realms.length) {
                 filters.id = { operator: PublicStringOperator.IN, value: realms };
@@ -58,7 +58,7 @@ export class RealmQueries implements Queries.Realm.Contract {
 
     public async getLookupList(props: Queries.Realm.GetLookupList.Props): Queries.Realm.GetLookupList.Result {
         let realms: Optional<string[]>;
-        if (!props.permissions?.includes(PermissionCode.REALM_READ_ABSOLUTE)) {
+        if (props.mode === QueryMode.DEFAULT) {
             realms = await this.projectionCacheService.collectRealms({ account: props.account });
             if (!realms.length) {
                 return [[], 0];
