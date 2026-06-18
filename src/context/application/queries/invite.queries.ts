@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ObjectQuery } from "@mikro-orm/postgresql";
 
 import { INVITE_REPOSITORY } from "~context/infrastructure/repositories";
-import { InviteQueryScope, PermissionCode } from "~context/enums";
+import { InviteQueryScope, QueryMode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InviteQueries implements Queries.Invite.Contract {
@@ -19,7 +19,7 @@ export class InviteQueries implements Queries.Invite.Contract {
     public findUnique(props: Queries.Invite.FindUnique.Props): Queries.Invite.FindUnique.Result {
         const filter: ObjectQuery<Entities.Invite> = {};
 
-        if (!props.permissions.includes(PermissionCode.INVITE_READ_ABSOLUTE)) {
+        if (props.mode === QueryMode.DEFAULT) {
             filter.$or = [{ invitee: props.actor }, { inviter: props.actor }];
         }
 
@@ -32,11 +32,12 @@ export class InviteQueries implements Queries.Invite.Contract {
     public findMany(props: Queries.Invite.FindMany.Props): Queries.Invite.FindMany.Result {
         const prefilter: ObjectQuery<Entities.Invite> = {};
 
-        if (props.scope === InviteQueryScope.AS_INVITER) {
-            prefilter.inviter = props.actor;
-            prefilter.realm = props.realm;
-        } else if (props.scope === InviteQueryScope.AS_INVITEE) {
-            prefilter.invitee = props.actor;
+        if (props.mode === QueryMode.DEFAULT) {
+            if (props.scope === InviteQueryScope.AS_INVITER) {
+                prefilter.inviter = props.actor;
+            } else if (props.scope === InviteQueryScope.AS_INVITEE) {
+                prefilter.invitee = props.actor;
+            }
             prefilter.realm = props.realm;
         }
 

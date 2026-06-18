@@ -10,30 +10,32 @@ declare global {
         };
 
         interface Contract<E, A extends Meta> {
+            buildOptionsKnex?(query: Knex.QueryBuilder, sort: A["Sort"], pagination: Pagination, tableAlias: string): void;
+            buildWhereKnex?(query: Knex.QueryBuilder, filters: A["Filters"], tableAlias: string): void;
+            buildWhereORM(filters: A["Filters"], basic?: ObjectQuery<E>): FilterQuery<E>;
             buildOptionsORM<P extends string, F extends string>(
                 sort: A["Sort"],
                 pagination: Pagination,
                 options?: FindOptions<E, P, F>,
             ): FindOptions<E, P, F>;
-
-            buildWhereORM(filters: A["Filters"], basic?: ObjectQuery<E>): FilterQuery<E>;
-
-            buildWhereKnex?(query: Knex.QueryBuilder, filters: A["Filters"], tableAlias: string): void;
-
-            buildOptionsKnex?(query: Knex.QueryBuilder, sort: A["Sort"], pagination: Pagination, tableAlias: string): void;
         }
 
         namespace Invite {
-            type Filters = {
-                id?: StringFilterDTO;
-                status?: StringFilterDTO;
-                invitee?: LinkFilterDTO;
-                inviter?: LinkFilterDTO;
-                role?: LinkFilterDTO;
-                realm?: LinkFilterDTO;
+            type DefaultFilters = {
                 updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
+                status?: StringFilterDTO;
+                id?: StringFilterDTO;
             };
+
+            type ManageFilters = DefaultFilters & {
+                invitee?: LinkFilterDTO;
+                inviter?: LinkFilterDTO;
+                realm?: LinkFilterDTO;
+                role?: LinkFilterDTO;
+            };
+
+            type Filters = DefaultFilters & ManageFilters;
 
             type Sort = {
                 createdAt?: QueryOrder;
