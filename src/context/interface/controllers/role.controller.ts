@@ -120,8 +120,8 @@ export class RoleController {
     @HttpCode(OK)
     @Post("list")
     @FormatResponse(ListDTO)
-    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
+    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a paginated list of roles",
         security: [{ identity: [] }],
@@ -143,9 +143,9 @@ export class RoleController {
 
     @HttpCode(OK)
     @Post("list/ancestors")
-    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @FormatResponse(HierarchyListDTO)
     @ApiResponse({ status: OK, type: HierarchyListDTO })
+    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a paginated list of ancestor roles of the specified role, including itself",
         security: [{ identity: [] }],
@@ -167,9 +167,9 @@ export class RoleController {
 
     @HttpCode(OK)
     @Post("list/descendants")
-    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @FormatResponse(HierarchyListDTO)
     @ApiResponse({ status: OK, type: HierarchyListDTO })
+    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a paginated list of descendant roles of the specified role, including itself",
         security: [{ identity: [] }],
@@ -217,8 +217,8 @@ export class RoleController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @Post("list/delegable/by-role")
-    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
+    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a paginated list of roles that can be delegated from the specified role",
         security: [{ identity: [] }],

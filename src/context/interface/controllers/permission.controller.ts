@@ -57,8 +57,8 @@ const {
     OK,
 } = HttpStatus;
 const {
-    PERMISSION_READ_PERSONAL,
     PERMISSION_READ_ABSOLUTE,
+    PERMISSION_READ_PERSONAL,
     PERMISSION_READ_COMMON,
     PERMISSION_RESTORE,
     PERMISSION_CREATE,
@@ -81,8 +81,8 @@ export class PermissionController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(PermissionDTO)
-    @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: PermissionDTO })
+    @RequirePermission(PERMISSION_READ_COMMON, PERMISSION_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a permission by identifier",
         security: [{ identity: [] }],
@@ -103,8 +103,8 @@ export class PermissionController {
     @Post("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
-    @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: ListDTO })
+    @RequirePermission(PERMISSION_READ_COMMON, PERMISSION_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a paginated list of permissions",
         security: [{ identity: [] }],
@@ -119,16 +119,16 @@ export class PermissionController {
     )
     public getList(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
-        @Query() { realm, view }: GetListQueryDTO,
+        @Query() { realm, view, mode }: GetListQueryDTO,
     ): Queries.Permission.FindMany.Result {
-        return this.permissionQueries.findMany({ pagination, filters, realm, sort, view });
+        return this.permissionQueries.findMany({ mode, pagination, filters, realm, sort, view });
     }
 
     @HttpCode(OK)
     @Post("list/effective")
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(PERMISSION_READ_ABSOLUTE, PERMISSION_READ_PERSONAL)
+    @RequirePermission(PERMISSION_READ_PERSONAL)
     @ApiOperation({
         summary: "Returns a paginated list of effective permissions for the account",
         security: [{ identity: [] }],
@@ -143,18 +143,17 @@ export class PermissionController {
     )
     public getEffectiveList(
         @Body() { pagination, filters, sort }: GetEffectiveListBodyDTO,
-        @Query() { account, realm }: GetEffectiveListQueryDTO,
+        @Query() { realm, mode }: GetEffectiveListQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Extract.Permissions() permissions?: string[],
     ): Queries.Permission.FindEffective.Result {
-        return this.permissionQueries.findEffective({ permissions, pagination, filters, account, realm, actor, sort });
+        return this.permissionQueries.findEffective({ mode, pagination, filters, realm, actor, sort });
     }
 
     @HttpCode(OK)
     @Post("list/lookup")
     @FormatResponse(LookupListDTO)
-    @RequirePermission(PERMISSION_READ_COMMON)
     @ApiResponse({ status: OK, type: LookupListDTO })
+    @RequirePermission(PERMISSION_READ_COMMON, PERMISSION_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a lookup list of permissions",
         security: [{ identity: [] }],

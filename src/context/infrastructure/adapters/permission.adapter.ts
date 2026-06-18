@@ -53,6 +53,9 @@ export class PermissionAdapter implements Adapters.Contract<Entities.Permission,
     }
 
     public buildWhereKnex(query: Knex.QueryBuilder, filters: Adapters.Permission.Filters, tableAlias: string): void {
+        if (filters.realm) {
+            KnexAdapter.applyStringFilter(query, filters.realm, `${tableAlias}.realm_id`);
+        }
         if (filters.code) {
             KnexAdapter.applyStringFilter(query, filters.code, `${tableAlias}.code`);
         }

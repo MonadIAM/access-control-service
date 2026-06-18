@@ -5,7 +5,7 @@ import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "PermissionFilters" })
-export class FiltersDTO implements Adapters.Permission.Filters {
+export class DefaultFiltersDTO implements Adapters.Permission.DefaultFilters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
@@ -38,13 +38,6 @@ export class FiltersDTO implements Adapters.Permission.Filters {
     @Validator.ValidateNested()
     @Type(() => LinkFilterDTO)
     @ApiProperty({ required: false, type: LinkFilterDTO })
-    public realm?: LinkFilterDTO;
-
-    @Expose()
-    @Validator.IsOptional()
-    @Validator.ValidateNested()
-    @Type(() => LinkFilterDTO)
-    @ApiProperty({ required: false, type: LinkFilterDTO })
     public role?: LinkFilterDTO;
 
     @Expose()
@@ -66,4 +59,14 @@ export class FiltersDTO implements Adapters.Permission.Filters {
     @Validator.IsBoolean()
     @ApiProperty({ required: false, type: Boolean })
     public isRevoked?: boolean;
+}
+
+@ApiSchema({ name: "PermissionManageFilters" })
+export class ManageFiltersDTO extends DefaultFiltersDTO implements Adapters.Permission.ManageFilters {
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => LinkFilterDTO)
+    @ApiProperty({ required: false, type: LinkFilterDTO })
+    public realm?: LinkFilterDTO;
 }

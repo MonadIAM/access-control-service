@@ -1,28 +1,39 @@
 import { FindOptions } from "@mikro-orm/postgresql";
 
-import { ResponseViewType } from "~context/enums";
+import { QueryMode, ResponseViewType } from "~context/enums";
 
 declare global {
     namespace Queries {
         namespace Permission {
             interface Contract {
-                findEffective(props: FindEffective.Props): FindEffective.Result;
+                findEffective(props: FindEffective.DefaultProps): FindEffective.Result;
+                findEffective(props: FindEffective.ManageProps): FindEffective.Result;
                 getLookupList(props: GetLookupList.Props): GetLookupList.Result;
                 findUnique(props: FindUnique.Props): FindUnique.Result;
-                findMany(props: FindMany.Props): FindMany.Result;
+                findMany(props: FindMany.DefaultProps): FindMany.Result;
+                findMany(props: FindMany.ManageProps): FindMany.Result;
             }
 
             namespace FindEffective {
-                type Props = {
-                    permissions?: string[];
-                    filters: Adapters.Permission.Filters;
+                type DefaultProps = {
+                    mode: QueryMode.DEFAULT;
+                    filters: Adapters.Permission.DefaultFilters;
                     sort: Adapters.Permission.Sort;
                     pagination: Pagination;
-                    account?: string;
                     realm: string;
                     actor: string;
                 };
 
+                type ManageProps = {
+                    mode: QueryMode.MANAGE;
+                    filters: Adapters.Permission.DefaultFilters;
+                    sort: Adapters.Permission.Sort;
+                    pagination: Pagination;
+                    realm: string;
+                    account: string;
+                };
+
+                type Props = DefaultProps | ManageProps;
                 type Result = Promise<[Entities.Permission[], number]>;
             }
 
@@ -38,14 +49,24 @@ declare global {
             }
 
             namespace FindMany {
-                type Props = {
-                    filters: Adapters.Permission.Filters;
+                type DefaultProps = {
+                    mode: QueryMode.DEFAULT;
+                    filters: Adapters.Permission.DefaultFilters;
                     sort: Adapters.Permission.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
                     realm: string;
                 };
 
+                type ManageProps = {
+                    mode: QueryMode.MANAGE;
+                    filters: Adapters.Permission.ManageFilters;
+                    sort: Adapters.Permission.Sort;
+                    view: ResponseViewType;
+                    pagination: Pagination;
+                };
+
+                type Props = DefaultProps | ManageProps;
                 type Result = Promise<[Entities.Permission[], number]>;
             }
 

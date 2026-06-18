@@ -137,17 +137,20 @@ declare global {
         }
 
         namespace Permission {
-            type Filters = {
+            type DefaultFilters = {
                 id?: StringFilterDTO;
                 isSystemManaged?: boolean;
                 code?: StringFilterDTO;
                 name?: StringFilterDTO;
-                realm?: LinkFilterDTO;
                 role?: LinkFilterDTO;
                 updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
                 isRevoked?: boolean;
             };
+
+            type ManageFilters = DefaultFilters & { realm?: LinkFilterDTO };
+
+            type Filters = ManageFilters & DefaultFilters;
 
             type Sort = {
                 createdAt?: QueryOrder;

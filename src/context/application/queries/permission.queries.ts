@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
-import { PermissionCode } from "~context/enums";
+import { QueryMode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionQueries implements Queries.Permission.Contract {
@@ -23,12 +23,15 @@ export class PermissionQueries implements Queries.Permission.Contract {
     }
 
     public findMany(props: Queries.Permission.FindMany.Props): Queries.Permission.FindMany.Result {
+        const isManage = props.mode === QueryMode.MANAGE;
+        const prefilter = isManage ? undefined : { realm: props.realm };
+
         return this.permissionRepository.findMany({
             options: { populate: this.populate[props.view] },
-            prefilter: { realm: props.realm },
             pagination: props.pagination,
             filters: props.filters,
             sort: props.sort,
+            prefilter,
         });
     }
 
@@ -41,10 +44,9 @@ export class PermissionQueries implements Queries.Permission.Contract {
     }
 
     public findEffective(props: Queries.Permission.FindEffective.Props): Queries.Permission.FindEffective.Result {
-        let account = props.actor;
-        if (props.permissions?.includes(PermissionCode.PERMISSION_READ_ABSOLUTE)) {
-            account = props.account ?? props.actor;
-        }
+        const isManage = props.mode === QueryMode.MANAGE;
+        const account = isManage ? props.account : props.actor;
+
         return this.permissionRepository.findEffective({
             where: { realm: props.realm, account },
             pagination: props.pagination,

@@ -4,6 +4,7 @@ import { RoleDelegationPolicyController } from "./role-delegation-policy.control
 import { RoleConflictMemberController } from "./role-conflict-member.controller";
 import { PermissionOverrideController } from "./permission-override.controller";
 import { RoleConflictGroupController } from "./role-conflict-group.controller";
+import { PermissionManageController } from "./manage-permission.controller";
 import { RoleManageController } from "./manage-role.controller";
 import { PermissionController } from "./permission.controller";
 import { ChangeLogController } from "./change-log.controller";
@@ -19,6 +20,7 @@ export const HTTP_CONTROLLERS = [
     RoleConflictMemberController,
     PermissionOverrideController,
     RoleConflictGroupController,
+    PermissionManageController,
     RoleManageController,
     PermissionController,
     ChangeLogController,
@@ -35,6 +37,7 @@ export {
     RoleConflictMemberController,
     PermissionOverrideController,
     RoleConflictGroupController,
+    PermissionManageController,
     RoleManageController,
     PermissionController,
     ChangeLogController,
