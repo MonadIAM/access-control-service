@@ -1,7 +1,7 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import { RequirePermission, FormatResponse, Swagger } from "~common/decorators";
+import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
 import { CHANGE_LOG_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
@@ -21,7 +21,7 @@ const {
 const { CHANGE_LOG_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("ChangeLog")
-@Controller("/change-log")
+@Controller("/change-log/manage")
 @UseInterceptors(MonitoringInterceptor)
 export class ChangeLogController {
     public constructor(
@@ -32,8 +32,8 @@ export class ChangeLogController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(ChangeLogDTO)
-    @RequirePermission(CHANGE_LOG_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ChangeLogDTO })
+    @RequireGlobalPermission(CHANGE_LOG_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a change log by identifier",
         security: [{ identity: [] }],
@@ -55,7 +55,7 @@ export class ChangeLogController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(CHANGE_LOG_READ_ABSOLUTE)
+    @RequireGlobalPermission(CHANGE_LOG_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a paginated list of change logs",
         security: [{ identity: [] }],
@@ -68,7 +68,7 @@ export class ChangeLogController {
         UNAUTHORIZED,
         FORBIDDEN,
     )
-    public getList(@Body() { pagination, filters, sort }: GetListBodyDTO): Queries.ChangeLog.FindMany.Result {
+    public findMany(@Body() { pagination, filters, sort }: GetListBodyDTO): Queries.ChangeLog.FindMany.Result {
         return this.changeLogQueries.findMany({ pagination, filters, sort });
     }
 }
