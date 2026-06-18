@@ -1,5 +1,5 @@
+export { ManageGetLookupListQueryDTO, GetLookupListQueryDTO, GetLookupListBodyDTO } from "./req/get-lookup-list.dto";
 export { ManageGetListQueryDTO, ManageGetListBodyDTO, GetListQueryDTO, GetListBodyDTO } from "./req/get-list.dto";
-export { GetLookupListQueryDTO, GetLookupListBodyDTO } from "./req/get-lookup-list.dto";
 export { RestoreQueryDTO, RestoreBodyDTO } from "./req/restore.dto";
 export { RevokeQueryDTO, RevokeBodyDTO } from "./req/revoke.dto";
 export { CreateQueryDTO, CreateBodyDTO } from "./req/create.dto";

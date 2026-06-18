@@ -8,10 +8,11 @@ declare global {
             interface Contract {
                 findEffective(props: FindEffective.DefaultProps): FindEffective.Result;
                 findEffective(props: FindEffective.ManageProps): FindEffective.Result;
-                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
-                findUnique(props: FindUnique.Props): FindUnique.Result;
+                getLookupList(props: GetLookupList.DefaultProps): GetLookupList.Result;
+                getLookupList(props: GetLookupList.ManageProps): GetLookupList.Result;
                 findMany(props: FindMany.DefaultProps): FindMany.Result;
                 findMany(props: FindMany.ManageProps): FindMany.Result;
+                findUnique(props: FindUnique.Props): FindUnique.Result;
             }
 
             namespace FindEffective {
@@ -29,8 +30,8 @@ declare global {
                     filters: Adapters.Permission.DefaultFilters;
                     sort: Adapters.Permission.Sort;
                     pagination: Pagination;
-                    realm: string;
                     account: string;
+                    realm: string;
                 };
 
                 type Props = DefaultProps | ManageProps;
@@ -38,13 +39,22 @@ declare global {
             }
 
             namespace GetLookupList {
-                type Props = {
+                type DefaultProps = {
+                    mode: QueryMode.DEFAULT;
                     options?: FindOptions<Entities.Permission>;
                     pagination: Pagination;
                     realm: string;
                     term: string;
                 };
 
+                type ManageProps = {
+                    mode: QueryMode.MANAGE;
+                    options?: FindOptions<Entities.Permission>;
+                    pagination: Pagination;
+                    term: string;
+                };
+
+                type Props = DefaultProps | ManageProps;
                 type Result = Promise<[Entities.Permission[], number]>;
             }
 

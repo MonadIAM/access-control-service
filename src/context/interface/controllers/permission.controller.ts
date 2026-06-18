@@ -167,10 +167,10 @@ export class PermissionController {
         FORBIDDEN,
     )
     public getLookupList(
-        @Query() { realm, term }: GetLookupListQueryDTO,
+        @Query() { realm, term, mode }: GetLookupListQueryDTO,
         @Body() { pagination }: GetLookupListBodyDTO,
     ): Queries.Permission.GetLookupList.Result {
-        return this.permissionQueries.getLookupList({ pagination, realm, term });
+        return this.permissionQueries.getLookupList({ mode, pagination, realm, term });
     }
 
     @Post("create")

@@ -281,10 +281,10 @@ export class RoleController {
         FORBIDDEN,
     )
     public getLookupList(
-        @Query() { realm, term }: GetLookupListQueryDTO,
+        @Query() { realm, term, mode }: GetLookupListQueryDTO,
         @Body() { pagination }: GetLookupListBodyDTO,
     ): Queries.Role.GetLookupList.Result {
-        return this.roleQueries.getLookupList({ pagination, realm, term });
+        return this.roleQueries.getLookupList({ mode, pagination, realm, term });
     }
 
     @HttpCode(OK)

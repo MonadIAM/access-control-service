@@ -126,9 +126,12 @@ export class RoleRepository
 
             builder
                 .select(["r.id", "r.code", "r.name"])
-                .where({ "r.realm": realm })
                 .limit(pagination.elementsPerPage)
                 .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
+
+            if (realm) {
+                builder.where({ "r.realm": realm });
+            }
 
             if (term) {
                 builder.andWhere("r.name % ?", [term]).orderBy({

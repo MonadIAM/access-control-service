@@ -13,11 +13,12 @@ declare global {
                 findDelegableByAccount(props: FindDelegableByAccount.ManageProps): FindDelegableByAccount.Result;
                 findDelegableByRole(props: FindDelegableByRole.Props): FindDelegableByRole.Result;
                 getHierarchyGraph(props: GetHierarchyGraph.Props): GetHierarchyGraph.Result;
+                getLookupList(props: GetLookupList.DefaultProps): GetLookupList.Result;
+                getLookupList(props: GetLookupList.ManageProps): GetLookupList.Result;
                 findEffective(props: FindEffective.DefaultProps): FindEffective.Result;
                 findEffective(props: FindEffective.ManageProps): FindEffective.Result;
                 findDescendants(props: FindDescendants.Props): FindDescendants.Result;
                 findAncestors(props: FindAncestors.Props): FindAncestors.Result;
-                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
                 findMany(props: FindMany.DefaultProps): FindMany.Result;
                 findMany(props: FindMany.ManageProps): FindMany.Result;
                 findUnique(props: FindUnique.Props): FindUnique.Result;
@@ -104,13 +105,22 @@ declare global {
             }
 
             namespace GetLookupList {
-                type Props = {
+                type DefaultProps = {
+                    mode: QueryMode.DEFAULT;
                     options?: FindOptions<Entities.Role>;
                     pagination: Pagination;
                     realm: string;
                     term: string;
                 };
 
+                type ManageProps = {
+                    mode: QueryMode.MANAGE;
+                    options?: FindOptions<Entities.Role>;
+                    pagination: Pagination;
+                    term: string;
+                };
+
+                type Props = DefaultProps | ManageProps;
                 type Result = Promise<[Entities.Role[], number]>;
             }
 

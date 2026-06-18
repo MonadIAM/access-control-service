@@ -19,7 +19,7 @@ declare global {
             namespace GetLookupList {
                 type Props = {
                     pagination: Pagination;
-                    realm: string;
+                    realm?: string;
                     term: string;
                 };
 

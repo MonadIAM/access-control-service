@@ -11,8 +11,11 @@ import {
     ManageGetDelegableByAccountListBodyDTO,
     ManageGetEffectiveListQueryDTO,
     ManageGetEffectiveListBodyDTO,
+    ManageGetLookupListQueryDTO,
     ManageGetListQueryDTO,
     ManageGetListBodyDTO,
+    GetLookupListBodyDTO,
+    LookupListDTO,
     ListDTO,
 } from "../dto/role";
 
@@ -99,5 +102,29 @@ export class RoleManageController {
         @Query() { account, mode }: ManageGetDelegableByAccountListQueryDTO,
     ): Queries.Role.FindDelegableByAccount.Result {
         return this.roleQueries.findDelegableByAccount({ mode, pagination, filters, sort, account });
+    }
+
+    @HttpCode(OK)
+    @Post("list/lookup")
+    @FormatResponse(LookupListDTO)
+    @RequireGlobalPermission(ROLE_READ_ABSOLUTE)
+    @ApiResponse({ status: OK, type: LookupListDTO })
+    @ApiOperation({
+        summary: "Returns a lookup list of roles across realms",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
+    public getLookupList(
+        @Query() { term, mode }: ManageGetLookupListQueryDTO,
+        @Body() { pagination }: GetLookupListBodyDTO,
+    ): Queries.Role.GetLookupList.Result {
+        return this.roleQueries.getLookupList({ mode, pagination, term });
     }
 }

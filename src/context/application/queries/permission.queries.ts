@@ -36,10 +36,13 @@ export class PermissionQueries implements Queries.Permission.Contract {
     }
 
     public getLookupList(props: Queries.Permission.GetLookupList.Props): Queries.Permission.GetLookupList.Result {
+        const isManage = props.mode === QueryMode.MANAGE;
+        const realm = isManage ? undefined : props.realm;
+
         return this.permissionRepository.getLookupList({
             pagination: props.pagination,
-            realm: props.realm,
             term: props.term,
+            realm,
         });
     }
 

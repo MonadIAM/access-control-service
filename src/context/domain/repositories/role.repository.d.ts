@@ -34,12 +34,12 @@ declare global {
                 wouldExceedRoleLimit(props: WouldExceedRoleLimit.Props): WouldExceedRoleLimit.Result;
                 findAccountsByRoles(props: FindAccountsByRoles.Props): FindAccountsByRoles.Result;
                 getHierarchyGraph(props: GetHierarchyGraph.Props): GetHierarchyGraph.Result;
-                findDelegable(props: FindDelegable.Props): FindDelegable.Result;
                 findDescendants(props: FindDescendants.Props): FindDescendants.Result;
                 getDescendants(props: GetDescendants.Props): GetDescendants.Result;
                 getLookupList(props: GetLookupList.Props): GetLookupList.Result;
                 findEffective(props: FindEffective.Props): FindEffective.Result;
                 findAncestors(props: FindAncestors.Props): FindAncestors.Result;
+                findDelegable(props: FindDelegable.Props): FindDelegable.Result;
                 getAncestors(props: GetAncestors.Props): GetAncestors.Result;
             }
 
@@ -68,7 +68,7 @@ declare global {
             namespace GetLookupList {
                 type Props = {
                     pagination: Pagination;
-                    realm: string;
+                    realm?: string;
                     term: string;
                 };
 

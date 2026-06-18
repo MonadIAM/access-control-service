@@ -9,8 +9,11 @@ import { PermissionCode } from "~context/enums";
 import {
     ManageGetEffectiveListQueryDTO,
     ManageGetEffectiveListBodyDTO,
+    ManageGetLookupListQueryDTO,
     ManageGetListQueryDTO,
     ManageGetListBodyDTO,
+    GetLookupListBodyDTO,
+    LookupListDTO,
     ListDTO,
 } from "../dto/permission";
 
@@ -73,5 +76,29 @@ export class PermissionManageController {
         @Query() { realm, account, mode }: ManageGetEffectiveListQueryDTO,
     ): Queries.Permission.FindEffective.Result {
         return this.permissionQueries.findEffective({ mode, pagination, filters, sort, realm, account });
+    }
+
+    @HttpCode(OK)
+    @Post("list/lookup")
+    @FormatResponse(LookupListDTO)
+    @ApiResponse({ status: OK, type: LookupListDTO })
+    @RequireGlobalPermission(PERMISSION_READ_ABSOLUTE)
+    @ApiOperation({
+        summary: "Returns a lookup list of permissions across realms",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
+    public getLookupList(
+        @Query() { term, mode }: ManageGetLookupListQueryDTO,
+        @Body() { pagination }: GetLookupListBodyDTO,
+    ): Queries.Permission.GetLookupList.Result {
+        return this.permissionQueries.getLookupList({ mode, pagination, term });
     }
 }

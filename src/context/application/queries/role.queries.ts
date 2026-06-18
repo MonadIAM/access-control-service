@@ -104,10 +104,13 @@ export class RoleQueries implements Queries.Role.Contract {
     }
 
     public getLookupList(props: Queries.Role.GetLookupList.Props): Queries.Role.GetLookupList.Result {
+        const isManage = props.mode === QueryMode.MANAGE;
+        const realm = isManage ? undefined : props.realm;
+
         return this.roleRepository.getLookupList({
             pagination: props.pagination,
-            realm: props.realm,
             term: props.term,
+            realm,
         });
     }
 

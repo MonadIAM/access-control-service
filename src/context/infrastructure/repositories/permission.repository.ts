@@ -38,9 +38,12 @@ export class PermissionRepository
 
             builder
                 .select(["p.id", "p.code", "p.name"])
-                .where({ "p.realm": realm })
                 .limit(pagination.elementsPerPage)
                 .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
+
+            if (realm) {
+                builder.where({ "p.realm": realm });
+            }
 
             if (term) {
                 builder.andWhere("p.name % ?", [term]).orderBy({
