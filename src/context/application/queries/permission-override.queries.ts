@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/infrastructure/repositories";
 import { PublicLinkOperator } from "~infrastructure/database";
-import { PermissionCode } from "~context/enums";
+import { QueryMode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideQueries implements Queries.PermissionOverride.Contract {
@@ -17,26 +17,31 @@ export class PermissionOverrideQueries implements Queries.PermissionOverride.Con
     ) {}
 
     public findUnique(props: Queries.PermissionOverride.FindUnique.Props): Queries.PermissionOverride.FindUnique.Result {
-        let account = props.actor;
-        if (props.permissions?.includes(PermissionCode.PERMISSION_OVERRIDE_READ_ABSOLUTE)) {
-            account = props.account ?? props.actor;
-        }
+        const where = {
+            account: props.mode === QueryMode.DEFAULT ? props.actor : props.account,
+            realm: props.realm,
+            id: props.override,
+        };
+
         return this.permissionOverrideRepository.findUniqueOrThrow({
-            where: { id: props.override, account, realm: props.realm },
             options: { populate: this.populate[props.view] },
+            where,
         });
     }
 
     public findMany(props: Queries.PermissionOverride.FindMany.Props): Queries.PermissionOverride.FindMany.Result {
         const filters = { ...props.filters };
-        if (!props.permissions?.includes(PermissionCode.PERMISSION_OVERRIDE_READ_ABSOLUTE)) {
+        const prefilter = props.mode === QueryMode.DEFAULT ? { realm: props.realm } : {};
+
+        if (props.mode === QueryMode.DEFAULT) {
             filters.account = { operator: PublicLinkOperator.EQUAL, value: props.actor };
         }
+
         return this.permissionOverrideRepository.findMany({
             options: { populate: this.populate[props.view] },
-            prefilter: { realm: props.realm },
             pagination: props.pagination,
             sort: props.sort,
+            prefilter,
             filters,
         });
     }

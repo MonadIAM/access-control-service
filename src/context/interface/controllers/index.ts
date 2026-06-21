@@ -1,3 +1,4 @@
+import { PermissionOverrideManageController } from "./manage-permission-override.controller";
 import { RolePermissionAssignmentController } from "./role-permission-assignment.controller";
 import { AccountRoleAssignmentController } from "./account-role-assignment.controller";
 import { RoleDelegationPolicyController } from "./role-delegation-policy.controller";
@@ -17,6 +18,7 @@ import { RealmController } from "./realm.controller";
 import { RoleController } from "./role.controller";
 
 export const HTTP_CONTROLLERS = [
+    PermissionOverrideManageController,
     RolePermissionAssignmentController,
     AccountRoleAssignmentController,
     RoleDelegationPolicyController,
@@ -37,6 +39,7 @@ export const HTTP_CONTROLLERS = [
 ];
 
 export {
+    PermissionOverrideManageController,
     RolePermissionAssignmentController,
     AccountRoleAssignmentController,
     RoleDelegationPolicyController,

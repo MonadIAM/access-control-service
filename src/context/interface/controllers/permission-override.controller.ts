@@ -50,7 +50,6 @@ const {
     OK,
 } = HttpStatus;
 const {
-    PERMISSION_OVERRIDE_READ_ABSOLUTE,
     PERMISSION_OVERRIDE_READ_PERSONAL,
     PERMISSION_OVERRIDE_RESTORE,
     PERMISSION_OVERRIDE_CREATE,
@@ -73,7 +72,7 @@ export class PermissionOverrideController {
     @HttpCode(OK)
     @FormatResponse(PermissionOverrideDTO)
     @ApiResponse({ status: OK, type: PermissionOverrideDTO })
-    @RequirePermission(PERMISSION_OVERRIDE_READ_ABSOLUTE, PERMISSION_OVERRIDE_READ_PERSONAL)
+    @RequirePermission(PERMISSION_OVERRIDE_READ_PERSONAL)
     @ApiOperation({
         summary: "Returns a permission override by identifier",
         security: [{ identity: [] }],
@@ -87,19 +86,18 @@ export class PermissionOverrideController {
         NOT_FOUND,
         FORBIDDEN,
     )
-    public getById(
-        @Query() { override, realm, view }: GetByIdQueryDTO,
+    public findUnique(
+        @Query() { override, realm, view, mode }: GetByIdQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Extract.Permissions() permissions?: string[],
     ): Queries.PermissionOverride.FindUnique.Result {
-        return this.permissionOverrideQueries.findUnique({ permissions, override, realm, actor, view });
+        return this.permissionOverrideQueries.findUnique({ mode, override, realm, actor, view });
     }
 
     @Post("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(PERMISSION_OVERRIDE_READ_ABSOLUTE, PERMISSION_OVERRIDE_READ_PERSONAL)
+    @RequirePermission(PERMISSION_OVERRIDE_READ_PERSONAL)
     @ApiOperation({
         summary: "Returns a paginated list of permission overrides",
         security: [{ identity: [] }],
@@ -112,13 +110,12 @@ export class PermissionOverrideController {
         UNAUTHORIZED,
         FORBIDDEN,
     )
-    public getList(
+    public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
-        @Query() { realm, view }: GetListQueryDTO,
+        @Query() { realm, view, mode }: GetListQueryDTO,
         @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Extract.Permissions() permissions?: string[],
     ): Queries.PermissionOverride.FindMany.Result {
-        return this.permissionOverrideQueries.findMany({ permissions, pagination, filters, realm, actor, sort, view });
+        return this.permissionOverrideQueries.findMany({ mode, pagination, filters, realm, actor, sort, view });
     }
 
     @Post("create")
