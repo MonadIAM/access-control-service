@@ -49,8 +49,8 @@ export class InviteController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(InviteDTO)
-    @ApiResponse({ status: OK, type: InviteDTO })
     @RequirePermission(INVITE_READ_PERSONAL)
+    @ApiResponse({ status: OK, type: InviteDTO })
     @ApiOperation({
         summary: "Returns an invite by identifier",
         security: [{ identity: [] }],
@@ -72,14 +72,14 @@ export class InviteController {
     }
 
     @HttpCode(OK)
-    @Post("list/personal")
+    @Post("list")
     @FormatResponse(ListDTO)
+    @RequirePermission(INVITE_READ_PERSONAL)
     @ApiResponse({ status: OK, type: ListDTO })
     @ApiOperation({
         summary: "Returns a paginated list of invites for the current account (sent or received)",
         security: [{ identity: [] }],
     })
-    @RequirePermission(INVITE_READ_PERSONAL)
     @Swagger.Exceptions(
         INTERNAL_SERVER_ERROR,
         UNPROCESSABLE_ENTITY,
@@ -125,8 +125,8 @@ export class InviteController {
         return this.inviteCommands.create({ context, realm, actor, input });
     }
 
-    @Patch("change-status")
     @HttpCode(OK)
+    @Patch("change-status")
     @FormatResponse(SuccessMessageDTO)
     @RequirePermission(INVITE_CHANGE_STATUS)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })

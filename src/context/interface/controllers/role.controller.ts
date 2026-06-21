@@ -98,7 +98,7 @@ export class RoleController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(RoleDTO)
-    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
+    @RequirePermission(ROLE_READ_ABSOLUTE, ROLE_READ_COMMON)
     @ApiResponse({ status: OK, type: RoleDTO })
     @ApiOperation({
         summary: "Returns a role by identifier",
@@ -121,7 +121,7 @@ export class RoleController {
     @Post("list")
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
+    @RequirePermission(ROLE_READ_ABSOLUTE, ROLE_READ_COMMON)
     @ApiOperation({
         summary: "Returns a paginated list of roles",
         security: [{ identity: [] }],
@@ -145,7 +145,7 @@ export class RoleController {
     @Post("list/ancestors")
     @FormatResponse(HierarchyListDTO)
     @ApiResponse({ status: OK, type: HierarchyListDTO })
-    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
+    @RequirePermission(ROLE_READ_ABSOLUTE, ROLE_READ_COMMON)
     @ApiOperation({
         summary: "Returns a paginated list of ancestor roles of the specified role, including itself",
         security: [{ identity: [] }],
@@ -169,7 +169,7 @@ export class RoleController {
     @Post("list/descendants")
     @FormatResponse(HierarchyListDTO)
     @ApiResponse({ status: OK, type: HierarchyListDTO })
-    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
+    @RequirePermission(ROLE_READ_ABSOLUTE, ROLE_READ_COMMON)
     @ApiOperation({
         summary: "Returns a paginated list of descendant roles of the specified role, including itself",
         security: [{ identity: [] }],
@@ -187,6 +187,75 @@ export class RoleController {
         @Body() { pagination, filters }: GetDescendantsListBodyDTO,
     ): Queries.Role.FindDescendants.Result {
         return this.roleQueries.findDescendants({ pagination, ancestor, filters, realm, view });
+    }
+
+    @HttpCode(OK)
+    @FormatResponse(ListDTO)
+    @Post("list/delegable/by-role")
+    @ApiResponse({ status: OK, type: ListDTO })
+    @RequirePermission(ROLE_READ_ABSOLUTE, ROLE_READ_COMMON)
+    @ApiOperation({
+        summary: "Returns a paginated list of roles that can be delegated from the specified role",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
+    public findDelegableByRole(
+        @Body() { pagination, filters, sort }: GetDelegableListBodyDTO,
+        @Query() { realm, id }: GetDelegableListQueryDTO,
+    ): Queries.Role.FindDelegableByRole.Result {
+        return this.roleQueries.findDelegableByRole({ pagination, filters, sort, realm, id });
+    }
+
+    @HttpCode(OK)
+    @Post("list/lookup")
+    @FormatResponse(LookupListDTO)
+    @ApiResponse({ status: OK, type: LookupListDTO })
+    @RequirePermission(ROLE_READ_ABSOLUTE, ROLE_READ_COMMON)
+    @ApiOperation({
+        summary: "Returns a lookup list of roles",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
+    public getLookupList(
+        @Query() { realm, term, mode }: GetLookupListQueryDTO,
+        @Body() { pagination }: GetLookupListBodyDTO,
+    ): Queries.Role.GetLookupList.Result {
+        return this.roleQueries.getLookupList({ mode, pagination, realm, term });
+    }
+
+    @HttpCode(OK)
+    @Get("hierarchy-graph")
+    @FormatResponse(RoleHierarchyGraphDTO)
+    @RequirePermission(ROLE_READ_ABSOLUTE, ROLE_READ_COMMON)
+    @ApiResponse({ status: OK, type: RoleHierarchyGraphDTO })
+    @ApiOperation({
+        summary: "Returns the role hierarchy graph (nodes and edges)",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
+    public getHierarchyGraph(@Query() { realm }: GetHierarchyGraphQueryDTO): Promise<Queries.Role.Graph> {
+        return this.roleQueries.getHierarchyGraph({ realm });
     }
 
     @HttpCode(OK)
@@ -215,30 +284,6 @@ export class RoleController {
     }
 
     @HttpCode(OK)
-    @FormatResponse(ListDTO)
-    @Post("list/delegable/by-role")
-    @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
-    @ApiOperation({
-        summary: "Returns a paginated list of roles that can be delegated from the specified role",
-        security: [{ identity: [] }],
-    })
-    @Swagger.Exceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        UNAUTHORIZED,
-        FORBIDDEN,
-    )
-    public findDelegableByRole(
-        @Body() { pagination, filters, sort }: GetDelegableListBodyDTO,
-        @Query() { realm, id }: GetDelegableListQueryDTO,
-    ): Queries.Role.FindDelegableByRole.Result {
-        return this.roleQueries.findDelegableByRole({ pagination, filters, sort, realm, id });
-    }
-
-    @HttpCode(OK)
     @Post("list/effective")
     @FormatResponse(ListDTO)
     @RequirePermission(ROLE_READ_PERSONAL)
@@ -261,51 +306,6 @@ export class RoleController {
         @Extract.Session() { account: actor }: Extract.Session.Auth,
     ): Queries.Role.FindEffective.Result {
         return this.roleQueries.findEffective({ mode, pagination, filters, sort, actor, realm });
-    }
-
-    @HttpCode(OK)
-    @Post("list/lookup")
-    @FormatResponse(LookupListDTO)
-    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
-    @ApiResponse({ status: OK, type: LookupListDTO })
-    @ApiOperation({
-        summary: "Returns a lookup list of roles",
-        security: [{ identity: [] }],
-    })
-    @Swagger.Exceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        UNAUTHORIZED,
-        FORBIDDEN,
-    )
-    public getLookupList(
-        @Query() { realm, term, mode }: GetLookupListQueryDTO,
-        @Body() { pagination }: GetLookupListBodyDTO,
-    ): Queries.Role.GetLookupList.Result {
-        return this.roleQueries.getLookupList({ mode, pagination, realm, term });
-    }
-
-    @HttpCode(OK)
-    @Get("hierarchy-graph")
-    @RequirePermission(ROLE_READ_COMMON, ROLE_READ_ABSOLUTE)
-    @FormatResponse(RoleHierarchyGraphDTO)
-    @ApiResponse({ status: OK, type: RoleHierarchyGraphDTO })
-    @ApiOperation({
-        summary: "Returns the role hierarchy graph (nodes and edges)",
-        security: [{ identity: [] }],
-    })
-    @Swagger.Exceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        UNAUTHORIZED,
-        FORBIDDEN,
-    )
-    public getHierarchyGraph(@Query() { realm }: GetHierarchyGraphQueryDTO): Promise<Queries.Role.Graph> {
-        return this.roleQueries.getHierarchyGraph({ realm });
     }
 
     @Post("create")

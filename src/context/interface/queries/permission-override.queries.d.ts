@@ -24,7 +24,6 @@ declare global {
                     view: ResponseViewType;
                     override: string;
                     realm: string;
-                    account?: string;
                 };
 
                 type Props = DefaultProps | ManageProps;
@@ -49,6 +48,7 @@ declare global {
                     sort: Adapters.PermissionOverride.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
+                    realm: string;
                 };
 
                 type Props = DefaultProps | ManageProps;

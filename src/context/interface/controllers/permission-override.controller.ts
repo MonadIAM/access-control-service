@@ -71,8 +71,8 @@ export class PermissionOverrideController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(PermissionOverrideDTO)
-    @ApiResponse({ status: OK, type: PermissionOverrideDTO })
     @RequirePermission(PERMISSION_OVERRIDE_READ_PERSONAL)
+    @ApiResponse({ status: OK, type: PermissionOverrideDTO })
     @ApiOperation({
         summary: "Returns a permission override by identifier",
         security: [{ identity: [] }],

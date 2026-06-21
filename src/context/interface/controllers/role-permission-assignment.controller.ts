@@ -50,6 +50,7 @@ const {
     OK,
 } = HttpStatus;
 const {
+    ROLE_PERMISSION_ASSIGNMENT_READ_ABSOLUTE,
     ROLE_PERMISSION_ASSIGNMENT_READ_COMMON,
     ROLE_PERMISSION_ASSIGNMENT_RESTORE,
     ROLE_PERMISSION_ASSIGNMENT_CREATE,
@@ -71,7 +72,7 @@ export class RolePermissionAssignmentController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(RolePermissionAssignmentDTO)
-    @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_READ_COMMON)
+    @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_READ_ABSOLUTE, ROLE_PERMISSION_ASSIGNMENT_READ_COMMON)
     @ApiResponse({ status: OK, type: RolePermissionAssignmentDTO })
     @ApiOperation({
         summary: "Returns a role-permission assignment by identifier",
@@ -96,7 +97,7 @@ export class RolePermissionAssignmentController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_READ_COMMON)
+    @RequirePermission(ROLE_PERMISSION_ASSIGNMENT_READ_ABSOLUTE, ROLE_PERMISSION_ASSIGNMENT_READ_COMMON)
     @ApiOperation({
         summary: "Returns a paginated list of role-permission assignments",
         security: [{ identity: [] }],

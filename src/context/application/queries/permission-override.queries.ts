@@ -1,7 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { FilterQuery } from "@mikro-orm/postgresql";
 
 import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/infrastructure/repositories";
 import { PublicLinkOperator } from "~infrastructure/database";
+import { PermissionOverride } from "~context/domain/entities";
 import { QueryMode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -17,11 +19,11 @@ export class PermissionOverrideQueries implements Queries.PermissionOverride.Con
     ) {}
 
     public findUnique(props: Queries.PermissionOverride.FindUnique.Props): Queries.PermissionOverride.FindUnique.Result {
-        const where = {
-            account: props.mode === QueryMode.DEFAULT ? props.actor : props.account,
-            realm: props.realm,
-            id: props.override,
-        };
+        const where: FilterQuery<PermissionOverride> = { id: props.override, realm: props.realm };
+
+        if (props.mode === QueryMode.DEFAULT) {
+            where.account = props.actor;
+        }
 
         return this.permissionOverrideRepository.findUniqueOrThrow({
             options: { populate: this.populate[props.view] },
@@ -30,8 +32,8 @@ export class PermissionOverrideQueries implements Queries.PermissionOverride.Con
     }
 
     public findMany(props: Queries.PermissionOverride.FindMany.Props): Queries.PermissionOverride.FindMany.Result {
+        const prefilter = { realm: props.realm };
         const filters = { ...props.filters };
-        const prefilter = props.mode === QueryMode.DEFAULT ? { realm: props.realm } : {};
 
         if (props.mode === QueryMode.DEFAULT) {
             filters.account = { operator: PublicLinkOperator.EQUAL, value: props.actor };

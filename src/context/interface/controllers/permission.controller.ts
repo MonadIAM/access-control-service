@@ -82,7 +82,7 @@ export class PermissionController {
     @HttpCode(OK)
     @FormatResponse(PermissionDTO)
     @ApiResponse({ status: OK, type: PermissionDTO })
-    @RequirePermission(PERMISSION_READ_COMMON, PERMISSION_READ_ABSOLUTE)
+    @RequirePermission(PERMISSION_READ_ABSOLUTE, PERMISSION_READ_COMMON)
     @ApiOperation({
         summary: "Returns a permission by identifier",
         security: [{ identity: [] }],
@@ -104,7 +104,7 @@ export class PermissionController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(PERMISSION_READ_COMMON, PERMISSION_READ_ABSOLUTE)
+    @RequirePermission(PERMISSION_READ_ABSOLUTE, PERMISSION_READ_COMMON)
     @ApiOperation({
         summary: "Returns a paginated list of permissions",
         security: [{ identity: [] }],
@@ -122,6 +122,30 @@ export class PermissionController {
         @Query() { realm, view, mode }: GetListQueryDTO,
     ): Queries.Permission.FindMany.Result {
         return this.permissionQueries.findMany({ mode, pagination, filters, realm, sort, view });
+    }
+
+    @HttpCode(OK)
+    @Post("list/lookup")
+    @FormatResponse(LookupListDTO)
+    @ApiResponse({ status: OK, type: LookupListDTO })
+    @RequirePermission(PERMISSION_READ_ABSOLUTE, PERMISSION_READ_COMMON)
+    @ApiOperation({
+        summary: "Returns a lookup list of permissions",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
+    public getLookupList(
+        @Query() { realm, term, mode }: GetLookupListQueryDTO,
+        @Body() { pagination }: GetLookupListBodyDTO,
+    ): Queries.Permission.GetLookupList.Result {
+        return this.permissionQueries.getLookupList({ mode, pagination, realm, term });
     }
 
     @HttpCode(OK)
@@ -147,30 +171,6 @@ export class PermissionController {
         @Extract.Session() { account: actor }: Extract.Session.Auth,
     ): Queries.Permission.FindEffective.Result {
         return this.permissionQueries.findEffective({ mode, pagination, filters, realm, actor, sort });
-    }
-
-    @HttpCode(OK)
-    @Post("list/lookup")
-    @FormatResponse(LookupListDTO)
-    @ApiResponse({ status: OK, type: LookupListDTO })
-    @RequirePermission(PERMISSION_READ_COMMON, PERMISSION_READ_ABSOLUTE)
-    @ApiOperation({
-        summary: "Returns a lookup list of permissions",
-        security: [{ identity: [] }],
-    })
-    @Swagger.Exceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        UNAUTHORIZED,
-        FORBIDDEN,
-    )
-    public getLookupList(
-        @Query() { realm, term, mode }: GetLookupListQueryDTO,
-        @Body() { pagination }: GetLookupListBodyDTO,
-    ): Queries.Permission.GetLookupList.Result {
-        return this.permissionQueries.getLookupList({ mode, pagination, realm, term });
     }
 
     @Post("create")

@@ -3,8 +3,8 @@ import { IsNotEmptyObject } from "class-validator";
 import { Expose, Type } from "class-transformer";
 
 import { BaseReadQueryDTO, PaginationDTO } from "~common/dto";
-import { QueryMode } from "~context/enums";
 import { Validator } from "~common/validator";
+import { QueryMode } from "~context/enums";
 
 import { FiltersDTO } from "../utils/filters.dto";
 import { SortDTO } from "../utils/sort.dto";
@@ -47,6 +47,11 @@ export class GetListQueryDTO extends BaseReadQueryDTO {
 
 @ApiSchema({ name: "PermissionOverrideManageListQuery" })
 export class ManageGetListQueryDTO extends BaseReadQueryDTO {
+    @Expose()
+    @Validator.IsUUID()
+    @ApiProperty({ required: true, type: String, format: "uuid" })
+    declare public realm: string;
+
     public get mode(): QueryMode.MANAGE {
         return QueryMode.MANAGE;
     }

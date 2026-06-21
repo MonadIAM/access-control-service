@@ -98,8 +98,8 @@ export class RoleConflictGroupController {
     @Post("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
-    @RequirePermission(ROLE_CONFLICT_GROUP_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
+    @RequirePermission(ROLE_CONFLICT_GROUP_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a paginated list of role conflict groups",
         security: [{ identity: [] }],

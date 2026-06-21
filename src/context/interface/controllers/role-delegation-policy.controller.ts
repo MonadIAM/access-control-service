@@ -52,6 +52,7 @@ const {
     OK,
 } = HttpStatus;
 const {
+    ROLE_DELEGATION_POLICY_READ_ABSOLUTE,
     ROLE_DELEGATION_POLICY_READ_COMMON,
     ROLE_DELEGATION_POLICY_RESTORE,
     ROLE_DELEGATION_POLICY_CREATE,
@@ -74,8 +75,8 @@ export class RoleDelegationPolicyController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(RoleDelegationPolicyDTO)
-    @RequirePermission(ROLE_DELEGATION_POLICY_READ_COMMON)
     @ApiResponse({ status: OK, type: RoleDelegationPolicyDTO })
+    @RequirePermission(ROLE_DELEGATION_POLICY_READ_ABSOLUTE, ROLE_DELEGATION_POLICY_READ_COMMON)
     @ApiOperation({
         summary: "Returns a role delegation policy by identifier",
         security: [{ identity: [] }],
@@ -97,7 +98,7 @@ export class RoleDelegationPolicyController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(ROLE_DELEGATION_POLICY_READ_COMMON)
+    @RequirePermission(ROLE_DELEGATION_POLICY_READ_ABSOLUTE, ROLE_DELEGATION_POLICY_READ_COMMON)
     @ApiOperation({
         summary: "Returns a paginated list of role delegation policies",
         security: [{ identity: [] }],

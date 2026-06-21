@@ -35,8 +35,8 @@ export class RoleManageController {
     @HttpCode(OK)
     @Post("list")
     @FormatResponse(ListDTO)
-    @RequireGlobalPermission(ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
+    @RequireGlobalPermission(ROLE_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a paginated list of roles across realms",
         security: [{ identity: [] }],
@@ -59,8 +59,8 @@ export class RoleManageController {
     @HttpCode(OK)
     @Post("list/effective")
     @FormatResponse(ListDTO)
-    @RequireGlobalPermission(ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
+    @RequireGlobalPermission(ROLE_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a paginated list of effective roles for the specified account",
         security: [{ identity: [] }],
@@ -83,8 +83,8 @@ export class RoleManageController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @Post("list/delegable/by-account")
-    @RequireGlobalPermission(ROLE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: ListDTO })
+    @RequireGlobalPermission(ROLE_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a paginated list of roles that can be delegated by the specified account",
         security: [{ identity: [] }],

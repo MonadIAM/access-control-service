@@ -1,5 +1,5 @@
-import { Expose, Type } from "class-transformer";
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import { Expose, Type } from "class-transformer";
 
 import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
@@ -33,13 +33,6 @@ export class FiltersDTO implements Adapters.PermissionOverride.Filters {
     @Type(() => LinkFilterDTO)
     @ApiProperty({ required: false, type: LinkFilterDTO })
     public permission?: LinkFilterDTO;
-
-    @Expose()
-    @Validator.IsOptional()
-    @Validator.ValidateNested()
-    @Type(() => LinkFilterDTO)
-    @ApiProperty({ required: false, type: LinkFilterDTO })
-    public realm?: LinkFilterDTO;
 
     @Expose()
     @Validator.IsOptional()

@@ -50,6 +50,7 @@ const {
     OK,
 } = HttpStatus;
 const {
+    ACCOUNT_ROLE_ASSIGNMENT_READ_ABSOLUTE,
     ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON,
     ACCOUNT_ROLE_ASSIGNMENT_RESTORE,
     ACCOUNT_ROLE_ASSIGNMENT_CREATE,
@@ -71,8 +72,8 @@ export class AccountRoleAssignmentController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(AccountRoleAssignmentDTO)
-    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON)
     @ApiResponse({ status: OK, type: AccountRoleAssignmentDTO })
+    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_READ_ABSOLUTE, ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON)
     @ApiOperation({
         summary: "Returns a account role assignment by identifier",
         security: [{ identity: [] }],
@@ -96,7 +97,7 @@ export class AccountRoleAssignmentController {
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON)
+    @RequirePermission(ACCOUNT_ROLE_ASSIGNMENT_READ_ABSOLUTE, ACCOUNT_ROLE_ASSIGNMENT_READ_COMMON)
     @ApiOperation({
         summary: "Returns a paginated list of account role assignments",
         security: [{ identity: [] }],

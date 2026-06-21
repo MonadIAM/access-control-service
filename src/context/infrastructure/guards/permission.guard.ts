@@ -49,7 +49,7 @@ export class PermissionGuard implements CanActivate {
         }
 
         const matched = await this.projectionCacheService.checkPermissions({
-            globalOnly: !!globalPermissions,
+            globalOnly: Boolean(globalPermissions),
             permissions,
             account,
             realm,

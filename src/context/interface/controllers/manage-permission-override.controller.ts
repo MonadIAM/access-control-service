@@ -1,7 +1,7 @@
 import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
+import { RequirePermission, FormatResponse, Swagger } from "~common/decorators";
 import { PERMISSION_OVERRIDE_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
@@ -38,8 +38,8 @@ export class PermissionOverrideManageController {
     @Get()
     @HttpCode(OK)
     @FormatResponse(PermissionOverrideDTO)
+    @RequirePermission(PERMISSION_OVERRIDE_READ_ABSOLUTE)
     @ApiResponse({ status: OK, type: PermissionOverrideDTO })
-    @RequireGlobalPermission(PERMISSION_OVERRIDE_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a permission override by identifier",
         security: [{ identity: [] }],
@@ -54,16 +54,16 @@ export class PermissionOverrideManageController {
         FORBIDDEN,
     )
     public findUnique(
-        @Query() { override, realm, account, view, mode }: ManageGetByIdQueryDTO,
+        @Query() { override, realm, view, mode }: ManageGetByIdQueryDTO,
     ): Queries.PermissionOverride.FindUnique.Result {
-        return this.permissionOverrideQueries.findUnique({ mode, override, realm, account, view });
+        return this.permissionOverrideQueries.findUnique({ mode, override, realm, view });
     }
 
     @Post("list")
     @HttpCode(OK)
     @FormatResponse(ListDTO)
     @ApiResponse({ status: OK, type: ListDTO })
-    @RequireGlobalPermission(PERMISSION_OVERRIDE_READ_ABSOLUTE)
+    @RequirePermission(PERMISSION_OVERRIDE_READ_ABSOLUTE)
     @ApiOperation({
         summary: "Returns a paginated list of permission overrides across all realms",
         security: [{ identity: [] }],
@@ -78,8 +78,8 @@ export class PermissionOverrideManageController {
     )
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
-        @Query() { view, mode }: ManageGetListQueryDTO,
+        @Query() { realm, view, mode }: ManageGetListQueryDTO,
     ): Queries.PermissionOverride.FindMany.Result {
-        return this.permissionOverrideQueries.findMany({ mode, pagination, filters, sort, view });
+        return this.permissionOverrideQueries.findMany({ mode, pagination, filters, realm, sort, view });
     }
 }

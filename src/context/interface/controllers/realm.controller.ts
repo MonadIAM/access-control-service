@@ -14,10 +14,10 @@ import {
 } from "@nestjs/common";
 
 import { RequirePermission, FormatResponse, Swagger, Extract, Reauthentication } from "~common/decorators";
-import { SuccessMessageDTO } from "~common/dto";
 import { REALM_COMMANDS } from "~context/application/commands";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { REALM_QUERIES } from "~context/application/queries";
+import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
 import {
