@@ -1,3 +1,4 @@
+import { AccountRoleAssignmentManageController } from "./manage-account-role-assignment.controller";
 import { PermissionOverrideManageController } from "./manage-permission-override.controller";
 import { RolePermissionAssignmentController } from "./role-permission-assignment.controller";
 import { AccountRoleAssignmentController } from "./account-role-assignment.controller";
@@ -18,6 +19,7 @@ import { RealmController } from "./realm.controller";
 import { RoleController } from "./role.controller";
 
 export const HTTP_CONTROLLERS = [
+    AccountRoleAssignmentManageController,
     PermissionOverrideManageController,
     RolePermissionAssignmentController,
     AccountRoleAssignmentController,
@@ -39,6 +41,7 @@ export const HTTP_CONTROLLERS = [
 ];
 
 export {
+    AccountRoleAssignmentManageController,
     PermissionOverrideManageController,
     RolePermissionAssignmentController,
     AccountRoleAssignmentController,

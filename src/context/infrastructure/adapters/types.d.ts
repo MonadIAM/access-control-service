@@ -49,16 +49,21 @@ declare global {
         }
 
         namespace AccountRoleAssignment {
-            type Filters = {
+            type DefaultFilters = {
                 id?: StringFilterDTO;
                 account?: LinkFilterDTO;
                 isSystemManaged?: boolean;
                 role?: LinkFilterDTO;
-                realm?: LinkFilterDTO;
                 updatedAt?: OrdinalFilterDTO<Date>;
                 createdAt?: OrdinalFilterDTO<Date>;
                 isRevoked?: boolean;
             };
+
+            type ManageFilters = DefaultFilters & {
+                realm?: LinkFilterDTO;
+            };
+
+            type Filters = DefaultFilters & ManageFilters;
 
             type Sort = {
                 createdAt?: QueryOrder;

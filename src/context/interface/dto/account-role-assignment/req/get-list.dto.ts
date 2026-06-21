@@ -4,8 +4,9 @@ import { Expose, Type } from "class-transformer";
 
 import { BaseReadQueryDTO, PaginationDTO } from "~common/dto";
 import { Validator } from "~common/validator";
+import { QueryMode } from "~context/enums";
 
-import { FiltersDTO } from "../utils/filters.dto";
+import { DefaultFiltersDTO, ManageFiltersDTO } from "../utils/filters.dto";
 import { SortDTO } from "../utils/sort.dto";
 
 @ApiSchema({ name: "AccountRoleAssignmentListBody" })
@@ -20,9 +21,9 @@ export class GetListBodyDTO {
     @Expose()
     @IsNotEmptyObject()
     @Validator.ValidateNested()
-    @Type(() => FiltersDTO)
-    @ApiProperty({ required: true, type: FiltersDTO })
-    declare public filters: FiltersDTO;
+    @Type(() => DefaultFiltersDTO)
+    @ApiProperty({ required: true, type: DefaultFiltersDTO })
+    declare public filters: DefaultFiltersDTO;
 
     @Expose()
     @IsNotEmptyObject()
@@ -38,4 +39,39 @@ export class GetListQueryDTO extends BaseReadQueryDTO {
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
     declare public realm: string;
+
+    public get mode(): QueryMode.DEFAULT {
+        return QueryMode.DEFAULT;
+    }
+}
+
+@ApiSchema({ name: "AccountRoleAssignmentManageListBody" })
+export class ManageGetListBodyDTO {
+    @Expose()
+    @IsNotEmptyObject()
+    @Validator.ValidateNested()
+    @Type(() => PaginationDTO)
+    @ApiProperty({ required: true, type: PaginationDTO })
+    declare public pagination: PaginationDTO;
+
+    @Expose()
+    @IsNotEmptyObject()
+    @Validator.ValidateNested()
+    @Type(() => ManageFiltersDTO)
+    @ApiProperty({ required: true, type: ManageFiltersDTO })
+    declare public filters: ManageFiltersDTO;
+
+    @Expose()
+    @IsNotEmptyObject()
+    @Validator.ValidateNested()
+    @Type(() => SortDTO)
+    @ApiProperty({ required: true, type: SortDTO })
+    declare public sort: SortDTO;
+}
+
+@ApiSchema({ name: "AccountRoleAssignmentManageListQuery" })
+export class ManageGetListQueryDTO extends BaseReadQueryDTO {
+    public get mode(): QueryMode.MANAGE {
+        return QueryMode.MANAGE;
+    }
 }

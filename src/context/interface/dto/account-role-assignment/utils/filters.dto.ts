@@ -1,11 +1,11 @@
-import { Expose, Type } from "class-transformer";
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import { Expose, Type } from "class-transformer";
 
 import { OrdinalFilterDTO, StringFilterDTO, LinkFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "AccountRoleAssignmentFilters" })
-export class FiltersDTO implements Adapters.AccountRoleAssignment.Filters {
+export class DefaultFiltersDTO implements Adapters.AccountRoleAssignment.DefaultFilters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
@@ -36,13 +36,6 @@ export class FiltersDTO implements Adapters.AccountRoleAssignment.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
-    @Type(() => LinkFilterDTO)
-    @ApiProperty({ required: false, type: LinkFilterDTO })
-    public realm?: LinkFilterDTO;
-
-    @Expose()
-    @Validator.IsOptional()
-    @Validator.ValidateNested()
     @Type(() => OrdinalFilterDTO)
     @ApiProperty({ required: false, type: OrdinalFilterDTO })
     public updatedAt?: OrdinalFilterDTO<Date>;
@@ -59,4 +52,14 @@ export class FiltersDTO implements Adapters.AccountRoleAssignment.Filters {
     @Validator.IsBoolean()
     @ApiProperty({ required: false, type: Boolean })
     public isRevoked?: boolean;
+}
+
+@ApiSchema({ name: "AccountRoleAssignmentManageFilters" })
+export class ManageFiltersDTO extends DefaultFiltersDTO implements Adapters.AccountRoleAssignment.ManageFilters {
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => LinkFilterDTO)
+    @ApiProperty({ required: false, type: LinkFilterDTO })
+    public realm?: LinkFilterDTO;
 }

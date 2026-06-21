@@ -1,6 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
+import { QueryMode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentQueries implements Queries.AccountRoleAssignment.Contract {
@@ -24,12 +25,14 @@ export class AccountRoleAssignmentQueries implements Queries.AccountRoleAssignme
     }
 
     public findMany(props: Queries.AccountRoleAssignment.FindMany.Props): Queries.AccountRoleAssignment.FindMany.Result {
+        const prefilter = props.mode === QueryMode.DEFAULT ? { realm: props.realm } : {};
+
         return this.accountRoleAssignmentRepository.findMany({
             options: { populate: this.populate[props.view] },
-            prefilter: { realm: props.realm },
             pagination: props.pagination,
             filters: props.filters,
             sort: props.sort,
+            prefilter,
         });
     }
 }

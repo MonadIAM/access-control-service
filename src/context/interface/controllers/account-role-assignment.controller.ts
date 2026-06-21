@@ -111,9 +111,9 @@ export class AccountRoleAssignmentController {
     )
     public findMany(
         @Body() { pagination, filters, sort }: GetListBodyDTO,
-        @Query() { realm, view }: GetListQueryDTO,
+        @Query() { realm, view, mode }: GetListQueryDTO,
     ): Queries.AccountRoleAssignment.FindMany.Result {
-        return this.accountRoleAssignmentQueries.findMany({ pagination, filters, realm, sort, view });
+        return this.accountRoleAssignmentQueries.findMany({ mode, pagination, filters, realm, sort, view });
     }
 
     @Post("create")
