@@ -219,7 +219,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      kafka-connect:
+        condition: service_started
       debezium-init:
+        condition: service_completed_successfully
+      vault-init:
         condition: service_completed_successfully
       vault-secrets-init:
         condition: service_completed_successfully
