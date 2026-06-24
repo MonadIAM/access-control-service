@@ -23,7 +23,7 @@ const { CHANGE_LOG_READ_ABSOLUTE } = PermissionCode;
 @ApiTags("ChangeLog")
 @Controller("/change-log/manage")
 @UseInterceptors(MonitoringInterceptor)
-export class ChangeLogController {
+export class ChangeLogManageController {
     public constructor(
         @Inject(CHANGE_LOG_QUERIES)
         private readonly changeLogQueries: Queries.ChangeLog.Contract,
