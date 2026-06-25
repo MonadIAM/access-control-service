@@ -74,4 +74,11 @@ export const ADMIN_PERMISSION_CODES: string[] = [
 
     PermissionCode.AUDIT_LOG_READ_ABSOLUTE,
     PermissionCode.CHANGE_LOG_READ_ABSOLUTE,
+
+    PermissionCode.OAUTH_CLIENT_READ_ABSOLUTE,
+    PermissionCode.OAUTH_CLIENT_CREATE,
+    PermissionCode.OAUTH_CLIENT_UPDATE,
+    PermissionCode.OAUTH_CLIENT_REVOKE,
+    PermissionCode.OAUTH_CLIENT_RESTORE,
+    PermissionCode.OAUTH_CLIENT_PURGE,
 ];

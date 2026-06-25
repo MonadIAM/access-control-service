@@ -575,6 +575,42 @@ const dataset = [
         "Revoke All Sessions",
         "Revoke all sessions for the current account.",
     ),
+    entry(
+        "00000003-0000-4000-8000-120000000030",
+        PermissionCode.OAUTH_CLIENT_READ_ABSOLUTE,
+        "Read Absolute OAuth Clients",
+        "View all OAuth clients within a realm.",
+    ),
+    entry(
+        "00000003-0000-4000-8000-120000000031",
+        PermissionCode.OAUTH_CLIENT_CREATE,
+        "Create OAuth Client",
+        "Create an OAuth client within a realm.",
+    ),
+    entry(
+        "00000003-0000-4000-8000-120000000032",
+        PermissionCode.OAUTH_CLIENT_UPDATE,
+        "Update OAuth Client",
+        "Modify an OAuth client within a realm.",
+    ),
+    entry(
+        "00000003-0000-4000-8000-120000000033",
+        PermissionCode.OAUTH_CLIENT_REVOKE,
+        "Revoke OAuth Client",
+        "Revoke an OAuth client within a realm.",
+    ),
+    entry(
+        "00000003-0000-4000-8000-120000000034",
+        PermissionCode.OAUTH_CLIENT_RESTORE,
+        "Restore OAuth Client",
+        "Restore a revoked OAuth client within a realm.",
+    ),
+    entry(
+        "00000003-0000-4000-8000-120000000035",
+        PermissionCode.OAUTH_CLIENT_PURGE,
+        "Purge OAuth Client",
+        "Permanently delete a revoked OAuth client within a realm.",
+    ),
 ];
 
 export const Permissions = {
