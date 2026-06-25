@@ -1,5 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccessCacheTopicAction, MembershipTopicAction } from "@liam/contracts";
+import { AccessCacheTopicAction, MembershipTopicAction, RealmTopicAction } from "@liam/contracts";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE, REALM_SERVICE } from "~context/domain/services";
 import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";
@@ -125,11 +125,18 @@ export class RealmCommands implements Commands.Realm.Contract {
                     realms: entities.map(({ id }) => id),
                 }),
             },
-            outbox: {
-                payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+                {
+                    payloadMapper: (entities: Entities.Realm[]) => this.realmLifecyclePayloadMapper(entities),
+                    actionType: RealmTopicAction.PURGE,
+                    destinationTopic: KafkaTopic.REALM,
+                },
+            ],
             audit: {
                 actionType: ActionType.DELETE,
                 entityType: EntityType.REALM,
@@ -170,11 +177,18 @@ export class RealmCommands implements Commands.Realm.Contract {
                     isRevoked: true,
                 }),
             },
-            outbox: {
-                payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+                {
+                    payloadMapper: (entities: Entities.Realm[]) => this.realmLifecyclePayloadMapper(entities),
+                    actionType: RealmTopicAction.REVOKE,
+                    destinationTopic: KafkaTopic.REALM,
+                },
+            ],
             audit: {
                 actionType: ActionType.REVOKE,
                 entityType: EntityType.REALM,
@@ -215,11 +229,18 @@ export class RealmCommands implements Commands.Realm.Contract {
                     isRevoked: false,
                 }),
             },
-            outbox: {
-                payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+                {
+                    payloadMapper: (entities: Entities.Realm[]) => this.realmLifecyclePayloadMapper(entities),
+                    actionType: RealmTopicAction.RESTORE,
+                    destinationTopic: KafkaTopic.REALM,
+                },
+            ],
             audit: {
                 actionType: ActionType.RESTORE,
                 entityType: EntityType.REALM,
@@ -336,5 +357,12 @@ export class RealmCommands implements Commands.Realm.Contract {
                 realm: id,
             })),
         };
+    }
+
+    private realmLifecyclePayloadMapper(entities: Entities.Realm[]): Topics.Realm.Message["payload"][] {
+        return entities.map(({ id, version }) => ({
+            version: version + 1,
+            realm: id,
+        }));
     }
 }
