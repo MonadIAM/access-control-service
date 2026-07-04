@@ -9,7 +9,7 @@ import dotenv from "dotenv";
 import { name, version } from "../../package.json";
 import { SwaggerModule } from "./swagger.module";
 
-dotenv.config();
+dotenv.config({ path: [".vault.env", ".env"] });
 
 void (async function (): Promise<void> {
     const application = await NestFactory.create<NestFastifyApplication>(
