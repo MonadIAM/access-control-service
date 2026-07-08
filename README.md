@@ -1,23 +1,11 @@
-# access-control-service
-
-This repository contains the access control service for LIAM (Lambdius Identity & Access Management).
-
-The service implements several access control models and related mechanisms:
-
-1. HRBAC (Hierarchical Role-Based Access Control)
-2. DAC (Discretionary Access Control)
-3. SoD (Segregation of Duties)
-4. Delegation Policies
-5. Multitenancy
-
-For architecture and system design notes, see [DESIGN_NOTES.md](./DESIGN_NOTES.md).  
+# @MonadIAM/access-control-service
 
 ----
 
 <details>
 <summary><strong>Local Deployment</strong></summary>
 
-1. Make sure the [infra](https://github.com/LambdiusLab/infra) repository is already running locally.
+1. Make sure the [infra](https://github.com/MonadIAM/infra) repository is already running locally.
 
 2. Make sure the `DOCKER_NETWORK_NAME` value in `.env` matches `monitoring-network` or your custom network.
 

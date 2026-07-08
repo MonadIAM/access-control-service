@@ -1,5 +1,5 @@
 import { MicroserviceOptions, Transport } from "@nestjs/microservices";
-import { ACCESS_CONTROL_PROTO_PATH } from "@liam/contracts";
+import { ACCESS_CONTROL_PROTO_PATH } from "@monadiam/contracts";
 import { Global, Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 

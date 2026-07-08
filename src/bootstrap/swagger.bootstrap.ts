@@ -54,7 +54,7 @@ export abstract class BootstrapSwagger {
             const document = SwaggerModule.createDocument(application, config.build());
 
             SwaggerModule.setup("/docs", application, document, {
-                customSiteTitle: "LIAM API",
+                customSiteTitle: "MonadIAM API",
                 jsonDocumentUrl: "/docs-json",
                 explorer: true,
                 swaggerOptions: {

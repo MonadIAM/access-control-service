@@ -1,4 +1,4 @@
-import { ListEffectivePrivilegesRequest, ListEffectivePrivilegesResponse } from "@liam/contracts";
+import { ListEffectivePrivilegesRequest, ListEffectivePrivilegesResponse } from "@monadiam/contracts";
 import { Controller, Inject } from "@nestjs/common";
 import { GrpcMethod } from "@nestjs/microservices";
 

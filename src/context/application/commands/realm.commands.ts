@@ -1,5 +1,5 @@
+import { AccessCacheTopicAction, MembershipTopicAction, RealmTopicAction } from "@monadiam/contracts";
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccessCacheTopicAction, MembershipTopicAction, RealmTopicAction } from "@liam/contracts";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE, REALM_SERVICE } from "~context/domain/services";
 import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";

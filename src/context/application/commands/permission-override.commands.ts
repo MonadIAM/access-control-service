@@ -1,5 +1,5 @@
+import { AccessCacheTopicAction } from "@monadiam/contracts";
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccessCacheTopicAction } from "@liam/contracts";
 
 import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
 import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services/tokens";

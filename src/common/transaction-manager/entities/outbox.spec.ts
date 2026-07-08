@@ -1,5 +1,5 @@
+import { AccessCacheTopicAction } from "@monadiam/contracts";
 import { describe, it, expect } from "@jest/globals";
-import { AccessCacheTopicAction } from "@liam/contracts";
 import { isUUID } from "class-validator";
 
 import { KafkaTopic } from "~context/enums";

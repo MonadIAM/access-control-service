@@ -1,4 +1,4 @@
-import { AccessCacheTopicAction, MembershipTopicAction } from "@liam/contracts";
+import { AccessCacheTopicAction, MembershipTopicAction } from "@monadiam/contracts";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { INVITE_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories/tokens";
