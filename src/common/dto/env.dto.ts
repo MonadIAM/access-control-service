@@ -205,9 +205,6 @@ export class EnvironmentVariablesDTO {
     declare public KAFKA_RETRY_INITIAL_TIME: StringValue;
 
     @Validator.IsString()
-    declare public DOCKER_NETWORK_NAME: string;
-
-    @Validator.IsString()
     declare public KAFKA_CONNECT_IMAGE: string;
 
     @Validator.IsInt()
@@ -227,6 +224,19 @@ export class EnvironmentVariablesDTO {
     declare public KAFKA_DLQ_RETRY_JITTER: StringValue;
 
     // ---------------------------------------------------------------------------
+    // Network
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsString()
+    declare public DOCKER_NETWORK_MONITORING: string;
+
+    @Validator.IsString()
+    declare public DOCKER_NETWORK_KAFKA: string;
+
+    @Validator.IsString()
+    declare public DOCKER_NETWORK_VAULT: string;
+
+    // ---------------------------------------------------------------------------
     // Debezium
     // ---------------------------------------------------------------------------
 
@@ -243,10 +253,6 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     declare public VAULT_PORT: number;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public VAULT_PUBLISHED_PORT: number;
 
     @Validator.IsString()
     declare public VAULT_ROOT_TOKEN: string;

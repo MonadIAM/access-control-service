@@ -1,6 +1,17 @@
 #!/bin/sh
 set -eu
 
+echo "Waiting for Vault at $VAULT_ADDR..."
+i=0
+until vault status >/dev/null 2>&1; do
+    i=$((i + 1))
+    if [ "$i" -ge 60 ]; then
+        echo "Vault did not become ready in time ($VAULT_ADDR)" >&2
+        exit 1
+    fi
+    sleep 1
+done
+
 vault secrets list -format=json | grep -q "\"$VAULT_KV_MOUNT/\"" ||
     vault secrets enable -path="$VAULT_KV_MOUNT" -version=2 kv
 

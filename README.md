@@ -1,4 +1,4 @@
-# @MonadIAM/access-control-service
+# @monadiam/access-control-service
 
 ----
 
@@ -7,12 +7,13 @@
 
 1. Make sure the [infra](https://github.com/MonadIAM/infra) repository is already running locally.
 
-2. Make sure the `DOCKER_NETWORK_NAME` value in `.env` matches `monitoring-network` or your custom network.
+2. Make sure `DOCKER_NETWORK_KAFKA`, `DOCKER_NETWORK_MONITORING`, and `DOCKER_NETWORK_VAULT` in `.env` match the actual Docker network names (defaults below), or your custom ones.
 
-3. Create shared Docker networks for inter-service communication and monitoring:
+3. Create shared Docker networks for inter-service communication, monitoring, and Vault:
 ```sh
-docker network create kafka-net
 docker network create monitoring-network
+docker network create kafka-net
+docker network create vault-net
 ```
 
 4. Install the Loki Docker plugin (allows log shipping without extra npm packages):
