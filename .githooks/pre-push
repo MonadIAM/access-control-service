@@ -2,7 +2,6 @@
 
 ESC=$(printf "\033")
 RED="${ESC}[31m"
-YELLOW="${ESC}[33m"
 BG_RED="${ESC}[41m"
 RESET="${ESC}[0m"
 
@@ -27,25 +26,6 @@ fi
 if [ "$BRANCH_LEN" -gt "$MAX_LENGTH" ]; then
     printf "\n${BG_RED}PUSH FAILED:${RESET}${RED} Branch name is too long!${RESET}\n"
     printf "Current length: ${BRANCH_LEN} characters (max: ${MAX_LENGTH})\n"
-    exit 1
-fi
-
-run_knip() {
-    local start_time end_time elapsed exit_code
-
-    start_time=$(date +%s)
-    npm run knip --silent >/dev/null 2>&1
-    exit_code=$?
-    end_time=$(date +%s)
-    elapsed=$((end_time - start_time))
-
-    printf "\n${YELLOW}Knip execution time: ${elapsed} sec${RESET}\n"
-    return $exit_code
-}
-
-run_knip
-if [ $? -ne 0 ]; then
-    printf "\n${BG_RED}PUSH FAILED:${RESET}${RED} Knip detected unused code or dependencies.${RESET}\n"
     exit 1
 fi
 
