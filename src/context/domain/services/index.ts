@@ -7,6 +7,8 @@ import { RoleConflictMemberService } from "./role-conflict-member.service";
 import { PermissionOverrideService } from "./permission-override.service";
 import { RoleConflictGroupService } from "./role-conflict-group.service";
 import { PermissionService } from "./permission.service";
+import { ChangeLogService } from "./change-log.service";
+import { AuditLogService } from "./audit-log.service";
 import { InviteService } from "./invite.service";
 import { RealmService } from "./realm.service";
 import { RoleService } from "./role.service";
@@ -18,6 +20,8 @@ import {
     PERMISSION_OVERRIDE_SERVICE,
     ROLE_CONFLICT_GROUP_SERVICE,
     PERMISSION_SERVICE,
+    CHANGE_LOG_SERVICE,
+    AUDIT_LOG_SERVICE,
     INVITE_SERVICE,
     REALM_SERVICE,
     ROLE_SERVICE,
@@ -53,6 +57,14 @@ export const DOMAIN_SERVICES: ClassProvider[] = [
         useClass: PermissionService,
     },
     {
+        provide: CHANGE_LOG_SERVICE,
+        useClass: ChangeLogService,
+    },
+    {
+        provide: AUDIT_LOG_SERVICE,
+        useClass: AuditLogService,
+    },
+    {
         provide: INVITE_SERVICE,
         useClass: InviteService,
     },
@@ -74,6 +86,8 @@ export {
     PERMISSION_OVERRIDE_SERVICE,
     ROLE_CONFLICT_GROUP_SERVICE,
     PERMISSION_SERVICE,
+    CHANGE_LOG_SERVICE,
+    AUDIT_LOG_SERVICE,
     INVITE_SERVICE,
     REALM_SERVICE,
     ROLE_SERVICE,

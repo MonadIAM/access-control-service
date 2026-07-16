@@ -13,20 +13,25 @@ import { BullQueue, QUEUES } from "./infrastructure/queues";
 import { HTTP_CONTROLLERS } from "./interface/controllers";
 import { GRPC_CONTROLLERS } from "./interface/grpc";
 import { DOMAIN_SERVICES } from "./domain/services";
+import { SCHEDULERS } from "./interface/schedulers";
 import { CONSUMERS } from "./interface/consumers";
 import { COMMANDS } from "./application/commands";
 import { QUERIES } from "./application/queries";
 
 @Module({
-    imports: [TransactionManagerModule, BullModule.registerQueue({ name: BullQueue.KAFKA_RETRY })],
+    imports: [
+        TransactionManagerModule,
+        BullModule.registerQueue({ name: BullQueue.KAFKA_RETRY }, { name: BullQueue.CLEANUP }),
+    ],
     providers: [
         ...INFRASTRUCTURE_SERVICES,
         ...DOMAIN_SERVICES,
         ...COMMON_SERVICES,
         ...REPOSITORIES,
-        ...QUEUES,
+        ...SCHEDULERS,
         ...COMMANDS,
         ...QUERIES,
+        ...QUEUES,
         ReauthenticationGuard,
         PermissionGuard,
         AuthnGuard,

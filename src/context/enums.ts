@@ -111,3 +111,10 @@ export enum ProjectionJournalStatus {
     DEAD       = "DEAD",
     /* eslint-enable prettier/prettier */
 }
+
+export enum CleanupJob {
+    /* eslint-disable prettier/prettier */
+    CHANGE_LOG = "cleanup-change-log",
+    AUDIT_LOG  = "cleanup-audit-log",
+    /* eslint-enable prettier/prettier */
+}

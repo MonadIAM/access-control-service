@@ -1,4 +1,5 @@
 import { ConfigModule } from "@nestjs/config";
+import { ScheduleModule } from "@nestjs/schedule";
 import { Module } from "@nestjs/common";
 
 import { RateLimiterModule } from "./rate-limiter";
@@ -12,6 +13,7 @@ import { I18nModule } from "./i18n";
         RateLimiterModule,
         BullMQModule,
         I18nModule,
+        ScheduleModule.forRoot(),
     ],
     exports: [ConfigModule, RateLimiterModule, I18nModule],
 })

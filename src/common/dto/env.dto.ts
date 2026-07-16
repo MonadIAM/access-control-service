@@ -224,6 +224,28 @@ export class EnvironmentVariablesDTO {
     declare public KAFKA_DLQ_RETRY_JITTER: StringValue;
 
     // ---------------------------------------------------------------------------
+    // BullMQ - cleanup
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsMsString()
+    declare public AUDIT_LOG_RETENTION_TTL: StringValue;
+
+    @Validator.IsMsString()
+    declare public CHANGE_LOG_RETENTION_TTL: StringValue;
+
+    @Validator.IsPositiveInt()
+    declare public CLEANUP_BATCH_SIZE: number;
+
+    @Validator.IsMsString()
+    declare public CLEANUP_BATCH_DELAY: StringValue;
+
+    @Validator.IsMsString()
+    declare public CLEANUP_BATCH_BACKOFF_DELAY: StringValue;
+
+    @Validator.IsPositiveInt()
+    declare public CLEANUP_BATCH_ATTEMPTS: number;
+
+    // ---------------------------------------------------------------------------
     // Network
     // ---------------------------------------------------------------------------
 

@@ -100,6 +100,17 @@ declare global {
             KAFKA_DLQ_RETRY_JITTER: StringValue;
 
             // ---------------------------------------------------------------------------
+            // BullMQ - cleanup
+            // ---------------------------------------------------------------------------
+
+            AUDIT_LOG_RETENTION_TTL: StringValue;
+            CHANGE_LOG_RETENTION_TTL: StringValue;
+            CLEANUP_BATCH_SIZE: `${number}`;
+            CLEANUP_BATCH_DELAY: StringValue;
+            CLEANUP_BATCH_BACKOFF_DELAY: StringValue;
+            CLEANUP_BATCH_ATTEMPTS: `${number}`;
+
+            // ---------------------------------------------------------------------------
             // Network
             // ---------------------------------------------------------------------------
 

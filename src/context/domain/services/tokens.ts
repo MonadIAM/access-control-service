@@ -1,10 +1,12 @@
 export const ROLE_PERMISSION_ASSIGNMENT_SERVICE = Symbol("Services.RolePermissionAssignment.Contract");
 export const ACCOUNT_ROLE_ASSIGNMENT_SERVICE = Symbol("Services.AccountRoleAssignment.Contract");
-export const INVITE_SERVICE = Symbol("Services.Invite.Contract");
 export const ROLE_DELEGATION_POLICY_SERVICE = Symbol("Services.RoleDelegationPolicy.Contract");
 export const ROLE_CONFLICT_MEMBER_SERVICE = Symbol("Services.RoleConflictMember.Contract");
 export const PERMISSION_OVERRIDE_SERVICE = Symbol("Services.PermissionOverride.Contract");
 export const ROLE_CONFLICT_GROUP_SERVICE = Symbol("Services.RoleConflictGroup.Contract");
 export const PERMISSION_SERVICE = Symbol("Services.Permission.Contract");
+export const CHANGE_LOG_SERVICE = Symbol("Services.ChangeLog.Contract");
+export const AUDIT_LOG_SERVICE = Symbol("Services.AuditLog.Contract");
+export const INVITE_SERVICE = Symbol("Services.Invite.Contract");
 export const REALM_SERVICE = Symbol("Services.Realm.Contract");
 export const ROLE_SERVICE = Symbol("Services.Role.Contract");
