@@ -1,19 +1,27 @@
 import { AnyEntity, EntityManager } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
+import { AuditLogTopicAction } from "@monadiam/contracts";
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 import { ExceptionMapper } from "~common/exceptions";
+import { KafkaTopic } from "~context/enums";
 
 import { OperationContext } from "../utilities/operation-context";
 import { ProjectionJournal, AuditLog, Outbox } from "../entities";
 
 @Injectable()
 export class TransactionalService {
+    private readonly serviceName: string;
+
     public constructor(
         @InjectEntityManager("write")
         private readonly writeManager: EntityManager,
         private readonly operationContext: OperationContext,
-    ) {}
+        private readonly configService: ConfigService,
+    ) {
+        this.serviceName = this.configService.getOrThrow<string>("SERVICE_NAME");
+    }
 
     public async run<T extends AnyEntity | AnyEntity[]>(params: TransactionManager.Service.Run<T>): Promise<T | void> {
         try {
@@ -30,6 +38,7 @@ export class TransactionalService {
                     async () => {
                         return await writeManager.transactional(async (transaction) => {
                             transaction.persist(auditEntry);
+                            transaction.persist(this.buildAuditLogArchiveOutbox(auditEntry));
 
                             return await this.executeWithEffects(params, transaction);
                         });
@@ -100,5 +109,24 @@ export class TransactionalService {
                 }
             }
         }
+    }
+
+    private buildAuditLogArchiveOutbox(auditEntry: AuditLog): Outbox {
+        return new Outbox({
+            destinationTopic: KafkaTopic.AUDIT_LOG_ARCHIVE,
+            actionType: AuditLogTopicAction.ARCHIVE,
+            payload: {
+                id: auditEntry.id,
+                service: this.serviceName,
+                created_at: auditEntry.createdAt.toISOString(),
+                action_type: auditEntry.actionType,
+                entity_type: auditEntry.entityType,
+                realm: auditEntry.realm ?? null,
+                actor: auditEntry.actor,
+                ip: auditEntry.ip ?? null,
+                user_agent: auditEntry.userAgent ?? null,
+                input: auditEntry.input ? JSON.stringify(auditEntry.input) : null,
+            },
+        });
     }
 }

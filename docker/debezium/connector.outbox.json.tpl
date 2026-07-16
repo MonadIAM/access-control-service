@@ -8,7 +8,7 @@
         "database.user": "${POSTGRES_USER}",
         "database.password": "${POSTGRES_PASSWORD}",
         "database.dbname": "${POSTGRES_DB}",
-        "topic.prefix": "${SERVICE_NAME}-outbox",
+        "topic.prefix": "${SERVICE_NAME}",
 
         "schema.include.list": "system",
         "table.include.list": "system\\.outbox",
@@ -24,17 +24,13 @@
         "key.converter": "org.apache.kafka.connect.json.JsonConverter",
         "key.converter.schemas.enable": "false",
 
-        "transforms": "unwrap,rename,route",
-
-        "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
-        "transforms.unwrap.drop.tombstones": "true",
-        "transforms.unwrap.delete.handling.mode": "drop",
-
-        "transforms.rename.type": "org.apache.kafka.connect.transforms.ReplaceField$Value",
-        "transforms.rename.renames": "sequence_number:sequenceNumber,event_type:actionType,aggregate_type:aggregateType,destination_topic:destinationTopic,created_at:createdAt",
-
-        "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
-        "transforms.route.regex": ".*",
-        "transforms.route.replacement": "outbox"
+        "transforms": "outbox",
+        "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+        "transforms.outbox.route.topic.replacement": "ROUTEDBYVALUE",
+        "transforms.outbox.route.by.field": "destination_topic",
+        "transforms.outbox.table.field.event.key": "id",
+        "transforms.outbox.table.field.event.type": "action_type",
+        "transforms.outbox.table.expand.json.payload": "true",
+        "transforms.outbox.table.fields.additional.placement": "action_type:envelope:actionType"
     }
 }

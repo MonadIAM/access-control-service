@@ -1,14 +1,24 @@
 import { EventSubscriber, FlushEventArgs, ChangeSetType } from "@mikro-orm/core";
+import { ChangeLogTopicAction } from "@monadiam/contracts";
+import { ConfigService } from "@nestjs/config";
 import { Injectable } from "@nestjs/common";
 
-import { ChangeLog, AuditLog } from "~common/transaction-manager/entities";
+import { ProjectionJournal, ChangeLog, AuditLog, Outbox } from "~common/transaction-manager/entities";
 import { OperationContext } from "~common/transaction-manager/utilities";
+import { KafkaTopic } from "~context/enums";
 
-const EXCLUDED_ENTITIES = new Set([AuditLog.name, ChangeLog.name]);
+const EXCLUDED_ENTITIES = new Set([ProjectionJournal.name, AuditLog.name, ChangeLog.name, Outbox.name]);
 
 @Injectable()
 export class ChangeLogSubscriber implements EventSubscriber {
-    public constructor(private readonly operationContext: OperationContext) {}
+    private readonly serviceName: string;
+
+    public constructor(
+        private readonly operationContext: OperationContext,
+        private readonly configService: ConfigService,
+    ) {
+        this.serviceName = this.configService.getOrThrow<string>("SERVICE_NAME");
+    }
 
     public onFlush({ uow, em }: FlushEventArgs): void {
         const context = this.operationContext.get();
@@ -29,6 +39,10 @@ export class ChangeLogSubscriber implements EventSubscriber {
 
                         em.persist(record);
                         uow.computeChangeSet(record);
+
+                        const outbox = this.buildChangeLogArchiveOutbox(record);
+                        em.persist(outbox);
+                        uow.computeChangeSet(outbox);
                     }
                 }
             }
@@ -65,5 +79,22 @@ export class ChangeLogSubscriber implements EventSubscriber {
         }
 
         return delta;
+    }
+
+    private buildChangeLogArchiveOutbox(record: ChangeLog): Outbox {
+        return new Outbox({
+            destinationTopic: KafkaTopic.CHANGE_LOG_ARCHIVE,
+            actionType: ChangeLogTopicAction.ARCHIVE,
+            payload: {
+                id: record.id,
+                service: this.serviceName,
+                created_at: record.createdAt.toISOString(),
+                audit_entry: record.auditEntry,
+                change_type: record.changeType,
+                entity_type: record.entityType,
+                entity: record.entity,
+                delta: JSON.stringify(record.delta),
+            },
+        });
     }
 }
