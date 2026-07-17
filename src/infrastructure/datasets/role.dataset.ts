@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type, prettier/prettier */
+import { ROOT_ROLE_ID, SYSTEM_USER_ROLE_ID, ADMINISTRATOR_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
 import { RoleActorType, RolePrototype } from "~context/enums";
 
-const SYSTEM_REALM = "00000001-0000-4000-8000-100000000001";
-const CREATED_AT   = new Date("2026-01-01T00:00:00.000Z");
+const CREATED_AT = new Date("2026-01-01T00:00:00.000Z");
 
 const entry = (
     id: string,
@@ -21,14 +21,14 @@ const entry = (
     is_revoked: false,
     prototype: RolePrototype.COMPOSITE,
     actor_type: actorType,
-    realm_id: SYSTEM_REALM,
+    realm_id: SYSTEM_REALM_ID,
     created_at: CREATED_AT,
     version: 1,
 });
 
 const dataset = [
     entry(
-        "00000002-0000-4000-8000-100000000001",
+        ROOT_ROLE_ID,
         "system.root",
         "System",
         "Role not available to users",
@@ -36,13 +36,13 @@ const dataset = [
         true,
     ),
     entry(
-        "00000002-0000-4000-8000-100000000002",
+        SYSTEM_USER_ROLE_ID,
         "system.user",
         "User",
         "Basic role for all users",
     ),
     entry(
-        "00000002-0000-4000-8000-100000000003",
+        ADMINISTRATOR_ROLE_ID,
         "system.administrator",
         "Administrator",
         "The role that grants maximum privileges within the entire system",

@@ -2,8 +2,9 @@ import { AccessCacheTopicAction } from "@monadiam/contracts";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";
-import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services/tokens";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
+import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services/tokens";
+import { SYSTEM_USER_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
@@ -11,10 +12,7 @@ import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
-} from "~context/infrastructure/repositories/tokens";
-
-const SYSTEM_USER_ROLE = "00000002-0000-4000-8000-100000000002";
-const SYSTEM_REALM = "00000001-0000-4000-8000-100000000001";
+} from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssignment.Contract {
@@ -273,12 +271,12 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             projectionJournal: {
                 operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
                 payloadMapper: ([entity]: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Create => ({
-                    realm: SYSTEM_REALM,
+                    realm: SYSTEM_REALM_ID,
                     account: props.account,
                     assignments: [
                         {
                             assignment: entity.id,
-                            role: SYSTEM_USER_ROLE,
+                            role: SYSTEM_USER_ROLE_ID,
                         },
                     ],
                 }),
@@ -291,11 +289,11 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             execute: async (transaction) => {
                 const [realmEntity, roleEntity] = await Promise.all([
                     this.realmRepository.findUniqueOrThrow({
-                        where: { id: SYSTEM_REALM },
+                        where: { id: SYSTEM_REALM_ID },
                         transaction,
                     }),
                     this.roleRepository.findUniqueOrThrow({
-                        where: { id: SYSTEM_USER_ROLE },
+                        where: { id: SYSTEM_USER_ROLE_ID },
                         transaction,
                     }),
                 ]);

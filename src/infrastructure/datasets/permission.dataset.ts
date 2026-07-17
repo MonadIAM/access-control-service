@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type, prettier/prettier */
+import { SYSTEM_REALM_ID } from "~context/constants";
 import { PermissionCode } from "~context/enums";
 
-const SYSTEM_REALM = "00000001-0000-4000-8000-100000000001";
-const CREATED_AT   = new Date("2026-01-01T00:00:00.000Z");
+const CREATED_AT = new Date("2026-01-01T00:00:00.000Z");
 
 const entry = (id: string, code: string, name: string, description: string) => ({
     id,
     code,
     name,
     description,
-    realm_id: SYSTEM_REALM,
+    realm_id: SYSTEM_REALM_ID,
     is_system_managed: true,
     is_revoked: false,
     created_at: CREATED_AT,
