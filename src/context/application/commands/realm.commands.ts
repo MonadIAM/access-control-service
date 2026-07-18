@@ -1,4 +1,4 @@
-import { AccessCacheTopicAction, MembershipTopicAction, RealmTopicAction } from "@monadiam/contracts";
+import { AccessCacheTopicAction, MembershipTopicAction, RealmTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE, REALM_SERVICE } from "~context/domain/services";

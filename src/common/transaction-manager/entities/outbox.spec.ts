@@ -1,4 +1,4 @@
-import { AccessCacheTopicAction } from "@monadiam/contracts";
+import { AccessCacheTopicAction } from "@monadiam/shared";
 import { describe, it, expect } from "@jest/globals";
 import { isUUID } from "class-validator";
 

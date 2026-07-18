@@ -1,9 +1,9 @@
-import { AccessCacheTopicAction } from "@monadiam/contracts";
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { AccessCacheTopicAction } from "@monadiam/shared";
 
 import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
-import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services/tokens";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
+import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services/tokens";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";

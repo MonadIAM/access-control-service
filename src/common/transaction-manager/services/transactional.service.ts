@@ -1,8 +1,8 @@
 import { AnyEntity, EntityManager } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
-import { AuditLogTopicAction } from "@monadiam/contracts";
-import { Injectable } from "@nestjs/common";
+import { AuditLogTopicAction } from "@monadiam/shared";
 import { ConfigService } from "@nestjs/config";
+import { Injectable } from "@nestjs/common";
 
 import { ExceptionMapper } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";

@@ -1,5 +1,5 @@
-import { Expose, Type } from "class-transformer";
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
+import { Expose, Type } from "class-transformer";
 
 import { Validator } from "~common/validator";
 

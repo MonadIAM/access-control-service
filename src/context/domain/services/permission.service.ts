@@ -1,8 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
-import { Exception } from "~common/exceptions";
 import { Permission } from "~context/domain/entities";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionService implements Services.Permission.Contract {

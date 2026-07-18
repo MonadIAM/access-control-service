@@ -2,8 +2,8 @@ import { ChangeSetType, UnknownType } from "@mikro-orm/postgresql";
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
-import { EntityType } from "~context/enums";
 import { Validator } from "~common/validator";
+import { EntityType } from "~context/enums";
 
 @ApiSchema({ name: "ChangeLog" })
 export class ChangeLogDTO {

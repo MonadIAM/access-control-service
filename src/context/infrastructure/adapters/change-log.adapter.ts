@@ -1,8 +1,8 @@
 import { ChangeSetType, FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
 
-import { EntityType } from "~context/enums";
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { ChangeLog } from "~common/transaction-manager";
+import { EntityType } from "~context/enums";
 
 export class ChangeLogAdapter implements Adapters.Contract<ChangeLog, Adapters.ChangeLog.Types> {
     public buildWhereORM(filters: Adapters.ChangeLog.Filters, basic: ObjectQuery<ChangeLog> = {}): ObjectQuery<ChangeLog> {

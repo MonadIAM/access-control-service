@@ -5,8 +5,8 @@ import { ConfigService } from "@nestjs/config";
 
 import { PermissionAdapter } from "~context/infrastructure/adapters";
 import { PermissionOverrideEffect } from "~context/enums";
-import { ExceptionMapper } from "~common/exceptions";
 import { Permission } from "~context/domain/entities";
+import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })

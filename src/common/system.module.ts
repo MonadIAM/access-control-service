@@ -1,5 +1,5 @@
-import { ConfigModule } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
+import { ConfigModule } from "@nestjs/config";
 import { Module } from "@nestjs/common";
 
 import { RateLimiterModule } from "./rate-limiter";

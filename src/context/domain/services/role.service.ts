@@ -3,8 +3,8 @@ import { ConfigService } from "@nestjs/config";
 
 import { ROLE_CLOSURE_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { RolePrototype, MoveMode } from "~context/enums";
-import { Exception } from "~common/exceptions";
 import { Role } from "~context/domain/entities";
+import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleService implements Services.Role.Contract {

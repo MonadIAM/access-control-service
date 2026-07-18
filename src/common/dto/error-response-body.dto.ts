@@ -1,6 +1,6 @@
+import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { UnknownType } from "@mikro-orm/postgresql";
 import { Expose, Type } from "class-transformer";
-import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 
 import { Validator } from "~common/validator";
 

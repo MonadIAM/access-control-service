@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 
-import { Exception } from "~common/exceptions";
 import { AssignmentScope } from "~context/enums";
+import { Exception } from "~common/exceptions";
 
 import { Permission } from "./permission.entity";
 import { Realm } from "./realm.entity";

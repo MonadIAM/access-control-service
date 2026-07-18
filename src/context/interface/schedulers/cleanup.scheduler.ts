@@ -3,8 +3,8 @@ import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { CleanupJob } from "~context/enums";
 import { CLEANUP_QUEUE } from "~context/infrastructure/queues";
+import { CleanupJob } from "~context/enums";
 
 @Injectable()
 export class CleanupScheduler {

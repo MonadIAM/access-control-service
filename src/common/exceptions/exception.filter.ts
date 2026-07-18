@@ -6,8 +6,8 @@ import { ThrottlerException } from "@nestjs/throttler";
 import { Counter } from "prom-client";
 
 import { ExceptionMapper } from "./exception.mapper";
-import { Exception } from "./exception";
 import { ErrorCode, ErrorKind } from "./enums";
+import { Exception } from "./exception";
 
 @Catch()
 export class ExceptionFilter implements Exception.Filter.Contract {

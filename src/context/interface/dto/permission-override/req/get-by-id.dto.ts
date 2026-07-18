@@ -2,8 +2,8 @@ import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { BaseReadQueryDTO } from "~common/dto";
-import { QueryMode } from "~context/enums";
 import { Validator } from "~common/validator";
+import { QueryMode } from "~context/enums";
 
 @ApiSchema({ name: "PermissionOverrideGetByIdQuery" })
 export class GetByIdQueryDTO extends BaseReadQueryDTO {

@@ -1,4 +1,5 @@
 import { EntityManager, Knex } from "@mikro-orm/postgresql";
+
 declare global {
     namespace Repositories {
         namespace RoleConflictGroup {

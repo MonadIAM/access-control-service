@@ -1,5 +1,5 @@
 import { EventSubscriber, FlushEventArgs, ChangeSetType } from "@mikro-orm/core";
-import { ChangeLogTopicAction } from "@monadiam/contracts";
+import { ChangeLogTopicAction } from "@monadiam/shared";
 import { ConfigService } from "@nestjs/config";
 import { Injectable } from "@nestjs/common";
 

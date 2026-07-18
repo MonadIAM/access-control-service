@@ -1,4 +1,4 @@
-import { AccountTopicAction } from "@monadiam/contracts";
+import { AccountTopicAction } from "@monadiam/shared";
 
 import { ProjectionScript } from "~context/infrastructure/scripts";
 

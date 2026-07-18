@@ -5,8 +5,8 @@ import { ConfigService } from "@nestjs/config";
 
 import { RoleAdapter } from "~context/infrastructure/adapters";
 import { RoleClosure, Role } from "~context/domain/entities";
-import { ExceptionMapper } from "~common/exceptions";
 import { MikroAdapter } from "~infrastructure/database";
+import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
