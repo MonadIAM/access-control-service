@@ -93,7 +93,6 @@ export const ADMIN_PERMISSION_CODES: string[] = [
     PermissionCode.INTERFACE_CLIENT_RESTORE,
     PermissionCode.INTERFACE_CLIENT_PURGE,
 
-    PermissionCode.SERVICE_CLIENT_REGENERATE_SECRET,
     PermissionCode.SERVICE_CLIENT_READ_ABSOLUTE,
     PermissionCode.SERVICE_CLIENT_CREATE,
     PermissionCode.SERVICE_CLIENT_UPDATE,

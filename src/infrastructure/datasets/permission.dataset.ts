@@ -708,42 +708,36 @@ const dataset = [
     // ServiceClient
     entry(
         "00000003-0023-4000-8000-000000000001",
-        PermissionCode.SERVICE_CLIENT_REGENERATE_SECRET,
-        "Regenerate Service Client Secret",
-        "Regenerate the credential secret of a service client.",
-    ),
-    entry(
-        "00000003-0023-4000-8000-000000000002",
         PermissionCode.SERVICE_CLIENT_READ_ABSOLUTE,
         "Read Absolute Service Clients",
         "View all service clients within a realm.",
     ),
     entry(
-        "00000003-0023-4000-8000-000000000003",
+        "00000003-0023-4000-8000-000000000002",
         PermissionCode.SERVICE_CLIENT_CREATE,
         "Create Service Client",
         "Create a service client within a realm.",
     ),
     entry(
-        "00000003-0023-4000-8000-000000000004",
+        "00000003-0023-4000-8000-000000000003",
         PermissionCode.SERVICE_CLIENT_UPDATE,
         "Update Service Client",
         "Modify a service client within a realm.",
     ),
     entry(
-        "00000003-0023-4000-8000-000000000005",
+        "00000003-0023-4000-8000-000000000004",
         PermissionCode.SERVICE_CLIENT_REVOKE,
         "Revoke Service Client",
         "Revoke a service client within a realm.",
     ),
     entry(
-        "00000003-0023-4000-8000-000000000006",
+        "00000003-0023-4000-8000-000000000005",
         PermissionCode.SERVICE_CLIENT_RESTORE,
         "Restore Service Client",
         "Restore a revoked service client within a realm.",
     ),
     entry(
-        "00000003-0023-4000-8000-000000000007",
+        "00000003-0023-4000-8000-000000000006",
         PermissionCode.SERVICE_CLIENT_PURGE,
         "Purge Service Client",
         "Permanently delete a revoked service client within a realm.",
