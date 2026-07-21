@@ -742,6 +742,29 @@ const dataset = [
         "Purge Service Client",
         "Permanently delete a revoked service client within a realm.",
     ),
+
+    // ---------------------------------------------------------------------------
+    // Certificate
+    // ---------------------------------------------------------------------------
+
+    entry(
+        "00000003-0024-4000-8000-000000000001",
+        PermissionCode.CERTIFICATE_READ_PERSONAL,
+        "Read Personal Certificates",
+        "View certificates within a realm.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000002",
+        PermissionCode.CERTIFICATE_READ_ABSOLUTE,
+        "Read Absolute Certificates",
+        "View all certificates across all realms.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000003",
+        PermissionCode.CERTIFICATE_REVOKE,
+        "Revoke Certificate",
+        "Revoke an issued certificate.",
+    ),
 ];
 
 export const Permissions = {

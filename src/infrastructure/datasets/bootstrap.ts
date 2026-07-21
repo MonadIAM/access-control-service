@@ -18,6 +18,8 @@ export const USER_PERMISSION_CODES: string[] = [
     PermissionCode.ROLE_PERMISSION_ASSIGNMENT_READ_COMMON,
 
     PermissionCode.ROLE_DELEGATION_POLICY_READ_COMMON,
+
+    PermissionCode.CERTIFICATE_READ_PERSONAL,
 ];
 
 export const ADMIN_PERMISSION_CODES: string[] = [
@@ -99,4 +101,7 @@ export const ADMIN_PERMISSION_CODES: string[] = [
     PermissionCode.SERVICE_CLIENT_REVOKE,
     PermissionCode.SERVICE_CLIENT_RESTORE,
     PermissionCode.SERVICE_CLIENT_PURGE,
+
+    PermissionCode.CERTIFICATE_READ_ABSOLUTE,
+    PermissionCode.CERTIFICATE_REVOKE,
 ];
