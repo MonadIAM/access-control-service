@@ -9,9 +9,11 @@ declare global {
             }
 
             interface PrivateContract {
+                accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
+                membershipPayloadMapper(props: MembershipPayloadMapper.Props): MembershipPayloadMapper.Result;
+                decline(props: Decline.Props): Decline.Result;
                 accept(props: Accept.Props): Accept.Result;
                 cancel(props: Cancel.Props): Cancel.Result;
-                decline(props: Decline.Props): Decline.Result;
             }
 
             interface Contract extends ControllerContract, PrivateContract {}
@@ -80,6 +82,24 @@ declare global {
                 };
 
                 type Result = Promise<MessageResult>;
+            }
+
+            namespace AccessCachePayloadMapper {
+                type Props = {
+                    assignments: Entities.AccountRoleAssignment[];
+                };
+
+                type Result = Topics.AccessCache.Message["payload"];
+            }
+
+            namespace MembershipPayloadMapper {
+                type Props = {
+                    invitedBy: string;
+                    account: string;
+                    realm: string;
+                };
+
+                type Result = Topics.Membership.GrantMessage["payload"];
             }
         }
     }

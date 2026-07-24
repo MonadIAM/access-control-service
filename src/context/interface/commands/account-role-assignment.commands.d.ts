@@ -13,7 +13,7 @@ declare namespace Commands {
         }
 
         interface PrivateContract {
-            outboxPayloadMapper(props: OutboxPayloadMapper.Props): OutboxPayloadMapper.Result;
+            accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
         }
 
         interface Contract extends ControllerContract, ConsumerContract, PrivateContract {}
@@ -90,9 +90,10 @@ declare namespace Commands {
             type Result = Promise<void>;
         }
 
-        namespace OutboxPayloadMapper {
-            type Result = Topics.AccessCache.Message["payload"];
+        namespace AccessCachePayloadMapper {
             type Props = Entities.AccountRoleAssignment[];
+
+            type Result = Topics.AccessCache.Message["payload"];
         }
     }
 }

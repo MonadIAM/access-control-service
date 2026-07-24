@@ -15,7 +15,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(PERMISSION_REPOSITORY)
         private readonly permissionRepository: Repositories.Permission.Contract,
         @Inject(REALM_REPOSITORY)
@@ -97,7 +97,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.Permission[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Permission[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -143,7 +143,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.Permission[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Permission[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -190,7 +190,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.Permission[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Permission[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -223,9 +223,9 @@ export class PermissionCommands implements Commands.Permission.Contract {
         }
     }
 
-    public outboxPayloadMapper(
-        entities: Commands.Permission.OutboxPayloadMapper.Props,
-    ): Commands.Permission.OutboxPayloadMapper.Result {
+    public accessCachePayloadMapper(
+        entities: Commands.Permission.AccessCachePayloadMapper.Props,
+    ): Commands.Permission.AccessCachePayloadMapper.Result {
         return {
             items: entities.map(({ realm }) => ({
                 scope: InvalidationScope.REALM,

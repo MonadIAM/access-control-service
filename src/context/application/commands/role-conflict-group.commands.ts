@@ -13,7 +13,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
         private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
         @Inject(REALM_REPOSITORY)

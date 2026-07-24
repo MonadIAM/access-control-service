@@ -14,7 +14,7 @@ declare global {
             }
 
             interface PrivateContract {
-                outboxPayloadMapper(props: OutboxPayloadMapper.Props): OutboxPayloadMapper.Result;
+                accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
             }
 
             interface Contract extends ControllerContract, PrivateContract {}
@@ -125,7 +125,7 @@ declare global {
                 type Result = Promise<MessageResult>;
             }
 
-            namespace OutboxPayloadMapper {
+            namespace AccessCachePayloadMapper {
                 type Props = Entities.Role[] | { realm: string }[];
                 type Result = Topics.AccessCache.Message["payload"];
             }

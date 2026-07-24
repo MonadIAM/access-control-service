@@ -21,7 +21,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
         private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.Contract,
         @Inject(PERMISSION_REPOSITORY)
@@ -57,7 +57,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -120,7 +120,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -176,7 +176,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -232,7 +232,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -265,9 +265,9 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
         }
     }
 
-    public outboxPayloadMapper(
-        entities: Commands.RolePermissionAssignment.OutboxPayloadMapper.Props,
-    ): Commands.RolePermissionAssignment.OutboxPayloadMapper.Result {
+    public accessCachePayloadMapper(
+        entities: Commands.RolePermissionAssignment.AccessCachePayloadMapper.Props,
+    ): Commands.RolePermissionAssignment.AccessCachePayloadMapper.Result {
         return {
             items: entities.map(({ realm }) => ({
                 scope: InvalidationScope.REALM,

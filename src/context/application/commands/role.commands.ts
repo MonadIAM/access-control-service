@@ -15,7 +15,7 @@ export class RoleCommands implements Commands.Role.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(ROLE_REPOSITORY)
@@ -103,7 +103,7 @@ export class RoleCommands implements Commands.Role.Contract {
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.Role[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Role[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -145,7 +145,7 @@ export class RoleCommands implements Commands.Role.Contract {
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.Role[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Role[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -186,7 +186,7 @@ export class RoleCommands implements Commands.Role.Contract {
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.Role[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Role[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -232,7 +232,7 @@ export class RoleCommands implements Commands.Role.Contract {
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.Role[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.Role[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -274,7 +274,7 @@ export class RoleCommands implements Commands.Role.Contract {
                 operationType: ProjectionScript.ROLE_CLOSURE_UPDATE,
             },
             outbox: {
-                payloadMapper: (): Topics.AccessCache.Message["payload"] => this.outboxPayloadMapper([{ realm }]),
+                payloadMapper: (): Topics.AccessCache.Message["payload"] => this.accessCachePayloadMapper([{ realm }]),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -302,9 +302,9 @@ export class RoleCommands implements Commands.Role.Contract {
         return { message: `${this.dictionaryPath}.REPARENTED` };
     }
 
-    public outboxPayloadMapper(
-        entities: Commands.Role.OutboxPayloadMapper.Props,
-    ): Commands.Role.OutboxPayloadMapper.Result {
+    public accessCachePayloadMapper(
+        entities: Commands.Role.AccessCachePayloadMapper.Props,
+    ): Commands.Role.AccessCachePayloadMapper.Result {
         return {
             items: entities.map(({ realm }) => ({
                 realm: typeof realm === "string" ? realm : realm.id,

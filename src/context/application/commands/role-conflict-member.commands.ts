@@ -17,7 +17,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
         private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.Contract,
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)

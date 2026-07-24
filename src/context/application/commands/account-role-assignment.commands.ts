@@ -21,7 +21,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
         private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
         @Inject(REALM_REPOSITORY)
@@ -60,7 +60,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -138,7 +138,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -179,7 +179,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -232,7 +232,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -282,7 +282,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -326,7 +326,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -342,9 +342,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         });
     }
 
-    public outboxPayloadMapper(
-        entities: Commands.AccountRoleAssignment.OutboxPayloadMapper.Props,
-    ): Commands.AccountRoleAssignment.OutboxPayloadMapper.Result {
+    public accessCachePayloadMapper(
+        entities: Commands.AccountRoleAssignment.AccessCachePayloadMapper.Props,
+    ): Commands.AccountRoleAssignment.AccessCachePayloadMapper.Result {
         return {
             items: entities.map(({ account, realm }) => ({
                 scope: InvalidationScope.ACCOUNT_REALM,

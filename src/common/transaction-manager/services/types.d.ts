@@ -5,39 +5,104 @@ import { KafkaTopic } from "~context/enums";
 declare global {
     namespace TransactionManager {
         namespace Service {
-            interface Contract {
-                run<T extends AnyEntity | AnyEntity[]>(props: Run<T>): Promise<T>;
+            interface PublicContract {
+                run<T extends AnyEntity | AnyEntity[]>(props: Run.ResultProps<T>): Promise<T>;
+                run(props: Run.VoidProps): Promise<void>;
             }
 
+            interface PrivateContract {
+                buildAuditLogArchiveOutbox(props: BuildAuditLogArchiveOutbox.Props): BuildAuditLogArchiveOutbox.Result;
+                persistProjectionJournalEntries<T extends AnyEntity | AnyEntity[]>(
+                    props: PersistProjectionJournalEntries.Props<T>,
+                ): PersistProjectionJournalEntries.Result;
+                executeWithEffects<T extends AnyEntity | AnyEntity[]>(
+                    props: ExecuteWithEffects.Props<T>,
+                ): ExecuteWithEffects.Result<T>;
+                persistOutboxEvents<T extends AnyEntity | AnyEntity[]>(
+                    props: PersistOutboxEvents.Props<T>,
+                ): PersistOutboxEvents.Result;
+            }
+
+            interface Contract extends PublicContract, PrivateContract {}
+
             type ProjectionJournalEntry<T> = {
-                operationType: string;
                 payloadMapper(result: T): UnknownObject | UnknownObject[];
+                operationType: string;
+            };
+
+            type OutboxPayloadMap = {
+                [KafkaTopic.ACCESS_CACHE]: Topics.AccessCache.Message["payload"];
+                [KafkaTopic.MEMBERSHIP]: Topics.Membership.Message["payload"];
+                [KafkaTopic.REALM]: Topics.Realm.Message["payload"];
             };
 
             type OutboxConfig<T> = {
-                payloadMapper?(result: T): AnyEntity | AnyEntity[];
-                destinationTopic: KafkaTopic;
-                metadata?: UnknownObject;
-                actionType: string;
-            };
+                [D in keyof OutboxPayloadMap]: {
+                    payloadMapper?(result: T): OutboxPayloadMap[D] | OutboxPayloadMap[D][];
+                    metadata?: UnknownObject;
+                    destinationTopic: D;
+                    actionType: string;
+                };
+            }[keyof OutboxPayloadMap];
 
-            type Run<T extends AnyEntity | AnyEntity[]> =
-                | {
-                      execute(transaction: EntityManager): Promise<T> | T;
-                      audit?: Entities.AuditLog.ConstructorProps;
-                      outbox?: OutboxConfig<T> | OutboxConfig<T>[];
-                      projectionJournal?: ProjectionJournalEntry<T> | ProjectionJournalEntry<T>[];
-                      changeLog?: boolean;
-                      resource?: string;
-                  }
-                | {
-                      execute(transaction: EntityManager): Promise<void> | void;
-                      audit?: Entities.AuditLog.ConstructorProps;
-                      projectionJournal?: never;
-                      changeLog?: never;
-                      resource?: string;
-                      outbox?: never;
-                  };
+            namespace Run {
+                type ResultProps<T extends AnyEntity | AnyEntity[]> = {
+                    projectionJournal?: ProjectionJournalEntry<T> | ProjectionJournalEntry<T>[];
+                    execute(transaction: EntityManager): Promise<T> | T;
+                    outbox?: OutboxConfig<T> | OutboxConfig<T>[];
+                    audit?: Entities.AuditLog.ConstructorProps;
+                    changeLog?: boolean;
+                    resource?: string;
+                };
+
+                type VoidProps = {
+                    execute(transaction: EntityManager): Promise<void> | void;
+                    audit?: Entities.AuditLog.ConstructorProps;
+                    projectionJournal?: never;
+                    changeLog?: never;
+                    resource?: string;
+                    outbox?: never;
+                };
+
+                type Props<T extends AnyEntity | AnyEntity[]> = ResultProps<T> | VoidProps;
+
+                type Result<T> = Promise<T | void>;
+            }
+
+            namespace ExecuteWithEffects {
+                type Props<T extends AnyEntity | AnyEntity[]> = {
+                    params: TransactionManager.Service.Run.Props<T>;
+                    transaction: EntityManager;
+                };
+
+                type Result<T> = Promise<T | void>;
+            }
+
+            namespace PersistOutboxEvents {
+                type Props<T extends AnyEntity | AnyEntity[]> = {
+                    params: TransactionManager.Service.Run.Props<T>;
+                    transaction: EntityManager;
+                    result: T;
+                };
+
+                type Result = void;
+            }
+
+            namespace PersistProjectionJournalEntries {
+                type Props<T extends AnyEntity | AnyEntity[]> = {
+                    params: TransactionManager.Service.Run.Props<T>;
+                    transaction: EntityManager;
+                    result: T;
+                };
+
+                type Result = void;
+            }
+
+            namespace BuildAuditLogArchiveOutbox {
+                type Props = Entities.AuditLog;
+
+                type Result = Entities.Outbox;
+            }
         }
     }
 }

@@ -16,7 +16,7 @@ export class CleanupProcessor extends WorkerHost {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(AUDIT_LOG_SERVICE)
         private readonly auditLogService: Services.AuditLog.Contract,
         @Inject(CHANGE_LOG_SERVICE)

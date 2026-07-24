@@ -16,7 +16,7 @@ export class InviteCommands implements Commands.Invite.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(INVITE_REPOSITORY)
         private readonly inviteRepository: Repositories.Invite.Contract,
         @Inject(REALM_REPOSITORY)
@@ -107,25 +107,14 @@ export class InviteCommands implements Commands.Invite.Contract {
             },
             outbox: [
                 {
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
-                    payloadMapper: ({ assignments }) => ({
-                        items: assignments.map(({ account, realm }) => ({
-                            scope: InvalidationScope.ACCOUNT_REALM,
-                            realm: realm.id,
-                            account,
-                        })),
-                    }),
-                },
-                {
+                    payloadMapper: ({ invitedBy }) => this.membershipPayloadMapper({ invitedBy, account: actor, realm }),
                     actionType: MembershipTopicAction.GRANT,
                     destinationTopic: KafkaTopic.MEMBERSHIP,
-                    payloadMapper: ({ invitedBy }) => ({
-                        joinedAt: Date.now(),
-                        account: actor,
-                        invitedBy,
-                        realm,
-                    }),
+                },
+                {
+                    payloadMapper: ({ assignments }) => this.accessCachePayloadMapper({ assignments }),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
             ],
             audit: {
@@ -207,5 +196,28 @@ export class InviteCommands implements Commands.Invite.Contract {
         });
 
         return { message: `${this.dictionaryPath}.DECLINED` };
+    }
+
+    public accessCachePayloadMapper(
+        props: Commands.Invite.AccessCachePayloadMapper.Props,
+    ): Commands.Invite.AccessCachePayloadMapper.Result {
+        return {
+            items: props.assignments.map(({ account, realm }) => ({
+                scope: InvalidationScope.ACCOUNT_REALM,
+                realm: realm.id,
+                account,
+            })),
+        };
+    }
+
+    public membershipPayloadMapper(
+        props: Commands.Invite.MembershipPayloadMapper.Props,
+    ): Commands.Invite.MembershipPayloadMapper.Result {
+        return {
+            invitedBy: props.invitedBy,
+            account: props.account,
+            joinedAt: Date.now(),
+            realm: props.realm,
+        };
     }
 }

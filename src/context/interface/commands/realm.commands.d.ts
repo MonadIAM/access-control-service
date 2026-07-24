@@ -10,7 +10,9 @@ declare namespace Commands {
         }
 
         interface PrivateContract {
-            outboxPayloadMapper(props: OutboxPayloadMapper.Props): OutboxPayloadMapper.Result;
+            realmLifecyclePayloadMapper(props: RealmLifecyclePayloadMapper.Props): RealmLifecyclePayloadMapper.Result;
+            accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
+            membershipPayloadMapper(props: MembershipPayloadMapper.Props): MembershipPayloadMapper.Result;
         }
 
         interface Contract extends ControllerContract, PrivateContract {}
@@ -101,9 +103,30 @@ declare namespace Commands {
             type Result = Promise<MessageResult>;
         }
 
-        namespace OutboxPayloadMapper {
+        namespace AccessCachePayloadMapper {
+            type Props =
+                | {
+                      account: string;
+                      realm: string;
+                  }
+                | Entities.Realm[];
+
             type Result = Topics.AccessCache.Message["payload"];
+        }
+
+        namespace MembershipPayloadMapper {
+            type Props = {
+                account: string;
+                realm: string;
+            };
+
+            type Result = Topics.Membership.RevokeMessage["payload"];
+        }
+
+        namespace RealmLifecyclePayloadMapper {
             type Props = Entities.Realm[];
+
+            type Result = Topics.Realm.Message["payload"][];
         }
     }
 }

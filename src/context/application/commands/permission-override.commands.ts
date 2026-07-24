@@ -20,7 +20,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(PERMISSION_OVERRIDE_REPOSITORY)
         private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
         @Inject(PERMISSION_REPOSITORY)
@@ -61,7 +61,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.PermissionOverride[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.PermissionOverride[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -117,7 +117,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.PermissionOverride[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.PermissionOverride[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -170,7 +170,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.PermissionOverride[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.PermissionOverride[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -224,7 +224,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.PermissionOverride[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.PermissionOverride[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -273,7 +273,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 }),
             },
             outbox: {
-                payloadMapper: (entities: Entities.PermissionOverride[]) => this.outboxPayloadMapper(entities),
+                payloadMapper: (entities: Entities.PermissionOverride[]) => this.accessCachePayloadMapper(entities),
                 actionType: AccessCacheTopicAction.INVALIDATE,
                 destinationTopic: KafkaTopic.ACCESS_CACHE,
             },
@@ -291,9 +291,9 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         });
     }
 
-    public outboxPayloadMapper(
-        entities: Commands.PermissionOverride.OutboxPayloadMapper.Props,
-    ): Commands.PermissionOverride.OutboxPayloadMapper.Result {
+    public accessCachePayloadMapper(
+        entities: Commands.PermissionOverride.AccessCachePayloadMapper.Props,
+    ): Commands.PermissionOverride.AccessCachePayloadMapper.Result {
         return {
             items: entities.map(({ account, realm }) => ({
                 scope: InvalidationScope.ACCOUNT_REALM,

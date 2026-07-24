@@ -13,7 +13,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
         private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.Contract,
         @Inject(REALM_REPOSITORY)

@@ -21,7 +21,7 @@ export class RealmCommands implements Commands.Realm.Contract {
 
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
-        private readonly transactionalService: TransactionManager.Service.Contract,
+        private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
         private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
         @Inject(PERMISSION_OVERRIDE_REPOSITORY)
@@ -127,7 +127,7 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
+                    payloadMapper: (entities: Entities.Realm[]) => this.accessCachePayloadMapper(entities),
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -179,7 +179,7 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
+                    payloadMapper: (entities: Entities.Realm[]) => this.accessCachePayloadMapper(entities),
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -231,7 +231,7 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.Realm[]) => this.outboxPayloadMapper(entities),
+                    payloadMapper: (entities: Entities.Realm[]) => this.accessCachePayloadMapper(entities),
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -308,14 +308,12 @@ export class RealmCommands implements Commands.Realm.Contract {
             ],
             outbox: [
                 {
-                    payloadMapper: () => ({
-                        items: [{ scope: InvalidationScope.ACCOUNT_REALM, account: input.account, realm }],
-                    }),
+                    payloadMapper: () => this.accessCachePayloadMapper({ account: input.account, realm }),
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
                 {
-                    payloadMapper: () => ({ account: input.account, realm }),
+                    payloadMapper: () => this.membershipPayloadMapper({ account: input.account, realm }),
                     actionType: MembershipTopicAction.REVOKE,
                     destinationTopic: KafkaTopic.MEMBERSHIP,
                 },
@@ -348,19 +346,39 @@ export class RealmCommands implements Commands.Realm.Contract {
         return { message: `${this.dictionaryPath}.EXCLUDED` };
     }
 
-    public outboxPayloadMapper(
-        entities: Commands.Realm.OutboxPayloadMapper.Props,
-    ): Commands.Realm.OutboxPayloadMapper.Result {
-        return {
-            items: entities.map(({ id }) => ({
-                scope: InvalidationScope.REALM,
-                realm: id,
-            })),
-        };
+    public accessCachePayloadMapper(
+        props: Commands.Realm.AccessCachePayloadMapper.Props,
+    ): Commands.Realm.AccessCachePayloadMapper.Result {
+        if (Array.isArray(props)) {
+            return {
+                items: props.map(({ id }) => ({
+                    scope: InvalidationScope.REALM,
+                    realm: id,
+                })),
+            };
+        } else {
+            return {
+                items: [
+                    {
+                        scope: InvalidationScope.ACCOUNT_REALM,
+                        account: props.account,
+                        realm: props.realm,
+                    },
+                ],
+            };
+        }
     }
 
-    private realmLifecyclePayloadMapper(entities: Entities.Realm[]): Topics.Realm.Message["payload"][] {
-        return entities.map(({ id, version }) => ({
+    public membershipPayloadMapper(
+        props: Commands.Realm.MembershipPayloadMapper.Props,
+    ): Commands.Realm.MembershipPayloadMapper.Result {
+        return { account: props.account, realm: props.realm };
+    }
+
+    public realmLifecyclePayloadMapper(
+        props: Commands.Realm.RealmLifecyclePayloadMapper.Props,
+    ): Commands.Realm.RealmLifecyclePayloadMapper.Result {
+        return props.map(({ id, version }) => ({
             version: version + 1,
             realm: id,
         }));
