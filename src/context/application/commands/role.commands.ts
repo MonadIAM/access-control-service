@@ -29,13 +29,14 @@ export class RoleCommands implements Commands.Role.Contract {
 
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ROLE_CREATE,
+            outbox: {
                 payloadMapper: (entity: Entities.Role): Scripts.Role.Create => ({
                     parent: input.parent,
                     role: entity.id,
                     realm,
                 }),
+                destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                actionType: ProjectionScript.ROLE_CREATE,
             },
             audit: {
                 actionType: ActionType.CREATE,
@@ -95,18 +96,18 @@ export class RoleCommands implements Commands.Role.Contract {
 
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ROLE_PURGE,
-                payloadMapper: ([entity]: Entities.Role[]): Scripts.Role.Purge => ({
-                    role: entity.id,
-                    realm,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.Role[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (): Scripts.Role.Purge => ({ role: id, realm }),
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.ROLE_PURGE,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 actionType: ActionType.DELETE,
                 entityType: EntityType.ROLE,
@@ -137,18 +138,18 @@ export class RoleCommands implements Commands.Role.Contract {
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ROLE_PURGE,
-                payloadMapper: (): Scripts.Role.Purge => ({
-                    role: id,
-                    realm,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.Role[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (): Scripts.Role.Purge => ({ role: id, realm }),
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.ROLE_PURGE,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 actionType: ActionType.DELETE,
                 entityType: EntityType.ROLE,
@@ -177,19 +178,22 @@ export class RoleCommands implements Commands.Role.Contract {
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ROLE_UPDATE,
-                payloadMapper: (entities: Entities.Role[]): Scripts.Role.Update => ({
-                    roles: entities.map(({ id }) => id),
-                    isRevoked: true,
-                    realm,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.Role[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.Role[]): Scripts.Role.Update => ({
+                        roles: entities.map(({ id }) => id),
+                        isRevoked: true,
+                        realm,
+                    }),
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.ROLE_UPDATE,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 actionType: ActionType.REVOKE,
                 entityType: EntityType.ROLE,
@@ -223,19 +227,22 @@ export class RoleCommands implements Commands.Role.Contract {
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ROLE_UPDATE,
-                payloadMapper: (entities: Entities.Role[]): Scripts.Role.Update => ({
-                    roles: entities.map(({ id }) => id),
-                    isRevoked: false,
-                    realm,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.Role[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.Role[]): Scripts.Role.Update => ({
+                        roles: entities.map(({ id }) => id),
+                        isRevoked: false,
+                        realm,
+                    }),
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.ROLE_UPDATE,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 actionType: ActionType.RESTORE,
                 entityType: EntityType.ROLE,
@@ -269,15 +276,18 @@ export class RoleCommands implements Commands.Role.Contract {
 
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                payloadMapper: (steps: Awaited<Services.Role.Move.Result>): Scripts.Role.Move => ({ steps, realm }),
-                operationType: ProjectionScript.ROLE_CLOSURE_UPDATE,
-            },
-            outbox: {
-                payloadMapper: (): Topics.AccessCache.Message["payload"] => this.accessCachePayloadMapper([{ realm }]),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (steps: Awaited<Services.Role.Move.Result>): Scripts.Role.Move => ({ steps, realm }),
+                    actionType: ProjectionScript.ROLE_CLOSURE_UPDATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this, [{ realm }]),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 actionType: ActionType.REPARENT,
                 entityType: EntityType.ROLE,

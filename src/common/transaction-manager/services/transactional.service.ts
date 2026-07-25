@@ -8,7 +8,7 @@ import { ExceptionMapper } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
 
 import { OperationContext } from "../utilities/operation-context";
-import { ProjectionJournal, AuditLog, Outbox } from "../entities";
+import { AuditLog, Outbox } from "../entities";
 
 @Injectable()
 export class TransactionalService implements TransactionManager.Service.Contract {
@@ -63,7 +63,6 @@ export class TransactionalService implements TransactionManager.Service.Contract
         const result = await params.execute(transaction);
 
         if (result) {
-            this.persistProjectionJournalEntries({ transaction, params, result });
             this.persistOutboxEvents({ transaction, params, result });
         }
 
@@ -84,28 +83,6 @@ export class TransactionalService implements TransactionManager.Service.Contract
 
                 for (const payload of payloads) {
                     transaction.persist(new Outbox({ ...outboxProps, payload }));
-                }
-            }
-        }
-    }
-
-    public persistProjectionJournalEntries<T extends AnyEntity | AnyEntity[]>(
-        props: TransactionManager.Service.PersistProjectionJournalEntries.Props<T>,
-    ): TransactionManager.Service.PersistProjectionJournalEntries.Result {
-        const { transaction, params, result } = props;
-        if (params.projectionJournal) {
-            const entries = [params.projectionJournal].flat();
-
-            for (const entry of entries) {
-                const payloads = [entry.payloadMapper(result)].flat();
-
-                for (const payload of payloads) {
-                    transaction.persist(
-                        new ProjectionJournal({
-                            operationType: entry.operationType,
-                            payload,
-                        }),
-                    );
                 }
             }
         }

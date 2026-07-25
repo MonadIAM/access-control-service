@@ -12,9 +12,6 @@ declare global {
 
             interface PrivateContract {
                 buildAuditLogArchiveOutbox(props: BuildAuditLogArchiveOutbox.Props): BuildAuditLogArchiveOutbox.Result;
-                persistProjectionJournalEntries<T extends AnyEntity | AnyEntity[]>(
-                    props: PersistProjectionJournalEntries.Props<T>,
-                ): PersistProjectionJournalEntries.Result;
                 executeWithEffects<T extends AnyEntity | AnyEntity[]>(
                     props: ExecuteWithEffects.Props<T>,
                 ): ExecuteWithEffects.Result<T>;
@@ -25,14 +22,10 @@ declare global {
 
             interface Contract extends PublicContract, PrivateContract {}
 
-            type ProjectionJournalEntry<T> = {
-                payloadMapper(result: T): UnknownObject | UnknownObject[];
-                operationType: string;
-            };
-
             type OutboxPayloadMap = {
                 [KafkaTopic.ACCESS_CACHE]: Topics.AccessCache.Message["payload"];
                 [KafkaTopic.MEMBERSHIP]: Topics.Membership.Message["payload"];
+                [KafkaTopic.PROJECTION_JOURNAL]: UnknownObject;
                 [KafkaTopic.REALM]: Topics.Realm.Message["payload"];
             };
 
@@ -47,7 +40,6 @@ declare global {
 
             namespace Run {
                 type ResultProps<T extends AnyEntity | AnyEntity[]> = {
-                    projectionJournal?: ProjectionJournalEntry<T> | ProjectionJournalEntry<T>[];
                     execute(transaction: EntityManager): Promise<T> | T;
                     outbox?: OutboxConfig<T> | OutboxConfig<T>[];
                     audit?: Entities.AuditLog.ConstructorProps;
@@ -58,7 +50,6 @@ declare global {
                 type VoidProps = {
                     execute(transaction: EntityManager): Promise<void> | void;
                     audit?: Entities.AuditLog.ConstructorProps;
-                    projectionJournal?: never;
                     changeLog?: never;
                     resource?: string;
                     outbox?: never;
@@ -79,16 +70,6 @@ declare global {
             }
 
             namespace PersistOutboxEvents {
-                type Props<T extends AnyEntity | AnyEntity[]> = {
-                    params: TransactionManager.Service.Run.Props<T>;
-                    transaction: EntityManager;
-                    result: T;
-                };
-
-                type Result = void;
-            }
-
-            namespace PersistProjectionJournalEntries {
                 type Props<T extends AnyEntity | AnyEntity[]> = {
                     params: TransactionManager.Service.Run.Props<T>;
                     transaction: EntityManager;

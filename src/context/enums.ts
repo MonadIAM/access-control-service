@@ -102,16 +102,6 @@ export enum AssignmentScope {
     /* eslint-enable prettier/prettier */
 }
 
-export enum ProjectionJournalStatus {
-    /* eslint-disable prettier/prettier */
-    PROCESSING = "PROCESSING",
-    PENDING    = "PENDING",
-    APPLIED    = "APPLIED",
-    FAILED     = "FAILED",
-    DEAD       = "DEAD",
-    /* eslint-enable prettier/prettier */
-}
-
 export enum CleanupJob {
     /* eslint-disable prettier/prettier */
     CHANGE_LOG = "cleanup-change-log",

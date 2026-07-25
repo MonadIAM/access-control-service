@@ -47,24 +47,27 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.PERMISSION_OVERRIDE_CREATE,
-                payloadMapper: ([
-                    { permission, account, effect, id },
-                ]: Entities.PermissionOverride[]): Scripts.PermissionOverride.Create => ({
-                    permissionRealm: permission.realm.id,
-                    permission: permission.id,
-                    override: id,
-                    account,
-                    effect,
-                    realm,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.PermissionOverride[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: ([
+                        { permission, account, effect, id },
+                    ]: Entities.PermissionOverride[]): Scripts.PermissionOverride.Create => ({
+                        permissionRealm: permission.realm.id,
+                        permission: permission.id,
+                        override: id,
+                        account,
+                        effect,
+                        realm,
+                    }),
+                    actionType: ProjectionScript.PERMISSION_OVERRIDE_CREATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
                 actionType: ActionType.CREATE,
@@ -105,22 +108,25 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
-                payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Purge => ({
-                    items: entities.map(({ realm, account, permission }) => ({
-                        permissionRealm: permission.realm.id,
-                        permission: permission.id,
-                        realm: realm.id,
-                        account,
-                    })),
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.PermissionOverride[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Purge => ({
+                        items: entities.map(({ realm, account, permission }) => ({
+                            permissionRealm: permission.realm.id,
+                            permission: permission.id,
+                            realm: realm.id,
+                            account,
+                        })),
+                    }),
+                    actionType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
                 actionType: ActionType.DELETE,
@@ -155,25 +161,28 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
-                payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Update => ({
-                    items: entities.map(({ id, realm, account, permission, effect }) => ({
-                        permissionRealm: permission.realm.id,
-                        permission: permission.id,
-                        realm: realm.id,
-                        override: id,
-                        account,
-                        effect,
-                    })),
-                    isRevoked: true,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.PermissionOverride[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Update => ({
+                        items: entities.map(({ id, realm, account, permission, effect }) => ({
+                            permissionRealm: permission.realm.id,
+                            permission: permission.id,
+                            realm: realm.id,
+                            override: id,
+                            account,
+                            effect,
+                        })),
+                        isRevoked: true,
+                    }),
+                    actionType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
                 actionType: ActionType.REVOKE,
@@ -209,25 +218,28 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
-                payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Update => ({
-                    items: entities.map(({ id, realm, account, permission, effect }) => ({
-                        permissionRealm: permission.realm.id,
-                        permission: permission.id,
-                        realm: realm.id,
-                        override: id,
-                        account,
-                        effect,
-                    })),
-                    isRevoked: false,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.PermissionOverride[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Update => ({
+                        items: entities.map(({ id, realm, account, permission, effect }) => ({
+                            permissionRealm: permission.realm.id,
+                            permission: permission.id,
+                            realm: realm.id,
+                            override: id,
+                            account,
+                            effect,
+                        })),
+                        isRevoked: false,
+                    }),
+                    actionType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.PERMISSION_OVERRIDE,
                 actionType: ActionType.RESTORE,
@@ -261,22 +273,25 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     public async clean(props: Commands.PermissionOverride.Clean.Props): Commands.PermissionOverride.Clean.Result {
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
-                payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Purge => ({
-                    items: entities.map(({ realm, account, permission }) => ({
-                        permissionRealm: permission.realm.id,
-                        permission: permission.id,
-                        realm: realm.id,
-                        account,
-                    })),
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.PermissionOverride[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Purge => ({
+                        items: entities.map(({ realm, account, permission }) => ({
+                            permissionRealm: permission.realm.id,
+                            permission: permission.id,
+                            realm: realm.id,
+                            account,
+                        })),
+                    }),
+                    actionType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             execute: async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
                     options: { populate: ["permission.realm"] },

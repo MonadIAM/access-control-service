@@ -17,7 +17,6 @@ export class System extends Seeder {
                 access_control.role,
                 access_control.permission,
                 access_control.realm,
-                system.projection_journal,
                 system.outbox,
                 system.change_log,
                 system.audit_log

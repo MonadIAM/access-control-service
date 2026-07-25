@@ -43,8 +43,7 @@ export class RealmCommands implements Commands.Realm.Contract {
 
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.REALM_CREATE,
+            outbox: {
                 payloadMapper: ({
                     assignments,
                     paths,
@@ -71,6 +70,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                     permissionRealm: SystemRealm.id,
                     realm: realm.id,
                 }),
+                destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                actionType: ProjectionScript.REALM_CREATE,
             },
             audit: {
                 actionType: ActionType.CREATE,
@@ -119,20 +120,21 @@ export class RealmCommands implements Commands.Realm.Contract {
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.REALM_PURGE,
-                payloadMapper: (entities: Entities.Realm[]): Scripts.Realm.Purge => ({
-                    realms: entities.map(({ id }) => id),
-                }),
-            },
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.Realm[]) => this.accessCachePayloadMapper(entities),
+                    payloadMapper: (entities: Entities.Realm[]): Scripts.Realm.Purge => ({
+                        realms: entities.map(({ id }) => id),
+                    }),
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.REALM_PURGE,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
                 {
-                    payloadMapper: (entities: Entities.Realm[]) => this.realmLifecyclePayloadMapper(entities),
+                    payloadMapper: this.realmLifecyclePayloadMapper.bind(this),
                     actionType: RealmTopicAction.PURGE,
                     destinationTopic: KafkaTopic.REALM,
                 },
@@ -158,7 +160,7 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
         });
 
-        if (entities.length > 1) {
+        if (Array.isArray(entities) && entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
@@ -170,21 +172,22 @@ export class RealmCommands implements Commands.Realm.Contract {
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.REALM_UPDATE,
-                payloadMapper: (entities: Entities.Realm[]): Scripts.Realm.Update => ({
-                    realms: entities.map(({ id }) => id),
-                    isRevoked: true,
-                }),
-            },
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.Realm[]) => this.accessCachePayloadMapper(entities),
+                    payloadMapper: (entities: Entities.Realm[]): Scripts.Realm.Update => ({
+                        realms: entities.map(({ id }) => id),
+                        isRevoked: true,
+                    }),
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.REALM_UPDATE,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
                 {
-                    payloadMapper: (entities: Entities.Realm[]) => this.realmLifecyclePayloadMapper(entities),
+                    payloadMapper: this.realmLifecyclePayloadMapper.bind(this),
                     actionType: RealmTopicAction.REVOKE,
                     destinationTopic: KafkaTopic.REALM,
                 },
@@ -210,7 +213,7 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
         });
 
-        if (entities.length > 1) {
+        if (Array.isArray(entities) && entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.REVOKED` };
@@ -222,21 +225,22 @@ export class RealmCommands implements Commands.Realm.Contract {
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.REALM_UPDATE,
-                payloadMapper: (entities: Entities.Realm[]): Scripts.Realm.Update => ({
-                    realms: entities.map(({ id }) => id),
-                    isRevoked: false,
-                }),
-            },
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.Realm[]) => this.accessCachePayloadMapper(entities),
+                    payloadMapper: (entities: Entities.Realm[]): Scripts.Realm.Update => ({
+                        realms: entities.map(({ id }) => id),
+                        isRevoked: false,
+                    }),
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.REALM_UPDATE,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
                 {
-                    payloadMapper: (entities: Entities.Realm[]) => this.realmLifecyclePayloadMapper(entities),
+                    payloadMapper: this.realmLifecyclePayloadMapper.bind(this),
                     actionType: RealmTopicAction.RESTORE,
                     destinationTopic: KafkaTopic.REALM,
                 },
@@ -262,7 +266,7 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
         });
 
-        if (entities.length > 1) {
+        if (Array.isArray(entities) && entities.length > 1) {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
@@ -283,9 +287,8 @@ export class RealmCommands implements Commands.Realm.Contract {
 
         await this.transactionalService.run<Commands.Realm.Exclude.ExecuteResult>({
             resource: this.resource,
-            projectionJournal: [
+            outbox: [
                 {
-                    operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
                     payloadMapper: ({ assignments }) => ({
                         items: assignments.map(({ realm, account, role }) => ({
                             realm: realm.id,
@@ -293,9 +296,10 @@ export class RealmCommands implements Commands.Realm.Contract {
                             account,
                         })),
                     }),
+                    actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    operationType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
                     payloadMapper: ({ overrides }) => ({
                         items: overrides.map(({ permission, account, realm }) => ({
                             permissionRealm: SystemRealm.id,
@@ -304,16 +308,16 @@ export class RealmCommands implements Commands.Realm.Contract {
                             account,
                         })),
                     }),
+                    actionType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
-            ],
-            outbox: [
                 {
-                    payloadMapper: () => this.accessCachePayloadMapper({ account: input.account, realm }),
+                    payloadMapper: this.accessCachePayloadMapper.bind(this, { account: input.account, realm }),
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
                 {
-                    payloadMapper: () => this.membershipPayloadMapper({ account: input.account, realm }),
+                    payloadMapper: this.membershipPayloadMapper.bind(this, { account: input.account, realm }),
                     actionType: MembershipTopicAction.REVOKE,
                     destinationTopic: KafkaTopic.MEMBERSHIP,
                 },

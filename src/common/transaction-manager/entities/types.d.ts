@@ -2,7 +2,6 @@ import { ChangeSetType } from "@mikro-orm/postgresql";
 
 import { KafkaTopic } from "~context/enums";
 
-import { ProjectionJournal as ProjectionJournalEntity } from "./projection-journal.entity";
 import { ChangeLog as ChangeLogEntity } from "./change-log.entity";
 import { AuditLog as AuditLogEntity } from "./audit-log.entity";
 import { Outbox as OutboxEntity } from "./outbox.entity";
@@ -46,15 +45,5 @@ declare global {
         }
 
         type Outbox = OutboxEntity;
-
-        namespace ProjectionJournal {
-            type ConstructorProps = {
-                payload: UnknownObject;
-                operationType: string;
-                availableAt?: Date;
-            };
-        }
-
-        type ProjectionJournal = ProjectionJournalEntity;
     }
 }

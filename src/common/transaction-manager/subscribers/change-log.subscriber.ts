@@ -3,11 +3,11 @@ import { ChangeLogTopicAction } from "@monadiam/shared";
 import { ConfigService } from "@nestjs/config";
 import { Injectable } from "@nestjs/common";
 
-import { ProjectionJournal, ChangeLog, AuditLog, Outbox } from "~common/transaction-manager/entities";
+import { ChangeLog, AuditLog, Outbox } from "~common/transaction-manager/entities";
 import { OperationContext } from "~common/transaction-manager/utilities";
 import { KafkaTopic } from "~context/enums";
 
-const EXCLUDED_ENTITIES = new Set([ProjectionJournal.name, AuditLog.name, ChangeLog.name, Outbox.name]);
+const EXCLUDED_ENTITIES = new Set([AuditLog.name, ChangeLog.name, Outbox.name]);
 
 @Injectable()
 export class ChangeLogSubscriber implements EventSubscriber {

@@ -25,7 +25,7 @@ export class ProjectionConsumer implements OnModuleInit {
     @EventPattern(KafkaTopic.PROJECTION_JOURNAL)
     public async handle(@Payload() message: Consumers.Projection.Payload, @Ctx() context: KafkaContext): Promise<void> {
         try {
-            await this.scriptExecutorService.execute<string>(message.operationType, [message.payload]);
+            await this.scriptExecutorService.execute<string>(message.actionType, [JSON.stringify(message.payload)]);
         } catch (error) {
             if (Exception.isRetryable(error)) {
                 await lastValueFrom(

@@ -48,22 +48,25 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
 
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Create => ({
-                    assignments: entities.map(({ id, role }) => ({
-                        assignment: id,
-                        role: role.id,
-                    })),
-                    account: input.account,
-                    realm,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Create => ({
+                        assignments: entities.map(({ id, role }) => ({
+                            assignment: id,
+                            role: role.id,
+                        })),
+                        account: input.account,
+                        realm,
+                    }),
+                    actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: ActionType.CREATE,
@@ -127,21 +130,24 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
 
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Purge => ({
-                    items: entities.map(({ realm, account, role }) => ({
-                        realm: realm.id,
-                        role: role.id,
-                        account,
-                    })),
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Purge => ({
+                        items: entities.map(({ realm, account, role }) => ({
+                            realm: realm.id,
+                            role: role.id,
+                            account,
+                        })),
+                    }),
+                    actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: ActionType.DELETE,
@@ -166,23 +172,26 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Update => ({
-                    isRevoked: true,
-                    items: entities.map(({ id, realm, account, role }) => ({
-                        realm: realm.id,
-                        assignment: id,
-                        role: role.id,
-                        account,
-                    })),
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Update => ({
+                        isRevoked: true,
+                        items: entities.map(({ id, realm, account, role }) => ({
+                            realm: realm.id,
+                            assignment: id,
+                            role: role.id,
+                            account,
+                        })),
+                    }),
+                    actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: ActionType.REVOKE,
@@ -219,23 +228,26 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Update => ({
-                    isRevoked: false,
-                    items: entities.map(({ id, realm, account, role }) => ({
-                        realm: realm.id,
-                        assignment: id,
-                        role: role.id,
-                        account,
-                    })),
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Update => ({
+                        isRevoked: false,
+                        items: entities.map(({ id, realm, account, role }) => ({
+                            realm: realm.id,
+                            assignment: id,
+                            role: role.id,
+                            account,
+                        })),
+                    }),
+                    actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: ActionType.RESTORE,
@@ -268,24 +280,27 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     public async assign(props: Commands.AccountRoleAssignment.Assign.Props): Commands.AccountRoleAssignment.Assign.Result {
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
-                payloadMapper: ([entity]: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Create => ({
-                    realm: SYSTEM_REALM_ID,
-                    account: props.account,
-                    assignments: [
-                        {
-                            assignment: entity.id,
-                            role: SYSTEM_USER_ROLE_ID,
-                        },
-                    ],
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: ([entity]: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Create => ({
+                        realm: SYSTEM_REALM_ID,
+                        account: props.account,
+                        assignments: [
+                            {
+                                assignment: entity.id,
+                                role: SYSTEM_USER_ROLE_ID,
+                            },
+                        ],
+                    }),
+                    actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             execute: async (transaction) => {
                 const [realmEntity, roleEntity] = await Promise.all([
                     this.realmRepository.findUniqueOrThrow({
@@ -315,21 +330,24 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     public async clean(props: Commands.AccountRoleAssignment.Clean.Props): Commands.AccountRoleAssignment.Clean.Result {
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Purge => ({
-                    items: entities.map(({ realm, account, role }) => ({
-                        realm: realm.id,
-                        role: role.id,
-                        account,
-                    })),
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.AccountRoleAssignment[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Purge => ({
+                        items: entities.map(({ realm, account, role }) => ({
+                            realm: realm.id,
+                            role: role.id,
+                            account,
+                        })),
+                    }),
+                    actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             execute: async (transaction) => {
                 const entities = await this.accountRoleAssignmentRepository.find({
                     where: { account: props.account },

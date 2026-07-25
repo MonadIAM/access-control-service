@@ -41,26 +41,29 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_CREATE,
-                payloadMapper: (
-                    entities: Entities.RolePermissionAssignment[],
-                ): Scripts.RolePermissionAssignment.Create => ({
-                    assignments: entities.map(({ id, permission, scope }) => ({
-                        permissionRealm: permission.realm.id,
-                        permission: permission.id,
-                        assignment: id,
-                        scope,
-                    })),
-                    role: input.role,
-                    realm,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (
+                        entities: Entities.RolePermissionAssignment[],
+                    ): Scripts.RolePermissionAssignment.Create => ({
+                        assignments: entities.map(({ id, permission, scope }) => ({
+                            permissionRealm: permission.realm.id,
+                            permission: permission.id,
+                            assignment: id,
+                            scope,
+                        })),
+                        role: input.role,
+                        realm,
+                    }),
+                    actionType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_CREATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
                 actionType: ActionType.CREATE,
@@ -108,22 +111,27 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_PURGE,
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]): Scripts.RolePermissionAssignment.Purge => ({
-                    items: entities.map(({ realm, role, permission }) => ({
-                        permissionRealm: permission.realm.id,
-                        permission: permission.id,
-                        realm: realm.id,
-                        role: role.id,
-                    })),
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (
+                        entities: Entities.RolePermissionAssignment[],
+                    ): Scripts.RolePermissionAssignment.Purge => ({
+                        items: entities.map(({ realm, role, permission }) => ({
+                            permissionRealm: permission.realm.id,
+                            permission: permission.id,
+                            realm: realm.id,
+                            role: role.id,
+                        })),
+                    }),
+                    actionType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_PURGE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
                 actionType: ActionType.DELETE,
@@ -160,26 +168,29 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
-                payloadMapper: (
-                    entities: Entities.RolePermissionAssignment[],
-                ): Scripts.RolePermissionAssignment.Update => ({
-                    items: entities.map(({ id, realm, role, permission }) => ({
-                        permissionRealm: permission.realm.id,
-                        permission: permission.id,
-                        realm: realm.id,
-                        assignment: id,
-                        role: role.id,
-                    })),
-                    isRevoked: true,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (
+                        entities: Entities.RolePermissionAssignment[],
+                    ): Scripts.RolePermissionAssignment.Update => ({
+                        items: entities.map(({ id, realm, role, permission }) => ({
+                            permissionRealm: permission.realm.id,
+                            permission: permission.id,
+                            realm: realm.id,
+                            assignment: id,
+                            role: role.id,
+                        })),
+                        isRevoked: true,
+                    }),
+                    actionType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
                 actionType: ActionType.REVOKE,
@@ -216,26 +227,29 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
-                payloadMapper: (
-                    entities: Entities.RolePermissionAssignment[],
-                ): Scripts.RolePermissionAssignment.Update => ({
-                    items: entities.map(({ id, realm, role, permission }) => ({
-                        permissionRealm: permission.realm.id,
-                        permission: permission.id,
-                        realm: realm.id,
-                        assignment: id,
-                        role: role.id,
-                    })),
-                    isRevoked: false,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.RolePermissionAssignment[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (
+                        entities: Entities.RolePermissionAssignment[],
+                    ): Scripts.RolePermissionAssignment.Update => ({
+                        items: entities.map(({ id, realm, role, permission }) => ({
+                            permissionRealm: permission.realm.id,
+                            permission: permission.id,
+                            realm: realm.id,
+                            assignment: id,
+                            role: role.id,
+                        })),
+                        isRevoked: false,
+                    }),
+                    actionType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.PERMISSION_ASSIGNMENT,
                 actionType: ActionType.RESTORE,

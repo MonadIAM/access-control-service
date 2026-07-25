@@ -29,13 +29,14 @@ export class PermissionCommands implements Commands.Permission.Contract {
 
         await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.PERMISSION_CREATE,
+            outbox: {
                 payloadMapper: (entity: Entities.Permission): Scripts.Permission.Create => ({
                     permission: entity.id,
                     code: entity.code,
                     realm,
                 }),
+                destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                actionType: ProjectionScript.PERMISSION_CREATE,
             },
             audit: {
                 entityType: EntityType.PERMISSION,
@@ -89,18 +90,21 @@ export class PermissionCommands implements Commands.Permission.Contract {
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.PERMISSION_PURGE,
-                payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Purge => ({
-                    permissions: entities.map(({ id }) => id),
-                    realm,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.Permission[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Purge => ({
+                        permissions: entities.map(({ id }) => id),
+                        realm,
+                    }),
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.PERMISSION_PURGE,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.PERMISSION,
                 actionType: ActionType.DELETE,
@@ -134,19 +138,22 @@ export class PermissionCommands implements Commands.Permission.Contract {
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.PERMISSION_UPDATE,
-                payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Update => ({
-                    permissions: entities.map(({ id }) => id),
-                    isRevoked: true,
-                    realm,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.Permission[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Update => ({
+                        permissions: entities.map(({ id }) => id),
+                        isRevoked: true,
+                        realm,
+                    }),
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.PERMISSION_UPDATE,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.PERMISSION,
                 actionType: ActionType.REVOKE,
@@ -181,19 +188,22 @@ export class PermissionCommands implements Commands.Permission.Contract {
 
         const entities = await this.transactionalService.run({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.PERMISSION_UPDATE,
-                payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Update => ({
-                    permissions: entities.map(({ id }) => id),
-                    isRevoked: false,
-                    realm,
-                }),
-            },
-            outbox: {
-                payloadMapper: (entities: Entities.Permission[]) => this.accessCachePayloadMapper(entities),
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            },
+            outbox: [
+                {
+                    payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Update => ({
+                        permissions: entities.map(({ id }) => id),
+                        isRevoked: false,
+                        realm,
+                    }),
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.PERMISSION_UPDATE,
+                },
+                {
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
             audit: {
                 entityType: EntityType.PERMISSION,
                 actionType: ActionType.RESTORE,

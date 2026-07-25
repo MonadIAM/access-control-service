@@ -46,10 +46,5 @@ register_connector \
     "/connector.outbox.json.tpl" \
     "/tmp/outbox-connector.json"
 
-register_connector \
-    "projection-journal-connector" \
-    "/connector.projection-journal.json.tpl" \
-    "/tmp/projection-journal-connector.json"
-
 echo "Registered connectors:"
 curl -sS "$CONNECT_URL/connectors"

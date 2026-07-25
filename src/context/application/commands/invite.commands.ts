@@ -94,25 +94,26 @@ export class InviteCommands implements Commands.Invite.Contract {
 
         await this.transactionalService.run<Commands.Invite.Accept.ExecuteResult>({
             resource: this.resource,
-            projectionJournal: {
-                operationType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
-                payloadMapper: ({ assignments }) => ({
-                    assignments: assignments.map(({ id, role }) => ({
-                        assignment: id,
-                        role: role.id,
-                    })),
-                    account: assignments[0].account,
-                    realm: assignments[0].realm.id,
-                }),
-            },
             outbox: [
                 {
-                    payloadMapper: ({ invitedBy }) => this.membershipPayloadMapper({ invitedBy, account: actor, realm }),
+                    payloadMapper: ({ assignments }) => ({
+                        assignments: assignments.map(({ id, role }) => ({
+                            assignment: id,
+                            role: role.id,
+                        })),
+                        account: assignments[0].account,
+                        realm: assignments[0].realm.id,
+                    }),
+                    actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.membershipPayloadMapper.bind(this),
                     actionType: MembershipTopicAction.GRANT,
                     destinationTopic: KafkaTopic.MEMBERSHIP,
                 },
                 {
-                    payloadMapper: ({ assignments }) => this.accessCachePayloadMapper({ assignments }),
+                    payloadMapper: this.accessCachePayloadMapper.bind(this),
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -139,7 +140,7 @@ export class InviteCommands implements Commands.Invite.Contract {
                     transaction,
                 });
 
-                return { assignments, invitedBy: entity.inviter };
+                return { assignments, invitedBy: entity.inviter, account: actor, realm };
             },
         });
 

@@ -57,6 +57,8 @@ declare global {
                 type ExecuteResult = {
                     assignments: Entities.AccountRoleAssignment[];
                     invitedBy: string;
+                    account: string;
+                    realm: string;
                 };
 
                 type Result = Promise<MessageResult>;

@@ -38,17 +38,8 @@ declare global {
             }
 
             type Payload = {
-                operationType: ProjectionScript;
-                lastError: Nullable<string>;
-                appliedAt: Nullable<Date>;
-                lockedAt: Nullable<Date>;
-                lockedBy: Nullable<Date>;
-                availableAt: Date;
-                attempts: number;
-                createdAt: Date;
-                payload: string;
-                status: string;
-                id: string;
+                actionType: ProjectionScript;
+                payload: UnknownObject;
             };
         }
     }
