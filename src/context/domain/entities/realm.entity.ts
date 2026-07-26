@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { Exception } from "~common/exceptions";
 
-export class Realm {
+export class Realm implements Entities.Realm.Contract {
     private get dictionaryPath(): string {
         return "entities.realm";
     }

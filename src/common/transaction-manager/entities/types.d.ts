@@ -9,7 +9,7 @@ import { Outbox as OutboxEntity } from "./outbox.entity";
 declare global {
     type DeltaChanges = Record<string, { old: unknown; new: unknown }>;
 
-    namespace Entities {
+    namespace SystemEntities {
         namespace AuditLog {
             type ConstructorProps = {
                 actionType: string;

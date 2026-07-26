@@ -2,10 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { Exception } from "~common/exceptions";
 
-import { RoleConflictGroup } from "./role-conflict-group.entity";
-import { Role } from "./role.entity";
-
-export class RoleConflictMember {
+export class RoleConflictMember implements Entities.RoleConflictMember.Contract {
     private get dictionaryPath(): string {
         return "entities.role-conflict-member";
     }
@@ -18,8 +15,8 @@ export class RoleConflictMember {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public group: RoleConflictGroup;
-    public role: Role;
+    public group: Entities.RoleConflictGroup;
+    public role: Entities.Role;
 
     public constructor(props: Entities.RoleConflictMember.ConstructorProps) {
         this.createdAt = new Date();

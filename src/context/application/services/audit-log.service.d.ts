@@ -14,7 +14,7 @@ declare global {
                     batchSize: number;
                 };
 
-                type Result = Promise<Entities.AuditLog[]>;
+                type Result = Promise<SystemEntities.AuditLog[]>;
             }
         }
     }

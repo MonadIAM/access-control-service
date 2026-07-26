@@ -1,12 +1,9 @@
-import { Realm } from "./realm.entity";
-import { Role } from "./role.entity";
-
-export class RoleClosure {
+export class RoleClosure implements Entities.RoleClosure.Contract {
     public depth: number;
 
-    public descendant: Role;
-    public ancestor: Role;
-    public realm: Realm;
+    public descendant: Entities.Role;
+    public ancestor: Entities.Role;
+    public realm: Entities.Realm;
 
     public constructor(props: Entities.RoleClosure.ConstructorProps) {
         this.depth = props.depth;

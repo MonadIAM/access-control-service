@@ -8,7 +8,7 @@ import { BaseRepository } from "~common/mixins";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ChangeLogRepository
-    extends BaseRepository<Entities.ChangeLog, Adapters.ChangeLog.Types>({
+    extends BaseRepository<SystemEntities.ChangeLog, Adapters.ChangeLog.Types>({
         Adapter: ChangeLogAdapter,
         Entity: ChangeLog,
     })

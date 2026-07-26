@@ -24,7 +24,7 @@ declare global {
 
                 type Props = DefaultProps | ManageProps;
 
-                type Result = Promise<Entities.AuditLog>;
+                type Result = Promise<SystemEntities.AuditLog>;
             }
 
             namespace FindMany {
@@ -45,7 +45,7 @@ declare global {
 
                 type Props = DefaultProps | ManageProps;
 
-                type Result = Promise<[Entities.AuditLog[], number]>;
+                type Result = Promise<[SystemEntities.AuditLog[], number]>;
             }
         }
     }

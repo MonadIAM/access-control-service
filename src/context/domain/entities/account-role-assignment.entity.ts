@@ -2,10 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { Exception } from "~common/exceptions";
 
-import { Realm } from "./realm.entity";
-import { Role } from "./role.entity";
-
-export class AccountRoleAssignment {
+export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Contract {
     private get dictionaryPath(): string {
         return "entities.account-role-assignment";
     }
@@ -19,8 +16,8 @@ export class AccountRoleAssignment {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public realm: Realm;
-    public role: Role;
+    public realm: Entities.Realm;
+    public role: Entities.Role;
 
     public constructor(props: Entities.AccountRoleAssignment.ConstructorProps) {
         this.createdAt = new Date();

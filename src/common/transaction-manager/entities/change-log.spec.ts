@@ -11,7 +11,7 @@ const BASE_DELTA: DeltaChanges = {
     name: { old: "Old Name", new: "New Name" },
 };
 
-function createChangeLog(overrides?: Partial<Entities.ChangeLog.ConstructorProps>): ChangeLog {
+function createChangeLog(overrides?: Partial<SystemEntities.ChangeLog.ConstructorProps>): ChangeLog {
     return new ChangeLog({
         changeType: ChangeSetType.UPDATE,
         auditEntry: AUDIT_ENTRY_ID,

@@ -8,7 +8,7 @@ import { Outbox } from "./outbox.entity";
 
 const BASE_PAYLOAD = { id: "00000000-0000-4000-8000-000000000001" };
 
-function createOutbox(overrides?: Partial<Entities.Outbox.ConstructorProps>): Outbox {
+function createOutbox(overrides?: Partial<SystemEntities.Outbox.ConstructorProps>): Outbox {
     return new Outbox({
         destinationTopic: KafkaTopic.ACCESS_CACHE,
         actionType: AccessCacheTopicAction.INVALIDATE,

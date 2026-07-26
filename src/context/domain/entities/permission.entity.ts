@@ -3,11 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import { Exception } from "~common/exceptions";
 
-import { RolePermissionAssignment } from "./role-permission-assignment.entity";
-import { PermissionOverride } from "./permission-override.entity";
-import { Realm } from "./realm.entity";
-
-export class Permission {
+export class Permission implements Entities.Permission.Contract {
     private get dictionaryPath(): string {
         return "entities.permission";
     }
@@ -23,10 +19,10 @@ export class Permission {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public realm: Realm;
+    public realm: Entities.Realm;
 
-    public roleAssignments = new Collection<RolePermissionAssignment>(this);
-    public accountOverrides = new Collection<PermissionOverride>(this);
+    public roleAssignments = new Collection<Entities.RolePermissionAssignment>(this);
+    public accountOverrides = new Collection<Entities.PermissionOverride>(this);
 
     public constructor(props: Entities.Permission.ConstructorProps) {
         this.createdAt = new Date();

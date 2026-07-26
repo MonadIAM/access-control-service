@@ -2,10 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { Exception } from "~common/exceptions";
 
-import { Realm } from "./realm.entity";
-import { Role } from "./role.entity";
-
-export class RoleDelegationPolicy {
+export class RoleDelegationPolicy implements Entities.RoleDelegationPolicy.Contract {
     private get dictionaryPath(): string {
         return "entities.role-delegation-policy";
     }
@@ -20,9 +17,9 @@ export class RoleDelegationPolicy {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public delegator: Role;
-    public target: Role;
-    public realm: Realm;
+    public delegator: Entities.Role;
+    public target: Entities.Role;
+    public realm: Entities.Realm;
 
     public constructor(props: Entities.RoleDelegationPolicy.ConstructorProps) {
         const now = new Date();

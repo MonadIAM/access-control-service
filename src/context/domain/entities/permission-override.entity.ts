@@ -3,10 +3,7 @@ import { randomUUID } from "node:crypto";
 import { PermissionOverrideEffect } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
-import { Permission } from "./permission.entity";
-import { Realm } from "./realm.entity";
-
-export class PermissionOverride {
+export class PermissionOverride implements Entities.PermissionOverride.Contract {
     private get dictionaryPath(): string {
         return "entities.permission-override";
     }
@@ -20,8 +17,8 @@ export class PermissionOverride {
     public effect: PermissionOverrideEffect;
     public isRevoked: boolean;
 
-    public permission: Permission;
-    public realm: Realm;
+    public permission: Entities.Permission;
+    public realm: Entities.Realm;
 
     public constructor(props: Entities.PermissionOverride.ConstructorProps) {
         this.createdAt = new Date();

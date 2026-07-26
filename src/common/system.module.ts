@@ -2,9 +2,8 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { ConfigModule } from "@nestjs/config";
 import { Module } from "@nestjs/common";
 
-import { RateLimiterModule } from "./rate-limiter";
+import { RateLimiterModule, BullMQModule } from "./modules";
 import { validateEnv } from "./validator";
-import { BullMQModule } from "./bullmq";
 import { I18nModule } from "./i18n";
 
 @Module({

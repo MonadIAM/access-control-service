@@ -3,11 +3,7 @@ import { randomUUID } from "node:crypto";
 import { AssignmentScope } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
-import { Permission } from "./permission.entity";
-import { Realm } from "./realm.entity";
-import { Role } from "./role.entity";
-
-export class RolePermissionAssignment {
+export class RolePermissionAssignment implements Entities.RolePermissionAssignment.Contract {
     private get dictionaryPath(): string {
         return "entities.role-permission-assignment";
     }
@@ -21,9 +17,9 @@ export class RolePermissionAssignment {
     public isSystemManaged: boolean;
     public isRevoked: boolean;
 
-    public permission: Permission;
-    public realm: Realm;
-    public role: Role;
+    public permission: Entities.Permission;
+    public realm: Entities.Realm;
+    public role: Entities.Role;
 
     public constructor(props: Entities.RolePermissionAssignment.ConstructorProps) {
         const now = new Date();

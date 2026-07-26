@@ -3,10 +3,7 @@ import { randomUUID } from "node:crypto";
 import { Exception } from "~common/exceptions";
 import { InviteStatus } from "~context/enums";
 
-import { Realm } from "./realm.entity";
-import { Role } from "./role.entity";
-
-export class Invite {
+export class Invite implements Entities.Invite.Contract {
     private get dictionaryPath(): string {
         return "entities.invite";
     }
@@ -20,8 +17,8 @@ export class Invite {
     public invitee: string;
     public inviter: string;
 
-    public realm: Realm;
-    public role: Role;
+    public realm: Entities.Realm;
+    public role: Entities.Role;
 
     public constructor(props: Entities.Invite.ConstructorProps) {
         this.createdAt = new Date();

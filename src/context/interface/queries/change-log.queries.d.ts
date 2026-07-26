@@ -10,7 +10,7 @@ declare namespace Queries {
                 log: string;
             };
 
-            type Result = Promise<Entities.ChangeLog>;
+            type Result = Promise<SystemEntities.ChangeLog>;
         }
 
         namespace FindMany {
@@ -20,7 +20,7 @@ declare namespace Queries {
                 pagination: Pagination;
             };
 
-            type Result = Promise<[Entities.ChangeLog[], number]>;
+            type Result = Promise<[SystemEntities.ChangeLog[], number]>;
         }
     }
 }

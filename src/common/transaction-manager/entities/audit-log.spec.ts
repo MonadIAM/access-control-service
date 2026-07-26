@@ -10,7 +10,7 @@ const BASE_CONTEXT: Extract.Meta = {
     ip: "127.0.0.1",
 };
 
-function createAuditLog(overrides?: Partial<Entities.AuditLog.ConstructorProps>): AuditLog {
+function createAuditLog(overrides?: Partial<SystemEntities.AuditLog.ConstructorProps>): AuditLog {
     return new AuditLog({
         context: BASE_CONTEXT,
         actionType: "CREATE",

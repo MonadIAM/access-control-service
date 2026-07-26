@@ -13,7 +13,7 @@ export class ChangeLog {
 
     public delta: DeltaChanges;
 
-    public constructor(props: Entities.ChangeLog.ConstructorProps) {
+    public constructor(props: SystemEntities.ChangeLog.ConstructorProps) {
         this.id = randomUUID();
         this.createdAt = new Date();
 

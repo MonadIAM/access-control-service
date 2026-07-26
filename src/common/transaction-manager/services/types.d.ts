@@ -42,14 +42,14 @@ declare global {
                 type ResultProps<T extends AnyEntity | AnyEntity[]> = {
                     execute(transaction: EntityManager): Promise<T> | T;
                     outbox?: OutboxConfig<T> | OutboxConfig<T>[];
-                    audit?: Entities.AuditLog.ConstructorProps;
+                    audit?: SystemEntities.AuditLog.ConstructorProps;
                     changeLog?: boolean;
                     resource?: string;
                 };
 
                 type VoidProps = {
                     execute(transaction: EntityManager): Promise<void> | void;
-                    audit?: Entities.AuditLog.ConstructorProps;
+                    audit?: SystemEntities.AuditLog.ConstructorProps;
                     changeLog?: never;
                     resource?: string;
                     outbox?: never;
@@ -80,9 +80,9 @@ declare global {
             }
 
             namespace BuildAuditLogArchiveOutbox {
-                type Props = Entities.AuditLog;
+                type Props = SystemEntities.AuditLog;
 
-                type Result = Entities.Outbox;
+                type Result = SystemEntities.Outbox;
             }
         }
     }

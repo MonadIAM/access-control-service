@@ -14,7 +14,7 @@ export class Outbox {
     public metadata?: UnknownObject;
     public payload: UnknownObject;
 
-    public constructor(props: Entities.Outbox.ConstructorProps) {
+    public constructor(props: SystemEntities.Outbox.ConstructorProps) {
         this.id = randomUUID();
         this.createdAt = new Date();
 

@@ -4,13 +4,7 @@ import { randomUUID } from "node:crypto";
 import { RoleActorType, RolePrototype } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
-import { RolePermissionAssignment } from "./role-permission-assignment.entity";
-import { AccountRoleAssignment } from "./account-role-assignment.entity";
-import { RoleDelegationPolicy } from "./role-delegation-policy.entity";
-import { RoleConflictMember } from "./role-conflict-member.entity";
-import { Realm } from "./realm.entity";
-
-export class Role {
+export class Role implements Entities.Role.Contract {
     private get dictionaryPath(): string {
         return "entities.role";
     }
@@ -29,13 +23,13 @@ export class Role {
     public nonDelegable: boolean;
     public isRevoked: boolean;
 
-    public realm: Realm;
+    public realm: Entities.Realm;
 
-    public delegationPoliciesAsDelegator = new Collection<RoleDelegationPolicy>(this);
-    public delegationPoliciesAsTarget = new Collection<RoleDelegationPolicy>(this);
-    public permissionAssignments = new Collection<RolePermissionAssignment>(this);
-    public conflictMemberships = new Collection<RoleConflictMember>(this);
-    public accountAssignment = new Collection<AccountRoleAssignment>(this);
+    public delegationPoliciesAsDelegator = new Collection<Entities.RoleDelegationPolicy>(this);
+    public delegationPoliciesAsTarget = new Collection<Entities.RoleDelegationPolicy>(this);
+    public permissionAssignments = new Collection<Entities.RolePermissionAssignment>(this);
+    public conflictMemberships = new Collection<Entities.RoleConflictMember>(this);
+    public accountAssignment = new Collection<Entities.AccountRoleAssignment>(this);
 
     public constructor(props: Entities.Role.ConstructorProps) {
         const now = new Date();

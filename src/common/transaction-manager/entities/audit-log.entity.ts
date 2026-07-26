@@ -15,7 +15,7 @@ export class AuditLog {
 
     public input?: UnknownObject;
 
-    public constructor(props: Entities.AuditLog.ConstructorProps) {
+    public constructor(props: SystemEntities.AuditLog.ConstructorProps) {
         this.id = randomUUID();
         this.createdAt = new Date();
 
