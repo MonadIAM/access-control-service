@@ -1,5 +1,4 @@
 import { Injectable, Scope } from "@nestjs/common";
-import { Knex } from "@mikro-orm/postgresql";
 
 import { ExceptionMapper } from "~common/exceptions";
 
@@ -51,14 +50,14 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
             const removedRows = await knex("access_control.role_closure as closure")
                 .transacting(context)
                 .where("closure.realm_id", realm)
-                .whereIn("closure.descendant_id", (builder: Knex.QueryBuilder) => {
+                .whereIn("closure.descendant_id", (builder: ORM.QueryBuilder) => {
                     builder
                         .select("descendant_id")
                         .from("access_control.role_closure")
                         .whereIn("ancestor_id", children)
                         .andWhere("realm_id", realm);
                 })
-                .whereIn("closure.ancestor_id", (builder: Knex.QueryBuilder) => {
+                .whereIn("closure.ancestor_id", (builder: ORM.QueryBuilder) => {
                     builder
                         .select("ancestor_id")
                         .from("access_control.role_closure")
@@ -70,7 +69,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
 
             const upsertedRows = await knex("access_control.role_closure")
                 .transacting(context)
-                .insert((builder: Knex.QueryBuilder) => {
+                .insert((builder: ORM.QueryBuilder) => {
                     builder
                         .select(
                             knex.raw("?::uuid as realm_id", [realm]),
@@ -79,7 +78,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                             knex.raw("new_parent_paths.depth + moved_subtree_paths.depth + 1 as depth"),
                         )
                         .from("access_control.role_closure AS new_parent_paths")
-                        .join("access_control.role_closure AS moved_subtree_paths", (join: Knex.JoinClause) => {
+                        .join("access_control.role_closure AS moved_subtree_paths", (join: ORM.JoinClause) => {
                             join.onIn("moved_subtree_paths.ancestor_id", children).andOn(
                                 "moved_subtree_paths.realm_id",
                                 "=",
@@ -118,11 +117,11 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
             await knex("access_control.role_closure")
                 .transacting(context)
                 .where("realm_id", realm)
-                .whereExists((builder: Knex.QueryBuilder) => {
+                .whereExists((builder: ORM.QueryBuilder) => {
                     builder
                         .select(knex.raw("1"))
                         .from("access_control.role_closure as path1")
-                        .join("access_control.role_closure as path2", (join: Knex.JoinClause) => {
+                        .join("access_control.role_closure as path2", (join: ORM.JoinClause) => {
                             join.on("path1.descendant_id", "=", knex.raw("?::uuid", [role]))
                                 .andOn("path2.ancestor_id", "=", knex.raw("?::uuid", [role]))
                                 .andOn("path1.realm_id", "=", knex.raw("?::uuid", [realm]))

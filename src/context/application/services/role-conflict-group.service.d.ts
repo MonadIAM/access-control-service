@@ -1,65 +1,61 @@
-import { EntityManager } from "@mikro-orm/postgresql";
+declare namespace Services {
+    namespace RoleConflictGroup {
+        interface Contract {
+            restore(props: Restore.Props): Restore.Result;
+            revoke(props: Revoke.Props): Revoke.Result;
+            create(props: Create.Props): Create.Result;
+            update(props: Update.Props): Update.Result;
+            purge(props: Purge.Props): Purge.Result;
+        }
 
-declare global {
-    namespace Services {
-        namespace RoleConflictGroup {
-            interface Contract {
-                restore(props: Restore.Props): Restore.Result;
-                revoke(props: Revoke.Props): Revoke.Result;
-                create(props: Create.Props): Create.Result;
-                update(props: Update.Props): Update.Result;
-                purge(props: Purge.Props): Purge.Result;
-            }
-
-            namespace Create {
-                type Props = {
-                    transaction: EntityManager;
-                    input: {
-                        members: Entities.Role[];
-                        description: string;
-                        maxAllowed: number;
-                        code: string;
-                        name: string;
-                    };
-                    realm: Entities.Realm;
+        namespace Create {
+            type Props = {
+                transaction: ORM.EntityManager;
+                realm: Entities.Realm;
+                input: {
+                    members: Entities.Role[];
+                    description: string;
+                    maxAllowed: number;
+                    code: string;
+                    name: string;
                 };
+            };
 
-                type Result = Promise<void>;
-            }
+            type Result = Promise<void>;
+        }
 
-            namespace Update {
-                type Props = {
-                    patch: Partial<Entities.RoleConflictGroup.MutableFields>;
-                    entity: Entities.RoleConflictGroup;
-                };
+        namespace Update {
+            type Props = {
+                patch: Partial<Entities.RoleConflictGroup.MutableFields>;
+                entity: Entities.RoleConflictGroup;
+            };
 
-                type Result = void;
-            }
+            type Result = void;
+        }
 
-            namespace Purge {
-                type Props = {
-                    transaction: EntityManager;
-                    entities: Entities.RoleConflictGroup[];
-                };
+        namespace Purge {
+            type Props = {
+                transaction: ORM.EntityManager;
+                entities: Entities.RoleConflictGroup[];
+            };
 
-                type Result = void;
-            }
+            type Result = void;
+        }
 
-            namespace Revoke {
-                type Props = {
-                    entities: Entities.RoleConflictGroup[];
-                };
+        namespace Revoke {
+            type Props = {
+                entities: Entities.RoleConflictGroup[];
+            };
 
-                type Result = void;
-            }
+            type Result = void;
+        }
 
-            namespace Restore {
-                type Props = {
-                    entities: Entities.RoleConflictGroup[];
-                };
+        namespace Restore {
+            type Props = {
+                entities: Entities.RoleConflictGroup[];
+            };
 
-                type Result = void;
-            }
+            type Result = void;
         }
     }
 }

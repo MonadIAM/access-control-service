@@ -1,5 +1,3 @@
-import { Collection } from "@mikro-orm/core";
-
 import { RoleActorType, RolePrototype } from "~context/enums";
 
 declare global {
@@ -24,11 +22,11 @@ declare global {
 
                 realm: Entities.Realm;
 
-                delegationPoliciesAsDelegator: Collection<Entities.RoleDelegationPolicy>;
-                delegationPoliciesAsTarget: Collection<Entities.RoleDelegationPolicy>;
-                permissionAssignments: Collection<Entities.RolePermissionAssignment>;
-                conflictMemberships: Collection<Entities.RoleConflictMember>;
-                accountAssignment: Collection<Entities.AccountRoleAssignment>;
+                delegationPoliciesAsDelegator: ORM.Collection<Entities.RoleDelegationPolicy>;
+                delegationPoliciesAsTarget: ORM.Collection<Entities.RoleDelegationPolicy>;
+                permissionAssignments: ORM.Collection<Entities.RolePermissionAssignment>;
+                accountAssignment: ORM.Collection<Entities.AccountRoleAssignment>;
+                conflictMemberships: ORM.Collection<Entities.RoleConflictMember>;
 
                 update(props: ChangeDataProps): void;
                 canPurge(): void;

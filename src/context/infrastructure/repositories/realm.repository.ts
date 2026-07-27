@@ -1,7 +1,7 @@
-import { EntityManager, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { raw } from "@mikro-orm/postgresql";
 
 import { RealmAdapter } from "~context/infrastructure/adapters";
 import { ExceptionMapper } from "~common/exceptions";
@@ -20,7 +20,7 @@ export class RealmRepository
 
     public constructor(
         @InjectEntityManager("read")
-        protected readonly readManager: EntityManager,
+        protected readonly readManager: ORM.EntityManager,
         protected readonly configService: ConfigService,
     ) {
         super();

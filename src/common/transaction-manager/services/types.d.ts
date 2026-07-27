@@ -1,21 +1,19 @@
-import { AnyEntity, EntityManager } from "@mikro-orm/postgresql";
-
 import { KafkaTopic } from "~context/enums";
 
 declare global {
     namespace TransactionManager {
         namespace Service {
             interface PublicContract {
-                run<T extends AnyEntity | AnyEntity[]>(props: Run.ResultProps<T>): Promise<T>;
+                run<T extends ORM.AnyEntity | ORM.AnyEntity[]>(props: Run.ResultProps<T>): Promise<T>;
                 run(props: Run.VoidProps): Promise<void>;
             }
 
             interface PrivateContract {
                 buildAuditLogArchiveOutbox(props: BuildAuditLogArchiveOutbox.Props): BuildAuditLogArchiveOutbox.Result;
-                executeWithEffects<T extends AnyEntity | AnyEntity[]>(
+                executeWithEffects<T extends ORM.AnyEntity | ORM.AnyEntity[]>(
                     props: ExecuteWithEffects.Props<T>,
                 ): ExecuteWithEffects.Result<T>;
-                persistOutboxEvents<T extends AnyEntity | AnyEntity[]>(
+                persistOutboxEvents<T extends ORM.AnyEntity | ORM.AnyEntity[]>(
                     props: PersistOutboxEvents.Props<T>,
                 ): PersistOutboxEvents.Result;
             }
@@ -39,8 +37,8 @@ declare global {
             }[keyof OutboxPayloadMap];
 
             namespace Run {
-                type ResultProps<T extends AnyEntity | AnyEntity[]> = {
-                    execute(transaction: EntityManager): Promise<T> | T;
+                type ResultProps<T extends ORM.AnyEntity | ORM.AnyEntity[]> = {
+                    execute(transaction: ORM.EntityManager): Promise<T> | T;
                     outbox?: OutboxConfig<T> | OutboxConfig<T>[];
                     audit?: SystemEntities.AuditLog.ConstructorProps;
                     changeLog?: boolean;
@@ -48,31 +46,31 @@ declare global {
                 };
 
                 type VoidProps = {
-                    execute(transaction: EntityManager): Promise<void> | void;
+                    execute(transaction: ORM.EntityManager): Promise<void> | void;
                     audit?: SystemEntities.AuditLog.ConstructorProps;
                     changeLog?: never;
                     resource?: string;
                     outbox?: never;
                 };
 
-                type Props<T extends AnyEntity | AnyEntity[]> = ResultProps<T> | VoidProps;
+                type Props<T extends ORM.AnyEntity | ORM.AnyEntity[]> = ResultProps<T> | VoidProps;
 
                 type Result<T> = Promise<T | void>;
             }
 
             namespace ExecuteWithEffects {
-                type Props<T extends AnyEntity | AnyEntity[]> = {
+                type Props<T extends ORM.AnyEntity | ORM.AnyEntity[]> = {
                     params: TransactionManager.Service.Run.Props<T>;
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                 };
 
                 type Result<T> = Promise<T | void>;
             }
 
             namespace PersistOutboxEvents {
-                type Props<T extends AnyEntity | AnyEntity[]> = {
+                type Props<T extends ORM.AnyEntity | ORM.AnyEntity[]> = {
                     params: TransactionManager.Service.Run.Props<T>;
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     result: T;
                 };
 

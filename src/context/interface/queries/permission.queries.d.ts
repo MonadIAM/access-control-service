@@ -1,5 +1,3 @@
-import { FindOptions } from "@mikro-orm/postgresql";
-
 import { QueryMode, ResponseViewType } from "~context/enums";
 
 declare global {
@@ -41,7 +39,7 @@ declare global {
             namespace GetLookupList {
                 type DefaultProps = {
                     mode: QueryMode.DEFAULT;
-                    options?: FindOptions<Entities.Permission>;
+                    options?: ORM.FindOptions<Entities.Permission>;
                     pagination: Pagination;
                     realm: string;
                     term: string;
@@ -49,7 +47,7 @@ declare global {
 
                 type ManageProps = {
                     mode: QueryMode.MANAGE;
-                    options?: FindOptions<Entities.Permission>;
+                    options?: ORM.FindOptions<Entities.Permission>;
                     pagination: Pagination;
                     term: string;
                 };

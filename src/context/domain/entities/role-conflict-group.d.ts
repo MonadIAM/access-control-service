@@ -1,48 +1,44 @@
-import { Collection } from "@mikro-orm/core";
+declare namespace Entities {
+    type RoleConflictGroup = RoleConflictGroup.Contract;
 
-declare global {
-    namespace Entities {
-        type RoleConflictGroup = RoleConflictGroup.Contract;
+    namespace RoleConflictGroup {
+        interface Contract {
+            id: string;
+            createdAt: Date;
+            updatedAt?: Date;
+            version: number;
 
-        namespace RoleConflictGroup {
-            interface Contract {
-                id: string;
-                createdAt: Date;
-                updatedAt?: Date;
-                version: number;
+            code: string;
+            name: string;
+            maxAllowed: number;
+            description?: string;
+            isSystemManaged: boolean;
+            isRevoked: boolean;
 
-                code: string;
-                name: string;
-                maxAllowed: number;
-                description?: string;
-                isSystemManaged: boolean;
-                isRevoked: boolean;
+            realm: Entities.Realm;
 
-                realm: Entities.Realm;
+            members: ORM.Collection<Entities.RoleConflictMember>;
 
-                members: Collection<Entities.RoleConflictMember>;
-
-                update(props: ChangeDataProps): void;
-                canPurge(): void;
-                restore(): void;
-                revoke(): void;
-            }
-
-            type MutableFields = Pick<Contract, "name" | "description" | "maxAllowed">;
-
-            type ConstructorProps = {
-                code: string;
-                name: string;
-                maxAllowed: number;
-                description?: string;
-                isSystemManaged?: boolean;
-                isRevoked?: boolean;
-                realm: Entities.Realm;
-            };
-
-            type ChangeDataProps = {
-                patch: Partial<MutableFields>;
-            };
+            update(props: ChangeDataProps): void;
+            canPurge(): void;
+            restore(): void;
+            revoke(): void;
         }
+
+        type MutableFields = Pick<Contract, "name" | "description" | "maxAllowed">;
+
+        type ConstructorProps = {
+            code: string;
+            name: string;
+            maxAllowed: number;
+            description?: string;
+            isSystemManaged?: boolean;
+            isRevoked?: boolean;
+            realm: Entities.Realm;
+        };
+
+        type ChangeDataProps = {
+            patch: Partial<MutableFields>;
+        };
     }
 }

@@ -1,19 +1,18 @@
-import { AnyEntity, EntityKey, FindAllOptions, QueryOrder, QueryOrderMap } from "@mikro-orm/postgresql";
-import { OperatorMap } from "@mikro-orm/core/typings";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { StringFilterDTO, OrdinalFilterDTO, LinkFilterDTO } from "~common/dto";
 
 import { PUBLIC_TO_ORM_OPERATORS } from "./mappers";
 
 export class MikroAdapter {
-    public static pagination(pagination: Pagination): Pick<FindAllOptions<AnyEntity>, "limit" | "offset"> {
+    public static pagination(pagination: Pagination): Pick<ORM.FindAllOptions<ORM.AnyEntity>, "limit" | "offset"> {
         return {
             limit: pagination.elementsPerPage,
             offset: (pagination.currentPage - 1) * pagination.elementsPerPage,
         };
     }
 
-    public static applyStringFilter<T extends string>(filter: StringFilterDTO | LinkFilterDTO): OperatorMap<T> {
+    public static applyStringFilter<T extends string>(filter: StringFilterDTO | LinkFilterDTO): ORM.OperatorMap<T> {
         return {
             [PUBLIC_TO_ORM_OPERATORS[filter.operator]]: /^LIKE|ILIKE$/.test(filter.operator)
                 ? `%${filter.value}%`
@@ -21,24 +20,24 @@ export class MikroAdapter {
         };
     }
 
-    public static applyOrdinalFilter<T extends Ordinal>(filter: OrdinalFilterDTO<T>): OperatorMap<T> {
+    public static applyOrdinalFilter<T extends Ordinal>(filter: OrdinalFilterDTO<T>): ORM.OperatorMap<T> {
         if (filter.operator === "BETWEEN") {
             if (filter.value instanceof Array && filter.value.length > 1) {
-                return { $gte: filter.value[0], $lte: filter.value[1] } as OperatorMap<T>;
+                return { $gte: filter.value[0], $lte: filter.value[1] } as ORM.OperatorMap<T>;
             } else {
-                return { $gte: filter.value } as OperatorMap<T>;
+                return { $gte: filter.value } as ORM.OperatorMap<T>;
             }
         } else {
             return { [PUBLIC_TO_ORM_OPERATORS[filter.operator]]: filter.value };
         }
     }
 
-    public static orderBy<T extends AnyEntity>(
-        sort: Partial<Record<EntityKey<T>, QueryOrder>>,
-        basicSort: QueryOrderMap<T>,
-    ): QueryOrderMap<T> {
-        const entries = Object.entries(sort) as [EntityKey<T>, QueryOrder][];
-        const orderBy: QueryOrderMap<T> = basicSort;
+    public static orderBy<T extends ORM.AnyEntity>(
+        sort: Partial<Record<ORM.EntityKey<T>, QueryOrder>>,
+        basicSort: ORM.QueryOrderMap<T>,
+    ): ORM.QueryOrderMap<T> {
+        const entries = Object.entries(sort) as [ORM.EntityKey<T>, QueryOrder][];
+        const orderBy: ORM.QueryOrderMap<T> = basicSort;
         for (const [key, value] of entries) {
             if (value) {
                 orderBy[key] = value;

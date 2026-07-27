@@ -1,4 +1,4 @@
-import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { InviteStatus } from "~context/enums";
@@ -6,9 +6,9 @@ import { InviteStatus } from "~context/enums";
 export class InviteAdapter implements Adapters.Contract<Entities.Invite, Adapters.Invite.Types> {
     public buildWhereORM(
         filters: Adapters.Invite.Filters,
-        basic: ObjectQuery<Entities.Invite> = {},
-    ): ObjectQuery<Entities.Invite> {
-        const where: ObjectQuery<Entities.Invite> = basic;
+        basic: ORM.ObjectQuery<Entities.Invite> = {},
+    ): ORM.ObjectQuery<Entities.Invite> {
+        const where: ORM.ObjectQuery<Entities.Invite> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -41,8 +41,8 @@ export class InviteAdapter implements Adapters.Contract<Entities.Invite, Adapter
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.Invite.Sort,
         pagination: Pagination,
-        basic: FindOptions<Entities.Invite, P, F> = {},
-    ): FindOptions<Entities.Invite, P, F> {
+        basic: ORM.FindOptions<Entities.Invite, P, F> = {},
+    ): ORM.FindOptions<Entities.Invite, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<Entities.Invite>(sort, { createdAt: QueryOrder.DESC }),

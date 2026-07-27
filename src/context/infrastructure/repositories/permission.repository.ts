@@ -1,7 +1,7 @@
-import { EntityDictionary, EntityManager, Knex, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { raw } from "@mikro-orm/postgresql";
 
 import { PermissionAdapter } from "~context/infrastructure/adapters";
 import { PermissionOverrideEffect } from "~context/enums";
@@ -21,7 +21,7 @@ export class PermissionRepository
 
     public constructor(
         @InjectEntityManager("read")
-        protected readonly readManager: EntityManager,
+        protected readonly readManager: ORM.EntityManager,
         protected readonly configService: ConfigService,
     ) {
         super();
@@ -67,7 +67,7 @@ export class PermissionRepository
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
 
-            const buildEffectivePermissionIDs = (): Knex.QueryBuilder => {
+            const buildEffectivePermissionIDs = (): ORM.QueryBuilder => {
                 const accountRolesSubquery = knex
                     .select("rc.ancestor_id")
                     .distinct()
@@ -139,7 +139,7 @@ export class PermissionRepository
 
             const total = parseInt(String(countResult?.total ?? 0), 10);
 
-            const permissions: Entities.Permission[] = rawPermissions.map((raw: EntityDictionary<Entities.Permission>) => {
+            const permissions: Entities.Permission[] = rawPermissions.map((raw) => {
                 return entityManager.map(Permission, raw);
             });
 

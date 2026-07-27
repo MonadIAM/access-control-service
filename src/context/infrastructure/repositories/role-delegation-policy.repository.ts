@@ -1,4 +1,3 @@
-import { EntityManager, Knex } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -20,7 +19,7 @@ export class RoleDelegationPolicyRepository
 
     public constructor(
         @InjectEntityManager("read")
-        protected readonly readManager: EntityManager,
+        protected readonly readManager: ORM.EntityManager,
         protected readonly configService: ConfigService,
     ) {
         super();
@@ -37,7 +36,7 @@ export class RoleDelegationPolicyRepository
             const targetIds = Array.isArray(to) ? to : [to];
 
             const query = knex
-                .withRecursive("transitive_power", (cte: Knex.QueryBuilder) => {
+                .withRecursive("transitive_power", (cte: ORM.QueryBuilder) => {
                     cte.select("rc.descendant_id as reachable_role_id")
                         .from("access_control.role_delegation_policy as rdp")
                         .join("access_control.role_closure as rc", "rc.ancestor_id", "rdp.target_id")
@@ -46,7 +45,7 @@ export class RoleDelegationPolicyRepository
                         .andWhere("rdp.is_revoked", false)
                         .distinct();
 
-                    cte.union((union: Knex.QueryBuilder) => {
+                    cte.union((union: ORM.QueryBuilder) => {
                         union
                             .select("rc.descendant_id as reachable_role_id")
                             .from("access_control.role_delegation_policy as rdp")

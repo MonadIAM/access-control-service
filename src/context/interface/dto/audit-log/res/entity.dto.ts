@@ -1,5 +1,4 @@
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
-import { UnknownType } from "@mikro-orm/core";
 import { Expose } from "class-transformer";
 
 import { ActionType, EntityType } from "~context/enums";
@@ -28,7 +27,7 @@ export class AuditLogDTO {
         required: true,
         additionalProperties: true,
     })
-    declare public input: UnknownType;
+    declare public input: ORM.UnknownType;
 
     @Expose()
     @Validator.IsString()

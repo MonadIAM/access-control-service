@@ -1,6 +1,5 @@
 import { HealthIndicatorService, HealthIndicatorResult } from "@nestjs/terminus";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
-import { EntityManager } from "@mikro-orm/postgresql";
 import { ConfigService } from "@nestjs/config";
 import { Injectable } from "@nestjs/common";
 
@@ -10,9 +9,9 @@ export class DatabaseHealthIndicator {
 
     public constructor(
         @InjectEntityManager("write")
-        private readonly writeEntityManager: EntityManager,
+        private readonly writeEntityManager: ORM.EntityManager,
         @InjectEntityManager("read")
-        private readonly readEntityManager: EntityManager,
+        private readonly readEntityManager: ORM.EntityManager,
         private readonly healthIndicatorService: HealthIndicatorService,
         private readonly configService: ConfigService,
     ) {
@@ -39,7 +38,7 @@ export class DatabaseHealthIndicator {
         }
     }
 
-    private async assertConnection(entityManager: EntityManager): Promise<void> {
+    private async assertConnection(entityManager: ORM.EntityManager): Promise<void> {
         const isConnected = await entityManager.getConnection().isConnected();
         if (isConnected) {
             await entityManager.getConnection().execute("SELECT 1");

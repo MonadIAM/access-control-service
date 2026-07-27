@@ -1,4 +1,4 @@
-import { FilterQuery, FindOptions, Knex, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 
@@ -10,14 +10,14 @@ declare global {
         };
 
         interface Contract<E, A extends Meta> {
-            buildOptionsKnex?(query: Knex.QueryBuilder, sort: A["Sort"], pagination: Pagination, tableAlias: string): void;
-            buildWhereKnex?(query: Knex.QueryBuilder, filters: A["Filters"], tableAlias: string): void;
-            buildWhereORM(filters: A["Filters"], basic?: ObjectQuery<E>): FilterQuery<E>;
+            buildOptionsKnex?(query: ORM.QueryBuilder, sort: A["Sort"], pagination: Pagination, tableAlias: string): void;
+            buildWhereKnex?(query: ORM.QueryBuilder, filters: A["Filters"], tableAlias: string): void;
+            buildWhereORM(filters: A["Filters"], basic?: ORM.ObjectQuery<E>): ORM.FilterQuery<E>;
             buildOptionsORM<P extends string, F extends string>(
                 sort: A["Sort"],
                 pagination: Pagination,
-                options?: FindOptions<E, P, F>,
-            ): FindOptions<E, P, F>;
+                options?: ORM.FindOptions<E, P, F>,
+            ): ORM.FindOptions<E, P, F>;
         }
 
         namespace Invite {

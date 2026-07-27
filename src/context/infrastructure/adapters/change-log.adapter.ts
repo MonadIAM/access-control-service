@@ -1,12 +1,15 @@
-import { ChangeSetType, FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { ChangeLog } from "~common/transaction-manager";
 import { EntityType } from "~context/enums";
 
 export class ChangeLogAdapter implements Adapters.Contract<ChangeLog, Adapters.ChangeLog.Types> {
-    public buildWhereORM(filters: Adapters.ChangeLog.Filters, basic: ObjectQuery<ChangeLog> = {}): ObjectQuery<ChangeLog> {
-        const where: ObjectQuery<ChangeLog> = basic;
+    public buildWhereORM(
+        filters: Adapters.ChangeLog.Filters,
+        basic: ORM.ObjectQuery<ChangeLog> = {},
+    ): ORM.ObjectQuery<ChangeLog> {
+        const where: ORM.ObjectQuery<ChangeLog> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -18,7 +21,7 @@ export class ChangeLogAdapter implements Adapters.Contract<ChangeLog, Adapters.C
             where.entity = MikroAdapter.applyStringFilter(filters.entity);
         }
         if (filters.changeType) {
-            where.changeType = MikroAdapter.applyStringFilter<ChangeSetType>(filters.changeType);
+            where.changeType = MikroAdapter.applyStringFilter<ORM.ChangeSetType>(filters.changeType);
         }
         if (filters.entityType) {
             where.entityType = MikroAdapter.applyStringFilter<EntityType>(filters.entityType);
@@ -33,8 +36,8 @@ export class ChangeLogAdapter implements Adapters.Contract<ChangeLog, Adapters.C
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.ChangeLog.Sort,
         pagination: Pagination,
-        basic: FindOptions<ChangeLog, P, F> = {},
-    ): FindOptions<ChangeLog, P, F> {
+        basic: ORM.FindOptions<ChangeLog, P, F> = {},
+    ): ORM.FindOptions<ChangeLog, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<ChangeLog>(sort, { createdAt: QueryOrder.ASC }),

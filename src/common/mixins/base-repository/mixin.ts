@@ -1,14 +1,12 @@
-import { AnyEntity, EntityManager, Loaded } from "@mikro-orm/postgresql";
-
 import { ExceptionMapper, Exception } from "~common/exceptions";
 
 export function BaseRepository<
-    E extends AnyEntity,
+    E extends ORM.AnyEntity,
     A extends Adapters.Meta,
     C extends Class<Adapters.Contract<E, A>> = Class<Adapters.Contract<E, A>>,
 >({ Entity, Adapter }: Repositories.Base.Mixin.Props<E, A, C>): Repositories.Base.Mixin.Result<E, A, C> {
     return class Mixin extends Adapter implements Repositories.Base.Contract<E, A> {
-        declare protected readonly readManager: EntityManager;
+        declare protected readonly readManager: ORM.EntityManager;
         declare protected readonly dictionaryPath: string;
 
         public constructor(...args: AnyArray) {
@@ -19,7 +17,7 @@ export function BaseRepository<
             transaction,
             options,
             where,
-        }: Repositories.Base.FindUnique<E, P, F>): Promise<Nullable<Loaded<E, P, F>>> {
+        }: Repositories.Base.FindUnique<E, P, F>): Promise<Nullable<ORM.Loaded<E, P, F>>> {
             try {
                 const entityManager = transaction ?? this.readManager.fork();
                 return await entityManager.findOne(Entity, where, options);
@@ -32,7 +30,7 @@ export function BaseRepository<
             transaction,
             options,
             where,
-        }: Repositories.Base.FindUniqueOrThrow<E, P, F>): Promise<Loaded<E, P, F>> {
+        }: Repositories.Base.FindUniqueOrThrow<E, P, F>): Promise<ORM.Loaded<E, P, F>> {
             try {
                 const entityManager = transaction ?? this.readManager.fork();
                 const result = await entityManager.findOne(Entity, where, options);
@@ -50,7 +48,7 @@ export function BaseRepository<
             transaction,
             options,
             where,
-        }: Repositories.Base.Find<E, P, F>): Promise<Loaded<E, P, F>[]> {
+        }: Repositories.Base.Find<E, P, F>): Promise<ORM.Loaded<E, P, F>[]> {
             try {
                 const entityManager = transaction ?? this.readManager.fork();
                 return await entityManager.find(Entity, where, options);
@@ -61,7 +59,7 @@ export function BaseRepository<
 
         public async findMany<P extends string = never, F extends string = "*">(
             props: Repositories.Base.FindMany<E, A, P, F>,
-        ): Promise<[Loaded<E, P, F>[], number]> {
+        ): Promise<[ORM.Loaded<E, P, F>[], number]> {
             try {
                 if ("where" in props) {
                     const { transaction, options, where } = props;

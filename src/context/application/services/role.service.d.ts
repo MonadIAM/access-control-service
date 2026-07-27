@@ -1,5 +1,3 @@
-import { EntityManager } from "@mikro-orm/postgresql";
-
 import { MoveMode, RoleActorType, RolePrototype } from "~context/enums";
 
 declare global {
@@ -21,7 +19,7 @@ declare global {
 
             namespace PurgeSubtree {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     entity: Entities.Role;
                     realm: string;
                 };
@@ -31,7 +29,7 @@ declare global {
 
             namespace Create {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     input: {
                         actorType: RoleActorType;
                         prototype: RolePrototype;
@@ -50,7 +48,7 @@ declare global {
             namespace Move {
                 type Props = {
                     targetParent: Entities.Role;
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     target: Entities.Role;
                     mode: MoveMode;
                     realm: string;
@@ -75,7 +73,7 @@ declare global {
 
             namespace Purge {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     entity: Entities.Role;
                     realm: string;
                 };
@@ -101,7 +99,7 @@ declare global {
 
             namespace BuildHierarchy {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     input: {
                         children?: string[];
                         parent: Entities.Role;

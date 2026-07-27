@@ -1,4 +1,4 @@
-import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
 
@@ -7,9 +7,9 @@ export class RoleConflictMemberAdapter
 {
     public buildWhereORM(
         filters: Adapters.RoleConflictMember.Filters,
-        basic: ObjectQuery<Entities.RoleConflictMember> = {},
-    ): ObjectQuery<Entities.RoleConflictMember> {
-        const where: ObjectQuery<Entities.RoleConflictMember> = basic;
+        basic: ORM.ObjectQuery<Entities.RoleConflictMember> = {},
+    ): ORM.ObjectQuery<Entities.RoleConflictMember> {
+        const where: ORM.ObjectQuery<Entities.RoleConflictMember> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -39,8 +39,8 @@ export class RoleConflictMemberAdapter
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.RoleConflictMember.Sort,
         pagination: Pagination,
-        basic: FindOptions<Entities.RoleConflictMember, P, F> = {},
-    ): FindOptions<Entities.RoleConflictMember, P, F> {
+        basic: ORM.FindOptions<Entities.RoleConflictMember, P, F> = {},
+    ): ORM.FindOptions<Entities.RoleConflictMember, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<Entities.RoleConflictMember>(sort, { createdAt: QueryOrder.ASC }),

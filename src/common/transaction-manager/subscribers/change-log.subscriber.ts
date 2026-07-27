@@ -1,5 +1,5 @@
-import { EventSubscriber, FlushEventArgs, ChangeSetType } from "@mikro-orm/core";
 import { ChangeLogTopicAction } from "@monadiam/shared";
+import { ChangeSetType } from "@mikro-orm/core";
 import { ConfigService } from "@nestjs/config";
 import { Injectable } from "@nestjs/common";
 
@@ -10,7 +10,7 @@ import { KafkaTopic } from "~context/enums";
 const EXCLUDED_ENTITIES = new Set([AuditLog.name, ChangeLog.name, Outbox.name]);
 
 @Injectable()
-export class ChangeLogSubscriber implements EventSubscriber {
+export class ChangeLogSubscriber implements ORM.EventSubscriber {
     private readonly serviceName: string;
 
     public constructor(
@@ -20,7 +20,7 @@ export class ChangeLogSubscriber implements EventSubscriber {
         this.serviceName = this.configService.getOrThrow<string>("SERVICE_NAME");
     }
 
-    public onFlush({ uow, em }: FlushEventArgs): void {
+    public onFlush({ uow, em }: ORM.FlushEventArgs): void {
         const context = this.operationContext.get();
         if (context?.changeLogEnabled) {
             const changeSets = uow.getChangeSets().filter((set) => !EXCLUDED_ENTITIES.has(set.name));

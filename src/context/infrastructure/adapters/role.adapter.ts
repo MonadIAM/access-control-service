@@ -1,4 +1,4 @@
-import { FindOptions, Knex, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter, KnexAdapter } from "~infrastructure/database/utils";
 import { RoleActorType, RolePrototype } from "~context/enums";
@@ -6,9 +6,9 @@ import { RoleActorType, RolePrototype } from "~context/enums";
 export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Role.Types> {
     public buildWhereORM(
         filters: Adapters.Role.Filters,
-        basic: ObjectQuery<Entities.Role> = {},
-    ): ObjectQuery<Entities.Role> {
-        const where: ObjectQuery<Entities.Role> = basic;
+        basic: ORM.ObjectQuery<Entities.Role> = {},
+    ): ORM.ObjectQuery<Entities.Role> {
+        const where: ORM.ObjectQuery<Entities.Role> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -53,8 +53,8 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.Role.Sort,
         pagination: Pagination,
-        basic: FindOptions<Entities.Role, P, F> = {},
-    ): FindOptions<Entities.Role, P, F> {
+        basic: ORM.FindOptions<Entities.Role, P, F> = {},
+    ): ORM.FindOptions<Entities.Role, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<Entities.Role>(sort, { createdAt: QueryOrder.ASC }),
@@ -62,7 +62,7 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
         };
     }
 
-    public buildWhereKnex(query: Knex.QueryBuilder, filters: Adapters.Role.Filters, tableAlias: string): void {
+    public buildWhereKnex(query: ORM.QueryBuilder, filters: Adapters.Role.Filters, tableAlias: string): void {
         if (filters.realm) {
             KnexAdapter.applyStringFilter(query, filters.realm, `${tableAlias}.realm_id`);
         }
@@ -101,7 +101,7 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
     }
 
     public buildOptionsKnex(
-        query: Knex.QueryBuilder,
+        query: ORM.QueryBuilder,
         sort: Adapters.Role.Sort,
         pagination: Pagination,
         tableAlias: string,

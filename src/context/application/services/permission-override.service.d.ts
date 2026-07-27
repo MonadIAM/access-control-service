@@ -1,5 +1,3 @@
-import { EntityManager } from "@mikro-orm/postgresql";
-
 import { PermissionOverrideEffect } from "~context/enums";
 
 declare global {
@@ -14,13 +12,13 @@ declare global {
 
             namespace Create {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
+                    realm: Entities.Realm;
                     input: {
                         effect: PermissionOverrideEffect;
                         permission: Entities.Permission;
                         account: string;
                     };
-                    realm: Entities.Realm;
                 };
 
                 type Result = Promise<Entities.PermissionOverride>;
@@ -28,7 +26,7 @@ declare global {
 
             namespace Purge {
                 type Props = {
-                    transaction: EntityManager;
+                    transaction: ORM.EntityManager;
                     entities: Entities.PermissionOverride[];
                 };
 

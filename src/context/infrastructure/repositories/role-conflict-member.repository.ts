@@ -1,5 +1,4 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
-import { EntityManager } from "@mikro-orm/postgresql";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
@@ -20,7 +19,7 @@ export class RoleConflictMemberRepository
 
     public constructor(
         @InjectEntityManager("read")
-        protected readonly readManager: EntityManager,
+        protected readonly readManager: ORM.EntityManager,
         protected readonly configService: ConfigService,
     ) {
         super();

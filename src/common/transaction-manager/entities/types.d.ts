@@ -1,5 +1,3 @@
-import { ChangeSetType } from "@mikro-orm/postgresql";
-
 import { KafkaTopic } from "~context/enums";
 
 import { ChangeLog as ChangeLogEntity } from "./change-log.entity";
@@ -26,7 +24,7 @@ declare global {
         namespace ChangeLog {
             type ConstructorProps = {
                 auditEntry: string;
-                changeType: ChangeSetType;
+                changeType: ORM.ChangeSetType;
                 entityType: string;
                 entity: string;
                 delta: DeltaChanges;

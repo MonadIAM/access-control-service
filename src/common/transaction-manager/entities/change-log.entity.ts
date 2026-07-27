@@ -1,4 +1,3 @@
-import { ChangeSetType } from "@mikro-orm/core";
 import { randomUUID } from "node:crypto";
 
 export class ChangeLog {
@@ -7,7 +6,7 @@ export class ChangeLog {
 
     public auditEntry: string;
 
-    public changeType: ChangeSetType;
+    public changeType: ORM.ChangeSetType;
     public entityType: string;
     public entity: string;
 

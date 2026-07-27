@@ -1,12 +1,15 @@
-import { FindOptions, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter } from "~infrastructure/database/utils";
 import { ActionType, EntityType } from "~context/enums";
 import { AuditLog } from "~common/transaction-manager";
 
 export class AuditLogAdapter implements Adapters.Contract<AuditLog, Adapters.AuditLog.Types> {
-    public buildWhereORM(filters: Adapters.AuditLog.Filters, basic: ObjectQuery<AuditLog> = {}): ObjectQuery<AuditLog> {
-        const where: ObjectQuery<AuditLog> = basic;
+    public buildWhereORM(
+        filters: Adapters.AuditLog.Filters,
+        basic: ORM.ObjectQuery<AuditLog> = {},
+    ): ORM.ObjectQuery<AuditLog> {
+        const where: ORM.ObjectQuery<AuditLog> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -39,8 +42,8 @@ export class AuditLogAdapter implements Adapters.Contract<AuditLog, Adapters.Aud
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.AuditLog.Sort,
         pagination: Pagination,
-        basic: FindOptions<AuditLog, P, F> = {},
-    ): FindOptions<AuditLog, P, F> {
+        basic: ORM.FindOptions<AuditLog, P, F> = {},
+    ): ORM.FindOptions<AuditLog, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<AuditLog>(sort, { createdAt: QueryOrder.ASC }),

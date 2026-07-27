@@ -1,21 +1,17 @@
-import { EntityManager } from "@mikro-orm/postgresql";
+declare namespace Services {
+    namespace AuditLog {
+        interface Contract {
+            purgeExpired(props: PurgeExpired.Props): PurgeExpired.Result;
+        }
 
-declare global {
-    namespace Services {
-        namespace AuditLog {
-            interface Contract {
-                purgeExpired(props: PurgeExpired.Props): PurgeExpired.Result;
-            }
+        namespace PurgeExpired {
+            type Props = {
+                transaction: ORM.EntityManager;
+                expirationDate: Date;
+                batchSize: number;
+            };
 
-            namespace PurgeExpired {
-                type Props = {
-                    transaction: EntityManager;
-                    expirationDate: Date;
-                    batchSize: number;
-                };
-
-                type Result = Promise<SystemEntities.AuditLog[]>;
-            }
+            type Result = Promise<SystemEntities.AuditLog[]>;
         }
     }
 }

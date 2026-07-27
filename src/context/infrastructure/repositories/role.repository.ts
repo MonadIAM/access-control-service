@@ -1,4 +1,4 @@
-import { EntityDictionary, EntityManager, FilterQuery, Knex, QueryOrder, raw } from "@mikro-orm/postgresql";
+import { QueryOrder, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -21,7 +21,7 @@ export class RoleRepository
 
     public constructor(
         @InjectEntityManager("read")
-        protected readonly readManager: EntityManager,
+        protected readonly readManager: ORM.EntityManager,
         protected readonly configService: ConfigService,
     ) {
         super();
@@ -30,7 +30,7 @@ export class RoleRepository
 
     public async getAncestors(props: Repositories.Role.GetAncestors.Props): Repositories.Role.GetAncestors.Result {
         try {
-            const where: FilterQuery<Entities.RoleClosure> = {
+            const where: ORM.FilterQuery<Entities.RoleClosure> = {
                 ...(props.depth ? { depth: props.depth } : {}),
                 descendant: props.descendant,
                 ancestor: props.where ?? {},
@@ -74,7 +74,7 @@ export class RoleRepository
 
     public async getDescendants(props: Repositories.Role.GetDescendants.Props): Repositories.Role.GetDescendants.Result {
         try {
-            const where: FilterQuery<Entities.RoleClosure> = {
+            const where: ORM.FilterQuery<Entities.RoleClosure> = {
                 ...(props.depth ? { depth: props.depth } : {}),
                 descendant: props.where ?? {},
                 ancestor: props.ancestor,
@@ -173,7 +173,7 @@ export class RoleRepository
                 })
                 .select("closure.descendant_id");
 
-            const baseQuery = (): Knex.QueryBuilder =>
+            const baseQuery = (): ORM.QueryBuilder =>
                 knex
                     .from({ R: "access_control.role" })
                     .modify((qb) => {
@@ -193,9 +193,7 @@ export class RoleRepository
             const [rawRows, countResult] = await Promise.all([dataQuery, countQuery.first<{ total: string }>()]);
 
             const total = Number(countResult?.total ?? 0);
-            const mappedRoles = rawRows.map((roleData: EntityDictionary<Entities.Role>) =>
-                entityManager.map(Role, roleData),
-            );
+            const mappedRoles = rawRows.map((roleData) => entityManager.map(Role, roleData));
 
             return [mappedRoles, total];
         } catch (error) {
@@ -209,7 +207,7 @@ export class RoleRepository
             const entityManager = this.readManager.fork();
             const knex = entityManager.getKnex();
 
-            const baseQuery = (): Knex.QueryBuilder =>
+            const baseQuery = (): ORM.QueryBuilder =>
                 knex
                     .from({ R: "access_control.role" })
                     .join({ RC: "access_control.role_closure" }, "R.id", "RC.ancestor_id")
@@ -232,7 +230,7 @@ export class RoleRepository
             const [rawRows, countResult] = await Promise.all([dataQuery, countQuery.first<{ total: string }>()]);
 
             const total = Number(countResult?.total ?? 0);
-            const roles = rawRows.map((roleData: EntityDictionary<Entities.Role>) => entityManager.map(Role, roleData));
+            const roles = rawRows.map((roleData) => entityManager.map(Role, roleData));
 
             return [roles, total];
         } catch (error) {

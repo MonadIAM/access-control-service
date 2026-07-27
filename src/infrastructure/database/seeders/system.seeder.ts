@@ -1,10 +1,9 @@
-import { EntityManager } from "@mikro-orm/core";
 import { Seeder } from "@mikro-orm/seeder";
 
 import datasets from "../../datasets";
 
 export class System extends Seeder {
-    public async run(entityManager: EntityManager): Promise<void> {
+    public async run(entityManager: ORM.EntityManager): Promise<void> {
         await entityManager.getConnection().execute(`
             TRUNCATE TABLE
                 access_control.role_permission_assignment,

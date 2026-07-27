@@ -1,5 +1,3 @@
-import { EntityManager, FilterQuery, FindOptions, EntityKey } from "@mikro-orm/postgresql";
-
 import { DelegatorType } from "~context/enums";
 
 declare global {
@@ -58,7 +56,7 @@ declare global {
 
             namespace FindAccountsByRoles {
                 type Props = {
-                    transaction?: EntityManager;
+                    transaction?: ORM.EntityManager;
                     roles: string[];
                 };
 
@@ -77,9 +75,9 @@ declare global {
 
             namespace GetAncestors {
                 type Props = {
-                    options?: FindOptions<Entities.RoleClosure>;
-                    where?: FilterQuery<Entities.Role>;
-                    transaction: EntityManager;
+                    options?: ORM.FindOptions<Entities.RoleClosure>;
+                    where?: ORM.FilterQuery<Entities.Role>;
+                    transaction: ORM.EntityManager;
                     descendant: string;
                     depth?: number;
                 };
@@ -89,7 +87,7 @@ declare global {
 
             namespace FindAncestors {
                 type Props = {
-                    populate: readonly EntityKey<Entities.Role>[];
+                    populate: readonly ORM.EntityKey<Entities.Role>[];
                     filters: Adapters.Role.DefaultFilters;
                     pagination: Pagination;
                     descendant: string;
@@ -101,9 +99,9 @@ declare global {
 
             namespace GetDescendants {
                 type Props = {
-                    options?: FindOptions<Entities.RoleClosure>;
-                    where?: FilterQuery<Entities.Role>;
-                    transaction: EntityManager;
+                    options?: ORM.FindOptions<Entities.RoleClosure>;
+                    where?: ORM.FilterQuery<Entities.Role>;
+                    transaction: ORM.EntityManager;
                     ancestor: string;
                     depth?: number;
                 };
@@ -113,7 +111,7 @@ declare global {
 
             namespace FindDescendants {
                 type Props = {
-                    populate: readonly EntityKey<Entities.Role>[];
+                    populate: readonly ORM.EntityKey<Entities.Role>[];
                     filters: Adapters.Role.DefaultFilters;
                     pagination: Pagination;
                     ancestor: string;
@@ -154,7 +152,7 @@ declare global {
 
             namespace GetHierarchyGraph {
                 type Props = {
-                    transaction?: EntityManager;
+                    transaction?: ORM.EntityManager;
                     realm: string;
                 };
 
@@ -163,7 +161,7 @@ declare global {
 
             namespace WouldExceedRoleLimit {
                 type Props = {
-                    transaction?: EntityManager;
+                    transaction?: ORM.EntityManager;
                     count?: number;
                     realm: string;
                 };

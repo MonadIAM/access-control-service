@@ -1,13 +1,13 @@
-import { FindOptions, Knex, ObjectQuery, QueryOrder } from "@mikro-orm/postgresql";
+import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { MikroAdapter, KnexAdapter } from "~infrastructure/database/utils";
 
 export class PermissionAdapter implements Adapters.Contract<Entities.Permission, Adapters.Permission.Types> {
     public buildWhereORM(
         filters: Adapters.Permission.Filters,
-        basic: ObjectQuery<Entities.Permission> = {},
-    ): ObjectQuery<Entities.Permission> {
-        const where: ObjectQuery<Entities.Permission> = basic;
+        basic: ORM.ObjectQuery<Entities.Permission> = {},
+    ): ORM.ObjectQuery<Entities.Permission> {
+        const where: ORM.ObjectQuery<Entities.Permission> = basic;
 
         if (filters.id) {
             where.id = MikroAdapter.applyStringFilter(filters.id);
@@ -43,8 +43,8 @@ export class PermissionAdapter implements Adapters.Contract<Entities.Permission,
     public buildOptionsORM<P extends string = never, F extends string = "*">(
         sort: Adapters.Permission.Sort,
         pagination: Pagination,
-        basic: FindOptions<Entities.Permission, P, F> = {},
-    ): FindOptions<Entities.Permission, P, F> {
+        basic: ORM.FindOptions<Entities.Permission, P, F> = {},
+    ): ORM.FindOptions<Entities.Permission, P, F> {
         return {
             ...basic,
             orderBy: MikroAdapter.orderBy<Entities.Permission>(sort, { createdAt: QueryOrder.ASC }),
@@ -52,7 +52,7 @@ export class PermissionAdapter implements Adapters.Contract<Entities.Permission,
         };
     }
 
-    public buildWhereKnex(query: Knex.QueryBuilder, filters: Adapters.Permission.Filters, tableAlias: string): void {
+    public buildWhereKnex(query: ORM.QueryBuilder, filters: Adapters.Permission.Filters, tableAlias: string): void {
         if (filters.realm) {
             KnexAdapter.applyStringFilter(query, filters.realm, `${tableAlias}.realm_id`);
         }
@@ -79,7 +79,7 @@ export class PermissionAdapter implements Adapters.Contract<Entities.Permission,
     }
 
     public buildOptionsKnex(
-        query: Knex.QueryBuilder,
+        query: ORM.QueryBuilder,
         sort: Adapters.Permission.Sort,
         pagination: Pagination,
         tableAlias: string,

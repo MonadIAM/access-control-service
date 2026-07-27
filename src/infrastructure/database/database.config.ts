@@ -1,11 +1,10 @@
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
-import { type Options } from "@mikro-orm/core";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 import path from "path";
 
 export abstract class MikroOrmConfig {
-    public static buildOptions(config: ConfigService, kind: MikroORM.ConnectionKind = "write"): Options<PostgreSqlDriver> {
+    public static buildOptions(config: ConfigService, kind: ORM.ConnectionKind = "write"): ORM.Options<PostgreSqlDriver> {
         const cqrsEnabled = config.getOrThrow<string>("POSTGRES_CQRS_ENABLED") === "true";
 
         const sslEnabled = config.getOrThrow<string>("POSTGRES_SSL") === "true";
@@ -18,7 +17,7 @@ export abstract class MikroOrmConfig {
             max: Number(config.getOrThrow<number>("POSTGRES_POOL_MAX")),
         };
 
-        const options: Options<PostgreSqlDriver> = {
+        const options: ORM.Options<PostgreSqlDriver> = {
             driver: PostgreSqlDriver,
 
             host: host,
@@ -47,7 +46,7 @@ export abstract class MikroOrmConfig {
         return options;
     }
 
-    private static resolveHost({ cqrsEnabled, config, kind }: MikroORM.Config.ResolveHost.Props): string {
+    private static resolveHost({ cqrsEnabled, config, kind }: ORM.Config.ResolveHost.Props): string {
         if (cqrsEnabled) {
             if (kind === "read") {
                 return config.getOrThrow<string>("POSTGRES_READ_HOST");

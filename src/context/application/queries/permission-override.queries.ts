@@ -1,5 +1,4 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { FilterQuery } from "@mikro-orm/postgresql";
 
 import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/infrastructure/repositories";
 import { PublicLinkOperator } from "~infrastructure/database";
@@ -19,7 +18,7 @@ export class PermissionOverrideQueries implements Queries.PermissionOverride.Con
     ) {}
 
     public findUnique(props: Queries.PermissionOverride.FindUnique.Props): Queries.PermissionOverride.FindUnique.Result {
-        const where: FilterQuery<PermissionOverride> = { id: props.override, realm: props.realm };
+        const where: ORM.FilterQuery<PermissionOverride> = { id: props.override, realm: props.realm };
 
         if (props.mode === QueryMode.DEFAULT) {
             where.account = props.actor;

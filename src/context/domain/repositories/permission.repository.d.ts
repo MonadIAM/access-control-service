@@ -1,5 +1,3 @@
-import { EntityManager } from "@mikro-orm/postgresql";
-
 import { AssignmentScope } from "~context/enums";
 
 declare global {
@@ -54,7 +52,7 @@ declare global {
 
             namespace FindAccountsByPermissions {
                 type Props = {
-                    transaction?: EntityManager;
+                    transaction?: ORM.EntityManager;
                     permissions: string[];
                 };
 
@@ -63,7 +61,7 @@ declare global {
 
             namespace WouldExceedPermissionLimit {
                 type Props = {
-                    transaction?: EntityManager;
+                    transaction?: ORM.EntityManager;
                     count?: number;
                     realm: string;
                 };
