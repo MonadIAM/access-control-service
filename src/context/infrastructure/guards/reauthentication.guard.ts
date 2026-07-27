@@ -1,9 +1,10 @@
 import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { REAUTHENTICATION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { REAUTHENTICATION } from "~common/decorators";
 import { Exception } from "~common/exceptions";
+
+import { REAUTHENTICATION_CACHE_SERVICE } from "../services";
 
 @Injectable()
 export class ReauthenticationGuard implements CanActivate {

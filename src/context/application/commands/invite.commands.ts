@@ -1,13 +1,14 @@
 import { AccessCacheTopicAction, MembershipTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { INVITE_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories/tokens";
 import { EntityType, ActionType, InvalidationScope, InviteStatus, KafkaTopic } from "~context/enums";
-import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, INVITE_SERVICE } from "~context/domain/services/tokens";
-import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
+import { INVITE_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
+import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
+
+import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, INVITE_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InviteCommands implements Commands.Invite.Contract {
@@ -23,10 +24,10 @@ export class InviteCommands implements Commands.Invite.Contract {
         private readonly realmRepository: Repositories.Realm.Contract,
         @Inject(ROLE_REPOSITORY)
         private readonly roleRepository: Repositories.Role.Contract,
-        @Inject(INVITE_SERVICE)
-        private readonly inviteService: Services.Invite.Contract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_SERVICE)
         private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.Contract,
+        @Inject(INVITE_SERVICE)
+        private readonly inviteService: Services.Invite.Contract,
         @Inject(PROJECTION_CACHE_SERVICE)
         private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
     ) {}

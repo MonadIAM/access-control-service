@@ -2,10 +2,11 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { RoleDelegationPolicyAdapter } from "~context/infrastructure/adapters";
 import { RoleDelegationPolicy } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
+
+import { RoleDelegationPolicyAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyRepository

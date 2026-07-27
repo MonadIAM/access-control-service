@@ -2,12 +2,12 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Patch, Query
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
-import { INVITE_COMMANDS } from "~context/application/commands";
-import { INVITE_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
+import { INVITE_COMMANDS } from "../commands";
+import { INVITE_QUERIES } from "../queries";
 import {
     ChangeStatusQueryDTO,
     ChangeStatusBodyDTO,

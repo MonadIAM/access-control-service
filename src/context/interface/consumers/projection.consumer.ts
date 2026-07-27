@@ -2,7 +2,7 @@ import { EventPattern, Payload, ClientKafka, Ctx, KafkaContext } from "@nestjs/m
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 
-import { SCRIPT_EXECUTOR_SERVICE } from "~context/infrastructure/services/tokens";
+import { SCRIPT_EXECUTOR_SERVICE } from "~context/infrastructure/services";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";

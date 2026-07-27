@@ -1,9 +1,10 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { ChangeLogAdapter } from "~context/infrastructure/adapters";
 import { ChangeLog } from "~common/transaction-manager";
 import { BaseRepository } from "~common/mixins";
+
+import { ChangeLogAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ChangeLogRepository

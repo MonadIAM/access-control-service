@@ -1,12 +1,13 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { AccountRoleAssignment } from "~context/domain/entities";
 import { Exception } from "~common/exceptions";
+
+import { AccountRoleAssignment } from "../entities";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
     ROLE_DELEGATION_POLICY_REPOSITORY,
     ROLE_CONFLICT_GROUP_REPOSITORY,
-} from "~context/infrastructure/repositories";
+} from "../repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentService implements Services.AccountRoleAssignment.Contract {

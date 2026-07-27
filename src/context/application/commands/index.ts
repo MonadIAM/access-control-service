@@ -1,15 +1,5 @@
 import { ClassProvider } from "@nestjs/common";
 
-import { RolePermissionAssignmentCommands } from "./role-permission-assignment.commands";
-import { AccountRoleAssignmentCommands } from "./account-role-assignment.commands";
-import { RoleDelegationPolicyCommands } from "./role-delegation-policy.commands";
-import { RoleConflictMemberCommands } from "./role-conflict-member.commands";
-import { PermissionOverrideCommands } from "./permission-override.commands";
-import { RoleConflictGroupCommands } from "./role-conflict-group.commands";
-import { PermissionCommands } from "./permission.commands";
-import { InviteCommands } from "./invite.commands";
-import { RealmCommands } from "./realm.commands";
-import { RoleCommands } from "./role.commands";
 import {
     ROLE_PERMISSION_ASSIGNMENT_COMMANDS,
     ACCOUNT_ROLE_ASSIGNMENT_COMMANDS,
@@ -21,7 +11,18 @@ import {
     INVITE_COMMANDS,
     REALM_COMMANDS,
     ROLE_COMMANDS,
-} from "./tokens";
+} from "~context/interface/commands";
+
+import { RolePermissionAssignmentCommands } from "./role-permission-assignment.commands";
+import { AccountRoleAssignmentCommands } from "./account-role-assignment.commands";
+import { RoleDelegationPolicyCommands } from "./role-delegation-policy.commands";
+import { RoleConflictMemberCommands } from "./role-conflict-member.commands";
+import { PermissionOverrideCommands } from "./permission-override.commands";
+import { RoleConflictGroupCommands } from "./role-conflict-group.commands";
+import { PermissionCommands } from "./permission.commands";
+import { InviteCommands } from "./invite.commands";
+import { RealmCommands } from "./realm.commands";
+import { RoleCommands } from "./role.commands";
 
 export const COMMANDS: ClassProvider[] = [
     {
@@ -65,16 +66,3 @@ export const COMMANDS: ClassProvider[] = [
         useClass: RoleCommands,
     },
 ];
-
-export {
-    ROLE_PERMISSION_ASSIGNMENT_COMMANDS,
-    ACCOUNT_ROLE_ASSIGNMENT_COMMANDS,
-    ROLE_DELEGATION_POLICY_COMMANDS,
-    ROLE_CONFLICT_MEMBER_COMMANDS,
-    PERMISSION_OVERRIDE_COMMANDS,
-    ROLE_CONFLICT_GROUP_COMMANDS,
-    PERMISSION_COMMANDS,
-    INVITE_COMMANDS,
-    REALM_COMMANDS,
-    ROLE_COMMANDS,
-};

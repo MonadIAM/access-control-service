@@ -1,9 +1,10 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { AuditLogAdapter } from "~context/infrastructure/adapters";
 import { AuditLog } from "~common/transaction-manager";
 import { BaseRepository } from "~common/mixins";
+
+import { AuditLogAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuditLogRepository

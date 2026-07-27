@@ -1,9 +1,8 @@
 import { AccessCacheTopicAction, MembershipTopicAction, RealmTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE, REALM_SERVICE } from "~context/domain/services";
 import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";
-import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
+import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
@@ -12,7 +11,9 @@ import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
     PERMISSION_OVERRIDE_REPOSITORY,
     REALM_REPOSITORY,
-} from "~context/infrastructure/repositories";
+} from "~context/domain/repositories";
+
+import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE, REALM_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmCommands implements Commands.Realm.Contract {

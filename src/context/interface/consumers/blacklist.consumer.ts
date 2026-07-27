@@ -2,7 +2,7 @@ import { EventPattern, Payload, ClientKafka } from "@nestjs/microservices";
 import { Controller, Inject, OnModuleInit } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 
-import { BLACKLIST_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
+import { BLACKLIST_CACHE_SERVICE } from "~context/infrastructure/services";
 import { KAFKA_SERVICE } from "~infrastructure/kafka";
 import { KafkaTopic } from "~context/enums";
 

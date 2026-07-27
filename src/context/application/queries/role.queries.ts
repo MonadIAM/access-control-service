@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { ROLE_REPOSITORY } from "~context/infrastructure/repositories";
+import { ROLE_REPOSITORY } from "~context/domain/repositories";
 import { DelegatorType, QueryMode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })

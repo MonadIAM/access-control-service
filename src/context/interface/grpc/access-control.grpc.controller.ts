@@ -2,7 +2,7 @@ import { ListEffectivePrivilegesRequest, ListEffectivePrivilegesResponse } from 
 import { Controller, Inject } from "@nestjs/common";
 import { GrpcMethod } from "@nestjs/microservices";
 
-import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
+import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 
 @Controller()
 export class AccessControlController {

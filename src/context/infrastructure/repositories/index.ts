@@ -1,18 +1,5 @@
 import { ClassProvider } from "@nestjs/common";
 
-import { RolePermissionAssignmentRepository } from "./role-permission-assignment.repository";
-import { AccountRoleAssignmentRepository } from "./account-role-assignment.repository";
-import { RoleDelegationPolicyRepository } from "./role-delegation-policy.repository";
-import { RoleConflictMemberRepository } from "./role-conflict-member.repository";
-import { PermissionOverrideRepository } from "./permission-override.repository";
-import { RoleConflictGroupRepository } from "./role-conflict-group.repository";
-import { RoleClosureRepository } from "./role-closure.repository";
-import { PermissionRepository } from "./permission.repository";
-import { ChangeLogRepository } from "./change-log.repository";
-import { AuditLogRepository } from "./audit-log.repository";
-import { InviteRepository } from "./invite.repository";
-import { RealmRepository } from "./realm.repository";
-import { RoleRepository } from "./role.repository";
 import {
     ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
@@ -27,7 +14,21 @@ import {
     INVITE_REPOSITORY,
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
-} from "./tokens";
+} from "~context/domain/repositories";
+
+import { RolePermissionAssignmentRepository } from "./role-permission-assignment.repository";
+import { AccountRoleAssignmentRepository } from "./account-role-assignment.repository";
+import { RoleDelegationPolicyRepository } from "./role-delegation-policy.repository";
+import { RoleConflictMemberRepository } from "./role-conflict-member.repository";
+import { PermissionOverrideRepository } from "./permission-override.repository";
+import { RoleConflictGroupRepository } from "./role-conflict-group.repository";
+import { RoleClosureRepository } from "./role-closure.repository";
+import { PermissionRepository } from "./permission.repository";
+import { ChangeLogRepository } from "./change-log.repository";
+import { AuditLogRepository } from "./audit-log.repository";
+import { InviteRepository } from "./invite.repository";
+import { RealmRepository } from "./realm.repository";
+import { RoleRepository } from "./role.repository";
 
 export const REPOSITORIES: ClassProvider[] = [
     {
@@ -83,19 +84,3 @@ export const REPOSITORIES: ClassProvider[] = [
         useClass: RoleRepository,
     },
 ];
-
-export {
-    ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
-    ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
-    ROLE_DELEGATION_POLICY_REPOSITORY,
-    ROLE_CONFLICT_MEMBER_REPOSITORY,
-    PERMISSION_OVERRIDE_REPOSITORY,
-    ROLE_CONFLICT_GROUP_REPOSITORY,
-    ROLE_CLOSURE_REPOSITORY,
-    CHANGE_LOG_REPOSITORY,
-    PERMISSION_REPOSITORY,
-    AUDIT_LOG_REPOSITORY,
-    INVITE_REPOSITORY,
-    REALM_REPOSITORY,
-    ROLE_REPOSITORY,
-};

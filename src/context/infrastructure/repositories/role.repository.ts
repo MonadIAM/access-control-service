@@ -3,11 +3,12 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { RoleAdapter } from "~context/infrastructure/adapters";
 import { RoleClosure, Role } from "~context/domain/entities";
 import { MikroAdapter } from "~infrastructure/database";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
+
+import { RoleAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleRepository

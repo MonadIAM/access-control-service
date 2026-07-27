@@ -1,9 +1,10 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 
-import { InviteAdapter } from "~context/infrastructure/adapters";
 import { Invite } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
+
+import { InviteAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InviteRepository

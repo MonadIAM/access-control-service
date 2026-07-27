@@ -1,17 +1,5 @@
 import { ClassProvider } from "@nestjs/common";
 
-import { RolePermissionAssignmentQueries } from "./role-permission-assignment.queries";
-import { AccountRoleAssignmentQueries } from "./account-role-assignment.queries";
-import { RoleDelegationPolicyQueries } from "./role-delegation-policy.queries";
-import { RoleConflictMemberQueries } from "./role-conflict-member.queries";
-import { PermissionOverrideQueries } from "./permission-override.queries";
-import { RoleConflictGroupQueries } from "./role-conflict-group.queries";
-import { PermissionQueries } from "./permission.queries";
-import { ChangeLogQueries } from "./change-log.queries";
-import { AuditLogQueries } from "./audit-log.queries";
-import { InviteQueries } from "./invite.queries";
-import { RealmQueries } from "./realm.queries";
-import { RoleQueries } from "./role.queries";
 import {
     ROLE_PERMISSION_ASSIGNMENT_QUERIES,
     ACCOUNT_ROLE_ASSIGNMENT_QUERIES,
@@ -25,7 +13,20 @@ import {
     INVITE_QUERIES,
     REALM_QUERIES,
     ROLE_QUERIES,
-} from "./tokens";
+} from "~context/interface/queries";
+
+import { RolePermissionAssignmentQueries } from "./role-permission-assignment.queries";
+import { AccountRoleAssignmentQueries } from "./account-role-assignment.queries";
+import { RoleDelegationPolicyQueries } from "./role-delegation-policy.queries";
+import { RoleConflictMemberQueries } from "./role-conflict-member.queries";
+import { PermissionOverrideQueries } from "./permission-override.queries";
+import { RoleConflictGroupQueries } from "./role-conflict-group.queries";
+import { PermissionQueries } from "./permission.queries";
+import { ChangeLogQueries } from "./change-log.queries";
+import { AuditLogQueries } from "./audit-log.queries";
+import { InviteQueries } from "./invite.queries";
+import { RealmQueries } from "./realm.queries";
+import { RoleQueries } from "./role.queries";
 
 export const QUERIES: ClassProvider[] = [
     {
@@ -77,18 +78,3 @@ export const QUERIES: ClassProvider[] = [
         useClass: RoleQueries,
     },
 ];
-
-export {
-    ROLE_PERMISSION_ASSIGNMENT_QUERIES,
-    ACCOUNT_ROLE_ASSIGNMENT_QUERIES,
-    ROLE_DELEGATION_POLICY_QUERIES,
-    ROLE_CONFLICT_MEMBER_QUERIES,
-    PERMISSION_OVERRIDE_QUERIES,
-    ROLE_CONFLICT_GROUP_QUERIES,
-    PERMISSION_QUERIES,
-    CHANGE_LOG_QUERIES,
-    AUDIT_LOG_QUERIES,
-    INVITE_QUERIES,
-    REALM_QUERIES,
-    ROLE_QUERIES,
-};

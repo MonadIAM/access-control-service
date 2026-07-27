@@ -14,12 +14,12 @@ import {
 } from "@nestjs/common";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
-import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS } from "~context/application/commands";
-import { ACCOUNT_ROLE_ASSIGNMENT_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
+import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS } from "../commands";
+import { ACCOUNT_ROLE_ASSIGNMENT_QUERIES } from "../queries";
 import {
     AccountRoleAssignmentDTO,
     GetListQueryDTO,

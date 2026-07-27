@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { ROLE_DELEGATION_POLICY_REPOSITORY } from "~context/infrastructure/repositories";
+import { ROLE_DELEGATION_POLICY_REPOSITORY } from "~context/domain/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyQueries implements Queries.RoleDelegationPolicy.Contract {

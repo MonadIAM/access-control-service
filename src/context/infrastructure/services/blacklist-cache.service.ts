@@ -1,7 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import Redis from "ioredis";
 
-import { REDIS_CACHE_CLIENT } from "~infrastructure/redis/tokens";
+import { REDIS_CACHE_CLIENT } from "~infrastructure/redis";
 
 @Injectable()
 export class BlacklistCacheService implements InfrastructureServices.BlacklistCache.Contract {

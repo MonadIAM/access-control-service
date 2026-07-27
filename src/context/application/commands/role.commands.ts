@@ -1,12 +1,13 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { AccessCacheTopicAction } from "@monadiam/shared";
 
-import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
+import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { ROLE_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
+
+import { ROLE_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleCommands implements Commands.Role.Contract {

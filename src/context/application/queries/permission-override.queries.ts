@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/infrastructure/repositories";
+import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/domain/repositories";
 import { PublicLinkOperator } from "~infrastructure/database";
 import { PermissionOverride } from "~context/domain/entities";
 import { QueryMode } from "~context/enums";

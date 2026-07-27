@@ -1,18 +1,15 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { AccessCacheTopicAction } from "@monadiam/shared";
 
+import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
 import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";
-import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
-import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services/tokens";
+import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { SYSTEM_USER_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
-import {
-    ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
-    REALM_REPOSITORY,
-    ROLE_REPOSITORY,
-} from "~context/infrastructure/repositories";
+
+import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssignment.Contract {

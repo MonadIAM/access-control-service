@@ -3,11 +3,12 @@ import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { raw } from "@mikro-orm/postgresql";
 
-import { PermissionAdapter } from "~context/infrastructure/adapters";
 import { PermissionOverrideEffect } from "~context/enums";
 import { Permission } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
+
+import { PermissionAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionRepository

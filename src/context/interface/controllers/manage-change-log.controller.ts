@@ -2,11 +2,11 @@ import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseIntercepto
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
-import { CHANGE_LOG_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import { GetListBodyDTO, GetByIdQueryDTO, ChangeLogDTO, ListDTO } from "../dto/change-log";
+import { CHANGE_LOG_QUERIES } from "../queries";
 
 const {
     INTERNAL_SERVER_ERROR,

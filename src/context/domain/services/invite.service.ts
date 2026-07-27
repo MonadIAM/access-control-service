@@ -1,7 +1,8 @@
 import { Injectable, Scope } from "@nestjs/common";
 
-import { Invite } from "~context/domain/entities";
 import { Exception } from "~common/exceptions";
+
+import { Invite } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InviteService implements Services.Invite.Contract {

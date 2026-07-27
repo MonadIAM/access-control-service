@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { ROLE_PERMISSION_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
+import { ROLE_PERMISSION_ASSIGNMENT_REPOSITORY } from "~context/domain/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RolePermissionAssignmentQueries implements Queries.RolePermissionAssignment.Contract {

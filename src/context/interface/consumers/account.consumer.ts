@@ -3,10 +3,11 @@ import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { AccountTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
-import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS, PERMISSION_OVERRIDE_COMMANDS } from "~context/application/commands";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
+
+import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS, PERMISSION_OVERRIDE_COMMANDS } from "../commands";
 
 @Controller()
 export class AccountConsumer implements OnModuleInit {

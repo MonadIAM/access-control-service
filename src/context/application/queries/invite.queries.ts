@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { INVITE_REPOSITORY } from "~context/infrastructure/repositories";
+import { INVITE_REPOSITORY } from "~context/domain/repositories";
 import { InviteQueryScope, QueryMode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })

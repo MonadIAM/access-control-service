@@ -14,12 +14,12 @@ import {
 } from "@nestjs/common";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
-import { PERMISSION_COMMANDS } from "~context/application/commands";
-import { PERMISSION_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
+import { PERMISSION_COMMANDS } from "../commands";
+import { PERMISSION_QUERIES } from "../queries";
 import {
     GetEffectiveListQueryDTO,
     GetEffectiveListBodyDTO,

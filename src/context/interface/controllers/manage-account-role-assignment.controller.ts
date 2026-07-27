@@ -2,11 +2,11 @@ import { Body, Controller, HttpStatus, Post, HttpCode, Query, UseInterceptors, I
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
-import { ACCOUNT_ROLE_ASSIGNMENT_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import { ManageGetListBodyDTO, ManageGetListQueryDTO, ListDTO } from "../dto/account-role-assignment";
+import { ACCOUNT_ROLE_ASSIGNMENT_QUERIES } from "../queries";
 
 const { INTERNAL_SERVER_ERROR, UNPROCESSABLE_ENTITY, SERVICE_UNAVAILABLE, REQUEST_TIMEOUT, UNAUTHORIZED, FORBIDDEN, OK } =
     HttpStatus;

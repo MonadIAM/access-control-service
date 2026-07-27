@@ -2,12 +2,12 @@ import { UseInterceptors, Controller, HttpStatus, HttpCode, Delete, Inject, Quer
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
-import { ROLE_CONFLICT_MEMBER_COMMANDS } from "~context/application/commands";
-import { ROLE_CONFLICT_MEMBER_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
+import { ROLE_CONFLICT_MEMBER_COMMANDS } from "../commands";
+import { ROLE_CONFLICT_MEMBER_QUERIES } from "../queries";
 import {
     RoleConflictMemberDTO,
     GetListQueryDTO,

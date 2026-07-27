@@ -1,17 +1,14 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { AccessCacheTopicAction } from "@monadiam/shared";
 
+import { PERMISSION_OVERRIDE_REPOSITORY, PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/domain/repositories";
 import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
-import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
-import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services/tokens";
+import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
-import {
-    PERMISSION_OVERRIDE_REPOSITORY,
-    PERMISSION_REPOSITORY,
-    REALM_REPOSITORY,
-} from "~context/infrastructure/repositories/tokens";
+
+import { PERMISSION_OVERRIDE_SERVICE } from "../services";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideCommands implements Commands.PermissionOverride.Contract {

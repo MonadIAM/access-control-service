@@ -3,10 +3,11 @@ import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { raw } from "@mikro-orm/postgresql";
 
-import { RealmAdapter } from "~context/infrastructure/adapters";
 import { ExceptionMapper } from "~common/exceptions";
 import { Realm } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
+
+import { RealmAdapter } from "../adapters";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmRepository

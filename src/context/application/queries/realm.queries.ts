@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
-import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
+import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
+import { REALM_REPOSITORY } from "~context/domain/repositories";
 import { PublicStringOperator } from "~infrastructure/database";
 import { Exception } from "~common/exceptions";
 import { QueryMode } from "~context/enums";
