@@ -1,5 +1,18 @@
 declare namespace Repositories {
     namespace RoleConflictGroup {
+        type Row = ORM.Raw<Entities.RoleConflictGroup> & {
+            matchedCount: number;
+            realm_id: string;
+        };
+
+        type ExistsRow = {
+            exists: number;
+        };
+
+        type AccountRow = {
+            account: string;
+        };
+
         interface PrivateContract {
             getViolationsQuery(props: GetViolationsQuery.Props): GetViolationsQuery.Result;
         }

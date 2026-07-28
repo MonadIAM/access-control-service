@@ -1,4 +1,4 @@
-import { StringValue } from "ms";
+import { type StringValue } from "ms";
 
 import { Validator } from "~common/validator";
 import { NodeEnv } from "~common/enums";

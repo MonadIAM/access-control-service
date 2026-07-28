@@ -1,5 +1,16 @@
 declare namespace Repositories {
     namespace RoleClosure {
+        type RemovedRow = {
+            descendant_id: string;
+            ancestor_id: string;
+        };
+
+        type UpsertedRow = {
+            descendant_id: string;
+            ancestor_id: string;
+            depth: string;
+        };
+
         interface Contract {
             decreaseTransitiveDepth(props: DecreaseTransitiveDepth.Props): DecreaseTransitiveDepth.Result;
             existsTransitivePath(props: ExistsTransitivePath.Props): ExistsTransitivePath.Result;

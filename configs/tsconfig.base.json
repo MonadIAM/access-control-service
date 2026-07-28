@@ -2,7 +2,7 @@
   "compilerOptions": {
     "composite": false,                           // Enables composite project support (projectReferences): requires declaration, declarationMap
     "target": "ES2021",                           // JavaScript version to compile TypeScript into
-    "module": "commonjs",                         // Module system used in the project
+    "module": "nodenext",                         // Module system used in the project
     "esModuleInterop": true,                      // Allows using CommonJS modules with ES6 syntax (e.g., import instead of require)
     "resolveJsonModule": true,                    // Allows importing JSON files as modules
     "allowSyntheticDefaultImports": true,         // Allows synthetic default imports (import webpack from "webpack" instead of import * as webpack from "webpack")
@@ -27,7 +27,7 @@
     "skipLibCheck": false,                        // Enables type checking in declaration files (.d.ts)
     "forceConsistentCasingInFileNames": true,     // Requires consistent casing in file names
 
-    "moduleResolution": "node",                   // Uses Node.js-style module resolution
+    "moduleResolution": "NodeNext",               // Uses Node.js-style module resolution
     "isolatedModules": true,                      // Treats each file as a separate module (does not affect declaration files)
     "incremental": true,                          // Enables incremental compilation to optimize build time
 

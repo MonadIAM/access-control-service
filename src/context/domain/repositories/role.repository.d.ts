@@ -5,13 +5,25 @@ declare global {
         namespace Role {
             type DepthEntity = Entities.Role & { depth: number };
 
+            type Row = ORM.Raw<Entities.Role> & {
+                realm_id: string;
+            };
+
+            type CountRow = {
+                total: string;
+            };
+
+            type AccountRow = {
+                account: string;
+            };
+
             namespace Graph {
                 type Node = {
                     id: string;
                     label: string;
                     attributes: {
                         code: string;
-                        prototype: string;
+                        archetype: string;
                         isRevoked: boolean;
                     };
                 };

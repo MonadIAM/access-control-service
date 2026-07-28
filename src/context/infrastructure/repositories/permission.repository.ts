@@ -6,6 +6,7 @@ import { raw } from "@mikro-orm/postgresql";
 import { PermissionOverrideEffect } from "~context/enums";
 import { Permission } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
+import { knex } from "~infrastructure/database";
 import { BaseRepository } from "~common/mixins";
 
 import { PermissionAdapter } from "../adapters";
@@ -66,8 +67,9 @@ export class PermissionRepository
         try {
             const { pagination, filters, where, sort } = props;
             const entityManager = this.readManager.fork();
-            const knex = entityManager.getKnex();
 
+            // NOTE[SQL-02]: see NOTES.md#SQL-02
+            // NOTE[SQL-06]: see NOTES.md#SQL-06
             const buildEffectivePermissionIDs = (): ORM.QueryBuilder => {
                 const accountRolesSubquery = knex
                     .select("rc.ancestor_id")
@@ -133,15 +135,18 @@ export class PermissionRepository
 
             super.buildWhereKnex?.(countQuery, filters, "p");
 
-            const [rawPermissions, countResult] = await Promise.all([
-                dataQuery,
-                countQuery.first<{ total: string | number }>(),
+            const dataSQL = dataQuery.toSQL();
+            const countSQL = countQuery.toSQL();
+
+            const [rawPermissions, countRow] = await Promise.all([
+                entityManager.execute<Repositories.Permission.Row[]>(dataSQL.sql, [...dataSQL.bindings], "all"),
+                entityManager.execute<Repositories.Permission.CountRow>(countSQL.sql, [...countSQL.bindings], "get"),
             ]);
 
-            const total = parseInt(String(countResult?.total ?? 0), 10);
+            const total = Number(countRow?.total ?? 0);
 
-            const permissions: Entities.Permission[] = rawPermissions.map((raw) => {
-                return entityManager.map(Permission, raw);
+            const permissions: Entities.Permission[] = rawPermissions.map((permissionData) => {
+                return entityManager.map(Permission, permissionData);
             });
 
             return [permissions, total];
@@ -155,8 +160,9 @@ export class PermissionRepository
     ): Promise<Repositories.Permission.CollectEffective.Result> {
         try {
             const entityManager = this.readManager.fork();
-            const knex = entityManager.getKnex();
 
+            // NOTE[SQL-02]: see NOTES.md#SQL-02
+            // NOTE[SQL-06]: see NOTES.md#SQL-06
             const expandedRoles = knex
                 .select("arm.realm_id", "rc.ancestor_id as role_id")
                 .distinct()
@@ -208,13 +214,18 @@ export class PermissionRepository
                     true,
                 );
 
-            const results = await knex
+            const query = knex
                 .select("eff.realm_id as realm", "p.code as permission", "eff.scope")
                 .from(knex.raw("? as eff", [combined]))
                 .join({ p: "access_control.permission" }, "p.id", "eff.permission_id")
-                .distinct();
+                .distinct()
+                .toSQL();
 
-            return results;
+            return await entityManager.execute<Repositories.Permission.CollectEffective.Result>(
+                query.sql,
+                [...query.bindings],
+                "all",
+            );
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
@@ -225,8 +236,9 @@ export class PermissionRepository
     ): Repositories.Permission.FindAccountsByPermissions.Result {
         const { transaction, permissions } = props;
         const entityManager = transaction ?? this.readManager.fork();
-        const knex = entityManager.getKnex();
 
+        // NOTE[SQL-02]: see NOTES.md#SQL-02
+        // NOTE[SQL-06]: see NOTES.md#SQL-06
         const viaRoles = knex
             .select("ara.account")
             .distinct()
@@ -244,9 +256,15 @@ export class PermissionRepository
             .whereIn("po.permission_id", permissions)
             .andWhere("po.is_revoked", false);
 
-        const results = await viaRoles.union([viaOverrides]);
+        const query = viaRoles.union([viaOverrides]).toSQL();
 
-        return results.map(({ account }) => account);
+        const rows = await entityManager.execute<Repositories.Permission.AccountRow[]>(
+            query.sql,
+            [...query.bindings],
+            "all",
+        );
+
+        return rows.map(({ account }) => account);
     }
 
     public async wouldExceedPermissionLimit(
@@ -255,11 +273,9 @@ export class PermissionRepository
         try {
             const { transaction, realm, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
+            const total = await entityManager.count(Permission, { realm });
 
-            const [{ total }] = await knex("access_control.permission").where("realm_id", realm).count("id as total");
-
-            return Number(total) + (count ?? 1) > this.permissionLimit;
+            return total + (count ?? 1) > this.permissionLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }

@@ -1,6 +1,5 @@
-import { PostgreSqlDriver } from "@mikro-orm/postgresql";
+import { type Options, PostgreSqlDriver } from "@mikro-orm/postgresql";
 import { Migrator } from "@mikro-orm/migrations";
-import { type Options } from "@mikro-orm/core";
 import dotenv from "dotenv";
 import path from "path";
 import ms from "ms";
@@ -21,7 +20,7 @@ const poolIdleTimeoutMillis: Optional<number> = cqrsEnabled
     ? ms(process.env.POSTGRES_WRITE_POOL_IDLE_MS ?? process.env.POSTGRES_POOL_IDLE_MS)
     : ms(process.env.POSTGRES_POOL_IDLE_MS);
 
-const config: Options<PostgreSqlDriver> = {
+const config: Options = {
     driver: PostgreSqlDriver,
 
     host,
@@ -60,7 +59,7 @@ const config: Options<PostgreSqlDriver> = {
     },
 
     seeder: {
-        path: "./src/infrastructure/database/seeders",
+        path: "./src/infrastructure/database",
         defaultSeeder: "System",
     },
 

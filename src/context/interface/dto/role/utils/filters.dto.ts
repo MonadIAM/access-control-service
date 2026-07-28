@@ -25,7 +25,7 @@ export class DefaultFiltersDTO implements Adapters.Role.DefaultFilters {
     @Validator.ValidateNested()
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
-    public prototype?: StringFilterDTO;
+    public archetype?: StringFilterDTO;
 
     @Expose()
     @Validator.IsOptional()

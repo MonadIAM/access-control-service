@@ -4,7 +4,7 @@ import ms, { StringValue } from "ms";
 import path from "path";
 
 export abstract class MikroOrmConfig {
-    public static buildOptions(config: ConfigService, kind: ORM.ConnectionKind = "write"): ORM.Options<PostgreSqlDriver> {
+    public static buildOptions(config: ConfigService, kind: ORM.ConnectionKind = "write"): ORM.Options {
         const cqrsEnabled = config.getOrThrow<string>("POSTGRES_CQRS_ENABLED") === "true";
 
         const sslEnabled = config.getOrThrow<string>("POSTGRES_SSL") === "true";
@@ -17,7 +17,7 @@ export abstract class MikroOrmConfig {
             max: Number(config.getOrThrow<number>("POSTGRES_POOL_MAX")),
         };
 
-        const options: ORM.Options<PostgreSqlDriver> = {
+        const options: ORM.Options = {
             driver: PostgreSqlDriver,
 
             host: host,

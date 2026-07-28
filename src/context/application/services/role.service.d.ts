@@ -1,4 +1,4 @@
-import { MoveMode, RoleActorType, RolePrototype } from "~context/enums";
+import { MoveMode, RoleActorType, RoleArchetype } from "~context/enums";
 
 declare global {
     namespace Services {
@@ -32,7 +32,7 @@ declare global {
                     transaction: ORM.EntityManager;
                     input: {
                         actorType: RoleActorType;
-                        prototype: RolePrototype;
+                        archetype: RoleArchetype;
                         parent: Entities.Role;
                         description?: string;
                         children?: string[];

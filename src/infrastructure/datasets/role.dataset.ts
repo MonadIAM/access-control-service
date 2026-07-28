@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type, prettier/prettier */
 import { ROOT_ROLE_ID, SYSTEM_USER_ROLE_ID, ADMINISTRATOR_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
-import { RoleActorType, RolePrototype } from "~context/enums";
+import { RoleActorType, RoleArchetype } from "~context/enums";
 
 const CREATED_AT = new Date("2026-01-01T00:00:00.000Z");
 
@@ -19,7 +19,7 @@ const entry = (
     is_system_managed: true,
     non_delegable: nonDelegable,
     is_revoked: false,
-    prototype: RolePrototype.COMPOSITE,
+    archetype: RoleArchetype.COMPOSITE,
     actor_type: actorType,
     realm_id: SYSTEM_REALM_ID,
     created_at: CREATED_AT,
@@ -54,4 +54,5 @@ const dataset = [
 export const Roles = {
     postgresql: dataset,
     redis: dataset,
+    name: "role",
 }

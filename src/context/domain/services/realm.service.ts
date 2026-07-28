@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ADMIN_PERMISSION_CODES, USER_PERMISSION_CODES } from "~infrastructure/datasets/bootstrap";
-import { RoleActorType, RolePrototype } from "~context/enums";
+import { RoleActorType, RoleArchetype } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 import { RolePermissionAssignment, AccountRoleAssignment, RoleClosure, Realm, Role } from "../entities";
@@ -81,7 +81,7 @@ export class RealmService implements Services.Realm.Contract {
         const { transaction, input, realm } = props;
         const root = new Role({
             description: "Role not available to users",
-            prototype: RolePrototype.COMPOSITE,
+            archetype: RoleArchetype.COMPOSITE,
             actorType: RoleActorType.HUMAN,
             name: `${input.name} System`,
             code: `${input.code}.root`,
@@ -89,7 +89,7 @@ export class RealmService implements Services.Realm.Contract {
         });
         const user = new Role({
             description: "Basic role for all users",
-            prototype: RolePrototype.COMPOSITE,
+            archetype: RoleArchetype.COMPOSITE,
             actorType: RoleActorType.HUMAN,
             name: `${input.name} User`,
             code: `${input.code}.user`,
@@ -99,7 +99,7 @@ export class RealmService implements Services.Realm.Contract {
             description: "The role that grants maximum privileges",
             name: `${input.name} Administrator`,
             code: `${input.code}.administrator`,
-            prototype: RolePrototype.COMPOSITE,
+            archetype: RoleArchetype.COMPOSITE,
             actorType: RoleActorType.HUMAN,
             realm,
         });

@@ -3,6 +3,18 @@ import { AssignmentScope } from "~context/enums";
 declare global {
     namespace Repositories {
         namespace Permission {
+            type Row = ORM.Raw<Entities.Permission> & {
+                realm_id: string;
+            };
+
+            type CountRow = {
+                total: string;
+            };
+
+            type AccountRow = {
+                account: string;
+            };
+
             interface Contract extends Repositories.Base.Contract<Entities.Permission, Adapters.Permission.Types> {
                 wouldExceedPermissionLimit(props: WouldExceedPermissionLimit.Props): WouldExceedPermissionLimit.Result;
                 findAccountsByPermissions(props: FindAccountsByPermissions.Props): FindAccountsByPermissions.Result;

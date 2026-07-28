@@ -1,9 +1,13 @@
 import { Seeder } from "@mikro-orm/seeder";
 
-import datasets from "../../datasets";
+import datasets from "../datasets";
 
 export class System extends Seeder {
+    private readonly schema: string = "access_control";
+
     public async run(entityManager: ORM.EntityManager): Promise<void> {
+        const platform = entityManager.getPlatform();
+
         await entityManager.getConnection().execute(`
             TRUNCATE TABLE
                 access_control.role_permission_assignment,
@@ -22,17 +26,21 @@ export class System extends Seeder {
             RESTART IDENTITY CASCADE
         `);
 
-        await entityManager.insertMany("access_control.realm", datasets.Realms.postgresql);
-        await entityManager.insertMany("access_control.permission", datasets.Permissions.postgresql);
-        await entityManager.insertMany("access_control.role", datasets.Roles.postgresql);
-        await entityManager.insertMany("access_control.role_closure", datasets.RoleClosures.postgresql);
-        await entityManager.insertMany(
-            "access_control.role_permission_assignment",
-            datasets.RolePermissionAssignments.postgresql,
-        );
-        await entityManager.insertMany(
-            "access_control.account_role_assignment",
-            datasets.AccountRoleAssignments.postgresql,
-        );
+        const seedOrder = [
+            datasets.Realms,
+            datasets.Permissions,
+            datasets.Roles,
+            datasets.RoleClosures,
+            datasets.RolePermissionAssignments,
+            datasets.AccountRoleAssignments,
+        ];
+
+        for await (const dataset of seedOrder) {
+            const query = platform
+                .createNativeQueryBuilder()
+                .into(`${this.schema}.${dataset.name}`)
+                .insert(dataset.postgresql);
+            await entityManager.execute(query, [], "run");
+        }
     }
 }

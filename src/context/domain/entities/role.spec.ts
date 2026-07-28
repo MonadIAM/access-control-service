@@ -1,7 +1,7 @@
 import { describe, it, expect } from "@jest/globals";
 import { isUUID } from "class-validator";
 
-import { RoleActorType, RolePrototype } from "~context/enums";
+import { RoleActorType, RoleArchetype } from "~context/enums";
 
 import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
@@ -15,7 +15,7 @@ function createRole(overrides?: Partial<Entities.Role.ConstructorProps>): Role {
         code: "test.administrator",
         name: "Administrator",
         actorType: RoleActorType.HUMAN,
-        prototype: RolePrototype.ATOMIC,
+        archetype: RoleArchetype.ATOMIC,
         realm: createRealm(),
         ...overrides,
     });
@@ -29,14 +29,14 @@ describe("Role Entity", () => {
                 code: "test.moderator",
                 name: "Moderator",
                 actorType: RoleActorType.HUMAN,
-                prototype: RolePrototype.ATOMIC,
+                archetype: RoleArchetype.ATOMIC,
                 realm,
             });
 
             expect(role.code).toBe("test.moderator");
             expect(role.name).toBe("Moderator");
             expect(role.actorType).toBe(RoleActorType.HUMAN);
-            expect(role.prototype).toBe(RolePrototype.ATOMIC);
+            expect(role.archetype).toBe(RoleArchetype.ATOMIC);
             expect(role.realm).toBe(realm);
         });
 

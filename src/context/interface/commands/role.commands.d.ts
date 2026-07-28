@@ -1,4 +1,4 @@
-import { MoveMode, RoleActorType, RolePrototype } from "~context/enums";
+import { MoveMode, RoleActorType, RoleArchetype } from "~context/enums";
 
 declare global {
     namespace Commands {
@@ -28,7 +28,7 @@ declare global {
                         name: string;
                         description?: string;
                         actorType: RoleActorType;
-                        prototype: RolePrototype;
+                        archetype: RoleArchetype;
                         nonDelegable: boolean;
                         parent: string;
                         children: string[];

@@ -1,7 +1,7 @@
 import { Collection } from "@mikro-orm/core";
 import { randomUUID } from "node:crypto";
 
-import { RoleActorType, RolePrototype } from "~context/enums";
+import { RoleActorType, RoleArchetype } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 export class Role implements Entities.Role.Contract {
@@ -17,7 +17,7 @@ export class Role implements Entities.Role.Contract {
     public code: string;
     public name: string;
     public actorType: RoleActorType;
-    public prototype: RolePrototype;
+    public archetype: RoleArchetype;
     public description?: string;
     public isSystemManaged: boolean;
     public nonDelegable: boolean;
@@ -43,7 +43,7 @@ export class Role implements Entities.Role.Contract {
         this.code = props.code;
         this.name = props.name;
         this.actorType = props.actorType;
-        this.prototype = props.prototype;
+        this.archetype = props.archetype;
         this.description = props.description;
 
         this.realm = props.realm;

@@ -340,5 +340,6 @@ const dataset = [
 
 export const RolePermissionAssignments = {
     postgresql: dataset.map(({ permission_realm_id: _, ...rest }) => rest),
+    name: "role_permission_assignment",
     redis: dataset,
 }

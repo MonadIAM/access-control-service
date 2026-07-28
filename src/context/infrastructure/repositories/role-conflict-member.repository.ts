@@ -33,13 +33,9 @@ export class RoleConflictMemberRepository
         try {
             const { transaction, group, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
+            const total = await entityManager.count(RoleConflictMember, { group });
 
-            const [{ total }] = await knex("access_control.role_conflict_member")
-                .where("group_id", group)
-                .count("id as total");
-
-            return Number(total) + count > this.membersLimit;
+            return total + count > this.membersLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }

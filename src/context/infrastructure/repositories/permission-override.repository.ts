@@ -33,15 +33,9 @@ export class PermissionOverrideRepository
         try {
             const { transaction, account, realm, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
+            const total = await entityManager.count(PermissionOverride, { account, realm, isRevoked: false });
 
-            const [{ total }] = await knex("access_control.permission_override")
-                .where("account", account)
-                .andWhere("realm_id", realm)
-                .andWhere("is_revoked", false)
-                .count("id as total");
-
-            return Number(total) + (count ?? 1) > this.overrideLimit;
+            return total + (count ?? 1) > this.overrideLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }

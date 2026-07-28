@@ -3,8 +3,8 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
+import { MikroAdapter, knex } from "~infrastructure/database";
 import { RoleClosure, Role } from "~context/domain/entities";
-import { MikroAdapter } from "~infrastructure/database";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
@@ -152,8 +152,8 @@ export class RoleRepository
         try {
             const { where, pagination, filters, sort } = props;
             const entityManager = this.readManager.fork();
-            const knex = entityManager.getKnex();
 
+            // NOTE[SQL-02]: see NOTES.md#SQL-02
             const allowedIdsSubquery = knex("access_control.role_delegation_policy as policy")
                 .join("access_control.role_closure as closure", (join) => {
                     join.on("policy.target_id", "=", "closure.ancestor_id");
@@ -191,9 +191,15 @@ export class RoleRepository
             const countQuery = baseQuery().countDistinct("R.id as total");
             super.buildWhereKnex?.(countQuery, filters, "R");
 
-            const [rawRows, countResult] = await Promise.all([dataQuery, countQuery.first<{ total: string }>()]);
+            const dataSQL = dataQuery.toSQL();
+            const countSQL = countQuery.toSQL();
 
-            const total = Number(countResult?.total ?? 0);
+            const [rawRows, countRow] = await Promise.all([
+                entityManager.execute<Repositories.Role.Row[]>(dataSQL.sql, [...dataSQL.bindings], "all"),
+                entityManager.execute<Repositories.Role.CountRow>(countSQL.sql, [...countSQL.bindings], "get"),
+            ]);
+
+            const total = Number(countRow?.total ?? 0);
             const mappedRoles = rawRows.map((roleData) => entityManager.map(Role, roleData));
 
             return [mappedRoles, total];
@@ -206,8 +212,8 @@ export class RoleRepository
         try {
             const { where, pagination, filters, sort } = props;
             const entityManager = this.readManager.fork();
-            const knex = entityManager.getKnex();
 
+            // NOTE[SQL-02]: see NOTES.md#SQL-02
             const baseQuery = (): ORM.QueryBuilder =>
                 knex
                     .from({ R: "access_control.role" })
@@ -228,9 +234,15 @@ export class RoleRepository
             const countQuery = baseQuery().countDistinct("R.id as total");
             super.buildWhereKnex!(countQuery, filters, "R");
 
-            const [rawRows, countResult] = await Promise.all([dataQuery, countQuery.first<{ total: string }>()]);
+            const dataSQL = dataQuery.toSQL();
+            const countSQL = countQuery.toSQL();
 
-            const total = Number(countResult?.total ?? 0);
+            const [rawRows, countRow] = await Promise.all([
+                entityManager.execute<Repositories.Role.Row[]>(dataSQL.sql, [...dataSQL.bindings], "all"),
+                entityManager.execute<Repositories.Role.CountRow>(countSQL.sql, [...countSQL.bindings], "get"),
+            ]);
+
+            const total = Number(countRow?.total ?? 0);
             const roles = rawRows.map((roleData) => entityManager.map(Role, roleData));
 
             return [roles, total];
@@ -244,14 +256,14 @@ export class RoleRepository
     ): Repositories.Role.GetHierarchyGraph.Result {
         try {
             const { transaction, realm } = props;
-            const knex = (transaction ?? this.readManager).getKnex();
+            const entityManager = transaction ?? this.readManager;
 
             const nodesCTE = knex("access_control.role as role")
                 .select(
                     "role.id",
                     "role.name as label",
                     knex.raw(
-                        "jsonb_build_object('code', role.code, 'prototype', role.prototype, 'isRevoked', role.is_revoked) AS attributes",
+                        "jsonb_build_object('code', role.code, 'archetype', role.archetype, 'isRevoked', role.is_revoked) AS attributes",
                     ),
                 )
                 .where("role.realm_id", realm);
@@ -266,14 +278,17 @@ export class RoleRepository
                 .where("closure.realm_id", realm)
                 .andWhere("closure.depth", 1);
 
-            const result = await knex
+            // NOTE[SQL-05]: see NOTES.md#SQL-05
+            const query = knex
                 .with("formatted_nodes", nodesCTE)
                 .with("formatted_edges", edgesCTE)
                 .select({
                     nodes: knex.raw("COALESCE((SELECT json_agg(formatted_nodes) FROM formatted_nodes), '[]'::json)"),
                     edges: knex.raw("COALESCE((SELECT json_agg(formatted_edges) FROM formatted_edges), '[]'::json)"),
                 })
-                .first<Repositories.Role.Graph.Data>();
+                .toSQL();
+
+            const result = await entityManager.execute<Repositories.Role.Graph.Data>(query.sql, [...query.bindings], "get");
 
             return {
                 nodes: result?.nodes ?? [],
@@ -289,17 +304,20 @@ export class RoleRepository
     ): Repositories.Role.FindAccountsByRoles.Result {
         const { transaction, roles } = props;
         const entityManager = transaction ?? this.readManager.fork();
-        const knex = entityManager.getKnex();
 
-        const results = await knex
+        // NOTE[SQL-02]: see NOTES.md#SQL-02
+        const query = knex
             .select("ara.account")
             .distinct()
             .from({ rc: "access_control.role_closure" })
             .join({ ara: "access_control.account_role_assignment" }, "ara.role_id", "rc.descendant_id")
             .whereIn("rc.ancestor_id", roles)
-            .andWhere("ara.is_revoked", false);
+            .andWhere("ara.is_revoked", false)
+            .toSQL();
 
-        return results.map(({ account }) => account);
+        const rows = await entityManager.execute<Repositories.Role.AccountRow[]>(query.sql, [...query.bindings], "all");
+
+        return rows.map(({ account }) => account);
     }
 
     public async wouldExceedRoleLimit(
@@ -308,11 +326,9 @@ export class RoleRepository
         try {
             const { transaction, realm, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
+            const total = await entityManager.count(Role, { realm });
 
-            const [{ total }] = await knex("access_control.role").where("realm_id", realm).count("id as total");
-
-            return Number(total) + (count ?? 1) > this.roleLimit;
+            return total + (count ?? 1) > this.roleLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }

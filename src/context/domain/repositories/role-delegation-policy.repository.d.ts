@@ -1,5 +1,13 @@
 declare namespace Repositories {
     namespace RoleDelegationPolicy {
+        type ExistsRow = {
+            exists_flag: number;
+        };
+
+        type AllowedRow = {
+            result: boolean;
+        };
+
         interface Contract
             extends Repositories.Base.Contract<Entities.RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types> {
             wouldExceedPolicyLimit(props: WouldExceedPolicyLimit.Props): WouldExceedPolicyLimit.Result;

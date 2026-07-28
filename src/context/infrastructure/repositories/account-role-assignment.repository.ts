@@ -33,17 +33,13 @@ export class AccountRoleAssignmentRepository
         try {
             const { transaction, account, roles } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
 
-            const [{ total, overlap }] = await knex("access_control.account_role_assignment")
-                .where("account", account)
-                .andWhere("is_revoked", false)
-                .select(
-                    knex.raw("COUNT(*)::int AS total"),
-                    knex.raw("COUNT(*) FILTER (WHERE role_id = ANY(?))::int AS overlap", [roles]),
-                );
+            const [total, overlap] = await Promise.all([
+                entityManager.count(AccountRoleAssignment, { account, isRevoked: false }),
+                entityManager.count(AccountRoleAssignment, { account, isRevoked: false, role: { $in: roles } }),
+            ]);
 
-            return Number(total) + roles.length - Number(overlap) > this.accountRoleLimit;
+            return total + roles.length - overlap > this.accountRoleLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }

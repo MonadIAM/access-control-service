@@ -1,6 +1,8 @@
 import { Injectable, Scope } from "@nestjs/common";
 
+import { RoleClosure, Role } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
+import { knex } from "~infrastructure/database";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleClosureRepository implements Repositories.RoleClosure.Contract {
@@ -9,11 +11,9 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
     ): Repositories.RoleClosure.InsertNewHierarchy.Result {
         try {
             const { transaction, descendant, ancestor, realm } = props;
-            const context = transaction.getTransactionContext();
-            const knex = transaction.getKnex();
 
-            await knex("access_control.role_closure")
-                .transacting(context)
+            // NOTE[SQL-01]: see NOTES.md#SQL-01
+            const query = knex("access_control.role_closure")
                 .insert(
                     knex
                         .select(
@@ -33,7 +33,10 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                                 knex.raw("0 as depth"),
                             ),
                         ),
-                );
+                )
+                .toSQL();
+
+            await transaction.execute(query.sql, [...query.bindings], "run");
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
@@ -44,20 +47,18 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
     ): Repositories.RoleClosure.MoveSubtrees.Result {
         try {
             const { transaction, oldParent, newParent, children, realm } = props;
-            const context = transaction.getTransactionContext();
-            const knex = transaction.getKnex();
 
-            const removedRows = await knex("access_control.role_closure as closure")
-                .transacting(context)
+            // NOTE[SQL-02]: see NOTES.md#SQL-02
+            const deleteQuery = knex("access_control.role_closure as closure")
                 .where("closure.realm_id", realm)
-                .whereIn("closure.descendant_id", (builder: ORM.QueryBuilder) => {
+                .whereIn("closure.descendant_id", (builder) => {
                     builder
                         .select("descendant_id")
                         .from("access_control.role_closure")
                         .whereIn("ancestor_id", children)
                         .andWhere("realm_id", realm);
                 })
-                .whereIn("closure.ancestor_id", (builder: ORM.QueryBuilder) => {
+                .whereIn("closure.ancestor_id", (builder) => {
                     builder
                         .select("ancestor_id")
                         .from("access_control.role_closure")
@@ -65,20 +66,27 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                         .andWhere("realm_id", realm);
                 })
                 .delete()
-                .returning(["ancestor_id", "descendant_id"]);
+                .returning(["ancestor_id", "descendant_id"])
+                .toSQL();
 
-            const upsertedRows = await knex("access_control.role_closure")
-                .transacting(context)
-                .insert((builder: ORM.QueryBuilder) => {
-                    builder
+            const removedRows = await transaction.execute<Repositories.RoleClosure.RemovedRow[]>(
+                deleteQuery.sql,
+                [...deleteQuery.bindings],
+                "all",
+            );
+
+            // NOTE[SQL-02]: see NOTES.md#SQL-02
+            const insertQuery = knex("access_control.role_closure")
+                .insert(
+                    knex
                         .select(
                             knex.raw("?::uuid as realm_id", [realm]),
                             "new_parent_paths.ancestor_id",
                             "moved_subtree_paths.descendant_id",
                             knex.raw("new_parent_paths.depth + moved_subtree_paths.depth + 1 as depth"),
                         )
-                        .from("access_control.role_closure AS new_parent_paths")
-                        .join("access_control.role_closure AS moved_subtree_paths", (join: ORM.JoinClause) => {
+                        .from("access_control.role_closure as new_parent_paths")
+                        .join("access_control.role_closure as moved_subtree_paths", (join) => {
                             join.onIn("moved_subtree_paths.ancestor_id", children).andOn(
                                 "moved_subtree_paths.realm_id",
                                 "=",
@@ -86,19 +94,26 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                             );
                         })
                         .where("new_parent_paths.descendant_id", newParent)
-                        .andWhere("new_parent_paths.realm_id", realm);
-                })
-                .returning(["ancestor_id", "descendant_id", "depth"]);
+                        .andWhere("new_parent_paths.realm_id", realm),
+                )
+                .returning(["ancestor_id", "descendant_id", "depth"])
+                .toSQL();
+
+            const upsertedRows = await transaction.execute<Repositories.RoleClosure.UpsertedRow[]>(
+                insertQuery.sql,
+                [...insertQuery.bindings],
+                "all",
+            );
 
             return {
                 upsertedPaths: upsertedRows.map((row) => ({
-                    descendant: row.descendant_id,
-                    ancestor: row.ancestor_id,
+                    descendant: transaction.getReference(Role, row.descendant_id),
+                    ancestor: transaction.getReference(Role, row.ancestor_id),
                     depth: Number(row.depth),
                 })),
                 removedPaths: removedRows.map((row) => ({
-                    descendant: row.descendant_id,
-                    ancestor: row.ancestor_id,
+                    descendant: transaction.getReference(Role, row.descendant_id),
+                    ancestor: transaction.getReference(Role, row.ancestor_id),
                 })),
             };
         } catch (error) {
@@ -111,17 +126,16 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
     ): Repositories.RoleClosure.DecreaseTransitiveDepth.Result {
         try {
             const { transaction, realm, role } = props;
-            const knex = transaction.getKnex();
-            const context = transaction.getTransactionContext()!;
 
-            await knex("access_control.role_closure")
-                .transacting(context)
+            // NOTE[SQL-02]: see NOTES.md#SQL-02
+            // NOTE[SQL-03]: see NOTES.md#SQL-03
+            const query = knex("access_control.role_closure")
                 .where("realm_id", realm)
-                .whereExists((builder: ORM.QueryBuilder) => {
+                .whereExists((builder) => {
                     builder
                         .select(knex.raw("1"))
                         .from("access_control.role_closure as path1")
-                        .join("access_control.role_closure as path2", (join: ORM.JoinClause) => {
+                        .join("access_control.role_closure as path2", (join) => {
                             join.on("path1.descendant_id", "=", knex.raw("?::uuid", [role]))
                                 .andOn("path2.ancestor_id", "=", knex.raw("?::uuid", [role]))
                                 .andOn("path1.realm_id", "=", knex.raw("?::uuid", [realm]))
@@ -132,7 +146,10 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                 })
                 .update({
                     depth: knex.raw("depth - 1"),
-                });
+                })
+                .toSQL();
+
+            await transaction.execute(query.sql, [...query.bindings], "run");
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
@@ -141,8 +158,6 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
     public async move(props: Repositories.RoleClosure.Move.Props): Repositories.RoleClosure.Move.Result {
         try {
             const { transaction, newParent, target, realm } = props;
-            const knex = transaction.getKnex();
-            const context = transaction.getTransactionContext();
             const closureTable = "access_control.role_closure";
 
             const subtree = knex(`${closureTable} as closure`)
@@ -161,8 +176,8 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                 .where("closure.descendant_id", newParent)
                 .andWhere("closure.realm_id", realm);
 
-            const removedRows = await knex(closureTable)
-                .transacting(context)
+            // NOTE[SQL-04]: see NOTES.md#SQL-04
+            const selectQuery = knex(closureTable)
                 .with("subtree", subtree)
                 .with("old_ancestors", oldAncestors)
                 .with("new_ancestors", newAncestors)
@@ -170,7 +185,14 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                 .where("realm_id", realm)
                 .whereIn("descendant_id", knex("subtree").select("descendant_id"))
                 .whereIn("ancestor_id", knex("old_ancestors").select("ancestor_id"))
-                .whereNotIn("ancestor_id", knex("new_ancestors").select("ancestor_id"));
+                .whereNotIn("ancestor_id", knex("new_ancestors").select("ancestor_id"))
+                .toSQL();
+
+            const removedRows = await transaction.execute<Repositories.RoleClosure.RemovedRow[]>(
+                selectQuery.sql,
+                [...selectQuery.bindings],
+                "all",
+            );
 
             const detached = knex(closureTable)
                 .where("realm_id", realm)
@@ -189,8 +211,8 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                     knex.raw("new_ancestors.ancestor_depth + subtree.subtree_depth + 1 as depth"),
                 );
 
-            const upsertedRows = await knex(closureTable)
-                .transacting(context)
+            // NOTE[SQL-04]: see NOTES.md#SQL-04
+            const upsertQuery = knex(closureTable)
                 .with("subtree", subtree)
                 .with("old_ancestors", oldAncestors)
                 .with("new_ancestors", newAncestors)
@@ -198,17 +220,24 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                 .insert(reattached)
                 .onConflict(["realm_id", "ancestor_id", "descendant_id"])
                 .merge(["depth"])
-                .returning(["ancestor_id", "descendant_id", "depth"]);
+                .returning(["ancestor_id", "descendant_id", "depth"])
+                .toSQL();
+
+            const upsertedRows = await transaction.execute<Repositories.RoleClosure.UpsertedRow[]>(
+                upsertQuery.sql,
+                [...upsertQuery.bindings],
+                "all",
+            );
 
             return {
                 upsertedPaths: upsertedRows.map((row) => ({
-                    descendant: row.descendant_id,
-                    ancestor: row.ancestor_id,
+                    descendant: transaction.getReference(Role, row.descendant_id),
+                    ancestor: transaction.getReference(Role, row.ancestor_id),
                     depth: Number(row.depth),
                 })),
                 removedPaths: removedRows.map((row) => ({
-                    descendant: row.descendant_id,
-                    ancestor: row.ancestor_id,
+                    descendant: transaction.getReference(Role, row.descendant_id),
+                    ancestor: transaction.getReference(Role, row.ancestor_id),
                 })),
             };
         } catch (error) {
@@ -221,17 +250,9 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
     ): Repositories.RoleClosure.ExistsTransitivePath.Result {
         try {
             const { transaction, descendant, ancestor, realm } = props;
-            const context = transaction.getTransactionContext();
-            const knex = transaction.getKnex();
+            const total = await transaction.count(RoleClosure, { ancestor, descendant, realm });
 
-            const result = await knex("access_control.role_closure")
-                .transacting(context)
-                .where("ancestor_id", ancestor)
-                .andWhere("descendant_id", descendant)
-                .andWhere("realm_id", realm)
-                .first("ancestor_id");
-
-            return Boolean(result);
+            return total > 0;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }

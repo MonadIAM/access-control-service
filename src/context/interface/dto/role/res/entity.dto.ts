@@ -1,7 +1,7 @@
 import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose, Type } from "class-transformer";
 
-import { RoleActorType, RolePrototype } from "~context/enums";
+import { RoleActorType, RoleArchetype } from "~context/enums";
 import { Validator } from "~common/validator";
 
 import { RealmLookupDTO } from "../../realm";
@@ -19,9 +19,9 @@ export class RoleDTO {
     declare public actorType: RoleActorType;
 
     @Expose()
-    @Validator.IsEnum(RolePrototype)
-    @ApiProperty({ required: true, enum: RolePrototype, enumName: "RolePrototype" })
-    declare public prototype: RolePrototype;
+    @Validator.IsEnum(RoleArchetype)
+    @ApiProperty({ required: true, enum: RoleArchetype, enumName: "RoleArchetype" })
+    declare public archetype: RoleArchetype;
 
     @Expose()
     @Validator.IsBoolean()

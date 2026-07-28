@@ -769,5 +769,6 @@ const dataset = [
 
 export const Permissions = {
     postgresql: dataset,
+    name: "permission",
     redis: dataset,
 }

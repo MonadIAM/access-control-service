@@ -4,6 +4,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { RoleDelegationPolicy } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
+import { knex } from "~infrastructure/database";
 import { BaseRepository } from "~common/mixins";
 
 import { RoleDelegationPolicyAdapter } from "../adapters";
@@ -33,9 +34,9 @@ export class RoleDelegationPolicyRepository
         try {
             const { transaction, from, to } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
             const targetIds = Array.isArray(to) ? to : [to];
 
+            // NOTE[SQL-02]: see NOTES.md#SQL-02
             const query = knex
                 .withRecursive("transitive_power", (cte: ORM.QueryBuilder) => {
                     cte.select("rc.descendant_id as reachable_role_id")
@@ -57,14 +58,17 @@ export class RoleDelegationPolicyRepository
                             .distinct();
                     });
                 })
-                .select(knex.raw("1"))
+                .select(knex.raw("1 as exists_flag"))
                 .from("transitive_power")
                 .whereIn("reachable_role_id", targetIds)
-                .limit(1);
+                .limit(1)
+                .toSQL();
 
-            const { sql, bindings } = query.toSQL();
-
-            const [result] = await entityManager.getConnection().execute(sql, [...bindings]);
+            const [result] = await entityManager.execute<Repositories.RoleDelegationPolicy.ExistsRow[]>(
+                query.sql,
+                [...query.bindings],
+                "all",
+            );
 
             return Boolean(result);
         } catch (error) {
@@ -78,7 +82,6 @@ export class RoleDelegationPolicyRepository
         try {
             const { transaction, roles, realm, actor } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
 
             const actorRolesCte = knex
                 .select("ara.role_id")
@@ -87,6 +90,7 @@ export class RoleDelegationPolicyRepository
                 .andWhere("ara.account", actor)
                 .andWhere("ara.is_revoked", false);
 
+            // NOTE[SQL-02]: see NOTES.md#SQL-02
             const allowedTargetsCte = knex
                 .select("rc.descendant_id as role_id")
                 .from("access_control.role_delegation_policy as rdp")
@@ -101,11 +105,15 @@ export class RoleDelegationPolicyRepository
                 .with("allowed_targets", allowedTargetsCte)
                 .select(knex.raw("count(*)::int = ? as result", [roles.length]))
                 .from("allowed_targets as at")
-                .whereIn("at.role_id", roles);
+                .whereIn("at.role_id", roles)
+                .toSQL();
 
-            const { sql, bindings } = query.toSQL();
+            const [result] = await entityManager.execute<Repositories.RoleDelegationPolicy.AllowedRow[]>(
+                query.sql,
+                [...query.bindings],
+                "all",
+            );
 
-            const [result] = await entityManager.getConnection().execute(sql, [...bindings]);
             return result?.result === true;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
@@ -118,14 +126,9 @@ export class RoleDelegationPolicyRepository
         try {
             const { transaction, delegator, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
+            const total = await entityManager.count(RoleDelegationPolicy, { delegator, isRevoked: false });
 
-            const [{ total }] = await knex("access_control.role_delegation_policy")
-                .where("delegator_id", delegator)
-                .andWhere("is_revoked", false)
-                .count("id as total");
-
-            return Number(total) + (count ?? 1) > this.policyLimit;
+            return total + (count ?? 1) > this.policyLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }

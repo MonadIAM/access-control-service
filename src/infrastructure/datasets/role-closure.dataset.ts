@@ -17,6 +17,7 @@ const dataset = [
 ];
 
 export const RoleClosures = {
+    name: "role_closure",
     postgresql: dataset,
     redis: dataset,
 };

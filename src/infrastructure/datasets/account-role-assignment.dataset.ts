@@ -26,6 +26,7 @@ const dataset = [
 ];
 
 export const AccountRoleAssignments = {
+    name: "account_role_assignment",
     postgresql: dataset,
     redis: dataset,
-}
+};

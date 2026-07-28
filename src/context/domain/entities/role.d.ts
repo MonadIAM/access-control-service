@@ -1,4 +1,4 @@
-import { RoleActorType, RolePrototype } from "~context/enums";
+import { RoleActorType, RoleArchetype } from "~context/enums";
 
 declare global {
     namespace Entities {
@@ -14,7 +14,7 @@ declare global {
                 code: string;
                 name: string;
                 actorType: RoleActorType;
-                prototype: RolePrototype;
+                archetype: RoleArchetype;
                 description?: string;
                 isSystemManaged: boolean;
                 nonDelegable: boolean;
@@ -40,7 +40,7 @@ declare global {
                 code: string;
                 name: string;
                 actorType: RoleActorType;
-                prototype: RolePrototype;
+                archetype: RoleArchetype;
                 description?: string;
                 isSystemManaged?: boolean;
                 nonDelegable?: boolean;

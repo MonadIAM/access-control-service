@@ -2,8 +2,9 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { RoleConflictGroup } from "~context/domain/entities";
+import { AccountRoleAssignment, RoleConflictGroup } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
+import { knex } from "~infrastructure/database";
 import { BaseRepository } from "~common/mixins";
 
 import { RoleConflictGroupAdapter } from "../adapters";
@@ -32,17 +33,20 @@ export class RoleConflictGroupRepository
     ): Repositories.RoleConflictGroup.FindViolationDetails.Result {
         try {
             const entityManager = this.readManager.fork();
-            const knex = entityManager.getKnex();
-
             const violationsBaseQuery = this.getViolationsQuery(props);
 
-            const rawRows = await entityManager.execute(
-                knex
-                    .with("violations", violationsBaseQuery)
-                    .select("grp.*")
-                    .select(knex.raw('v.matched_count as "matchedCount"'))
-                    .from({ v: "violations" })
-                    .join({ grp: "access_control.role_conflict_group" }, "grp.id", "v.group_id"),
+            const query = knex
+                .with("violations", violationsBaseQuery)
+                .select("grp.*")
+                .select(knex.raw('v.matched_count as "matchedCount"'))
+                .from({ v: "violations" })
+                .join({ grp: "access_control.role_conflict_group" }, "grp.id", "v.group_id")
+                .toSQL();
+
+            const rawRows = await entityManager.execute<Repositories.RoleConflictGroup.Row[]>(
+                query.sql,
+                [...query.bindings],
+                "all",
             );
 
             return rawRows.map((row) => entityManager.map(RoleConflictGroup, row));
@@ -56,14 +60,17 @@ export class RoleConflictGroupRepository
     ): Repositories.RoleConflictGroup.HasViolations.Result {
         try {
             const entityManager = props.transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
             const violationsBaseQuery = this.getViolationsQuery(props);
 
-            const existsRow = await entityManager.execute(
-                knex.select(knex.raw("1 as exists")).from(violationsBaseQuery.as("v")).limit(1),
+            const query = knex.select(knex.raw("1 as exists")).from(violationsBaseQuery.as("v")).limit(1).toSQL();
+
+            const existsRows = await entityManager.execute<Repositories.RoleConflictGroup.ExistsRow[]>(
+                query.sql,
+                [...query.bindings],
+                "all",
             );
 
-            return existsRow.length > 0;
+            return existsRows.length > 0;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
@@ -75,17 +82,16 @@ export class RoleConflictGroupRepository
         try {
             const { transaction, identifiers, maxAllowed } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
+            const builder = entityManager.createQueryBuilder(AccountRoleAssignment, "arm");
 
-            const query = knex
-                .select("arm.account")
-                .from("access_control.account_role_assignment as arm")
-                .whereIn("arm.role_id", identifiers)
+            builder
+                .select(["arm.account as account"])
+                .where({ role: { $in: identifiers } })
                 .groupBy("arm.account")
-                .having(knex.raw("count(distinct arm.role_id) > ?", [maxAllowed]))
+                .having("count(distinct arm.role_id) > ?", [maxAllowed])
                 .limit(1);
 
-            const result = await entityManager.execute(query);
+            const result = await builder.execute<Repositories.RoleConflictGroup.AccountRow[]>("all");
 
             return result.length > 0;
         } catch (error) {
@@ -99,14 +105,9 @@ export class RoleConflictGroupRepository
         try {
             const { transaction, realm, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
+            const total = await entityManager.count(RoleConflictGroup, { realm, isRevoked: false });
 
-            const [{ total }] = await knex("access_control.role_conflict_group")
-                .where("realm_id", realm)
-                .andWhere("is_revoked", false)
-                .count("id as total");
-
-            return Number(total) + (count ?? 1) > this.groupLimit;
+            return total + (count ?? 1) > this.groupLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
@@ -115,9 +116,8 @@ export class RoleConflictGroupRepository
     public getViolationsQuery(
         props: Repositories.RoleConflictGroup.GetViolationsQuery.Props,
     ): Repositories.RoleConflictGroup.GetViolationsQuery.Result {
-        const entityManager = props.transaction ?? this.readManager.fork();
-        const knex = entityManager.getKnex();
-
+        // NOTE[SQL-02]: see NOTES.md#SQL-02
+        // NOTE[SQL-06]: see NOTES.md#SQL-06
         const directAfterCte = knex.select(knex.raw("role_id::uuid")).from(
             knex
                 .select(knex.raw('"arm"."role_id"::uuid as "role_id"'))

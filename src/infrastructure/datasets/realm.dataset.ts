@@ -19,4 +19,5 @@ const dataset = [SystemRealm];
 export const Realms = {
     postgresql: dataset,
     redis: dataset,
+    name: "realm",
 };

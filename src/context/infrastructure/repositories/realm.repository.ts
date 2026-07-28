@@ -63,11 +63,9 @@ export class RealmRepository
         try {
             const { transaction, account, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const knex = entityManager.getKnex();
+            const total = await entityManager.count(Realm, { owner: account });
 
-            const [{ total }] = await knex("access_control.realm").where("owner", account).count("id as total");
-
-            return Number(total) + (count ?? 1) > this.realmLimit;
+            return total + (count ?? 1) > this.realmLimit;
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
