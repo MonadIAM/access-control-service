@@ -1,4 +1,4 @@
-export { MikroAdapter } from "./mikro-adapter";
-export { KnexAdapter } from "./knex-adapter";
+export { QueryBuilderAdapter } from "./query-builder-adapter";
+export { ORMAdapter } from "./orm-adapter";
 export { knex } from "./knex-builder";
 export * from "./mappers";

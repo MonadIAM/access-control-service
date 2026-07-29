@@ -8,11 +8,11 @@ declare namespace Commands {
             purge(props: Purge.Props): Purge.Result;
         }
 
-        interface PrivateContract {
+        interface InternalContract {
             accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
         }
 
-        interface Contract extends ControllerContract, PrivateContract {}
+        interface Contract extends ControllerContract, InternalContract {}
 
         namespace Create {
             type Props = {

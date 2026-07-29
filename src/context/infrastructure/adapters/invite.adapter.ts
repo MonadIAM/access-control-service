@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 import { InviteStatus } from "~context/enums";
 
 export class InviteAdapter implements Adapters.Contract<Entities.Invite, Adapters.Invite.Types> {
@@ -11,28 +11,28 @@ export class InviteAdapter implements Adapters.Contract<Entities.Invite, Adapter
         const where: ORM.ObjectQuery<Entities.Invite> = basic;
 
         if (filters.id) {
-            where.id = MikroAdapter.applyStringFilter(filters.id);
+            where.id = ORMAdapter.applyStringFilter(filters.id);
         }
         if (filters.status) {
-            where.status = MikroAdapter.applyStringFilter<InviteStatus>(filters.status);
+            where.status = ORMAdapter.applyStringFilter<InviteStatus>(filters.status);
         }
         if (filters.invitee) {
-            where.invitee = MikroAdapter.applyStringFilter(filters.invitee);
+            where.invitee = ORMAdapter.applyStringFilter(filters.invitee);
         }
         if (filters.inviter) {
-            where.inviter = MikroAdapter.applyStringFilter(filters.inviter);
+            where.inviter = ORMAdapter.applyStringFilter(filters.inviter);
         }
         if (filters.role) {
-            where.role = MikroAdapter.applyStringFilter(filters.role);
+            where.role = ORMAdapter.applyStringFilter(filters.role);
         }
         if (filters.realm) {
-            where.realm = MikroAdapter.applyStringFilter(filters.realm);
+            where.realm = ORMAdapter.applyStringFilter(filters.realm);
         }
         if (filters.updatedAt) {
-            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
+            where.updatedAt = ORMAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
         if (filters.createdAt) {
-            where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+            where.createdAt = ORMAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
 
         return where;
@@ -45,8 +45,8 @@ export class InviteAdapter implements Adapters.Contract<Entities.Invite, Adapter
     ): ORM.FindOptions<Entities.Invite, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.Invite>(sort, { createdAt: QueryOrder.DESC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.Invite>(sort, { createdAt: QueryOrder.DESC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

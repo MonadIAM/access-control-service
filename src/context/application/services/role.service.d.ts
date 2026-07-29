@@ -3,11 +3,11 @@ import { MoveMode, RoleActorType, RoleArchetype } from "~context/enums";
 declare global {
     namespace Services {
         namespace Role {
-            interface PrivateContract {
+            interface InternalContract {
                 buildHierarchy(props: BuildHierarchy.Props): BuildHierarchy.Result;
             }
 
-            interface Contract extends PrivateContract {
+            interface Contract extends InternalContract {
                 purgeSubtree(props: PurgeSubtree.Props): PurgeSubtree.Result;
                 restore(props: Restore.Props): Restore.Result;
                 revoke(props: Revoke.Props): Revoke.Result;

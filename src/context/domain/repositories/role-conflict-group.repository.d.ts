@@ -13,12 +13,11 @@ declare namespace Repositories {
             account: string;
         };
 
-        interface PrivateContract {
+        interface InternalContract {
             getViolationsQuery(props: GetViolationsQuery.Props): GetViolationsQuery.Result;
         }
         interface Contract
-            extends PrivateContract,
-                Repositories.Base.Contract<Entities.RoleConflictGroup, Adapters.Realm.Types> {
+            extends InternalContract, Repositories.Base.Contract<Entities.RoleConflictGroup, Adapters.Realm.Types> {
             wouldExceedGroupLimit(props: WouldExceedGroupLimit.Props): WouldExceedGroupLimit.Result;
             findViolationDetails(props: FindViolationDetails.Props): FindViolationDetails.Result;
             hasAccountViolating(props: HasAccountViolating.Props): HasAccountViolating.Result;

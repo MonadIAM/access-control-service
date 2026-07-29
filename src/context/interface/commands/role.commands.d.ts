@@ -13,11 +13,11 @@ declare global {
                 move(props: Move.Props): Move.Result;
             }
 
-            interface PrivateContract {
+            interface InternalContract {
                 accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
             }
 
-            interface Contract extends ControllerContract, PrivateContract {}
+            interface Contract extends ControllerContract, InternalContract {}
 
             namespace Create {
                 type Props = {

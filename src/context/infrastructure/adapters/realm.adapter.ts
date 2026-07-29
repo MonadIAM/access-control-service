@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 
 export class RealmAdapter implements Adapters.Contract<Entities.Realm, Adapters.Realm.Types> {
     public buildWhereORM(
@@ -10,22 +10,22 @@ export class RealmAdapter implements Adapters.Contract<Entities.Realm, Adapters.
         const where: ORM.ObjectQuery<Entities.Realm> = basic;
 
         if (filters.id) {
-            where.id = MikroAdapter.applyStringFilter(filters.id);
+            where.id = ORMAdapter.applyStringFilter(filters.id);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
         if (filters.code) {
-            where.code = MikroAdapter.applyStringFilter(filters.code);
+            where.code = ORMAdapter.applyStringFilter(filters.code);
         }
         if (filters.name) {
-            where.name = MikroAdapter.applyStringFilter(filters.name);
+            where.name = ORMAdapter.applyStringFilter(filters.name);
         }
         if (filters.updatedAt) {
-            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
+            where.updatedAt = ORMAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
         if (filters.createdAt) {
-            where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+            where.createdAt = ORMAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
         if (filters.isRevoked !== undefined) {
             where.isRevoked = { $eq: filters.isRevoked };
@@ -41,8 +41,8 @@ export class RealmAdapter implements Adapters.Contract<Entities.Realm, Adapters.
     ): ORM.FindOptions<Entities.Realm, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.Realm>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.Realm>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

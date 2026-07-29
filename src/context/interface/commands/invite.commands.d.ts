@@ -8,7 +8,7 @@ declare global {
                 create(props: Create.Props): Create.Result;
             }
 
-            interface PrivateContract {
+            interface InternalContract {
                 accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
                 membershipPayloadMapper(props: MembershipPayloadMapper.Props): MembershipPayloadMapper.Result;
                 decline(props: Decline.Props): Decline.Result;
@@ -16,7 +16,7 @@ declare global {
                 cancel(props: Cancel.Props): Cancel.Result;
             }
 
-            interface Contract extends ControllerContract, PrivateContract {}
+            interface Contract extends ControllerContract, InternalContract {}
 
             namespace Create {
                 type Props = {

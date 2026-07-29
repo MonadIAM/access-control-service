@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter, KnexAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter, QueryBuilderAdapter } from "~infrastructure/database/utils";
 import { RoleActorType, RoleArchetype } from "~context/enums";
 
 export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Role.Types> {
@@ -11,13 +11,13 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
         const where: ORM.ObjectQuery<Entities.Role> = basic;
 
         if (filters.id) {
-            where.id = MikroAdapter.applyStringFilter(filters.id);
+            where.id = ORMAdapter.applyStringFilter(filters.id);
         }
         if (filters.actorType) {
-            where.actorType = MikroAdapter.applyStringFilter<RoleActorType>(filters.actorType);
+            where.actorType = ORMAdapter.applyStringFilter<RoleActorType>(filters.actorType);
         }
         if (filters.archetype) {
-            where.archetype = MikroAdapter.applyStringFilter<RoleArchetype>(filters.archetype);
+            where.archetype = ORMAdapter.applyStringFilter<RoleArchetype>(filters.archetype);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
@@ -26,25 +26,25 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
             where.nonDelegable = { $eq: filters.nonDelegable };
         }
         if (filters.code) {
-            where.code = MikroAdapter.applyStringFilter(filters.code);
+            where.code = ORMAdapter.applyStringFilter(filters.code);
         }
         if (filters.name) {
-            where.name = MikroAdapter.applyStringFilter(filters.name);
+            where.name = ORMAdapter.applyStringFilter(filters.name);
         }
         if (filters.updatedAt) {
-            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
+            where.updatedAt = ORMAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
         if (filters.createdAt) {
-            where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+            where.createdAt = ORMAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
         if (filters.isRevoked !== undefined) {
             where.isRevoked = { $eq: filters.isRevoked };
         }
         if (filters.permission) {
-            where.permissionAssignments = { permission: MikroAdapter.applyStringFilter(filters.permission) };
+            where.permissionAssignments = { permission: ORMAdapter.applyStringFilter(filters.permission) };
         }
         if (filters.realm) {
-            where.realm = MikroAdapter.applyStringFilter(filters.realm);
+            where.realm = ORMAdapter.applyStringFilter(filters.realm);
         }
 
         return where;
@@ -57,36 +57,36 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
     ): ORM.FindOptions<Entities.Role, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.Role>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.Role>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 
     public buildWhereKnex(query: ORM.QueryBuilder, filters: Adapters.Role.Filters, tableAlias: string): void {
         if (filters.realm) {
-            KnexAdapter.applyStringFilter(query, filters.realm, `${tableAlias}.realm_id`);
+            QueryBuilderAdapter.applyStringFilter(query, filters.realm, `${tableAlias}.realm_id`);
         }
         if (filters.actorType) {
-            KnexAdapter.applyStringFilter(query, filters.actorType, `${tableAlias}.actor_type`);
+            QueryBuilderAdapter.applyStringFilter(query, filters.actorType, `${tableAlias}.actor_type`);
         }
         if (filters.archetype) {
-            KnexAdapter.applyStringFilter(query, filters.archetype, `${tableAlias}.archetype`);
+            QueryBuilderAdapter.applyStringFilter(query, filters.archetype, `${tableAlias}.archetype`);
         }
         if (filters.code) {
-            KnexAdapter.applyStringFilter(query, filters.code, `${tableAlias}.code`);
+            QueryBuilderAdapter.applyStringFilter(query, filters.code, `${tableAlias}.code`);
         }
         if (filters.name) {
-            KnexAdapter.applyStringFilter(query, filters.name, `${tableAlias}.name`);
+            QueryBuilderAdapter.applyStringFilter(query, filters.name, `${tableAlias}.name`);
         }
         if (filters.id) {
-            KnexAdapter.applyStringFilter(query, filters.id, `${tableAlias}.id`);
+            QueryBuilderAdapter.applyStringFilter(query, filters.id, `${tableAlias}.id`);
         }
 
         if (filters.updatedAt) {
-            KnexAdapter.applyOrdinalFilter(query, filters.updatedAt, `${tableAlias}.updated_at`);
+            QueryBuilderAdapter.applyOrdinalFilter(query, filters.updatedAt, `${tableAlias}.updated_at`);
         }
         if (filters.createdAt) {
-            KnexAdapter.applyOrdinalFilter(query, filters.createdAt, `${tableAlias}.created_at`);
+            QueryBuilderAdapter.applyOrdinalFilter(query, filters.createdAt, `${tableAlias}.created_at`);
         }
 
         if (filters.isSystemManaged !== undefined) {
@@ -106,7 +106,7 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
         pagination: Pagination,
         tableAlias: string,
     ): void {
-        KnexAdapter.orderBy(query, sort, tableAlias, ["created_at", QueryOrder.ASC]);
-        KnexAdapter.pagination(query, pagination);
+        QueryBuilderAdapter.orderBy(query, sort, tableAlias, ["created_at", QueryOrder.ASC]);
+        QueryBuilderAdapter.pagination(query, pagination);
     }
 }

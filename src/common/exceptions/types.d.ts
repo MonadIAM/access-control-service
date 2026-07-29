@@ -6,12 +6,12 @@ import { ErrorCode, ErrorKind } from "./enums";
 declare global {
     namespace Exception {
         namespace Filter {
-            interface PrivateContract {
+            interface InternalContract {
                 metrics(props: Metrics.Props): Metrics.Result;
                 log(props: Log.Props): Log.Result;
             }
 
-            interface Contract extends NestExceptionFilter, PrivateContract {}
+            interface Contract extends NestExceptionFilter, InternalContract {}
 
             namespace Metrics {
                 type Props = {

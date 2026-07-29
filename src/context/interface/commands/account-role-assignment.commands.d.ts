@@ -12,11 +12,11 @@ declare namespace Commands {
             clean(props: Clean.Props): Clean.Result;
         }
 
-        interface PrivateContract {
+        interface InternalContract {
             accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
         }
 
-        interface Contract extends ControllerContract, ConsumerContract, PrivateContract {}
+        interface Contract extends ControllerContract, ConsumerContract, InternalContract {}
 
         namespace Create {
             type Props = {

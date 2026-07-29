@@ -4,7 +4,7 @@ import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 
 import { PublicOrdinalOperator, PublicStringOperator } from "../enums";
 
-export class KnexAdapter {
+export class QueryBuilderAdapter {
     public static pagination(query: ORM.QueryBuilder, pagination: Pagination): ORM.QueryBuilder {
         if (pagination) {
             query.limit(pagination.elementsPerPage);

@@ -1,12 +1,12 @@
 declare namespace Services {
     namespace Realm {
-        interface PrivateContract {
+        interface InternalContract {
             assignBasePermissions(props: AssignBasePermissions.Props): AssignBasePermissions.Result;
             createBaseRoles(props: CreateBaseRoles.Props): CreateBaseRoles.Result;
             assignBaseRoles(props: AssignBaseRoles.Props): AssignBaseRoles.Result;
         }
 
-        interface Contract extends PrivateContract {
+        interface Contract extends InternalContract {
             restore(props: Restore.Props): Restore.Result;
             revoke(props: Revoke.Props): Revoke.Result;
             create(props: Create.Props): Create.Result;

@@ -3,7 +3,7 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { MikroAdapter, knex } from "~infrastructure/database";
+import { ORMAdapter, knex } from "~infrastructure/database";
 import { RoleClosure, Role } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
@@ -61,7 +61,7 @@ export class RoleRepository
                     {
                         populate: ["ancestor", ...ancestorPopulate],
                         orderBy: { depth: QueryOrder.DESC },
-                        ...MikroAdapter.pagination(pagination),
+                        ...ORMAdapter.pagination(pagination),
                     },
                 )
                 .then(([relations, total]) => [
@@ -107,7 +107,7 @@ export class RoleRepository
                     {
                         populate: ["descendant", ...descendantPopulate],
                         orderBy: { depth: QueryOrder.DESC },
-                        ...MikroAdapter.pagination(pagination),
+                        ...ORMAdapter.pagination(pagination),
                     },
                 )
                 .then(([relations, total]) => [

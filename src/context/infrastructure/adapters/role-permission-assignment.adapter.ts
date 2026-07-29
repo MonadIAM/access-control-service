@@ -1,10 +1,11 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class RolePermissionAssignmentAdapter
-    implements Adapters.Contract<Entities.RolePermissionAssignment, Adapters.RolePermissionAssignment.Types>
-{
+export class RolePermissionAssignmentAdapter implements Adapters.Contract<
+    Entities.RolePermissionAssignment,
+    Adapters.RolePermissionAssignment.Types
+> {
     public buildWhereORM(
         filters: Adapters.RolePermissionAssignment.Filters,
         basic: ORM.ObjectQuery<Entities.RolePermissionAssignment> = {},
@@ -12,22 +13,22 @@ export class RolePermissionAssignmentAdapter
         const where: ORM.ObjectQuery<Entities.RolePermissionAssignment> = basic;
 
         if (filters.id) {
-            where.id = MikroAdapter.applyStringFilter(filters.id);
+            where.id = ORMAdapter.applyStringFilter(filters.id);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
         if (filters.role) {
-            where.role = MikroAdapter.applyStringFilter(filters.role);
+            where.role = ORMAdapter.applyStringFilter(filters.role);
         }
         if (filters.permission) {
-            where.permission = MikroAdapter.applyStringFilter(filters.permission);
+            where.permission = ORMAdapter.applyStringFilter(filters.permission);
         }
         if (filters.updatedAt) {
-            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
+            where.updatedAt = ORMAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
         if (filters.createdAt) {
-            where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+            where.createdAt = ORMAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
         if (filters.isRevoked !== undefined) {
             where.isRevoked = { $eq: filters.isRevoked };
@@ -43,8 +44,8 @@ export class RolePermissionAssignmentAdapter
     ): ORM.FindOptions<Entities.RolePermissionAssignment, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.RolePermissionAssignment>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.RolePermissionAssignment>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

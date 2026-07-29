@@ -1,7 +1,9 @@
 declare namespace Repositories {
     namespace PermissionOverride {
-        interface Contract
-            extends Repositories.Base.Contract<Entities.PermissionOverride, Adapters.PermissionOverride.Types> {
+        interface Contract extends Repositories.Base.Contract<
+            Entities.PermissionOverride,
+            Adapters.PermissionOverride.Types
+        > {
             wouldExceedOverrideLimit(props: WouldExceedOverrideLimit.Props): WouldExceedOverrideLimit.Result;
         }
 

@@ -16,6 +16,8 @@ const config: KnipConfig = {
         // MikroORM entity schemas - loaded via glob in mikro-orm.config.ts, not imported
         "src/common/transaction-manager/schemas/*.ts",
         "src/context/infrastructure/schemas/*.ts",
+        // Barrel files
+        "src/**/index.ts",
     ],
     ignoreDependencies: [
         "@mikro-orm/entity-generator",

@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter, KnexAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter, QueryBuilderAdapter } from "~infrastructure/database/utils";
 
 export class PermissionAdapter implements Adapters.Contract<Entities.Permission, Adapters.Permission.Types> {
     public buildWhereORM(
@@ -10,28 +10,28 @@ export class PermissionAdapter implements Adapters.Contract<Entities.Permission,
         const where: ORM.ObjectQuery<Entities.Permission> = basic;
 
         if (filters.id) {
-            where.id = MikroAdapter.applyStringFilter(filters.id);
+            where.id = ORMAdapter.applyStringFilter(filters.id);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
         if (filters.code) {
-            where.code = MikroAdapter.applyStringFilter(filters.code);
+            where.code = ORMAdapter.applyStringFilter(filters.code);
         }
         if (filters.name) {
-            where.name = MikroAdapter.applyStringFilter(filters.name);
+            where.name = ORMAdapter.applyStringFilter(filters.name);
         }
         if (filters.realm) {
-            where.realm = MikroAdapter.applyStringFilter(filters.realm);
+            where.realm = ORMAdapter.applyStringFilter(filters.realm);
         }
         if (filters.role) {
-            where.roleAssignments = { role: MikroAdapter.applyStringFilter(filters.role) };
+            where.roleAssignments = { role: ORMAdapter.applyStringFilter(filters.role) };
         }
         if (filters.updatedAt) {
-            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
+            where.updatedAt = ORMAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
         if (filters.createdAt) {
-            where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+            where.createdAt = ORMAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
         if (filters.isRevoked !== undefined) {
             where.isRevoked = { $eq: filters.isRevoked };
@@ -47,27 +47,27 @@ export class PermissionAdapter implements Adapters.Contract<Entities.Permission,
     ): ORM.FindOptions<Entities.Permission, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.Permission>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.Permission>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 
     public buildWhereKnex(query: ORM.QueryBuilder, filters: Adapters.Permission.Filters, tableAlias: string): void {
         if (filters.realm) {
-            KnexAdapter.applyStringFilter(query, filters.realm, `${tableAlias}.realm_id`);
+            QueryBuilderAdapter.applyStringFilter(query, filters.realm, `${tableAlias}.realm_id`);
         }
         if (filters.code) {
-            KnexAdapter.applyStringFilter(query, filters.code, `${tableAlias}.code`);
+            QueryBuilderAdapter.applyStringFilter(query, filters.code, `${tableAlias}.code`);
         }
         if (filters.name) {
-            KnexAdapter.applyStringFilter(query, filters.name, `${tableAlias}.name`);
+            QueryBuilderAdapter.applyStringFilter(query, filters.name, `${tableAlias}.name`);
         }
         if (filters.id) {
-            KnexAdapter.applyStringFilter(query, filters.id, `${tableAlias}.id`);
+            QueryBuilderAdapter.applyStringFilter(query, filters.id, `${tableAlias}.id`);
         }
 
         if (filters.createdAt) {
-            KnexAdapter.applyOrdinalFilter(query, filters.createdAt, `${tableAlias}.created_at`);
+            QueryBuilderAdapter.applyOrdinalFilter(query, filters.createdAt, `${tableAlias}.created_at`);
         }
 
         if (filters.isSystemManaged !== undefined) {
@@ -84,7 +84,7 @@ export class PermissionAdapter implements Adapters.Contract<Entities.Permission,
         pagination: Pagination,
         tableAlias: string,
     ): void {
-        KnexAdapter.orderBy(query, sort, tableAlias, ["created_at", QueryOrder.ASC]);
-        KnexAdapter.pagination(query, pagination);
+        QueryBuilderAdapter.orderBy(query, sort, tableAlias, ["created_at", QueryOrder.ASC]);
+        QueryBuilderAdapter.pagination(query, pagination);
     }
 }

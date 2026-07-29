@@ -53,18 +53,17 @@ declare global {
                 getAncestors(props: GetAncestors.Props): GetAncestors.Result;
             }
 
-            interface QueryContract
-                extends Pick<
-                    Contract,
-                    | "findMany"
-                    | "getLookupList"
-                    | "findEffective"
-                    | "findAncestors"
-                    | "findDescendants"
-                    | "findDelegable"
-                    | "findUniqueOrThrow"
-                    | "getHierarchyGraph"
-                > {}
+            interface QueryContract extends Pick<
+                Contract,
+                | "findMany"
+                | "getLookupList"
+                | "findEffective"
+                | "findAncestors"
+                | "findDescendants"
+                | "findDelegable"
+                | "findUniqueOrThrow"
+                | "getHierarchyGraph"
+            > {}
 
             namespace FindAccountsByRoles {
                 type Props = {

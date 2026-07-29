@@ -1,10 +1,11 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class RoleDelegationPolicyAdapter
-    implements Adapters.Contract<Entities.RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types>
-{
+export class RoleDelegationPolicyAdapter implements Adapters.Contract<
+    Entities.RoleDelegationPolicy,
+    Adapters.RoleDelegationPolicy.Types
+> {
     public buildWhereORM(
         filters: Adapters.RoleDelegationPolicy.Filters,
         basic: ORM.ObjectQuery<Entities.RoleDelegationPolicy> = {},
@@ -12,25 +13,25 @@ export class RoleDelegationPolicyAdapter
         const where: ORM.ObjectQuery<Entities.RoleDelegationPolicy> = basic;
 
         if (filters.id) {
-            where.id = MikroAdapter.applyStringFilter(filters.id);
+            where.id = ORMAdapter.applyStringFilter(filters.id);
         }
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
         if (filters.realm) {
-            where.realm = MikroAdapter.applyStringFilter(filters.realm);
+            where.realm = ORMAdapter.applyStringFilter(filters.realm);
         }
         if (filters.delegator) {
-            where.delegator = MikroAdapter.applyStringFilter(filters.delegator);
+            where.delegator = ORMAdapter.applyStringFilter(filters.delegator);
         }
         if (filters.target) {
-            where.target = MikroAdapter.applyStringFilter(filters.target);
+            where.target = ORMAdapter.applyStringFilter(filters.target);
         }
         if (filters.updatedAt) {
-            where.updatedAt = MikroAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
+            where.updatedAt = ORMAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
         }
         if (filters.createdAt) {
-            where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+            where.createdAt = ORMAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
         if (filters.isRevoked !== undefined) {
             where.isRevoked = { $eq: filters.isRevoked };
@@ -46,8 +47,8 @@ export class RoleDelegationPolicyAdapter
     ): ORM.FindOptions<Entities.RoleDelegationPolicy, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<Entities.RoleDelegationPolicy>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<Entities.RoleDelegationPolicy>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

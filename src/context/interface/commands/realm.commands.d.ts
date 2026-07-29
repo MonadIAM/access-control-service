@@ -9,13 +9,13 @@ declare namespace Commands {
             purge(props: Purge.Props): Purge.Result;
         }
 
-        interface PrivateContract {
+        interface InternalContract {
             realmLifecyclePayloadMapper(props: RealmLifecyclePayloadMapper.Props): RealmLifecyclePayloadMapper.Result;
             accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
             membershipPayloadMapper(props: MembershipPayloadMapper.Props): MembershipPayloadMapper.Result;
         }
 
-        interface Contract extends ControllerContract, PrivateContract {}
+        interface Contract extends ControllerContract, InternalContract {}
 
         namespace Create {
             type Props = {

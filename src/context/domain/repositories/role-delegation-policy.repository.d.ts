@@ -8,8 +8,10 @@ declare namespace Repositories {
             result: boolean;
         };
 
-        interface Contract
-            extends Repositories.Base.Contract<Entities.RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types> {
+        interface Contract extends Repositories.Base.Contract<
+            Entities.RoleDelegationPolicy,
+            Adapters.RoleDelegationPolicy.Types
+        > {
             wouldExceedPolicyLimit(props: WouldExceedPolicyLimit.Props): WouldExceedPolicyLimit.Result;
             existsTransitivePath(props: ExistsTransitivePath.Props): ExistsTransitivePath.Result;
             isDelegationAllowed(props: IsDelegationAllowed.Props): IsDelegationAllowed.Result;

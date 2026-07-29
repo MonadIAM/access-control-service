@@ -1,6 +1,6 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { MikroAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter } from "~infrastructure/database/utils";
 import { ChangeLog } from "~common/transaction-manager";
 import { EntityType } from "~context/enums";
 
@@ -12,22 +12,22 @@ export class ChangeLogAdapter implements Adapters.Contract<ChangeLog, Adapters.C
         const where: ORM.ObjectQuery<ChangeLog> = basic;
 
         if (filters.id) {
-            where.id = MikroAdapter.applyStringFilter(filters.id);
+            where.id = ORMAdapter.applyStringFilter(filters.id);
         }
         if (filters.auditEntry) {
-            where.auditEntry = MikroAdapter.applyStringFilter(filters.auditEntry);
+            where.auditEntry = ORMAdapter.applyStringFilter(filters.auditEntry);
         }
         if (filters.entity) {
-            where.entity = MikroAdapter.applyStringFilter(filters.entity);
+            where.entity = ORMAdapter.applyStringFilter(filters.entity);
         }
         if (filters.changeType) {
-            where.changeType = MikroAdapter.applyStringFilter<ORM.ChangeSetType>(filters.changeType);
+            where.changeType = ORMAdapter.applyStringFilter<ORM.ChangeSetType>(filters.changeType);
         }
         if (filters.entityType) {
-            where.entityType = MikroAdapter.applyStringFilter<EntityType>(filters.entityType);
+            where.entityType = ORMAdapter.applyStringFilter<EntityType>(filters.entityType);
         }
         if (filters.createdAt) {
-            where.createdAt = MikroAdapter.applyOrdinalFilter<Date>(filters.createdAt);
+            where.createdAt = ORMAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
 
         return where;
@@ -40,8 +40,8 @@ export class ChangeLogAdapter implements Adapters.Contract<ChangeLog, Adapters.C
     ): ORM.FindOptions<ChangeLog, P, F> {
         return {
             ...basic,
-            orderBy: MikroAdapter.orderBy<ChangeLog>(sort, { createdAt: QueryOrder.ASC }),
-            ...MikroAdapter.pagination(pagination),
+            orderBy: ORMAdapter.orderBy<ChangeLog>(sort, { createdAt: QueryOrder.ASC }),
+            ...ORMAdapter.pagination(pagination),
         };
     }
 }

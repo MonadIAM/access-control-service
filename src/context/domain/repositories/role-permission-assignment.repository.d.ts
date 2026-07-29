@@ -1,7 +1,9 @@
 declare namespace Repositories {
     namespace RolePermissionAssignment {
-        interface Contract
-            extends Repositories.Base.Contract<Entities.RolePermissionAssignment, Adapters.RolePermissionAssignment.Types> {
+        interface Contract extends Repositories.Base.Contract<
+            Entities.RolePermissionAssignment,
+            Adapters.RolePermissionAssignment.Types
+        > {
             wouldExceedPermissionLimit(props: WouldExceedPermissionLimit.Props): WouldExceedPermissionLimit.Result;
         }
 

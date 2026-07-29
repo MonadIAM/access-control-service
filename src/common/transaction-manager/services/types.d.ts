@@ -8,7 +8,7 @@ declare global {
                 run(props: Run.VoidProps): Promise<void>;
             }
 
-            interface PrivateContract {
+            interface InternalContract {
                 buildAuditLogArchiveOutbox(props: BuildAuditLogArchiveOutbox.Props): BuildAuditLogArchiveOutbox.Result;
                 executeWithEffects<T extends ORM.AnyEntity | ORM.AnyEntity[]>(
                     props: ExecuteWithEffects.Props<T>,
@@ -18,7 +18,7 @@ declare global {
                 ): PersistOutboxEvents.Result;
             }
 
-            interface Contract extends PublicContract, PrivateContract {}
+            interface Contract extends PublicContract, InternalContract {}
 
             type OutboxPayloadMap = {
                 [KafkaTopic.ACCESS_CACHE]: Topics.AccessCache.Message["payload"];

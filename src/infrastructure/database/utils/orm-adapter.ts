@@ -4,7 +4,7 @@ import { StringFilterDTO, OrdinalFilterDTO, LinkFilterDTO } from "~common/dto";
 
 import { PUBLIC_TO_ORM_OPERATORS } from "./mappers";
 
-export class MikroAdapter {
+export class ORMAdapter {
     public static pagination(pagination: Pagination): Pick<ORM.FindAllOptions<ORM.AnyEntity>, "limit" | "offset"> {
         return {
             limit: pagination.elementsPerPage,

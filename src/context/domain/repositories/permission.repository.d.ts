@@ -23,8 +23,10 @@ declare global {
                 findEffective(props: FindEffective.Props): FindEffective.Result;
             }
 
-            interface QueryContract
-                extends Pick<Contract, "getLookupList" | "findEffective" | "findUniqueOrThrow" | "findMany"> {}
+            interface QueryContract extends Pick<
+                Contract,
+                "getLookupList" | "findEffective" | "findUniqueOrThrow" | "findMany"
+            > {}
 
             namespace GetLookupList {
                 type Props = {
