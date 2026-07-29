@@ -28,6 +28,7 @@
     "forceConsistentCasingInFileNames": true,     // Requires consistent casing in file names
 
     "moduleResolution": "NodeNext",               // Uses Node.js-style module resolution
+    "types": ["node"],                            // TS 6.0 defaults `types` to [] instead of auto-including @types/*; restores @types/node globals (__dirname, node: imports)
     "isolatedModules": true,                      // Treats each file as a separate module (does not affect declaration files)
     "incremental": true,                          // Enables incremental compilation to optimize build time
 

@@ -8,7 +8,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN --mount=type=cache,target=/root/.npm npm ci --legacy-peer-deps
+RUN --mount=type=cache,target=/root/.npm npm ci --strict-peer-deps=false
 
 COPY . .
 RUN npm run build
@@ -19,7 +19,7 @@ FROM ${BASE_IMAGE} AS runner
 WORKDIR /app
 
 COPY package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --legacy-peer-deps
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --strict-peer-deps=false
 
 COPY --from=builder /app/dist ./dist
 

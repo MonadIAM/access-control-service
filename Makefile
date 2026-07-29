@@ -25,6 +25,8 @@ prune:
 	docker system prune -f
 
 # Development
+deps:
+	npm i --allow-git=all --strict-peer-deps=false
 lint:
 	npm run lint
 lint-fix:

@@ -65,6 +65,7 @@ docker exec -it access-control-service-postgres-replica psql -U lambdius -d acce
 | `docker-compose down -v`                                        | `make clean`                     | Remove containers along with volumes (wipes DB data). |
 | `docker system prune -f`                                        | `make prune`                     | Global cleanup of unused Docker resources.            |
 | **Development**                                                 |                                  |                                                       |
+| `npm i --allow-git=all --strict-peer-deps=false`                | `make deps`                      | Install dependencies with relaxed peer resolution.    |
 | `npm run lint`                                                  | `make lint`                      | Run ESLint code checks.                               |
 | `npm run lint:fix`                                              | `make lint-fix`                  | Auto-fix formatting and log changed files.            |
 | `npm run knip`                                                  | `make knip`                      | Detect unused exports, files, and dependencies.       |
