@@ -1,14 +1,14 @@
 import type { Config } from "@jest/types";
 
 const config: Config.InitialOptions = {
-    // Base configuration
-    preset: "ts-jest",
-
     // Test execution environment
     testEnvironment: "node",
 
     // File extensions to process
     moduleFileExtensions: ["ts", "js", "json"],
+
+    // Runs .ts test files as native ESM (required to load ESM-only node_modules deps, e.g. @mikro-orm/*)
+    extensionsToTreatAsEsm: [".ts"],
 
     // Stop testing after the first failure
     bail: true,
@@ -27,7 +27,13 @@ const config: Config.InitialOptions = {
 
     // TypeScript transformation
     transform: {
-        "^.+\\.ts$": ["ts-jest", { tsconfig: "tsconfig.json" }],
+        "^.+\\.ts$": [
+            "ts-jest",
+            {
+                tsconfig: { module: "ES2022", moduleResolution: "Bundler" },
+                useESM: true,
+            },
+        ],
     },
 
     // Root directories for tests

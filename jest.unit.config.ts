@@ -1,3 +1,6 @@
+/**
+ * @jest-config-loader ts-node
+ */
 import type { Config } from "@jest/types";
 
 import common from "./configs/jest.base.config";

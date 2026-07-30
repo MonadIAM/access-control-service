@@ -25,12 +25,8 @@ prune:
 	docker system prune -f
 
 # Development
-deps:
-	npm i --allow-git=all --strict-peer-deps=false
 lint:
 	npm run lint
-lint-fix:
-	npm run lint:fix
 knip:
 	npm run knip
 swagger:
@@ -48,10 +44,10 @@ seed: seed-pg seed-redis
 seed-pg:
 	npx mikro-orm seeder:run
 seed-redis:
-	npx tsx ./src/infrastructure/redis/seeder.ts
+	npx ts-node ./src/infrastructure/redis/seeder.ts
 
 # Test
 test:
-	npx jest --config ./jest.unit.config.ts
+	NODE_OPTIONS=--experimental-vm-modules npx jest --config ./jest.unit.config.ts
 coverage:
-	npx jest --config ./jest.unit.config.ts --coverage
+	NODE_OPTIONS=--experimental-vm-modules npx jest --config ./jest.unit.config.ts --coverage

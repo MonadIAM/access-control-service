@@ -13,14 +13,13 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "lint:fix": "eslint --config ./prettier.config.mjs --fix --format json | node -e \"process.stdin.on('data',d=>JSON.parse(d).forEach(f=>f.output && console.log(f.filePath)));\"",
     "swagger": "ts-node --transpile-only -r tsconfig-paths/register cli/swagger/main.ts",
     "postman": "ts-node --transpile-only cli/postman/main.ts",
     "knip": "knip --config configs/knip.config.ts",
-    "build": "nest build",
-    "start": "nest start",
     "start:prod": "node dist/index.js",
-    "start:dev": "nest start --watch"
+    "start:dev": "nest start --watch",
+    "start": "nest start",
+    "build": "nest build"
   },
   "repository": {
     "type": "git",
