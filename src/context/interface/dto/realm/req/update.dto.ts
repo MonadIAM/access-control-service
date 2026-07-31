@@ -7,6 +7,7 @@ import { Validator } from "~common/validator";
 class PatchDTO {
     @Expose()
     @Validator.IsString()
+    @Validator.MaxLength(128)
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: String })
     declare public name?: string;

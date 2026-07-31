@@ -8,11 +8,13 @@ import { Validator } from "~common/validator";
 export class CreateBodyDTO {
     @Expose()
     @Validator.IsString()
+    @Validator.MaxLength(128)
     @ApiProperty({ required: true, type: String })
     declare public code: string;
 
     @Expose()
     @Validator.IsString()
+    @Validator.MaxLength(128)
     @ApiProperty({ required: true, type: String })
     declare public name: string;
 

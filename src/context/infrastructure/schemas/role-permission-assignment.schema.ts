@@ -29,7 +29,7 @@ export const RolePermissionAssignmentSchema = new EntitySchema<RolePermissionAss
     properties: {
         id: { primary: true, type: "uuid" },
 
-        scope: { enum: true, items: () => AssignmentScope },
+        scope: { enum: true, items: () => AssignmentScope, nativeEnumName: "role_permission_assignment_scope" },
 
         isSystemManaged: { type: "boolean" },
         isRevoked: { type: "boolean" },

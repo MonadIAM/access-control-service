@@ -29,8 +29,8 @@ export const RealmSchema = new EntitySchema<Realm>({
         id: { primary: true, type: "uuid" },
 
         description: { type: "text", nullable: true },
-        code: { type: "string", length: 128 },
-        name: { type: "string", length: 255 },
+        code: { type: "text" },
+        name: { type: "text" },
         owner: { type: "uuid" },
 
         isSystemManaged: { type: "boolean" },

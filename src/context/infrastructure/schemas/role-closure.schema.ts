@@ -19,7 +19,7 @@ export const RoleClosureSchema = new EntitySchema<RoleClosure>({
     ],
 
     properties: {
-        depth: { type: "int" },
+        depth: { type: "smallint" },
 
         realm: {
             kind: "m:1",

@@ -25,8 +25,8 @@ export const PermissionSchema = new EntitySchema<Permission>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        code: { type: "string", length: 128 },
-        name: { type: "string", length: 255 },
+        code: { type: "text" },
+        name: { type: "text" },
         description: { type: "text", nullable: true },
 
         isSystemManaged: { type: "boolean" },

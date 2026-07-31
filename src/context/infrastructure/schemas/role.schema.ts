@@ -32,11 +32,11 @@ export const RoleSchema = new EntitySchema<Role>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        code: { type: "string", length: 128 },
-        name: { type: "string", length: 255 },
+        code: { type: "text" },
+        name: { type: "text" },
         description: { type: "text", nullable: true },
-        actorType: { enum: true, items: () => RoleActorType },
-        archetype: { enum: true, items: () => RoleArchetype },
+        actorType: { enum: true, items: () => RoleActorType, nativeEnumName: "role_actor_type" },
+        archetype: { enum: true, items: () => RoleArchetype, nativeEnumName: "role_archetype" },
 
         isSystemManaged: { type: "boolean" },
         nonDelegable: { type: "boolean" },

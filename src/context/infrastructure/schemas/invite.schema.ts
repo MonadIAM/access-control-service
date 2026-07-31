@@ -27,7 +27,7 @@ export const InviteSchema = new EntitySchema<Invite>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        status: { enum: true, items: () => InviteStatus },
+        status: { enum: true, items: () => InviteStatus, nativeEnumName: "invite_status" },
         invitee: { type: "uuid" },
         inviter: { type: "uuid" },
 

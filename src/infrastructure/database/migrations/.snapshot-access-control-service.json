@@ -345,7 +345,7 @@
         },
         "status": {
           "name": "status",
-          "type": "text",
+          "type": "access_control.invite_status",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -363,7 +363,8 @@
             "DECLINED",
             "PENDING"
           ],
-          "mappedType": "enum"
+          "mappedType": "enum",
+          "nativeEnumName": "invite_status"
         },
         "updated_at": {
           "name": "updated_at",
@@ -441,14 +442,7 @@
           "expression": "CREATE UNIQUE INDEX \"invite_realm_invitee_role_pending_unique\" ON \"access_control\".\"invite\" (\"realm_id\", \"invitee\", \"role_id\") WHERE \"status\" = 'PENDING'"
         }
       ],
-      "checks": [
-        {
-          "name": "invite_status_check",
-          "expression": "\"status\" in ('CANCELLED', 'ACCEPTED', 'DECLINED', 'PENDING')",
-          "definition": "check (\"status\" in ('CANCELLED', 'ACCEPTED', 'DECLINED', 'PENDING'))",
-          "columnName": "status"
-        }
-      ],
+      "checks": [],
       "triggers": [],
       "foreignKeys": {
         "invite_realm_id_foreign": {
@@ -484,20 +478,20 @@
       "columns": {
         "code": {
           "name": "code",
-          "type": "varchar(128)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 128,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "created_at": {
           "name": "created_at",
@@ -586,20 +580,20 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 255,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "realm_id": {
           "name": "realm_id",
@@ -743,7 +737,7 @@
         },
         "effect": {
           "name": "effect",
-          "type": "text",
+          "type": "access_control.permission_override_effect",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -759,7 +753,8 @@
             "ALLOW",
             "DENY"
           ],
-          "mappedType": "enum"
+          "mappedType": "enum",
+          "nativeEnumName": "permission_override_effect"
         },
         "id": {
           "name": "id",
@@ -908,14 +903,7 @@
           "unique": true
         }
       ],
-      "checks": [
-        {
-          "name": "permission_override_effect_check",
-          "expression": "\"effect\" in ('ALLOW', 'DENY')",
-          "definition": "check (\"effect\" in ('ALLOW', 'DENY'))",
-          "columnName": "effect"
-        }
-      ],
+      "checks": [],
       "triggers": [],
       "foreignKeys": {
         "permission_override_permission_id_foreign": {
@@ -951,20 +939,20 @@
       "columns": {
         "code": {
           "name": "code",
-          "type": "varchar(128)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": true,
-          "length": 128,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "created_at": {
           "name": "created_at",
@@ -1053,20 +1041,20 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 255,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "owner": {
           "name": "owner",
@@ -1172,7 +1160,7 @@
       "columns": {
         "actor_type": {
           "name": "actor_type",
-          "type": "text",
+          "type": "access_control.role_actor_type",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -1189,11 +1177,12 @@
             "SYSTEM",
             "HUMAN"
           ],
-          "mappedType": "enum"
+          "mappedType": "enum",
+          "nativeEnumName": "role_actor_type"
         },
         "archetype": {
           "name": "archetype",
-          "type": "text",
+          "type": "access_control.role_archetype",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -1209,24 +1198,25 @@
             "COMPOSITE",
             "ATOMIC"
           ],
-          "mappedType": "enum"
+          "mappedType": "enum",
+          "nativeEnumName": "role_archetype"
         },
         "code": {
           "name": "code",
-          "type": "varchar(128)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 128,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "created_at": {
           "name": "created_at",
@@ -1315,20 +1305,20 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 255,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "non_delegable": {
           "name": "non_delegable",
@@ -1431,20 +1421,7 @@
           "unique": true
         }
       ],
-      "checks": [
-        {
-          "name": "role_actor_type_check",
-          "expression": "\"actor_type\" in ('SERVICE', 'SYSTEM', 'HUMAN')",
-          "definition": "check (\"actor_type\" in ('SERVICE', 'SYSTEM', 'HUMAN'))",
-          "columnName": "actor_type"
-        },
-        {
-          "name": "role_archetype_check",
-          "expression": "\"archetype\" in ('COMPOSITE', 'ATOMIC')",
-          "definition": "check (\"archetype\" in ('COMPOSITE', 'ATOMIC'))",
-          "columnName": "archetype"
-        }
-      ],
+      "checks": [],
       "triggers": [],
       "foreignKeys": {
         "role_realm_id_foreign": {
@@ -1485,7 +1462,7 @@
         },
         "depth": {
           "name": "depth",
-          "type": "int",
+          "type": "smallint",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -1498,7 +1475,7 @@
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "integer"
+          "mappedType": "smallint"
         },
         "descendant_id": {
           "name": "descendant_id",
@@ -1622,20 +1599,20 @@
       "columns": {
         "code": {
           "name": "code",
-          "type": "varchar(128)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 128,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "created_at": {
           "name": "created_at",
@@ -1741,20 +1718,20 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 255,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "realm_id": {
           "name": "realm_id",
@@ -2456,7 +2433,7 @@
         },
         "scope": {
           "name": "scope",
-          "type": "text",
+          "type": "access_control.role_permission_assignment_scope",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -2472,7 +2449,8 @@
             "REALM",
             "GLOBAL"
           ],
-          "mappedType": "enum"
+          "mappedType": "enum",
+          "nativeEnumName": "role_permission_assignment_scope"
         },
         "updated_at": {
           "name": "updated_at",
@@ -2552,14 +2530,7 @@
           "unique": true
         }
       ],
-      "checks": [
-        {
-          "name": "role_permission_assignment_scope_check",
-          "expression": "\"scope\" in ('REALM', 'GLOBAL')",
-          "definition": "check (\"scope\" in ('REALM', 'GLOBAL'))",
-          "columnName": "scope"
-        }
-      ],
+      "checks": [],
       "triggers": [],
       "foreignKeys": {
         "role_permission_assignment_permission_id_foreign": {
@@ -2709,20 +2680,20 @@
         },
         "ip": {
           "name": "ip",
-          "type": "varchar(45)",
+          "type": "inet",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
-          "length": 45,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "unknown"
         },
         "realm": {
           "name": "realm",
@@ -3123,5 +3094,49 @@
     }
   ],
   "views": [],
-  "nativeEnums": {}
+  "nativeEnums": {
+    "access_control.invite_status": {
+      "name": "invite_status",
+      "schema": "access_control",
+      "items": [
+        "CANCELLED",
+        "ACCEPTED",
+        "DECLINED",
+        "PENDING"
+      ]
+    },
+    "access_control.permission_override_effect": {
+      "name": "permission_override_effect",
+      "schema": "access_control",
+      "items": [
+        "ALLOW",
+        "DENY"
+      ]
+    },
+    "access_control.role_actor_type": {
+      "name": "role_actor_type",
+      "schema": "access_control",
+      "items": [
+        "SERVICE",
+        "SYSTEM",
+        "HUMAN"
+      ]
+    },
+    "access_control.role_archetype": {
+      "name": "role_archetype",
+      "schema": "access_control",
+      "items": [
+        "COMPOSITE",
+        "ATOMIC"
+      ]
+    },
+    "access_control.role_permission_assignment_scope": {
+      "name": "role_permission_assignment_scope",
+      "schema": "access_control",
+      "items": [
+        "REALM",
+        "GLOBAL"
+      ]
+    }
+  }
 }
