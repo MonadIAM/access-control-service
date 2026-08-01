@@ -19,7 +19,20 @@ export const USER_PERMISSION_CODES: string[] = [
 
     PermissionCode.ROLE_DELEGATION_POLICY_READ_COMMON,
 
-    PermissionCode.CERTIFICATE_READ_PERSONAL,
+    PermissionCode.RECIPIENT_READ_PERSONAL,
+    PermissionCode.RECIPIENT_UPDATE,
+    PermissionCode.RECIPIENT_SELECT_OTP_CHANNEL,
+
+    PermissionCode.CHANNEL_READ_PERSONAL,
+    PermissionCode.CHANNEL_TOGGLE_SOUND,
+
+    PermissionCode.NOTIFICATION_READ_PERSONAL,
+
+    PermissionCode.MESSAGE_READ_PERSONAL,
+    PermissionCode.MESSAGE_MARK_READ,
+
+    PermissionCode.PREFERENCE_READ_PERSONAL,
+    PermissionCode.PREFERENCE_TOGGLE,
 ];
 
 export const ADMIN_PERMISSION_CODES: string[] = [
@@ -102,6 +115,9 @@ export const ADMIN_PERMISSION_CODES: string[] = [
     PermissionCode.SERVICE_CLIENT_RESTORE,
     PermissionCode.SERVICE_CLIENT_PURGE,
 
-    PermissionCode.CERTIFICATE_READ_ABSOLUTE,
-    PermissionCode.CERTIFICATE_REVOKE,
+    PermissionCode.RECIPIENT_READ_ABSOLUTE,
+    PermissionCode.CHANNEL_READ_ABSOLUTE,
+    PermissionCode.NOTIFICATION_READ_ABSOLUTE,
+    PermissionCode.MESSAGE_READ_ABSOLUTE,
+    PermissionCode.PREFERENCE_READ_ABSOLUTE,
 ];

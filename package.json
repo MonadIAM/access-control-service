@@ -36,7 +36,7 @@
     ]
   },
   "dependencies": {
-    "@monadiam/shared": "github:MonadIAM/shared#v1.0.28",
+    "@monadiam/shared": "github:MonadIAM/shared#v1.0.29",
     "@fastify/cookie": "11.1.2",
     "@fastify/cors": "11.3.0",
     "@fastify/helmet": "13.1.0",

@@ -744,26 +744,98 @@ const dataset = [
     ),
 
     // ---------------------------------------------------------------------------
-    // Certificate
+    // Notification
     // ---------------------------------------------------------------------------
 
     entry(
         "00000003-0024-4000-8000-000000000001",
-        PermissionCode.CERTIFICATE_READ_PERSONAL,
-        "Read Personal Certificates",
-        "View certificates within a realm.",
+        PermissionCode.RECIPIENT_READ_PERSONAL,
+        "Read Personal Recipient",
+        "View your own notification recipient profile.",
     ),
     entry(
         "00000003-0024-4000-8000-000000000002",
-        PermissionCode.CERTIFICATE_READ_ABSOLUTE,
-        "Read Absolute Certificates",
-        "View all certificates across all realms.",
+        PermissionCode.RECIPIENT_READ_ABSOLUTE,
+        "Read Absolute Recipient",
+        "View the notification recipient profile of any account.",
     ),
     entry(
         "00000003-0024-4000-8000-000000000003",
-        PermissionCode.CERTIFICATE_REVOKE,
-        "Revoke Certificate",
-        "Revoke an issued certificate.",
+        PermissionCode.RECIPIENT_UPDATE,
+        "Update Recipient",
+        "Update your own notification recipient profile.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000004",
+        PermissionCode.RECIPIENT_SELECT_OTP_CHANNEL,
+        "Select OTP Channel",
+        "Select which of your verified channels receives OTP codes.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000005",
+        PermissionCode.CHANNEL_READ_PERSONAL,
+        "Read Personal Channels",
+        "View your own notification channels.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000006",
+        PermissionCode.CHANNEL_READ_ABSOLUTE,
+        "Read Absolute Channels",
+        "View notification channels of any account.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000007",
+        PermissionCode.CHANNEL_TOGGLE_SOUND,
+        "Toggle Channel Sound",
+        "Toggle sound for your in-app notification channel.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000008",
+        PermissionCode.NOTIFICATION_READ_PERSONAL,
+        "Read Personal Notifications",
+        "View your own notifications.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000009",
+        PermissionCode.NOTIFICATION_READ_ABSOLUTE,
+        "Read Absolute Notifications",
+        "View notifications of any account.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000010",
+        PermissionCode.MESSAGE_READ_PERSONAL,
+        "Read Personal Messages",
+        "View delivery status of your own notification messages.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000011",
+        PermissionCode.MESSAGE_READ_ABSOLUTE,
+        "Read Absolute Messages",
+        "View delivery status of notification messages of any account.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000012",
+        PermissionCode.MESSAGE_MARK_READ,
+        "Mark Message Read",
+        "Mark your own in-app notification message as read.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000013",
+        PermissionCode.PREFERENCE_READ_PERSONAL,
+        "Read Personal Preferences",
+        "View your own notification duplication preferences.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000014",
+        PermissionCode.PREFERENCE_READ_ABSOLUTE,
+        "Read Absolute Preferences",
+        "View notification duplication preferences of any account.",
+    ),
+    entry(
+        "00000003-0024-4000-8000-000000000015",
+        PermissionCode.PREFERENCE_TOGGLE,
+        "Toggle Preference",
+        "Toggle notification duplication for a channel and category.",
     ),
 ];
 
