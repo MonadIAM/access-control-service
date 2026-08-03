@@ -9,11 +9,15 @@ declare global {
             }
 
             interface InternalContract {
+                notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
                 accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
                 membershipPayloadMapper(props: MembershipPayloadMapper.Props): MembershipPayloadMapper.Result;
                 decline(props: Decline.Props): Decline.Result;
                 accept(props: Accept.Props): Accept.Result;
                 cancel(props: Cancel.Props): Cancel.Result;
+                notificationCancelPayloadMapper(
+                    props: NotificationCancelPayloadMapper.Props,
+                ): NotificationCancelPayloadMapper.Result;
             }
 
             interface Contract extends ControllerContract, InternalContract {}
@@ -84,6 +88,16 @@ declare global {
                 };
 
                 type Result = Promise<MessageResult>;
+            }
+
+            namespace NotificationPayloadMapper {
+                type Props = Entities.Invite[];
+                type Result = Topics.Notification.CreateMessage["payload"];
+            }
+
+            namespace NotificationCancelPayloadMapper {
+                type Props = Entities.Invite[];
+                type Result = Topics.Notification.CancelMessage["payload"];
             }
 
             namespace AccessCachePayloadMapper {

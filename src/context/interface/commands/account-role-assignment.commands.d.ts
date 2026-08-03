@@ -14,6 +14,12 @@ declare namespace Commands {
 
         interface InternalContract {
             accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
+            notificationRevokePayloadMapper(
+                props: NotificationRevokePayloadMapper.Props,
+            ): NotificationRevokePayloadMapper.Result;
+            notificationGrantPayloadMapper(
+                props: NotificationGrantPayloadMapper.Props,
+            ): NotificationGrantPayloadMapper.Result;
         }
 
         interface Contract extends ControllerContract, ConsumerContract, InternalContract {}
@@ -94,6 +100,18 @@ declare namespace Commands {
             type Props = Entities.AccountRoleAssignment[];
 
             type Result = Topics.AccessCache.Message["payload"];
+        }
+
+        namespace NotificationGrantPayloadMapper {
+            type Props = Entities.AccountRoleAssignment[];
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+        }
+
+        namespace NotificationRevokePayloadMapper {
+            type Props = Entities.AccountRoleAssignment[];
+
+            type Result = Topics.Notification.CreateMessage["payload"][];
         }
     }
 }

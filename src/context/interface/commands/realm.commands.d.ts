@@ -11,6 +11,7 @@ declare namespace Commands {
 
         interface InternalContract {
             realmLifecyclePayloadMapper(props: RealmLifecyclePayloadMapper.Props): RealmLifecyclePayloadMapper.Result;
+            notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
             accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
             membershipPayloadMapper(props: MembershipPayloadMapper.Props): MembershipPayloadMapper.Result;
         }
@@ -98,9 +99,17 @@ declare namespace Commands {
             type ExecuteResult = {
                 assignments: Entities.AccountRoleAssignment[];
                 overrides: Entities.PermissionOverride[];
+                realm: Entities.Realm;
+                account: string;
             };
 
             type Result = Promise<MessageResult>;
+        }
+
+        namespace NotificationPayloadMapper {
+            type Props = Exclude.ExecuteResult;
+
+            type Result = Topics.Notification.CreateMessage["payload"];
         }
 
         namespace AccessCachePayloadMapper {

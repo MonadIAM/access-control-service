@@ -21,10 +21,11 @@ declare global {
             interface Contract extends PublicContract, InternalContract {}
 
             type OutboxPayloadMap = {
+                [KafkaTopic.NOTIFICATION]: Topics.Notification.Message["payload"];
                 [KafkaTopic.ACCESS_CACHE]: Topics.AccessCache.Message["payload"];
                 [KafkaTopic.MEMBERSHIP]: Topics.Membership.Message["payload"];
-                [KafkaTopic.PROJECTION_JOURNAL]: UnknownObject;
                 [KafkaTopic.REALM]: Topics.Realm.Message["payload"];
+                [KafkaTopic.PROJECTION_JOURNAL]: UnknownObject;
             };
 
             type OutboxConfig<T> = {

@@ -1,5 +1,12 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccessCacheTopicAction } from "@monadiam/shared";
+import {
+    NotificationContentKind,
+    NotificationTopicAction,
+    AccessCacheTopicAction,
+    NotificationCategory,
+    PlatformService,
+    MessageTemplate,
+} from "@monadiam/shared";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
 import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";
@@ -62,6 +69,11 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     payloadMapper: this.accessCachePayloadMapper.bind(this),
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+                {
+                    payloadMapper: this.notificationGrantPayloadMapper.bind(this),
+                    actionType: NotificationTopicAction.CREATE,
+                    destinationTopic: KafkaTopic.NOTIFICATION,
                 },
             ],
             audit: {
@@ -188,6 +200,11 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
+                {
+                    payloadMapper: this.notificationRevokePayloadMapper.bind(this),
+                    actionType: NotificationTopicAction.CREATE,
+                    destinationTopic: KafkaTopic.NOTIFICATION,
+                },
             ],
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
@@ -198,6 +215,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             execute: async (transaction) => {
                 const entities = await this.accountRoleAssignmentRepository.find({
                     where: { id: { $in: input.identifiers }, realm },
+                    options: { populate: ["realm", "role"] },
                     transaction,
                 });
 
@@ -355,6 +373,42 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 return entities;
             },
         });
+    }
+
+    public notificationGrantPayloadMapper(
+        props: Commands.AccountRoleAssignment.NotificationGrantPayloadMapper.Props,
+    ): Commands.AccountRoleAssignment.NotificationGrantPayloadMapper.Result {
+        const [{ account, realm }] = props;
+
+        return {
+            params: { realm: realm.name, role: props.map(({ role }) => role.name).join(", ") },
+            sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
+            template: MessageTemplate.ASSIGNMENT_GRANTED,
+            kind: NotificationContentKind.TEMPLATE,
+            category: NotificationCategory.SYSTEM,
+            recipient: account,
+            language: "en",
+        };
+    }
+
+    public notificationRevokePayloadMapper(
+        props: Commands.AccountRoleAssignment.NotificationRevokePayloadMapper.Props,
+    ): Commands.AccountRoleAssignment.NotificationRevokePayloadMapper.Result {
+        const byAccount = new Map<string, Entities.AccountRoleAssignment[]>();
+
+        for (const entity of props) {
+            byAccount.set(entity.account, [...(byAccount.get(entity.account) ?? []), entity]);
+        }
+
+        return [...byAccount.entries()].map(([account, entities]) => ({
+            params: { realm: entities[0].realm.name, role: entities.map(({ role }) => role.name).join(", ") },
+            sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
+            template: MessageTemplate.ASSIGNMENT_REVOKED,
+            kind: NotificationContentKind.TEMPLATE,
+            category: NotificationCategory.SYSTEM,
+            recipient: account,
+            language: "en",
+        }));
     }
 
     public accessCachePayloadMapper(

@@ -1,5 +1,14 @@
-import { AccessCacheTopicAction, MembershipTopicAction, RealmTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import {
+    NotificationContentKind,
+    NotificationTopicAction,
+    AccessCacheTopicAction,
+    MembershipTopicAction,
+    NotificationCategory,
+    RealmTopicAction,
+    PlatformService,
+    MessageTemplate,
+} from "@monadiam/shared";
 
 import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
@@ -322,6 +331,11 @@ export class RealmCommands implements Commands.Realm.Contract {
                     actionType: MembershipTopicAction.REVOKE,
                     destinationTopic: KafkaTopic.MEMBERSHIP,
                 },
+                {
+                    payloadMapper: this.notificationPayloadMapper.bind(this),
+                    actionType: NotificationTopicAction.CREATE,
+                    destinationTopic: KafkaTopic.NOTIFICATION,
+                },
             ],
             audit: {
                 actionType: ActionType.EXCLUDE,
@@ -330,7 +344,7 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const [assignments, overrides] = await Promise.all([
+                const [assignments, overrides, realmEntity] = await Promise.all([
                     this.accountRoleAssignmentRepository.find({
                         where: { account: input.account, realm },
                         transaction,
@@ -339,16 +353,34 @@ export class RealmCommands implements Commands.Realm.Contract {
                         where: { account: input.account, realm },
                         transaction,
                     }),
+                    this.realmRepository.findUniqueOrThrow({
+                        where: { id: realm },
+                        transaction,
+                    }),
                 ]);
 
                 this.accountRoleAssignmentService.purge({ transaction, entities: assignments });
                 this.permissionOverrideService.purge({ transaction, entities: overrides });
 
-                return { assignments, overrides };
+                return { assignments, overrides, realm: realmEntity, account: input.account };
             },
         });
 
         return { message: `${this.dictionaryPath}.EXCLUDED` };
+    }
+
+    public notificationPayloadMapper(
+        props: Commands.Realm.NotificationPayloadMapper.Props,
+    ): Commands.Realm.NotificationPayloadMapper.Result {
+        return {
+            sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
+            template: MessageTemplate.REALM_EXCLUDED,
+            kind: NotificationContentKind.TEMPLATE,
+            category: NotificationCategory.SYSTEM,
+            params: { realm: props.realm.name },
+            recipient: props.account,
+            language: "en",
+        };
     }
 
     public accessCachePayloadMapper(

@@ -1,5 +1,13 @@
-import { AccessCacheTopicAction, MembershipTopicAction } from "@monadiam/shared";
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import {
+    NotificationContentKind,
+    NotificationTopicAction,
+    AccessCacheTopicAction,
+    MembershipTopicAction,
+    NotificationCategory,
+    PlatformService,
+    MessageTemplate,
+} from "@monadiam/shared";
 
 import { EntityType, ActionType, InvalidationScope, InviteStatus, KafkaTopic } from "~context/enums";
 import { INVITE_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
@@ -44,12 +52,17 @@ export class InviteCommands implements Commands.Invite.Contract {
             throw Exception.conflict({ messageKey: `${this.dictionaryPath}.INVITEE_ALREADY_MEMBER` });
         }
 
-        await this.transactionalService.run({
+        await this.transactionalService.run<Entities.Invite[]>({
             resource: this.resource,
             audit: {
                 entityType: EntityType.INVITE,
                 actionType: ActionType.CREATE,
                 ...props,
+            },
+            outbox: {
+                payloadMapper: this.notificationPayloadMapper.bind(this),
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             changeLog: true,
             execute: async (transaction) => {
@@ -151,17 +164,23 @@ export class InviteCommands implements Commands.Invite.Contract {
     public async cancel(props: Commands.Invite.Cancel.Props): Commands.Invite.Cancel.Result {
         const { input, actor, realm } = props;
 
-        await this.transactionalService.run({
+        await this.transactionalService.run<Entities.Invite[]>({
             resource: this.resource,
             audit: {
                 entityType: EntityType.INVITE,
                 actionType: ActionType.CANCEL,
                 ...props,
             },
+            outbox: {
+                payloadMapper: this.notificationCancelPayloadMapper.bind(this),
+                actionType: NotificationTopicAction.CANCEL,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             changeLog: true,
             execute: async (transaction) => {
                 const entity = await this.inviteRepository.findUniqueOrThrow({
                     where: { id: input.invite, realm, inviter: actor },
+                    options: { populate: ["realm"] },
                     transaction,
                 });
 
@@ -198,6 +217,42 @@ export class InviteCommands implements Commands.Invite.Contract {
         });
 
         return { message: `${this.dictionaryPath}.DECLINED` };
+    }
+
+    public notificationPayloadMapper(
+        props: Commands.Invite.NotificationPayloadMapper.Props,
+    ): Commands.Invite.NotificationPayloadMapper.Result {
+        const [entity] = props;
+
+        return {
+            params: { inviter: entity.inviter, realm: entity.realm.name },
+            sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
+            template: MessageTemplate.INVITE_RECEIVED,
+            category: NotificationCategory.INVITES,
+            kind: NotificationContentKind.TEMPLATE,
+            dedupKey: `invite:${entity.id}`,
+            recipient: entity.invitee,
+            language: "en",
+        };
+    }
+
+    public notificationCancelPayloadMapper(
+        props: Commands.Invite.NotificationCancelPayloadMapper.Props,
+    ): Commands.Invite.NotificationCancelPayloadMapper.Result {
+        const [entity] = props;
+
+        return {
+            dedupKey: `invite:${entity.id}`,
+            override: {
+                params: { inviter: entity.inviter, realm: entity.realm.name },
+                sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
+                template: MessageTemplate.INVITE_CANCELLED,
+                category: NotificationCategory.INVITES,
+                kind: NotificationContentKind.TEMPLATE,
+                recipient: entity.invitee,
+                language: "en",
+            },
+        };
     }
 
     public accessCachePayloadMapper(
