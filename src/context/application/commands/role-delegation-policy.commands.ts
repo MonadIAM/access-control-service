@@ -16,13 +16,13 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
-        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.Contract,
+        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.PublicContract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.Contract,
+        private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ROLE_DELEGATION_POLICY_SERVICE)
-        private readonly roleDelegationPolicyService: Services.RoleDelegationPolicy.Contract,
+        private readonly roleDelegationPolicyService: Services.RoleDelegationPolicy.CommandContract,
     ) {}
 
     public async create(props: Commands.RoleDelegationPolicy.Create.Props): Commands.RoleDelegationPolicy.Create.Result {

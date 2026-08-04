@@ -32,7 +32,7 @@ const { PERMISSION_OVERRIDE_READ_ABSOLUTE } = PermissionCode;
 export class PermissionOverrideManageController {
     public constructor(
         @Inject(PERMISSION_OVERRIDE_QUERIES)
-        private readonly permissionOverrideQueries: Queries.PermissionOverride.Contract,
+        private readonly permissionOverrideQueries: Queries.PermissionOverride.ControllerContract,
     ) {}
 
     @Get()

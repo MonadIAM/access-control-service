@@ -1,7 +1,9 @@
 declare namespace Services {
     namespace ChangeLog {
-        interface Contract {
-            purgeExpired(props: PurgeExpired.Props): PurgeExpired.Result;
+        interface Contract extends ProcessorContract {}
+
+        interface ProcessorContract {
+            purgeExpired: PurgeExpired.Signature;
         }
 
         namespace PurgeExpired {
@@ -12,6 +14,8 @@ declare namespace Services {
             };
 
             type Result = Promise<SystemEntities.ChangeLog[]>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

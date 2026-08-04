@@ -13,7 +13,7 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
 
     public constructor(
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.PublicContract,
         private readonly configService: ConfigService,
     ) {
         this.membersLimit = this.configService.getOrThrow<number>("MAX_CONFLICT_MEMBERS_COUNT");

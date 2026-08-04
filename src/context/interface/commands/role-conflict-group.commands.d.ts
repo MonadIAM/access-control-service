@@ -1,14 +1,30 @@
 declare namespace Commands {
     namespace RoleConflictGroup {
+        interface Contract extends ControllerContract {}
+
         interface ControllerContract {
-            restore(props: Restore.Props): Restore.Result;
-            create(props: Create.Props): Create.Result;
-            update(props: Update.Props): Update.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
-            purge(props: Purge.Props): Purge.Result;
+            restore: Restore.Signature;
+            create: Create.Signature;
+            update: Update.Signature;
+            revoke: Revoke.Signature;
+            purge: Purge.Signature;
         }
 
-        interface Contract extends ControllerContract {}
+        namespace Restore {
+            type Props = {
+                actor: string;
+                realm: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: Extract.Meta;
+            };
+
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
+        }
 
         namespace Create {
             type Props = {
@@ -25,6 +41,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Update {
@@ -40,20 +58,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
-        }
 
-        namespace Purge {
-            type Props = {
-                actor: string;
-                realm: string;
-                input: {
-                    identifiers: string[];
-                    reason: string;
-                };
-                context: Extract.Meta;
-            };
-
-            type Result = Promise<MessageResult>;
+            type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
@@ -68,9 +74,11 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace Restore {
+        namespace Purge {
             type Props = {
                 actor: string;
                 realm: string;
@@ -82,6 +90,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

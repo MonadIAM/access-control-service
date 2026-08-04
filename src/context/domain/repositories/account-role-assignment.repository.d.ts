@@ -1,13 +1,15 @@
 declare namespace Repositories {
     namespace AccountRoleAssignment {
-        interface Contract extends Repositories.Base.Contract<
+        interface Contract extends PublicContract {}
+
+        interface PublicContract extends Repositories.Base.Contract<
             Entities.AccountRoleAssignment,
             Adapters.AccountRoleAssignment.Types
         > {
-            wouldExceedRoleLimit(props: WouldExceedRoleLimit.Props): WouldExceedRoleLimit.Result;
+            wouldExceedRoleLimit: WouldExceedRoleLimit.Signature;
         }
 
-        interface QueryContract extends Pick<Contract, "findUniqueOrThrow" | "findMany"> {}
+        interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "findMany"> {}
 
         namespace WouldExceedRoleLimit {
             type Props = {
@@ -17,6 +19,8 @@ declare namespace Repositories {
             };
 
             type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

@@ -26,7 +26,7 @@ const { AUDIT_LOG_READ_ABSOLUTE } = PermissionCode;
 export class AuditLogController {
     public constructor(
         @Inject(AUDIT_LOG_QUERIES)
-        private readonly auditLogQueries: Queries.AuditLog.Contract,
+        private readonly auditLogQueries: Queries.AuditLog.ControllerContract,
     ) {}
 
     @Get()

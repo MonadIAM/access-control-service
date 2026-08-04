@@ -1,11 +1,23 @@
 declare namespace Services {
     namespace AccountRoleAssignment {
-        interface Contract {
-            restore(props: Restore.Props): Restore.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
-            create(props: Create.Props): Create.Result;
-            assign(props: Assign.Props): Assign.Result;
-            purge(props: Purge.Props): Purge.Result;
+        interface Contract extends CommandContract {}
+
+        interface CommandContract {
+            restore: Restore.Signature;
+            create: Create.Signature;
+            assign: Assign.Signature;
+            revoke: Revoke.Signature;
+            purge: Purge.Signature;
+        }
+
+        namespace Restore {
+            type Props = {
+                entities: Entities.AccountRoleAssignment[];
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Create {
@@ -20,31 +32,8 @@ declare namespace Services {
             };
 
             type Result = Promise<Entities.AccountRoleAssignment[]>;
-        }
 
-        namespace Purge {
-            type Props = {
-                transaction: ORM.EntityManager;
-                entities: Entities.AccountRoleAssignment[];
-            };
-
-            type Result = void;
-        }
-
-        namespace Revoke {
-            type Props = {
-                entities: Entities.AccountRoleAssignment[];
-            };
-
-            type Result = void;
-        }
-
-        namespace Restore {
-            type Props = {
-                entities: Entities.AccountRoleAssignment[];
-            };
-
-            type Result = void;
+            type Signature = (props: Props) => Result;
         }
 
         namespace Assign {
@@ -58,6 +47,29 @@ declare namespace Services {
             };
 
             type Result = Entities.AccountRoleAssignment;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Revoke {
+            type Props = {
+                entities: Entities.AccountRoleAssignment[];
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Purge {
+            type Props = {
+                transaction: ORM.EntityManager;
+                entities: Entities.AccountRoleAssignment[];
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

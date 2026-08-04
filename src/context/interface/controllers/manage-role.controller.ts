@@ -29,7 +29,7 @@ const { ROLE_READ_ABSOLUTE } = PermissionCode;
 export class RoleManageController {
     public constructor(
         @Inject(ROLE_QUERIES)
-        private readonly roleQueries: Queries.Role.Contract,
+        private readonly roleQueries: Queries.Role.ControllerContract,
     ) {}
 
     @HttpCode(OK)

@@ -15,7 +15,7 @@ import { MikroOrmConfig } from "./database.config";
             imports: [TransactionManagerModule, ConfigModule],
             inject: [ChangeLogSubscriber, ConfigService],
             useFactory: (changeLogSubscriber: ChangeLogSubscriber, config: ConfigService) => ({
-                ...MikroOrmConfig.buildOptions(config, "write"),
+                ...MikroOrmConfig.buildOptions({ kind: "write", config }),
                 subscribers: [changeLogSubscriber],
                 registerRequestContext: false,
                 autoLoadEntities: true,
@@ -30,13 +30,13 @@ import { MikroOrmConfig } from "./database.config";
                 const cqrsEnabled = config.getOrThrow<string>("POSTGRES_CQRS_ENABLED") === "true";
                 if (cqrsEnabled) {
                     return {
-                        ...MikroOrmConfig.buildOptions(config, "read"),
+                        ...MikroOrmConfig.buildOptions({ kind: "read", config }),
                         registerRequestContext: false,
                         autoLoadEntities: true,
                     };
                 } else {
                     return {
-                        ...MikroOrmConfig.buildOptions(config, "write"),
+                        ...MikroOrmConfig.buildOptions({ kind: "write", config }),
                         registerRequestContext: false,
                         autoLoadEntities: true,
                     };

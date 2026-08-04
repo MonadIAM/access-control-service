@@ -6,7 +6,7 @@ import { CHANGE_LOG_REPOSITORY } from "../repositories";
 export class ChangeLogService implements Services.ChangeLog.Contract {
     public constructor(
         @Inject(CHANGE_LOG_REPOSITORY)
-        private readonly changeLogRepository: Repositories.ChangeLog.Contract,
+        private readonly changeLogRepository: Repositories.ChangeLog.PublicContract,
     ) {}
 
     public async purgeExpired(props: Services.ChangeLog.PurgeExpired.Props): Services.ChangeLog.PurgeExpired.Result {

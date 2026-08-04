@@ -66,7 +66,7 @@ export class RolePermissionAssignmentController {
         @Inject(ROLE_PERMISSION_ASSIGNMENT_COMMANDS)
         private readonly rolePermissionAssignmentCommands: Commands.RolePermissionAssignment.ControllerContract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_QUERIES)
-        private readonly rolePermissionAssignmentQueries: Queries.RolePermissionAssignment.Contract,
+        private readonly rolePermissionAssignmentQueries: Queries.RolePermissionAssignment.ControllerContract,
     ) {}
 
     @Get()

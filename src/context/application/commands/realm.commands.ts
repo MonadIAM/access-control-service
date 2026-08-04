@@ -33,17 +33,17 @@ export class RealmCommands implements Commands.Realm.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
-        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
+        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.PublicContract,
         @Inject(PERMISSION_OVERRIDE_REPOSITORY)
-        private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
+        private readonly permissionOverrideRepository: Repositories.PermissionOverride.PublicContract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_SERVICE)
-        private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.Contract,
+        private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.CommandContract,
         @Inject(PERMISSION_OVERRIDE_SERVICE)
-        private readonly permissionOverrideService: Services.PermissionOverride.Contract,
+        private readonly permissionOverrideService: Services.PermissionOverride.CommandContract,
         @Inject(REALM_SERVICE)
-        private readonly realmService: Services.Realm.Contract,
+        private readonly realmService: Services.Realm.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
         private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
     ) {}

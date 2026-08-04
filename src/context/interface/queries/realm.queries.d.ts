@@ -3,13 +3,12 @@ import { QueryMode, ResponseViewType } from "~context/enums";
 declare global {
     namespace Queries {
         namespace Realm {
-            interface Contract {
-                getLookupList(props: GetLookupList.DefaultProps): GetLookupList.Result;
-                getLookupList(props: GetLookupList.ManageProps): GetLookupList.Result;
-                findUnique(props: FindUnique.DefaultProps): FindUnique.Result;
-                findUnique(props: FindUnique.ManageProps): FindUnique.Result;
-                findMany(props: FindMany.DefaultProps): FindMany.Result;
-                findMany(props: FindMany.ManageProps): FindMany.Result;
+            interface Contract extends ControllerContract {}
+
+            interface ControllerContract {
+                getLookupList: GetLookupList.Signature;
+                findUnique: FindUnique.Signature;
+                findMany: FindMany.Signature;
             }
 
             namespace GetLookupList {
@@ -27,7 +26,31 @@ declare global {
                 };
 
                 type Props = DefaultProps | ManageProps;
+
                 type Result = Promise<[Entities.Realm[], number]>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace FindUnique {
+                type DefaultProps = {
+                    mode: QueryMode.DEFAULT;
+                    view: ResponseViewType;
+                    account: string;
+                    realm: string;
+                };
+
+                type ManageProps = {
+                    mode: QueryMode.MANAGE;
+                    view: ResponseViewType;
+                    realm: string;
+                };
+
+                type Props = DefaultProps | ManageProps;
+
+                type Result = Promise<Entities.Realm>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindMany {
@@ -49,25 +72,10 @@ declare global {
                 };
 
                 type Props = DefaultProps | ManageProps;
+
                 type Result = Promise<[Entities.Realm[], number]>;
-            }
 
-            namespace FindUnique {
-                type DefaultProps = {
-                    mode: QueryMode.DEFAULT;
-                    view: ResponseViewType;
-                    account: string;
-                    realm: string;
-                };
-
-                type ManageProps = {
-                    mode: QueryMode.MANAGE;
-                    view: ResponseViewType;
-                    realm: string;
-                };
-
-                type Props = DefaultProps | ManageProps;
-                type Result = Promise<Entities.Realm>;
+                type Signature = (props: Props) => Result;
             }
         }
     }

@@ -3,18 +3,36 @@ import { MoveMode, RoleActorType, RoleArchetype } from "~context/enums";
 declare global {
     namespace Services {
         namespace Role {
+            interface Contract extends InternalContract, CommandContract {}
+
             interface InternalContract {
-                buildHierarchy(props: BuildHierarchy.Props): BuildHierarchy.Result;
+                buildHierarchy: BuildHierarchy.Signature;
             }
 
-            interface Contract extends InternalContract {
-                purgeSubtree(props: PurgeSubtree.Props): PurgeSubtree.Result;
-                restore(props: Restore.Props): Restore.Result;
-                revoke(props: Revoke.Props): Revoke.Result;
-                update(props: Update.Props): Update.Result;
-                create(props: Create.Props): Create.Result;
-                purge(props: Purge.Props): Purge.Result;
-                move(props: Move.Props): Move.Result;
+            namespace BuildHierarchy {
+                type Props = {
+                    transaction: ORM.EntityManager;
+                    input: {
+                        children?: string[];
+                        parent: Entities.Role;
+                        entity: Entities.Role;
+                        realm: string;
+                    };
+                };
+
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            interface CommandContract {
+                purgeSubtree: PurgeSubtree.Signature;
+                restore: Restore.Signature;
+                revoke: Revoke.Signature;
+                update: Update.Signature;
+                create: Create.Signature;
+                purge: Purge.Signature;
+                move: Move.Signature;
             }
 
             namespace PurgeSubtree {
@@ -25,6 +43,18 @@ declare global {
                 };
 
                 type Result = Promise<Entities.Role[]>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Restore {
+                type Props = {
+                    entities: Entities.Role[];
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Create {
@@ -43,6 +73,41 @@ declare global {
                 };
 
                 type Result = Promise<Entities.Role>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Update {
+                type Props = {
+                    patch: Partial<Entities.Role.MutableFields>;
+                    entity: Entities.Role;
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Revoke {
+                type Props = {
+                    entities: Entities.Role[];
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Purge {
+                type Props = {
+                    transaction: ORM.EntityManager;
+                    entity: Entities.Role;
+                    realm: string;
+                };
+
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Move {
@@ -60,55 +125,8 @@ declare global {
                         upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
                     }[]
                 >;
-            }
 
-            namespace Update {
-                type Props = {
-                    patch: Partial<Entities.Role.MutableFields>;
-                    entity: Entities.Role;
-                };
-
-                type Result = void;
-            }
-
-            namespace Purge {
-                type Props = {
-                    transaction: ORM.EntityManager;
-                    entity: Entities.Role;
-                    realm: string;
-                };
-
-                type Result = Promise<void>;
-            }
-
-            namespace Revoke {
-                type Props = {
-                    entities: Entities.Role[];
-                };
-
-                type Result = void;
-            }
-
-            namespace Restore {
-                type Props = {
-                    entities: Entities.Role[];
-                };
-
-                type Result = void;
-            }
-
-            namespace BuildHierarchy {
-                type Props = {
-                    transaction: ORM.EntityManager;
-                    input: {
-                        children?: string[];
-                        parent: Entities.Role;
-                        entity: Entities.Role;
-                        realm: string;
-                    };
-                };
-
-                type Result = Promise<void>;
+                type Signature = (props: Props) => Result;
             }
         }
     }

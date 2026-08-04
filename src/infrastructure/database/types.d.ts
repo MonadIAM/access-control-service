@@ -90,32 +90,23 @@ declare global {
         type ConnectionKind = "write" | "read";
 
         namespace Config {
+            namespace BuildOptions {
+                type Props = {
+                    kind?: ORM.ConnectionKind;
+                    config: ConfigService;
+                };
+
+                type Result = ORM.Options;
+            }
+
             namespace ResolveHost {
                 type Props = {
                     kind: ORM.ConnectionKind;
                     config: ConfigService;
                     cqrsEnabled: boolean;
                 };
-            }
 
-            namespace ResolvePort {
-                type Props = {
-                    kind: ORM.ConnectionKind;
-                    config: ConfigService;
-                    cqrsEnabled: boolean;
-                };
-            }
-
-            namespace ResolvePool {
-                type Props = {
-                    kind: ORM.ConnectionKind;
-                    config: ConfigService;
-                    cqrsEnabled: boolean;
-                };
-                type Result = {
-                    idleTimeoutMillis: number;
-                    max: number;
-                };
+                type Result = string;
             }
         }
     }

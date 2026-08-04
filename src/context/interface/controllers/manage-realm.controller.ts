@@ -35,7 +35,7 @@ const { REALM_READ_ABSOLUTE } = PermissionCode;
 export class RealmManageController {
     public constructor(
         @Inject(REALM_QUERIES)
-        private readonly realmQueries: Queries.Realm.Contract,
+        private readonly realmQueries: Queries.Realm.ControllerContract,
     ) {}
 
     @Get()

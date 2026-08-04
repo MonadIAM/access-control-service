@@ -26,7 +26,7 @@ const { INVITE_READ_ABSOLUTE } = PermissionCode;
 export class InviteManageController {
     public constructor(
         @Inject(INVITE_QUERIES)
-        private readonly inviteQueries: Queries.Invite.Contract,
+        private readonly inviteQueries: Queries.Invite.ControllerContract,
     ) {}
 
     @Get()

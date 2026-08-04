@@ -11,7 +11,7 @@ export class PermissionService implements Services.Permission.Contract {
 
     public constructor(
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.Contract,
+        private readonly permissionRepository: Repositories.Permission.PublicContract,
     ) {}
 
     public async create(props: Services.Permission.Create.Props): Services.Permission.Create.Result {

@@ -27,13 +27,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
-        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.Contract,
+        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.PublicContract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.Contract,
+        private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_SERVICE)
-        private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.Contract,
+        private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
         private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
     ) {}

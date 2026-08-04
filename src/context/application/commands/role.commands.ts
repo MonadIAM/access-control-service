@@ -18,11 +18,11 @@ export class RoleCommands implements Commands.Role.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.Contract,
+        private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ROLE_SERVICE)
-        private readonly roleService: Services.Role.Contract,
+        private readonly roleService: Services.Role.CommandContract,
     ) {}
 
     public async create(props: Commands.Role.Create.Props): Commands.Role.Create.Result {

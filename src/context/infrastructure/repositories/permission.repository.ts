@@ -157,7 +157,7 @@ export class PermissionRepository
 
     public async collectEffective(
         props: Repositories.Permission.CollectEffective.Props,
-    ): Promise<Repositories.Permission.CollectEffective.Result> {
+    ): Repositories.Permission.CollectEffective.Result {
         try {
             const entityManager = this.readManager.fork();
 

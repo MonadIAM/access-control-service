@@ -24,15 +24,15 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
-        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.Contract,
+        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.PublicContract,
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.Contract,
+        private readonly permissionRepository: Repositories.Permission.PublicContract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.Contract,
+        private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_SERVICE)
-        private readonly rolePermissionAssignmentService: Services.RolePermissionAssignment.Contract,
+        private readonly rolePermissionAssignmentService: Services.RolePermissionAssignment.CommandContract,
     ) {}
 
     public async create(

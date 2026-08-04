@@ -14,9 +14,9 @@ export class RoleService implements Services.Role.Contract {
 
     public constructor(
         @Inject(ROLE_CLOSURE_REPOSITORY)
-        private readonly roleClosureRepository: Repositories.RoleClosure.Contract,
+        private readonly roleClosureRepository: Repositories.RoleClosure.PublicContract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.Contract,
+        private readonly roleRepository: Repositories.Role.PublicContract,
         private readonly configService: ConfigService,
     ) {
         this.purgeSubtreeSizeLimit = this.configService.getOrThrow<number>("MAX_ROLE_SUBTREE_SIZE_FOR_PURGE");

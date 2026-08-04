@@ -1,75 +1,61 @@
 declare namespace Commands {
     namespace Realm {
-        interface ControllerContract {
-            restore(props: Restore.Props): Restore.Result;
-            exclude(props: Exclude.Props): Exclude.Result;
-            create(props: Create.Props): Create.Result;
-            update(props: Update.Props): Update.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
-            purge(props: Purge.Props): Purge.Result;
-        }
-
-        interface InternalContract {
-            realmLifecyclePayloadMapper(props: RealmLifecyclePayloadMapper.Props): RealmLifecyclePayloadMapper.Result;
-            notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
-            accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
-            membershipPayloadMapper(props: MembershipPayloadMapper.Props): MembershipPayloadMapper.Result;
-        }
-
         interface Contract extends ControllerContract, InternalContract {}
 
-        namespace Create {
-            type Props = {
-                actor: string;
-                input: {
-                    code: string;
-                    name: string;
-                    description?: string;
-                };
-                context: Extract.Meta;
-            };
-
-            type Result = Promise<MessageResult>;
+        interface InternalContract {
+            realmLifecyclePayloadMapper: RealmLifecyclePayloadMapper.Signature;
+            notificationPayloadMapper: NotificationPayloadMapper.Signature;
+            accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
+            membershipPayloadMapper: MembershipPayloadMapper.Signature;
         }
 
-        namespace Update {
-            type Props = {
-                id: string;
-                actor: string;
-                input: {
-                    patch: Partial<Entities.Realm.MutableFields>;
-                    reason: string;
-                };
-                context: Extract.Meta;
-            };
+        namespace RealmLifecyclePayloadMapper {
+            type Props = Entities.Realm[];
 
-            type Result = Promise<MessageResult>;
+            type Result = Topics.Realm.Message["payload"][];
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace Purge {
-            type Props = {
-                actor: string;
-                input: {
-                    identifiers: string[];
-                    reason: string;
-                };
-                context: Extract.Meta;
-            };
+        namespace NotificationPayloadMapper {
+            type Props = Exclude.ExecuteResult;
 
-            type Result = Promise<MessageResult>;
+            type Result = Topics.Notification.CreateMessage["payload"];
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace Revoke {
+        namespace AccessCachePayloadMapper {
+            type Props =
+                | {
+                      account: string;
+                      realm: string;
+                  }
+                | Entities.Realm[];
+
+            type Result = Topics.AccessCache.Message["payload"];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace MembershipPayloadMapper {
             type Props = {
-                actor: string;
-                input: {
-                    identifiers: string[];
-                    reason: string;
-                };
-                context: Extract.Meta;
+                account: string;
+                realm: string;
             };
 
-            type Result = Promise<MessageResult>;
+            type Result = Topics.Membership.RevokeMessage["payload"];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        interface ControllerContract {
+            restore: Restore.Signature;
+            exclude: Exclude.Signature;
+            create: Create.Signature;
+            update: Update.Signature;
+            revoke: Revoke.Signature;
+            purge: Purge.Signature;
         }
 
         namespace Restore {
@@ -83,6 +69,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Exclude {
@@ -104,38 +92,70 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace NotificationPayloadMapper {
-            type Props = Exclude.ExecuteResult;
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-        }
-
-        namespace AccessCachePayloadMapper {
-            type Props =
-                | {
-                      account: string;
-                      realm: string;
-                  }
-                | Entities.Realm[];
-
-            type Result = Topics.AccessCache.Message["payload"];
-        }
-
-        namespace MembershipPayloadMapper {
+        namespace Create {
             type Props = {
-                account: string;
-                realm: string;
+                actor: string;
+                input: {
+                    code: string;
+                    name: string;
+                    description?: string;
+                };
+                context: Extract.Meta;
             };
 
-            type Result = Topics.Membership.RevokeMessage["payload"];
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace RealmLifecyclePayloadMapper {
-            type Props = Entities.Realm[];
+        namespace Update {
+            type Props = {
+                id: string;
+                actor: string;
+                input: {
+                    patch: Partial<Entities.Realm.MutableFields>;
+                    reason: string;
+                };
+                context: Extract.Meta;
+            };
 
-            type Result = Topics.Realm.Message["payload"][];
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Revoke {
+            type Props = {
+                actor: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: Extract.Meta;
+            };
+
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Purge {
+            type Props = {
+                actor: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: Extract.Meta;
+            };
+
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

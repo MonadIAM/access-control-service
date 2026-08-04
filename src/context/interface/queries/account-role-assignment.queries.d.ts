@@ -3,10 +3,11 @@ import { ResponseViewType, QueryMode } from "~context/enums";
 declare global {
     namespace Queries {
         namespace AccountRoleAssignment {
-            interface Contract {
-                findUnique(props: FindUnique.Props): FindUnique.Result;
-                findMany(props: FindMany.DefaultProps): FindMany.Result;
-                findMany(props: FindMany.ManageProps): FindMany.Result;
+            interface Contract extends ControllerContract {}
+
+            interface ControllerContract {
+                findUnique: FindUnique.Signature;
+                findMany: FindMany.Signature;
             }
 
             namespace FindUnique {
@@ -17,6 +18,8 @@ declare global {
                 };
 
                 type Result = Promise<Entities.AccountRoleAssignment>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindMany {
@@ -40,6 +43,8 @@ declare global {
                 type Props = DefaultProps | ManageProps;
 
                 type Result = Promise<[Entities.AccountRoleAssignment[], number]>;
+
+                type Signature = (props: Props) => Result;
             }
         }
     }

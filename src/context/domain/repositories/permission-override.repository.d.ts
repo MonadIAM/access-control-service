@@ -1,13 +1,15 @@
 declare namespace Repositories {
     namespace PermissionOverride {
-        interface Contract extends Repositories.Base.Contract<
+        interface Contract extends PublicContract {}
+
+        interface PublicContract extends Repositories.Base.Contract<
             Entities.PermissionOverride,
             Adapters.PermissionOverride.Types
         > {
-            wouldExceedOverrideLimit(props: WouldExceedOverrideLimit.Props): WouldExceedOverrideLimit.Result;
+            wouldExceedOverrideLimit: WouldExceedOverrideLimit.Signature;
         }
 
-        interface QueryContract extends Pick<Contract, "findUniqueOrThrow" | "findMany"> {}
+        interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "findMany"> {}
 
         namespace WouldExceedOverrideLimit {
             type Props = {
@@ -18,6 +20,8 @@ declare namespace Repositories {
             };
 
             type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

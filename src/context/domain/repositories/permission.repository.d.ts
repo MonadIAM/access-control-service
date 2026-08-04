@@ -15,18 +15,59 @@ declare global {
                 account: string;
             };
 
-            interface Contract extends Repositories.Base.Contract<Entities.Permission, Adapters.Permission.Types> {
-                wouldExceedPermissionLimit(props: WouldExceedPermissionLimit.Props): WouldExceedPermissionLimit.Result;
-                findAccountsByPermissions(props: FindAccountsByPermissions.Props): FindAccountsByPermissions.Result;
-                collectEffective(props: CollectEffective.Props): Promise<CollectEffective.Result>;
-                getLookupList(props: GetLookupList.Props): GetLookupList.Result;
-                findEffective(props: FindEffective.Props): FindEffective.Result;
+            interface Contract extends PublicContract {}
+
+            interface PublicContract extends Repositories.Base.Contract<Entities.Permission, Adapters.Permission.Types> {
+                wouldExceedPermissionLimit: WouldExceedPermissionLimit.Signature;
+                findAccountsByPermissions: FindAccountsByPermissions.Signature;
+                collectEffective: CollectEffective.Signature;
+                getLookupList: GetLookupList.Signature;
+                findEffective: FindEffective.Signature;
             }
 
             interface QueryContract extends Pick<
-                Contract,
+                PublicContract,
                 "getLookupList" | "findEffective" | "findUniqueOrThrow" | "findMany"
             > {}
+
+            namespace WouldExceedPermissionLimit {
+                type Props = {
+                    transaction?: ORM.EntityManager;
+                    count?: number;
+                    realm: string;
+                };
+
+                type Result = Promise<boolean>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace FindAccountsByPermissions {
+                type Props = {
+                    transaction?: ORM.EntityManager;
+                    permissions: string[];
+                };
+
+                type Result = Promise<string[]>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace CollectEffective {
+                type Props = {
+                    account: string;
+                };
+
+                type Result = Promise<
+                    {
+                        scope: AssignmentScope;
+                        permission: string;
+                        realm: string;
+                    }[]
+                >;
+
+                type Signature = (props: Props) => Result;
+            }
 
             namespace GetLookupList {
                 type Props = {
@@ -36,6 +77,8 @@ declare global {
                 };
 
                 type Result = Promise<[Entities.Permission[], number]>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindEffective {
@@ -50,37 +93,8 @@ declare global {
                 };
 
                 type Result = Promise<[Entities.Permission[], number]>;
-            }
 
-            namespace CollectEffective {
-                type Props = {
-                    account: string;
-                };
-
-                type Result = {
-                    scope: AssignmentScope;
-                    permission: string;
-                    realm: string;
-                }[];
-            }
-
-            namespace FindAccountsByPermissions {
-                type Props = {
-                    transaction?: ORM.EntityManager;
-                    permissions: string[];
-                };
-
-                type Result = Promise<string[]>;
-            }
-
-            namespace WouldExceedPermissionLimit {
-                type Props = {
-                    transaction?: ORM.EntityManager;
-                    count?: number;
-                    realm: string;
-                };
-
-                type Result = Promise<boolean>;
+                type Signature = (props: Props) => Result;
             }
         }
     }

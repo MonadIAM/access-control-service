@@ -69,7 +69,7 @@ export class RoleDelegationPolicyController {
         @Inject(ROLE_DELEGATION_POLICY_COMMANDS)
         private readonly roleDelegationPolicyCommands: Commands.RoleDelegationPolicy.ControllerContract,
         @Inject(ROLE_DELEGATION_POLICY_QUERIES)
-        private readonly roleDelegationPolicyQueries: Queries.RoleDelegationPolicy.Contract,
+        private readonly roleDelegationPolicyQueries: Queries.RoleDelegationPolicy.ControllerContract,
     ) {}
 
     @Get()

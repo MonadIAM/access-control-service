@@ -3,64 +3,39 @@ import { PermissionOverrideEffect } from "~context/enums";
 declare global {
     namespace Commands {
         namespace PermissionOverride {
-            interface ControllerContract {
-                restore(props: Restore.Props): Restore.Result;
-                create(props: Create.Props): Create.Result;
-                revoke(props: Revoke.Props): Revoke.Result;
-                purge(props: Purge.Props): Purge.Result;
+            interface Contract extends ControllerContract, ConsumerContract, InternalContract {}
+
+            interface InternalContract {
+                accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
+            }
+
+            namespace AccessCachePayloadMapper {
+                type Result = Topics.AccessCache.Message["payload"];
+
+                type Props = Entities.PermissionOverride[];
+
+                type Signature = (props: Props) => Result;
             }
 
             interface ConsumerContract {
-                clean(props: Clean.Props): Clean.Result;
+                clean: Clean.Signature;
             }
 
-            interface InternalContract {
-                accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
-            }
-
-            interface Contract extends ControllerContract, ConsumerContract, InternalContract {}
-
-            namespace Create {
+            namespace Clean {
                 type Props = {
-                    actor: string;
-                    realm: string;
-                    input: {
-                        effect: PermissionOverrideEffect;
-                        permission: string;
-                        account: string;
-                    };
-                    context: Extract.Meta;
+                    account: string;
                 };
 
-                type Result = Promise<MessageResult>;
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
             }
 
-            namespace Purge {
-                type Props = {
-                    actor: string;
-                    realm: string;
-                    input: {
-                        identifiers: string[];
-                        reason: string;
-                    };
-                    context: Extract.Meta;
-                };
-
-                type Result = Promise<MessageResult>;
-            }
-
-            namespace Revoke {
-                type Props = {
-                    actor: string;
-                    realm: string;
-                    input: {
-                        identifiers: string[];
-                        reason: string;
-                    };
-                    context: Extract.Meta;
-                };
-
-                type Result = Promise<MessageResult>;
+            interface ControllerContract {
+                restore: Restore.Signature;
+                create: Create.Signature;
+                revoke: Revoke.Signature;
+                purge: Purge.Signature;
             }
 
             namespace Restore {
@@ -75,19 +50,57 @@ declare global {
                 };
 
                 type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
 
-            namespace Clean {
+            namespace Create {
                 type Props = {
-                    account: string;
+                    actor: string;
+                    realm: string;
+                    input: {
+                        effect: PermissionOverrideEffect;
+                        permission: string;
+                        account: string;
+                    };
+                    context: Extract.Meta;
                 };
 
-                type Result = Promise<void>;
+                type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
 
-            namespace AccessCachePayloadMapper {
-                type Result = Topics.AccessCache.Message["payload"];
-                type Props = Entities.PermissionOverride[];
+            namespace Revoke {
+                type Props = {
+                    actor: string;
+                    realm: string;
+                    input: {
+                        identifiers: string[];
+                        reason: string;
+                    };
+                    context: Extract.Meta;
+                };
+
+                type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Purge {
+                type Props = {
+                    actor: string;
+                    realm: string;
+                    input: {
+                        identifiers: string[];
+                        reason: string;
+                    };
+                    context: Extract.Meta;
+                };
+
+                type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
         }
     }

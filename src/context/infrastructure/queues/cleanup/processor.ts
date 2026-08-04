@@ -17,10 +17,10 @@ export class CleanupProcessor extends WorkerHost {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(AUDIT_LOG_SERVICE)
-        private readonly auditLogService: Services.AuditLog.Contract,
         @Inject(CHANGE_LOG_SERVICE)
-        private readonly changeLogService: Services.ChangeLog.Contract,
+        private readonly changeLogService: Services.ChangeLog.ProcessorContract,
+        @Inject(AUDIT_LOG_SERVICE)
+        private readonly auditLogService: Services.AuditLog.ProcessorContract,
         @Inject(CLEANUP_QUEUE)
         private readonly cleanupQueue: Queues.Cleanup.Contract,
     ) {

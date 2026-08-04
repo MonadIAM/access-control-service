@@ -66,7 +66,7 @@ export class AccountRoleAssignmentController {
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_COMMANDS)
         private readonly accountRoleAssignmentCommands: Commands.AccountRoleAssignment.ControllerContract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_QUERIES)
-        private readonly accountRoleAssignmentQueries: Queries.AccountRoleAssignment.Contract,
+        private readonly accountRoleAssignmentQueries: Queries.AccountRoleAssignment.ControllerContract,
     ) {}
 
     @Get()

@@ -18,7 +18,7 @@ const { ACCOUNT_ROLE_ASSIGNMENT_READ_ABSOLUTE } = PermissionCode;
 export class AccountRoleAssignmentManageController {
     public constructor(
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_QUERIES)
-        private readonly accountRoleAssignmentQueries: Queries.AccountRoleAssignment.Contract,
+        private readonly accountRoleAssignmentQueries: Queries.AccountRoleAssignment.ControllerContract,
     ) {}
 
     @Post("list")

@@ -75,7 +75,7 @@ export class PermissionController {
         @Inject(PERMISSION_COMMANDS)
         private readonly permissionCommands: Commands.Permission.ControllerContract,
         @Inject(PERMISSION_QUERIES)
-        private readonly permissionQueries: Queries.Permission.Contract,
+        private readonly permissionQueries: Queries.Permission.ControllerContract,
     ) {}
 
     @Get()

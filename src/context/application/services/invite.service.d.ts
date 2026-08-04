@@ -1,10 +1,42 @@
 declare namespace Services {
     namespace Invite {
-        interface Contract {
-            create(props: Create.Props): Create.Result;
-            accept(props: Accept.Props): Accept.Result;
-            decline(props: Decline.Props): Decline.Result;
-            cancel(props: Cancel.Props): Cancel.Result;
+        interface Contract extends CommandContract {}
+
+        interface CommandContract {
+            decline: Decline.Signature;
+            accept: Accept.Signature;
+            cancel: Cancel.Signature;
+            create: Create.Signature;
+        }
+
+        namespace Decline {
+            type Props = {
+                entity: Entities.Invite;
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Accept {
+            type Props = {
+                entity: Entities.Invite;
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Cancel {
+            type Props = {
+                entity: Entities.Invite;
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Create {
@@ -19,30 +51,8 @@ declare namespace Services {
             };
 
             type Result = Entities.Invite;
-        }
 
-        namespace Accept {
-            type Props = {
-                entity: Entities.Invite;
-            };
-
-            type Result = void;
-        }
-
-        namespace Decline {
-            type Props = {
-                entity: Entities.Invite;
-            };
-
-            type Result = void;
-        }
-
-        namespace Cancel {
-            type Props = {
-                entity: Entities.Invite;
-            };
-
-            type Result = void;
+            type Signature = (props: Props) => Result;
         }
     }
 }

@@ -16,13 +16,13 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.PublicContract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.Contract,
+        private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ROLE_CONFLICT_GROUP_SERVICE)
-        private readonly roleConflictGroupService: Services.RoleConflictGroup.Contract,
+        private readonly roleConflictGroupService: Services.RoleConflictGroup.CommandContract,
     ) {}
 
     public async create(props: Commands.RoleConflictGroup.Create.Props): Commands.RoleConflictGroup.Create.Result {

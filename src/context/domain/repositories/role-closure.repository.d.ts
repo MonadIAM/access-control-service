@@ -11,26 +11,52 @@ declare namespace Repositories {
             depth: string;
         };
 
-        interface Contract {
-            decreaseTransitiveDepth(props: DecreaseTransitiveDepth.Props): DecreaseTransitiveDepth.Result;
-            existsTransitivePath(props: ExistsTransitivePath.Props): ExistsTransitivePath.Result;
-            insertNewHierarchy(props: InsertNewHierarchy.Props): InsertNewHierarchy.Result;
-            moveSubtrees(props: MoveSubtrees.Props): MoveSubtrees.Result;
-            move(props: Move.Props): Move.Result;
+        interface Contract extends PublicContract {}
+
+        interface PublicContract {
+            decreaseTransitiveDepth: DecreaseTransitiveDepth.Signature;
+            existsTransitivePath: ExistsTransitivePath.Signature;
+            insertNewHierarchy: InsertNewHierarchy.Signature;
+            moveSubtrees: MoveSubtrees.Signature;
+            move: Move.Signature;
         }
 
-        namespace Move {
+        namespace DecreaseTransitiveDepth {
             type Props = {
                 transaction: ORM.EntityManager;
-                newParent: string;
-                target: string;
+                realm: string;
+                role: string;
+            };
+
+            type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace ExistsTransitivePath {
+            type Props = {
+                transaction: ORM.EntityManager;
+                descendant: string;
+                ancestor: string;
                 realm: string;
             };
 
-            type Result = Promise<{
-                removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
-                upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
-            }>;
+            type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace InsertNewHierarchy {
+            type Props = {
+                transaction: ORM.EntityManager;
+                descendant: string;
+                ancestor: string;
+                realm: string;
+            };
+
+            type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace MoveSubtrees {
@@ -46,38 +72,24 @@ declare namespace Repositories {
                 removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
                 upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
             }>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace InsertNewHierarchy {
+        namespace Move {
             type Props = {
                 transaction: ORM.EntityManager;
-                descendant: string;
-                ancestor: string;
+                newParent: string;
+                target: string;
                 realm: string;
             };
 
-            type Result = Promise<void>;
-        }
+            type Result = Promise<{
+                removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
+                upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
+            }>;
 
-        namespace DecreaseTransitiveDepth {
-            type Props = {
-                transaction: ORM.EntityManager;
-                realm: string;
-                role: string;
-            };
-
-            type Result = Promise<void>;
-        }
-
-        namespace ExistsTransitivePath {
-            type Props = {
-                transaction: ORM.EntityManager;
-                descendant: string;
-                ancestor: string;
-                realm: string;
-            };
-
-            type Result = Promise<boolean>;
+            type Signature = (props: Props) => Result;
         }
     }
 }

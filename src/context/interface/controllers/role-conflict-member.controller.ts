@@ -43,7 +43,7 @@ export class RoleConflictMemberController {
         @Inject(ROLE_CONFLICT_MEMBER_COMMANDS)
         private readonly roleConflictMemberCommands: Commands.RoleConflictMember.ControllerContract,
         @Inject(ROLE_CONFLICT_MEMBER_QUERIES)
-        private readonly roleConflictMemberQueries: Queries.RoleConflictMember.Contract,
+        private readonly roleConflictMemberQueries: Queries.RoleConflictMember.ControllerContract,
     ) {}
 
     @Get()

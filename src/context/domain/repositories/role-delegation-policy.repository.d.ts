@@ -8,26 +8,18 @@ declare namespace Repositories {
             result: boolean;
         };
 
-        interface Contract extends Repositories.Base.Contract<
+        interface Contract extends PublicContract {}
+
+        interface PublicContract extends Repositories.Base.Contract<
             Entities.RoleDelegationPolicy,
             Adapters.RoleDelegationPolicy.Types
         > {
-            wouldExceedPolicyLimit(props: WouldExceedPolicyLimit.Props): WouldExceedPolicyLimit.Result;
-            existsTransitivePath(props: ExistsTransitivePath.Props): ExistsTransitivePath.Result;
-            isDelegationAllowed(props: IsDelegationAllowed.Props): IsDelegationAllowed.Result;
+            wouldExceedPolicyLimit: WouldExceedPolicyLimit.Signature;
+            existsTransitivePath: ExistsTransitivePath.Signature;
+            isDelegationAllowed: IsDelegationAllowed.Signature;
         }
 
-        interface QueryContract extends Pick<Contract, "findUniqueOrThrow" | "findMany"> {}
-
-        namespace ExistsTransitivePath {
-            type Props = {
-                transaction?: ORM.EntityManager;
-                to: string | string[];
-                from: string;
-            };
-
-            type Result = Promise<boolean>;
-        }
+        interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "findMany"> {}
 
         namespace WouldExceedPolicyLimit {
             type Props = {
@@ -37,6 +29,20 @@ declare namespace Repositories {
             };
 
             type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace ExistsTransitivePath {
+            type Props = {
+                transaction?: ORM.EntityManager;
+                to: string | string[];
+                from: string;
+            };
+
+            type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace IsDelegationAllowed {
@@ -48,6 +54,8 @@ declare namespace Repositories {
             };
 
             type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

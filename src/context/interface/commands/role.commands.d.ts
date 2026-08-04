@@ -3,21 +3,61 @@ import { MoveMode, RoleActorType, RoleArchetype } from "~context/enums";
 declare global {
     namespace Commands {
         namespace Role {
-            interface ControllerContract {
-                purgeSubtree(props: PurgeSubtree.Props): PurgeSubtree.Result;
-                restore(props: Restore.Props): Restore.Result;
-                create(props: Create.Props): Create.Result;
-                update(props: Update.Props): Update.Result;
-                revoke(props: Revoke.Props): Revoke.Result;
-                purge(props: Purge.Props): Purge.Result;
-                move(props: Move.Props): Move.Result;
-            }
+            interface Contract extends ControllerContract, InternalContract {}
 
             interface InternalContract {
-                accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
+                accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
             }
 
-            interface Contract extends ControllerContract, InternalContract {}
+            namespace AccessCachePayloadMapper {
+                type Props = Entities.Role[] | { realm: string }[];
+
+                type Result = Topics.AccessCache.Message["payload"];
+
+                type Signature = (props: Props) => Result;
+            }
+
+            interface ControllerContract {
+                purgeSubtree: PurgeSubtree.Signature;
+                restore: Restore.Signature;
+                create: Create.Signature;
+                update: Update.Signature;
+                revoke: Revoke.Signature;
+                purge: Purge.Signature;
+                move: Move.Signature;
+            }
+
+            namespace PurgeSubtree {
+                type Props = {
+                    id: string;
+                    actor: string;
+                    realm: string;
+                    input: {
+                        reason: string;
+                    };
+                    context: Extract.Meta;
+                };
+
+                type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Restore {
+                type Props = {
+                    actor: string;
+                    realm: string;
+                    input: {
+                        identifiers: string[];
+                        reason: string;
+                    };
+                    context: Extract.Meta;
+                };
+
+                type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
+            }
 
             namespace Create {
                 type Props = {
@@ -37,6 +77,8 @@ declare global {
                 };
 
                 type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Update {
@@ -52,34 +94,8 @@ declare global {
                 };
 
                 type Result = Promise<MessageResult>;
-            }
 
-            namespace Purge {
-                type Props = {
-                    id: string;
-                    actor: string;
-                    realm: string;
-                    input: {
-                        reason: string;
-                    };
-                    context: Extract.Meta;
-                };
-
-                type Result = Promise<MessageResult>;
-            }
-
-            namespace PurgeSubtree {
-                type Props = {
-                    id: string;
-                    actor: string;
-                    realm: string;
-                    input: {
-                        reason: string;
-                    };
-                    context: Extract.Meta;
-                };
-
-                type Result = Promise<MessageResult>;
+                type Signature = (props: Props) => Result;
             }
 
             namespace Revoke {
@@ -94,20 +110,24 @@ declare global {
                 };
 
                 type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
 
-            namespace Restore {
+            namespace Purge {
                 type Props = {
+                    id: string;
                     actor: string;
                     realm: string;
                     input: {
-                        identifiers: string[];
                         reason: string;
                     };
                     context: Extract.Meta;
                 };
 
                 type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Move {
@@ -123,11 +143,8 @@ declare global {
                 };
 
                 type Result = Promise<MessageResult>;
-            }
 
-            namespace AccessCachePayloadMapper {
-                type Props = Entities.Role[] | { realm: string }[];
-                type Result = Topics.AccessCache.Message["payload"];
+                type Signature = (props: Props) => Result;
             }
         }
     }

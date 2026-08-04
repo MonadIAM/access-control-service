@@ -43,7 +43,7 @@ export class InviteController {
         @Inject(INVITE_COMMANDS)
         private readonly inviteCommands: Commands.Invite.ControllerContract,
         @Inject(INVITE_QUERIES)
-        private readonly inviteQueries: Queries.Invite.Contract,
+        private readonly inviteQueries: Queries.Invite.ControllerContract,
     ) {}
 
     @Get()

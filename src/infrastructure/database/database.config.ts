@@ -1,10 +1,10 @@
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
-import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 import path from "path";
 
 export abstract class MikroOrmConfig {
-    public static buildOptions(config: ConfigService, kind: ORM.ConnectionKind = "write"): ORM.Options {
+    public static buildOptions(props: ORM.Config.BuildOptions.Props): ORM.Config.BuildOptions.Result {
+        const { config, kind = "write" } = props;
         const cqrsEnabled = config.getOrThrow<string>("POSTGRES_CQRS_ENABLED") === "true";
 
         const sslEnabled = config.getOrThrow<string>("POSTGRES_SSL") === "true";
@@ -46,7 +46,8 @@ export abstract class MikroOrmConfig {
         return options;
     }
 
-    private static resolveHost({ cqrsEnabled, config, kind }: ORM.Config.ResolveHost.Props): string {
+    private static resolveHost(props: ORM.Config.ResolveHost.Props): ORM.Config.ResolveHost.Result {
+        const { cqrsEnabled, config, kind } = props;
         if (cqrsEnabled) {
             if (kind === "read") {
                 return config.getOrThrow<string>("POSTGRES_READ_HOST");

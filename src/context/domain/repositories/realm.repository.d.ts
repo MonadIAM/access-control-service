@@ -1,21 +1,13 @@
 declare namespace Repositories {
     namespace Realm {
-        interface Contract extends Repositories.Base.Contract<Entities.Realm, Adapters.Realm.Types> {
-            wouldExceedRealmLimit(props: WouldExceedRealmLimit.Props): WouldExceedRealmLimit.Result;
-            getLookupList(props: GetLookupList.Props): GetLookupList.Result;
+        interface Contract extends PublicContract {}
+
+        interface PublicContract extends Repositories.Base.Contract<Entities.Realm, Adapters.Realm.Types> {
+            wouldExceedRealmLimit: WouldExceedRealmLimit.Signature;
+            getLookupList: GetLookupList.Signature;
         }
 
-        interface QueryContract extends Pick<Contract, "getLookupList" | "findUniqueOrThrow" | "findMany"> {}
-
-        namespace GetLookupList {
-            type Props = {
-                pagination: Pagination;
-                realms?: string[];
-                term: string;
-            };
-
-            type Result = Promise<[Entities.Realm[], number]>;
-        }
+        interface QueryContract extends Pick<PublicContract, "getLookupList" | "findUniqueOrThrow" | "findMany"> {}
 
         namespace WouldExceedRealmLimit {
             type Props = {
@@ -25,6 +17,20 @@ declare namespace Repositories {
             };
 
             type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace GetLookupList {
+            type Props = {
+                pagination: Pagination;
+                realms?: string[];
+                term: string;
+            };
+
+            type Result = Promise<[Entities.Realm[], number]>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

@@ -70,7 +70,7 @@ export class RoleConflictGroupController {
         @Inject(ROLE_CONFLICT_GROUP_COMMANDS)
         private readonly roleConflictGroupCommands: Commands.RoleConflictGroup.ControllerContract,
         @Inject(ROLE_CONFLICT_GROUP_QUERIES)
-        private readonly roleConflictGroupQueries: Queries.RoleConflictGroup.Contract,
+        private readonly roleConflictGroupQueries: Queries.RoleConflictGroup.ControllerContract,
     ) {}
 
     @Get()

@@ -26,7 +26,7 @@ const { CHANGE_LOG_READ_ABSOLUTE } = PermissionCode;
 export class ChangeLogManageController {
     public constructor(
         @Inject(CHANGE_LOG_QUERIES)
-        private readonly changeLogQueries: Queries.ChangeLog.Contract,
+        private readonly changeLogQueries: Queries.ChangeLog.ControllerContract,
     ) {}
 
     @Get()

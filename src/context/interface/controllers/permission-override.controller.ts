@@ -65,7 +65,7 @@ export class PermissionOverrideController {
         @Inject(PERMISSION_OVERRIDE_COMMANDS)
         private readonly permissionOverrideCommands: Commands.PermissionOverride.ControllerContract,
         @Inject(PERMISSION_OVERRIDE_QUERIES)
-        private readonly permissionOverrideQueries: Queries.PermissionOverride.Contract,
+        private readonly permissionOverrideQueries: Queries.PermissionOverride.ControllerContract,
     ) {}
 
     @Get()

@@ -11,7 +11,7 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
 
     public constructor(
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
-        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.Contract,
+        private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.PublicContract,
     ) {}
 
     public async create(props: Services.RoleDelegationPolicy.Create.Props): Services.RoleDelegationPolicy.Create.Result {

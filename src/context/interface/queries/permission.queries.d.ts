@@ -3,14 +3,13 @@ import { QueryMode, ResponseViewType } from "~context/enums";
 declare global {
     namespace Queries {
         namespace Permission {
-            interface Contract {
-                findEffective(props: FindEffective.DefaultProps): FindEffective.Result;
-                findEffective(props: FindEffective.ManageProps): FindEffective.Result;
-                getLookupList(props: GetLookupList.DefaultProps): GetLookupList.Result;
-                getLookupList(props: GetLookupList.ManageProps): GetLookupList.Result;
-                findMany(props: FindMany.DefaultProps): FindMany.Result;
-                findMany(props: FindMany.ManageProps): FindMany.Result;
-                findUnique(props: FindUnique.Props): FindUnique.Result;
+            interface Contract extends ControllerContract {}
+
+            interface ControllerContract {
+                findEffective: FindEffective.Signature;
+                getLookupList: GetLookupList.Signature;
+                findUnique: FindUnique.Signature;
+                findMany: FindMany.Signature;
             }
 
             namespace FindEffective {
@@ -33,7 +32,10 @@ declare global {
                 };
 
                 type Props = DefaultProps | ManageProps;
+
                 type Result = Promise<[Entities.Permission[], number]>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace GetLookupList {
@@ -53,7 +55,22 @@ declare global {
                 };
 
                 type Props = DefaultProps | ManageProps;
+
                 type Result = Promise<[Entities.Permission[], number]>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace FindUnique {
+                type Props = {
+                    view: ResponseViewType;
+                    permission: string;
+                    realm: string;
+                };
+
+                type Result = Promise<Entities.Permission>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindMany {
@@ -75,17 +92,10 @@ declare global {
                 };
 
                 type Props = DefaultProps | ManageProps;
+
                 type Result = Promise<[Entities.Permission[], number]>;
-            }
 
-            namespace FindUnique {
-                type Props = {
-                    view: ResponseViewType;
-                    permission: string;
-                    realm: string;
-                };
-
-                type Result = Promise<Entities.Permission>;
+                type Signature = (props: Props) => Result;
             }
         }
     }

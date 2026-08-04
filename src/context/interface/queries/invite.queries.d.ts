@@ -3,11 +3,11 @@ import { InviteQueryScope, QueryMode, ResponseViewType } from "~context/enums";
 declare global {
     namespace Queries {
         namespace Invite {
-            interface Contract {
-                findUnique(props: FindUnique.DefaultProps): FindUnique.Result;
-                findUnique(props: FindUnique.ManageProps): FindUnique.Result;
-                findMany(props: FindMany.DefaultProps): FindMany.Result;
-                findMany(props: FindMany.ManageProps): FindMany.Result;
+            interface Contract extends ControllerContract {}
+
+            interface ControllerContract {
+                findUnique: FindUnique.Signature;
+                findMany: FindMany.Signature;
             }
 
             namespace FindUnique {
@@ -27,7 +27,10 @@ declare global {
                 };
 
                 type Props = DefaultProps | ManageProps;
+
                 type Result = Promise<Entities.Invite>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindMany {
@@ -51,7 +54,10 @@ declare global {
                 };
 
                 type Props = DefaultProps | ManageProps;
+
                 type Result = Promise<[Entities.Invite[], number]>;
+
+                type Signature = (props: Props) => Result;
             }
         }
     }

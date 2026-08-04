@@ -1,8 +1,10 @@
 declare namespace Services {
     namespace RoleConflictMember {
-        interface Contract {
-            create(props: Create.Props): Create.Result;
-            purge(props: Purge.Props): Purge.Result;
+        interface Contract extends CommandContract {}
+
+        interface CommandContract {
+            create: Create.Signature;
+            purge: Purge.Signature;
         }
 
         namespace Create {
@@ -15,6 +17,8 @@ declare namespace Services {
             };
 
             type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Purge {
@@ -24,6 +28,8 @@ declare namespace Services {
             };
 
             type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

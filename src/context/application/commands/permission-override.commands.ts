@@ -19,13 +19,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(PERMISSION_OVERRIDE_REPOSITORY)
-        private readonly permissionOverrideRepository: Repositories.PermissionOverride.Contract,
+        private readonly permissionOverrideRepository: Repositories.PermissionOverride.PublicContract,
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.Contract,
+        private readonly permissionRepository: Repositories.Permission.PublicContract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(PERMISSION_OVERRIDE_SERVICE)
-        private readonly permissionOverrideService: Services.PermissionOverride.Contract,
+        private readonly permissionOverrideService: Services.PermissionOverride.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
         private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
     ) {}

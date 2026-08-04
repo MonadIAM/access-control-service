@@ -63,7 +63,7 @@ export class RealmController {
         @Inject(REALM_COMMANDS)
         private readonly realmCommands: Commands.Realm.ControllerContract,
         @Inject(REALM_QUERIES)
-        private readonly realmQueries: Queries.Realm.Contract,
+        private readonly realmQueries: Queries.Realm.ControllerContract,
     ) {}
 
     @Get()

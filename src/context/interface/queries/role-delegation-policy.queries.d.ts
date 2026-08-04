@@ -3,9 +3,23 @@ import { ResponseViewType } from "~context/enums";
 declare global {
     namespace Queries {
         namespace RoleDelegationPolicy {
-            interface Contract {
-                findUnique(props: FindUnique.Props): FindUnique.Result;
-                findMany(props: FindMany.Props): FindMany.Result;
+            interface Contract extends ControllerContract {}
+
+            interface ControllerContract {
+                findUnique: FindUnique.Signature;
+                findMany: FindMany.Signature;
+            }
+
+            namespace FindUnique {
+                type Props = {
+                    view: ResponseViewType;
+                    policy: string;
+                    realm: string;
+                };
+
+                type Result = Promise<Entities.RoleDelegationPolicy>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindMany {
@@ -18,16 +32,8 @@ declare global {
                 };
 
                 type Result = Promise<[Entities.RoleDelegationPolicy[], number]>;
-            }
 
-            namespace FindUnique {
-                type Props = {
-                    view: ResponseViewType;
-                    policy: string;
-                    realm: string;
-                };
-
-                type Result = Promise<Entities.RoleDelegationPolicy>;
+                type Signature = (props: Props) => Result;
             }
         }
     }

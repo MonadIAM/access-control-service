@@ -11,7 +11,7 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
 
     public constructor(
         @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
-        private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.Contract,
+        private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.PublicContract,
     ) {}
 
     public async create(props: Services.RoleConflictMember.Create.Props): Services.RoleConflictMember.Create.Result {

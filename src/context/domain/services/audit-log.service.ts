@@ -6,7 +6,7 @@ import { AUDIT_LOG_REPOSITORY } from "../repositories";
 export class AuditLogService implements Services.AuditLog.Contract {
     public constructor(
         @Inject(AUDIT_LOG_REPOSITORY)
-        private readonly auditLogRepository: Repositories.AuditLog.Contract,
+        private readonly auditLogRepository: Repositories.AuditLog.PublicContract,
     ) {}
 
     public async purgeExpired(props: Services.AuditLog.PurgeExpired.Props): Services.AuditLog.PurgeExpired.Result {

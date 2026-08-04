@@ -1,17 +1,69 @@
 declare namespace Services {
     namespace Realm {
+        interface Contract extends InternalContract, CommandContract {}
+
         interface InternalContract {
-            assignBasePermissions(props: AssignBasePermissions.Props): AssignBasePermissions.Result;
-            createBaseRoles(props: CreateBaseRoles.Props): CreateBaseRoles.Result;
-            assignBaseRoles(props: AssignBaseRoles.Props): AssignBaseRoles.Result;
+            assignBasePermissions: AssignBasePermissions.Signature;
+            createBaseRoles: CreateBaseRoles.Signature;
+            assignBaseRoles: AssignBaseRoles.Signature;
         }
 
-        interface Contract extends InternalContract {
-            restore(props: Restore.Props): Restore.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
-            create(props: Create.Props): Create.Result;
-            update(props: Update.Props): Update.Result;
-            purge(props: Purge.Props): Purge.Result;
+        namespace AssignBasePermissions {
+            type Props = {
+                roles: CreateBaseRoles.Result["roles"];
+                transaction: ORM.EntityManager;
+                realm: Entities.Realm;
+            };
+
+            type Result = Promise<Entities.RolePermissionAssignment[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace CreateBaseRoles {
+            type Props = {
+                input: Create.Props["input"];
+                transaction: ORM.EntityManager;
+                realm: Entities.Realm;
+            };
+
+            type Result = {
+                roles: Record<"admin" | "user" | "root", Entities.Role>;
+                paths: Entities.RoleClosure[];
+            };
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace AssignBaseRoles {
+            type Props = {
+                roles: CreateBaseRoles.Result["roles"];
+                transaction: ORM.EntityManager;
+                realm: Entities.Realm;
+                actor: string;
+            };
+
+            type Result = Entities.AccountRoleAssignment[];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        interface CommandContract {
+            restore: Restore.Signature;
+            revoke: Revoke.Signature;
+            create: Create.Signature;
+            update: Update.Signature;
+            purge: Purge.Signature;
+        }
+
+        namespace Restore {
+            type Props = {
+                entities: Entities.Realm[];
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Create {
@@ -34,6 +86,8 @@ declare namespace Services {
                 roles: Entities.Role[];
                 realm: Entities.Realm;
             }>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Update {
@@ -43,6 +97,18 @@ declare namespace Services {
             };
 
             type Result = void;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Revoke {
+            type Props = {
+                entities: Entities.Realm[];
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Purge {
@@ -52,56 +118,8 @@ declare namespace Services {
             };
 
             type Result = void;
-        }
 
-        namespace Revoke {
-            type Props = {
-                entities: Entities.Realm[];
-            };
-
-            type Result = void;
-        }
-
-        namespace Restore {
-            type Props = {
-                entities: Entities.Realm[];
-            };
-
-            type Result = void;
-        }
-
-        namespace CreateBaseRoles {
-            type Props = {
-                input: Create.Props["input"];
-                transaction: ORM.EntityManager;
-                realm: Entities.Realm;
-            };
-
-            type Result = {
-                roles: Record<"admin" | "user" | "root", Entities.Role>;
-                paths: Entities.RoleClosure[];
-            };
-        }
-
-        namespace AssignBasePermissions {
-            type Props = {
-                roles: CreateBaseRoles.Result["roles"];
-                transaction: ORM.EntityManager;
-                realm: Entities.Realm;
-            };
-
-            type Result = Promise<Entities.RolePermissionAssignment[]>;
-        }
-
-        namespace AssignBaseRoles {
-            type Props = {
-                roles: CreateBaseRoles.Result["roles"];
-                transaction: ORM.EntityManager;
-                realm: Entities.Realm;
-                actor: string;
-            };
-
-            type Result = Entities.AccountRoleAssignment[];
+            type Signature = (props: Props) => Result;
         }
     }
 }

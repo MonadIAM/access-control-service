@@ -92,7 +92,7 @@ export class RoleController {
         @Inject(ROLE_COMMANDS)
         private readonly roleCommands: Commands.Role.ControllerContract,
         @Inject(ROLE_QUERIES)
-        private readonly roleQueries: Queries.Role.Contract,
+        private readonly roleQueries: Queries.Role.ControllerContract,
     ) {}
 
     @Get()

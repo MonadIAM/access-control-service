@@ -1,11 +1,23 @@
 declare namespace Services {
     namespace Permission {
-        interface Contract {
-            restore(props: Restore.Props): Restore.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
-            create(props: Create.Props): Create.Result;
-            update(props: Update.Props): Update.Result;
-            purge(props: Purge.Props): Purge.Result;
+        interface Contract extends CommandContract {}
+
+        interface CommandContract {
+            restore: Restore.Signature;
+            revoke: Revoke.Signature;
+            create: Create.Signature;
+            update: Update.Signature;
+            purge: Purge.Signature;
+        }
+
+        namespace Restore {
+            type Props = {
+                entities: Entities.Permission[];
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Create {
@@ -20,6 +32,8 @@ declare namespace Services {
             };
 
             type Result = Promise<Entities.Permission>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Update {
@@ -29,6 +43,18 @@ declare namespace Services {
             };
 
             type Result = void;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Revoke {
+            type Props = {
+                entities: Entities.Permission[];
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Purge {
@@ -38,22 +64,8 @@ declare namespace Services {
             };
 
             type Result = void;
-        }
 
-        namespace Revoke {
-            type Props = {
-                entities: Entities.Permission[];
-            };
-
-            type Result = void;
-        }
-
-        namespace Restore {
-            type Props = {
-                entities: Entities.Permission[];
-            };
-
-            type Result = void;
+            type Signature = (props: Props) => Result;
         }
     }
 }

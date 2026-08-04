@@ -7,8 +7,8 @@ declare global {
     namespace Exception {
         namespace Filter {
             interface InternalContract {
-                metrics(props: Metrics.Props): Metrics.Result;
-                log(props: Log.Props): Log.Result;
+                metrics: Metrics.Signature;
+                log: Log.Signature;
             }
 
             interface Contract extends NestExceptionFilter, InternalContract {}
@@ -20,6 +20,8 @@ declare global {
                 };
 
                 type Result = void;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Log {
@@ -30,6 +32,8 @@ declare global {
                 };
 
                 type Result = void;
+
+                type Signature = (props: Props) => Result;
             }
         }
 

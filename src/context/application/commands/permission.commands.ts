@@ -18,11 +18,11 @@ export class PermissionCommands implements Commands.Permission.Contract {
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.Contract,
+        private readonly permissionRepository: Repositories.Permission.PublicContract,
         @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.Contract,
+        private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(PERMISSION_SERVICE)
-        private readonly permissionService: Services.Permission.Contract,
+        private readonly permissionService: Services.Permission.CommandContract,
     ) {}
 
     public async create(props: Commands.Permission.Create.Props): Commands.Permission.Create.Result {

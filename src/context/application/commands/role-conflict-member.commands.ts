@@ -20,13 +20,13 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
-        private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.Contract,
+        private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.PublicContract,
         @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.Contract,
+        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.PublicContract,
         @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.Contract,
+        private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ROLE_CONFLICT_MEMBER_SERVICE)
-        private readonly roleConflictMemberService: Services.RoleConflictMember.Contract,
+        private readonly roleConflictMemberService: Services.RoleConflictMember.CommandContract,
     ) {}
 
     public async create(props: Commands.RoleConflictMember.Create.Props): Commands.RoleConflictMember.Create.Result {

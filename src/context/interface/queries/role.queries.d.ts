@@ -4,22 +4,21 @@ declare global {
     namespace Queries {
         namespace Role {
             type DepthEntity = Entities.Role & { depth: number };
+
             type Graph = Repositories.Role.Graph.Data;
 
-            interface Contract {
-                findDelegableByAccount(props: FindDelegableByAccount.DefaultProps): FindDelegableByAccount.Result;
-                findDelegableByAccount(props: FindDelegableByAccount.ManageProps): FindDelegableByAccount.Result;
-                findDelegableByRole(props: FindDelegableByRole.Props): FindDelegableByRole.Result;
-                getHierarchyGraph(props: GetHierarchyGraph.Props): GetHierarchyGraph.Result;
-                getLookupList(props: GetLookupList.DefaultProps): GetLookupList.Result;
-                getLookupList(props: GetLookupList.ManageProps): GetLookupList.Result;
-                findEffective(props: FindEffective.DefaultProps): FindEffective.Result;
-                findEffective(props: FindEffective.ManageProps): FindEffective.Result;
-                findDescendants(props: FindDescendants.Props): FindDescendants.Result;
-                findAncestors(props: FindAncestors.Props): FindAncestors.Result;
-                findMany(props: FindMany.DefaultProps): FindMany.Result;
-                findMany(props: FindMany.ManageProps): FindMany.Result;
-                findUnique(props: FindUnique.Props): FindUnique.Result;
+            interface Contract extends ControllerContract {}
+
+            interface ControllerContract {
+                findDelegableByAccount: FindDelegableByAccount.Signature;
+                findDelegableByRole: FindDelegableByRole.Signature;
+                getHierarchyGraph: GetHierarchyGraph.Signature;
+                findDescendants: FindDescendants.Signature;
+                findAncestors: FindAncestors.Signature;
+                getLookupList: GetLookupList.Signature;
+                findEffective: FindEffective.Signature;
+                findUnique: FindUnique.Signature;
+                findMany: FindMany.Signature;
             }
 
             namespace FindDelegableByAccount {
@@ -41,7 +40,10 @@ declare global {
                 };
 
                 type Props = DefaultProps | ManageProps;
+
                 type Result = Promise<[Entities.Role[], number]>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindDelegableByRole {
@@ -54,6 +56,18 @@ declare global {
                 };
 
                 type Result = Promise<[Entities.Role[], number]>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace GetHierarchyGraph {
+                type Props = {
+                    realm: string;
+                };
+
+                type Result = Promise<Graph>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindDescendants {
@@ -66,6 +80,8 @@ declare global {
                 };
 
                 type Result = Promise<[DepthEntity[], number]>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindAncestors {
@@ -78,6 +94,31 @@ declare global {
                 };
 
                 type Result = Promise<[DepthEntity[], number]>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace GetLookupList {
+                type DefaultProps = {
+                    mode: QueryMode.DEFAULT;
+                    options?: ORM.FindOptions<Entities.Role>;
+                    pagination: Pagination;
+                    realm: string;
+                    term: string;
+                };
+
+                type ManageProps = {
+                    mode: QueryMode.MANAGE;
+                    options?: ORM.FindOptions<Entities.Role>;
+                    pagination: Pagination;
+                    term: string;
+                };
+
+                type Props = DefaultProps | ManageProps;
+
+                type Result = Promise<[Entities.Role[], number]>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindEffective {
@@ -99,35 +140,22 @@ declare global {
                 };
 
                 type Props = DefaultProps | ManageProps;
+
                 type Result = Promise<[Entities.Role[], number]>;
+
+                type Signature = (props: Props) => Result;
             }
 
-            namespace GetLookupList {
-                type DefaultProps = {
-                    mode: QueryMode.DEFAULT;
-                    options?: ORM.FindOptions<Entities.Role>;
-                    pagination: Pagination;
-                    realm: string;
-                    term: string;
-                };
-
-                type ManageProps = {
-                    mode: QueryMode.MANAGE;
-                    options?: ORM.FindOptions<Entities.Role>;
-                    pagination: Pagination;
-                    term: string;
-                };
-
-                type Props = DefaultProps | ManageProps;
-                type Result = Promise<[Entities.Role[], number]>;
-            }
-
-            namespace GetHierarchyGraph {
+            namespace FindUnique {
                 type Props = {
+                    view: ResponseViewType;
                     realm: string;
+                    role: string;
                 };
 
-                type Result = Promise<Graph>;
+                type Result = Promise<Entities.Role>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindMany {
@@ -149,17 +177,10 @@ declare global {
                 };
 
                 type Props = DefaultProps | ManageProps;
+
                 type Result = Promise<[Entities.Role[], number]>;
-            }
 
-            namespace FindUnique {
-                type Props = {
-                    view: ResponseViewType;
-                    realm: string;
-                    role: string;
-                };
-
-                type Result = Promise<Entities.Role>;
+                type Signature = (props: Props) => Result;
             }
         }
     }

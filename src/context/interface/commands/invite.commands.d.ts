@@ -3,51 +3,67 @@ import { InviteStatus } from "~context/enums";
 declare global {
     namespace Commands {
         namespace Invite {
-            interface ControllerContract {
-                changeStatus(props: ChangeStatus.Props): ChangeStatus.Result;
-                create(props: Create.Props): Create.Result;
-            }
-
-            interface InternalContract {
-                notificationPayloadMapper(props: NotificationPayloadMapper.Props): NotificationPayloadMapper.Result;
-                accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
-                membershipPayloadMapper(props: MembershipPayloadMapper.Props): MembershipPayloadMapper.Result;
-                decline(props: Decline.Props): Decline.Result;
-                accept(props: Accept.Props): Accept.Result;
-                cancel(props: Cancel.Props): Cancel.Result;
-                notificationCancelPayloadMapper(
-                    props: NotificationCancelPayloadMapper.Props,
-                ): NotificationCancelPayloadMapper.Result;
-            }
-
             interface Contract extends ControllerContract, InternalContract {}
 
-            namespace Create {
-                type Props = {
-                    actor: string;
-                    realm: string;
-                    input: {
-                        invitee: string;
-                        role: string;
-                    };
-                    context: Extract.Meta;
-                };
-
-                type Result = Promise<MessageResult>;
+            interface InternalContract {
+                notificationCancelPayloadMapper: NotificationCancelPayloadMapper.Signature;
+                notificationPayloadMapper: NotificationPayloadMapper.Signature;
+                accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
+                membershipPayloadMapper: MembershipPayloadMapper.Signature;
+                decline: Decline.Signature;
+                accept: Accept.Signature;
+                cancel: Cancel.Signature;
             }
 
-            namespace ChangeStatus {
+            namespace NotificationCancelPayloadMapper {
+                type Props = Entities.Invite[];
+
+                type Result = Topics.Notification.CancelMessage["payload"];
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace NotificationPayloadMapper {
+                type Props = Entities.Invite[];
+
+                type Result = Topics.Notification.CreateMessage["payload"];
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace AccessCachePayloadMapper {
+                type Props = {
+                    assignments: Entities.AccountRoleAssignment[];
+                };
+
+                type Result = Topics.AccessCache.Message["payload"];
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace MembershipPayloadMapper {
+                type Props = {
+                    invitedBy: string;
+                    account: string;
+                    realm: string;
+                };
+
+                type Result = Topics.Membership.GrantMessage["payload"];
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Decline {
                 type Props = {
                     actor: string;
                     realm: string;
-                    input: {
-                        invite: string;
-                        status: Exclude<InviteStatus, InviteStatus.PENDING>;
-                    };
+                    input: { invite: string };
                     context: Extract.Meta;
                 };
 
                 type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Accept {
@@ -66,6 +82,8 @@ declare global {
                 };
 
                 type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Cancel {
@@ -77,45 +95,45 @@ declare global {
                 };
 
                 type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
 
-            namespace Decline {
+            interface ControllerContract {
+                changeStatus: ChangeStatus.Signature;
+                create: Create.Signature;
+            }
+
+            namespace ChangeStatus {
                 type Props = {
                     actor: string;
                     realm: string;
-                    input: { invite: string };
+                    input: {
+                        invite: string;
+                        status: Exclude<InviteStatus, InviteStatus.PENDING>;
+                    };
                     context: Extract.Meta;
                 };
 
                 type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
 
-            namespace NotificationPayloadMapper {
-                type Props = Entities.Invite[];
-                type Result = Topics.Notification.CreateMessage["payload"];
-            }
-
-            namespace NotificationCancelPayloadMapper {
-                type Props = Entities.Invite[];
-                type Result = Topics.Notification.CancelMessage["payload"];
-            }
-
-            namespace AccessCachePayloadMapper {
+            namespace Create {
                 type Props = {
-                    assignments: Entities.AccountRoleAssignment[];
-                };
-
-                type Result = Topics.AccessCache.Message["payload"];
-            }
-
-            namespace MembershipPayloadMapper {
-                type Props = {
-                    invitedBy: string;
-                    account: string;
+                    actor: string;
                     realm: string;
+                    input: {
+                        invitee: string;
+                        role: string;
+                    };
+                    context: Extract.Meta;
                 };
 
-                type Result = Topics.Membership.GrantMessage["payload"];
+                type Result = Promise<MessageResult>;
+
+                type Signature = (props: Props) => Result;
             }
         }
     }

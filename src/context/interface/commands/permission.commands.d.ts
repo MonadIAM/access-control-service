@@ -1,18 +1,42 @@
 declare namespace Commands {
     namespace Permission {
-        interface ControllerContract {
-            restore(props: Restore.Props): Restore.Result;
-            create(props: Create.Props): Create.Result;
-            update(props: Update.Props): Update.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
-            purge(props: Purge.Props): Purge.Result;
-        }
+        interface Contract extends ControllerContract, InternalContract {}
 
         interface InternalContract {
-            accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
+            accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
         }
 
-        interface Contract extends ControllerContract, InternalContract {}
+        namespace AccessCachePayloadMapper {
+            type Result = Topics.AccessCache.Message["payload"];
+
+            type Props = Entities.Permission[];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        interface ControllerContract {
+            restore: Restore.Signature;
+            create: Create.Signature;
+            update: Update.Signature;
+            revoke: Revoke.Signature;
+            purge: Purge.Signature;
+        }
+
+        namespace Restore {
+            type Props = {
+                actor: string;
+                realm: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: Extract.Meta;
+            };
+
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
+        }
 
         namespace Create {
             type Props = {
@@ -27,6 +51,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Update {
@@ -42,20 +68,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
-        }
 
-        namespace Purge {
-            type Props = {
-                actor: string;
-                realm: string;
-                input: {
-                    identifiers: string[];
-                    reason: string;
-                };
-                context: Extract.Meta;
-            };
-
-            type Result = Promise<MessageResult>;
+            type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
@@ -70,9 +84,11 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace Restore {
+        namespace Purge {
             type Props = {
                 actor: string;
                 realm: string;
@@ -84,11 +100,8 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
-        }
 
-        namespace AccessCachePayloadMapper {
-            type Result = Topics.AccessCache.Message["payload"];
-            type Props = Entities.Permission[];
+            type Signature = (props: Props) => Result;
         }
     }
 }

@@ -1,13 +1,15 @@
 declare namespace Repositories {
     namespace RolePermissionAssignment {
-        interface Contract extends Repositories.Base.Contract<
+        interface Contract extends PublicContract {}
+
+        interface PublicContract extends Repositories.Base.Contract<
             Entities.RolePermissionAssignment,
             Adapters.RolePermissionAssignment.Types
         > {
-            wouldExceedPermissionLimit(props: WouldExceedPermissionLimit.Props): WouldExceedPermissionLimit.Result;
+            wouldExceedPermissionLimit: WouldExceedPermissionLimit.Signature;
         }
 
-        interface QueryContract extends Pick<Contract, "findUniqueOrThrow" | "findMany"> {}
+        interface QueryContract extends Pick<PublicContract, "findUniqueOrThrow" | "findMany"> {}
 
         namespace WouldExceedPermissionLimit {
             type Props = {
@@ -17,6 +19,8 @@ declare namespace Repositories {
             };
 
             type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
         }
     }
 }

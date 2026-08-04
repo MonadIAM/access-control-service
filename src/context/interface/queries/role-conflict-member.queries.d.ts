@@ -3,9 +3,24 @@ import { ResponseViewType } from "~context/enums";
 declare global {
     namespace Queries {
         namespace RoleConflictMember {
-            interface Contract {
-                findUnique(props: FindUnique.Props): FindUnique.Result;
-                findMany(props: FindMany.Props): FindMany.Result;
+            interface Contract extends ControllerContract {}
+
+            interface ControllerContract {
+                findUnique: FindUnique.Signature;
+                findMany: FindMany.Signature;
+            }
+
+            namespace FindUnique {
+                type Props = {
+                    view: ResponseViewType;
+                    member: string;
+                    realm: string;
+                    group: string;
+                };
+
+                type Result = Promise<Entities.RoleConflictMember>;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace FindMany {
@@ -19,17 +34,8 @@ declare global {
                 };
 
                 type Result = Promise<[Entities.RoleConflictMember[], number]>;
-            }
 
-            namespace FindUnique {
-                type Props = {
-                    view: ResponseViewType;
-                    member: string;
-                    realm: string;
-                    group: string;
-                };
-
-                type Result = Promise<Entities.RoleConflictMember>;
+                type Signature = (props: Props) => Result;
             }
         }
     }

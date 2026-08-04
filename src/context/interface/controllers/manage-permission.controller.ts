@@ -27,7 +27,7 @@ const { PERMISSION_READ_ABSOLUTE } = PermissionCode;
 export class PermissionManageController {
     public constructor(
         @Inject(PERMISSION_QUERIES)
-        private readonly permissionQueries: Queries.Permission.Contract,
+        private readonly permissionQueries: Queries.Permission.ControllerContract,
     ) {}
 
     @HttpCode(OK)

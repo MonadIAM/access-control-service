@@ -1,69 +1,67 @@
 declare namespace Commands {
     namespace AccountRoleAssignment {
-        interface ControllerContract {
-            restore(props: Restore.Props): Restore.Result;
-            create(props: Create.Props): Create.Result;
-            revoke(props: Revoke.Props): Revoke.Result;
-            purge(props: Purge.Props): Purge.Result;
+        interface Contract extends ControllerContract, ConsumerContract, InternalContract {}
+
+        interface InternalContract {
+            notificationRevokePayloadMapper: NotificationRevokePayloadMapper.Signature;
+            notificationGrantPayloadMapper: NotificationGrantPayloadMapper.Signature;
+            accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
+        }
+
+        namespace NotificationRevokePayloadMapper {
+            type Props = Entities.AccountRoleAssignment[];
+
+            type Result = Topics.Notification.CreateMessage["payload"][];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace NotificationGrantPayloadMapper {
+            type Props = Entities.AccountRoleAssignment[];
+
+            type Result = Topics.Notification.CreateMessage["payload"];
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace AccessCachePayloadMapper {
+            type Props = Entities.AccountRoleAssignment[];
+
+            type Result = Topics.AccessCache.Message["payload"];
+
+            type Signature = (props: Props) => Result;
         }
 
         interface ConsumerContract {
-            assign(props: Assign.Props): Assign.Result;
-            clean(props: Clean.Props): Clean.Result;
+            assign: Assign.Signature;
+            clean: Clean.Signature;
         }
 
-        interface InternalContract {
-            accessCachePayloadMapper(props: AccessCachePayloadMapper.Props): AccessCachePayloadMapper.Result;
-            notificationRevokePayloadMapper(
-                props: NotificationRevokePayloadMapper.Props,
-            ): NotificationRevokePayloadMapper.Result;
-            notificationGrantPayloadMapper(
-                props: NotificationGrantPayloadMapper.Props,
-            ): NotificationGrantPayloadMapper.Result;
-        }
-
-        interface Contract extends ControllerContract, ConsumerContract, InternalContract {}
-
-        namespace Create {
+        namespace Assign {
             type Props = {
-                actor: string;
-                realm: string;
-                input: {
-                    account: string;
-                    roles: string[];
-                };
-                context: Extract.Meta;
+                account: string;
             };
 
-            type Result = Promise<MessageResult>;
+            type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace Purge {
+        namespace Clean {
             type Props = {
-                actor: string;
-                realm: string;
-                input: {
-                    identifiers: string[];
-                    reason: string;
-                };
-                context: Extract.Meta;
+                account: string;
             };
 
-            type Result = Promise<MessageResult>;
+            type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace Revoke {
-            type Props = {
-                actor: string;
-                realm: string;
-                input: {
-                    identifiers: string[];
-                    reason: string;
-                };
-                context: Extract.Meta;
-            };
-
-            type Result = Promise<MessageResult>;
+        interface ControllerContract {
+            restore: Restore.Signature;
+            create: Create.Signature;
+            revoke: Revoke.Signature;
+            purge: Purge.Signature;
         }
 
         namespace Restore {
@@ -78,40 +76,56 @@ declare namespace Commands {
             };
 
             type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace Assign {
+        namespace Create {
             type Props = {
-                account: string;
+                actor: string;
+                realm: string;
+                input: {
+                    account: string;
+                    roles: string[];
+                };
+                context: Extract.Meta;
             };
 
-            type Result = Promise<void>;
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace Clean {
+        namespace Revoke {
             type Props = {
-                account: string;
+                actor: string;
+                realm: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: Extract.Meta;
             };
 
-            type Result = Promise<void>;
+            type Result = Promise<MessageResult>;
+
+            type Signature = (props: Props) => Result;
         }
 
-        namespace AccessCachePayloadMapper {
-            type Props = Entities.AccountRoleAssignment[];
+        namespace Purge {
+            type Props = {
+                actor: string;
+                realm: string;
+                input: {
+                    identifiers: string[];
+                    reason: string;
+                };
+                context: Extract.Meta;
+            };
 
-            type Result = Topics.AccessCache.Message["payload"];
-        }
+            type Result = Promise<MessageResult>;
 
-        namespace NotificationGrantPayloadMapper {
-            type Props = Entities.AccountRoleAssignment[];
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-        }
-
-        namespace NotificationRevokePayloadMapper {
-            type Props = Entities.AccountRoleAssignment[];
-
-            type Result = Topics.Notification.CreateMessage["payload"][];
+            type Signature = (props: Props) => Result;
         }
     }
 }
