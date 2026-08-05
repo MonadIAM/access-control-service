@@ -1,9 +1,11 @@
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
+import { Injectable } from "@nestjs/common";
 import ms, { StringValue } from "ms";
 import path from "path";
 
-export abstract class MikroOrmConfig {
-    public static buildOptions(props: ORM.Config.BuildOptions.Props): ORM.Config.BuildOptions.Result {
+@Injectable()
+export class MikroOrmConfig implements ORM.Config.Contract {
+    public buildOptions(props: ORM.Config.BuildOptions.Props): ORM.Config.BuildOptions.Result {
         const { config, kind = "write" } = props;
         const cqrsEnabled = config.getOrThrow<string>("POSTGRES_CQRS_ENABLED") === "true";
 
@@ -46,7 +48,7 @@ export abstract class MikroOrmConfig {
         return options;
     }
 
-    private static resolveHost(props: ORM.Config.ResolveHost.Props): ORM.Config.ResolveHost.Result {
+    public resolveHost(props: ORM.Config.ResolveHost.Props): ORM.Config.ResolveHost.Result {
         const { cqrsEnabled, config, kind } = props;
         if (cqrsEnabled) {
             if (kind === "read") {

@@ -90,6 +90,16 @@ declare global {
         type ConnectionKind = "write" | "read";
 
         namespace Config {
+            interface PublicContract {
+                buildOptions(props: BuildOptions.Props): BuildOptions.Result;
+            }
+
+            interface InternalContract {
+                resolveHost(props: ResolveHost.Props): ResolveHost.Result;
+            }
+
+            interface Contract extends PublicContract, InternalContract {}
+
             namespace BuildOptions {
                 type Props = {
                     kind?: ORM.ConnectionKind;
