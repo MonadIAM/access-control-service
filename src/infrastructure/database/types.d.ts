@@ -90,15 +90,11 @@ declare global {
         type ConnectionKind = "write" | "read";
 
         namespace Config {
-            interface PublicContract {
-                buildOptions(props: BuildOptions.Props): BuildOptions.Result;
-            }
-
-            interface InternalContract {
-                resolveHost(props: ResolveHost.Props): ResolveHost.Result;
-            }
-
             interface Contract extends PublicContract, InternalContract {}
+
+            interface PublicContract {
+                buildOptions: BuildOptions.Signature;
+            }
 
             namespace BuildOptions {
                 type Props = {
@@ -107,6 +103,12 @@ declare global {
                 };
 
                 type Result = ORM.Options;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            interface InternalContract {
+                resolveHost: ResolveHost.Signature;
             }
 
             namespace ResolveHost {
@@ -117,6 +119,8 @@ declare global {
                 };
 
                 type Result = string;
+
+                type Signature = (props: Props) => Result;
             }
         }
     }

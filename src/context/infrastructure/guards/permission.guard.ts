@@ -14,7 +14,7 @@ export class PermissionGuard implements CanActivate {
 
     public constructor(
         @Inject(PROJECTION_CACHE_SERVICE)
-        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
+        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
         private readonly reflector: Reflector,
     ) {}
 

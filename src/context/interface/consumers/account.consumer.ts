@@ -32,7 +32,10 @@ export class AccountConsumer implements OnModuleInit {
     };
 
     @EventPattern(KafkaTopic.ACCOUNT)
-    public async handle(@Payload() message: Consumers.Account.Payload, @Ctx() context: KafkaContext): Promise<void> {
+    public async handle(
+        @Payload() message: Consumers.Account.Message,
+        @Ctx() context: KafkaContext,
+    ): Consumers.Account.Handle.Result {
         try {
             await this.handlers[message.actionType](message.payload);
         } catch (error) {

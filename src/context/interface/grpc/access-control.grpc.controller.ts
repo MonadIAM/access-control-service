@@ -8,7 +8,7 @@ import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 export class AccessControlController {
     public constructor(
         @Inject(PROJECTION_CACHE_SERVICE)
-        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
+        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
     ) {}
 
     @GrpcMethod("AccessControlService", "ListEffectivePrivileges")

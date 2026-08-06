@@ -13,7 +13,7 @@ export class ProjectionConsumer implements OnModuleInit {
 
     public constructor(
         @Inject(SCRIPT_EXECUTOR_SERVICE)
-        private readonly scriptExecutorService: InfrastructureServices.ScriptExecutor.Contract,
+        private readonly scriptExecutorService: InfrastructureServices.ScriptExecutor.PublicContract,
         @Inject(KAFKA_SERVICE)
         private readonly kafkaClient: ClientKafka,
     ) {}
@@ -23,9 +23,15 @@ export class ProjectionConsumer implements OnModuleInit {
     }
 
     @EventPattern(KafkaTopic.PROJECTION_JOURNAL)
-    public async handle(@Payload() message: Consumers.Projection.Payload, @Ctx() context: KafkaContext): Promise<void> {
+    public async handle(
+        @Payload() message: Consumers.Projection.Message,
+        @Ctx() context: KafkaContext,
+    ): Consumers.Projection.Handle.Result {
         try {
-            await this.scriptExecutorService.execute<string>(message.actionType, [JSON.stringify(message.payload)]);
+            await this.scriptExecutorService.execute<string>({
+                args: [JSON.stringify(message.payload)],
+                script: message.actionType,
+            });
         } catch (error) {
             if (Exception.isRetryable(error)) {
                 await lastValueFrom(

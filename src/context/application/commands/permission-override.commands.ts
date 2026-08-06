@@ -27,7 +27,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         @Inject(PERMISSION_OVERRIDE_SERVICE)
         private readonly permissionOverrideService: Services.PermissionOverride.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
-        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
+        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
     ) {}
 
     public async create(props: Commands.PermissionOverride.Create.Props): Commands.PermissionOverride.Create.Result {

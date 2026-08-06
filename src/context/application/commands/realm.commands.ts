@@ -45,7 +45,7 @@ export class RealmCommands implements Commands.Realm.Contract {
         @Inject(REALM_SERVICE)
         private readonly realmService: Services.Realm.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
-        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
+        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
     ) {}
 
     public async create(props: Commands.Realm.Create.Props): Commands.Realm.Create.Result {

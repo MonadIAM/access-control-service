@@ -26,7 +26,9 @@ export class KafkaRetryQueue implements Queues.KafkaRetry.Contract {
         return this.maxRetries;
     }
 
-    public async schedule(message: Consumers.DLQ.Message, retryCount: number): Promise<void> {
+    public async schedule(props: Queues.KafkaRetry.Schedule.Props): Queues.KafkaRetry.Schedule.Result {
+        const { message, retryCount } = props;
+
         await this.queue.add(
             BullJobName.RETRY,
             { ...message, retryCount },

@@ -1,15 +1,24 @@
 import { AccountTopicAction } from "@monadiam/shared";
+import { KafkaContext } from "@nestjs/microservices";
 
 import { ProjectionScript } from "~context/infrastructure/scripts";
 
 declare global {
     namespace Consumers {
         namespace Account {
-            interface Contract {
-                handle(message: Payload): Promise<void>;
+            type Message = Topics.Account.Message;
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
             }
 
-            type Payload = Topics.Account.Message;
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message) => Result;
+            }
 
             type Handlers = {
                 [K in AccountTopicAction]: (payload: Topics.Account.Message["payload"]) => Promise<void>;
@@ -17,30 +26,70 @@ declare global {
         }
 
         namespace Reauthentication {
-            interface Contract {
-                handle(props: Payload): Promise<void>;
+            type Message = Topics.Reauthentication.Message;
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
             }
 
-            type Payload = Topics.Reauthentication.Message;
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message) => Result;
+            }
         }
 
         namespace Blacklist {
-            interface Contract {
-                handle(props: Payload): Promise<void>;
+            type Message = Topics.Blacklist.Message;
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
             }
 
-            type Payload = Topics.Blacklist.Message;
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message) => Result;
+            }
         }
 
         namespace Projection {
-            interface Contract {
-                handle(props: Payload): Promise<void>;
-            }
-
-            type Payload = {
+            type Message = {
                 actionType: ProjectionScript;
                 payload: UnknownObject;
             };
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
+            }
+
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message) => Result;
+            }
+        }
+
+        namespace Retry {
+            type Message = Consumers.DLQ.Message;
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
+            }
+
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message, ctx: KafkaContext) => Result;
+            }
         }
     }
 }

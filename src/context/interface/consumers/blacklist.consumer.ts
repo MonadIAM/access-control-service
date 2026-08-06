@@ -10,7 +10,7 @@ import { KafkaTopic } from "~context/enums";
 export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModuleInit {
     public constructor(
         @Inject(BLACKLIST_CACHE_SERVICE)
-        private readonly blacklistCacheService: InfrastructureServices.BlacklistCache.Contract,
+        private readonly blacklistCacheService: InfrastructureServices.BlacklistCache.PublicContract,
         @Inject(KAFKA_SERVICE)
         private readonly kafkaClient: ClientKafka,
     ) {}
@@ -20,7 +20,7 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModule
     }
 
     @EventPattern(KafkaTopic.BLACKLIST)
-    public async handle(@Payload() message: Consumers.Blacklist.Payload): Promise<void> {
+    public async handle(@Payload() message: Consumers.Blacklist.Message): Consumers.Blacklist.Handle.Result {
         try {
             const ttl = Math.floor((message.payload.expiresAt - Date.now()) / 1e3);
             if (ttl > 0) {

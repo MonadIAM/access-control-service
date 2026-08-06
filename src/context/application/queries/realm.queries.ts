@@ -17,7 +17,7 @@ export class RealmQueries implements Queries.Realm.Contract {
 
     public constructor(
         @Inject(PROJECTION_CACHE_SERVICE)
-        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
+        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.QueryContract,
     ) {}

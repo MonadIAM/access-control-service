@@ -9,15 +9,24 @@ export class ReauthenticationCacheService implements InfrastructureServices.Reau
 
     public constructor(@Inject(REDIS_CACHE_CLIENT) private readonly redis: Redis) {}
 
-    public async set({ session, ttl }: InfrastructureServices.ReauthenticationCache.Set): Promise<void> {
+    public async set(
+        props: InfrastructureServices.ReauthenticationCache.Set.Props,
+    ): InfrastructureServices.ReauthenticationCache.Set.Result {
+        const { session, ttl } = props;
         await this.redis.set(`${this.namespace}:${session}`, "1", "EX", ttl);
     }
 
-    public async exists({ session }: InfrastructureServices.ReauthenticationCache.Exists): Promise<boolean> {
+    public async exists(
+        props: InfrastructureServices.ReauthenticationCache.Exists.Props,
+    ): InfrastructureServices.ReauthenticationCache.Exists.Result {
+        const { session } = props;
         return (await this.redis.exists(`${this.namespace}:${session}`)) === 1;
     }
 
-    public async delete({ session }: InfrastructureServices.ReauthenticationCache.Delete): Promise<void> {
+    public async delete(
+        props: InfrastructureServices.ReauthenticationCache.Delete.Props,
+    ): InfrastructureServices.ReauthenticationCache.Delete.Result {
+        const { session } = props;
         await this.redis.unlink(`${this.namespace}:${session}`);
     }
 }

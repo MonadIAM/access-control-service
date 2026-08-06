@@ -88,7 +88,7 @@ export class CleanupProcessor extends WorkerHost {
 
     private async scheduleNextBatch(job: Job<Queues.Cleanup.JobData>, hasMore: boolean): Promise<Queues.Cleanup.Result> {
         if (hasMore) {
-            await this.cleanupQueue.scheduleNextBatch(job.name as CleanupJob, job.data);
+            await this.cleanupQueue.scheduleNextBatch({ job: job.name as CleanupJob, data: job.data });
             this.logger.log("Next batch scheduled in 5 seconds...");
         }
         return { deleted: 0, nextBatch: hasMore };

@@ -35,7 +35,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_SERVICE)
         private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
-        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
+        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
     ) {}
 
     public async create(props: Commands.AccountRoleAssignment.Create.Props): Commands.AccountRoleAssignment.Create.Result {

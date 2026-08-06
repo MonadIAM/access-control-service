@@ -12,59 +12,74 @@ export class ProjectionCacheService implements InfrastructureServices.Projection
         private readonly scriptExecutorService: InfrastructureServices.ScriptExecutor.Contract,
     ) {}
 
-    public async checkPermissions(props: InfrastructureServices.ProjectionCache.CheckPermissions): Promise<string[]> {
+    public async checkPermissions(
+        props: InfrastructureServices.ProjectionCache.CheckPermissions.Props,
+    ): InfrastructureServices.ProjectionCache.CheckPermissions.Result {
         return JSON.parse(
-            await this.scriptExecutorService.execute<string>(ProjectionScript.PERMISSION_CHECK, [
-                JSON.stringify({
-                    permissionRealm: SystemRealm.id,
-                    permissions: props.permissions,
-                    globalOnly: props.globalOnly,
-                    systemRealm: SystemRealm.id,
-                    account: props.account,
-                    realm: props.realm,
-                }),
-            ]),
+            await this.scriptExecutorService.execute<string>({
+                script: ProjectionScript.PERMISSION_CHECK,
+                args: [
+                    JSON.stringify({
+                        permissionRealm: SystemRealm.id,
+                        permissions: props.permissions,
+                        globalOnly: props.globalOnly,
+                        systemRealm: SystemRealm.id,
+                        account: props.account,
+                        realm: props.realm,
+                    }),
+                ],
+            }),
         );
     }
 
     public async collectPermissions(
-        props: InfrastructureServices.ProjectionCache.CollectPermissions,
-    ): Promise<Record<string, string>> {
+        props: InfrastructureServices.ProjectionCache.CollectPermissions.Props,
+    ): InfrastructureServices.ProjectionCache.CollectPermissions.Result {
         return JSON.parse(
-            await this.scriptExecutorService.execute<string>(ProjectionScript.PERMISSION_COLLECT, [
-                JSON.stringify({
-                    permissionRealm: SystemRealm.id,
-                    systemRealm: SystemRealm.id,
-                    account: props.account,
-                    realm: props.realm,
-                }),
-            ]),
+            await this.scriptExecutorService.execute<string>({
+                script: ProjectionScript.PERMISSION_COLLECT,
+                args: [
+                    JSON.stringify({
+                        permissionRealm: SystemRealm.id,
+                        systemRealm: SystemRealm.id,
+                        account: props.account,
+                        realm: props.realm,
+                    }),
+                ],
+            }),
         );
     }
 
     public async validateAssignments(
-        props: InfrastructureServices.ProjectionCache.ValidateAssignments,
-    ): Promise<InfrastructureServices.ProjectionCache.ValidateAssignmentsResult> {
+        props: InfrastructureServices.ProjectionCache.ValidateAssignments.Props,
+    ): InfrastructureServices.ProjectionCache.ValidateAssignments.Result {
         return JSON.parse(
-            await this.scriptExecutorService.execute<string>(ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_VALIDATE, [
-                JSON.stringify({ items: props.items }),
-            ]),
+            await this.scriptExecutorService.execute<string>({
+                script: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_VALIDATE,
+                args: [JSON.stringify({ items: props.items })],
+            }),
         );
     }
 
-    public async checkRealm(props: InfrastructureServices.ProjectionCache.CheckRealm): Promise<boolean> {
+    public async checkRealm(
+        props: InfrastructureServices.ProjectionCache.CheckRealm.Props,
+    ): InfrastructureServices.ProjectionCache.CheckRealm.Result {
         return JSON.parse(
-            await this.scriptExecutorService.execute<string>(ProjectionScript.REALM_COLLECT, [
-                JSON.stringify({ account: props.account, realm: props.realm }),
-            ]),
+            await this.scriptExecutorService.execute<string>({
+                args: [JSON.stringify({ account: props.account, realm: props.realm })],
+                script: ProjectionScript.REALM_COLLECT,
+            }),
         );
     }
 
-    public async collectRealms(props: InfrastructureServices.ProjectionCache.CollectRealms): Promise<string[]> {
+    public async collectRealms(
+        props: InfrastructureServices.ProjectionCache.CollectRealms.Props,
+    ): InfrastructureServices.ProjectionCache.CollectRealms.Result {
         return JSON.parse(
-            await this.scriptExecutorService.execute<string>(ProjectionScript.REALM_COLLECT, [
-                JSON.stringify({ account: props.account }),
-            ]),
+            await this.scriptExecutorService.execute<string>({
+                args: [JSON.stringify({ account: props.account })],
+                script: ProjectionScript.REALM_COLLECT,
+            }),
         );
     }
 }

@@ -1,4 +1,4 @@
-import { createRemoteJWKSet, jwtVerify, JWTPayload, JWTVerifyGetKey } from "jose";
+import { createRemoteJWKSet, jwtVerify, JWTVerifyGetKey } from "jose";
 import { Injectable, OnModuleInit, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
@@ -31,9 +31,9 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
         });
     }
 
-    public async verifyAccess(token: string): Promise<JWTPayload> {
+    public async verifyAccess(props: CommonServices.JWT.VerifyAccess.Props): CommonServices.JWT.VerifyAccess.Result {
         try {
-            const { payload } = await jwtVerify(token, this.jwks, {
+            const { payload } = await jwtVerify(props.token, this.jwks, {
                 requiredClaims: ["client_id", "sub", "sid", "exp", "iat", "jti"],
                 audience: this.audience,
                 algorithms: [this.algorithm],

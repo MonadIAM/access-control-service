@@ -14,9 +14,9 @@ export class AuthnGuard implements CanActivate {
     public constructor(
         private readonly reflector: Reflector,
         @Inject(JWT_SERVICE)
-        private readonly jwtService: CommonServices.JWT.Contract,
+        private readonly jwtService: CommonServices.JWT.PublicContract,
         @Inject(BLACKLIST_CACHE_SERVICE)
-        private readonly blacklistCacheService: InfrastructureServices.BlacklistCache.Contract,
+        private readonly blacklistCacheService: InfrastructureServices.BlacklistCache.PublicContract,
     ) {}
 
     public async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -38,7 +38,7 @@ export class AuthnGuard implements CanActivate {
             });
         }
 
-        const payload = await this.jwtService.verifyAccess(token);
+        const payload = await this.jwtService.verifyAccess({ token });
 
         const isBlacklisted = await this.blacklistCacheService.exists({
             session: payload.sid as string,

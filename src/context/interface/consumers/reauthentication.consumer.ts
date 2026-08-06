@@ -10,7 +10,7 @@ import { KafkaTopic } from "~context/enums";
 export class ReauthenticationConsumer implements Consumers.Reauthentication.Contract, OnModuleInit {
     public constructor(
         @Inject(REAUTHENTICATION_CACHE_SERVICE)
-        private readonly reauthenticationCacheService: InfrastructureServices.ReauthenticationCache.Contract,
+        private readonly reauthenticationCacheService: InfrastructureServices.ReauthenticationCache.PublicContract,
         @Inject(KAFKA_SERVICE)
         private readonly kafkaClient: ClientKafka,
     ) {}
@@ -20,7 +20,7 @@ export class ReauthenticationConsumer implements Consumers.Reauthentication.Cont
     }
 
     @EventPattern(KafkaTopic.REAUTHENTICATION)
-    public async handle(@Payload() message: Consumers.Reauthentication.Payload): Promise<void> {
+    public async handle(@Payload() message: Consumers.Reauthentication.Message): Consumers.Reauthentication.Handle.Result {
         try {
             const ttl = Math.floor((message.payload.expiresAt - Date.now()) / 1e3);
             if (ttl > 0) {

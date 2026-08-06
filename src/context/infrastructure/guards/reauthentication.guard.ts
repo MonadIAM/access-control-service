@@ -12,7 +12,7 @@ export class ReauthenticationGuard implements CanActivate {
 
     public constructor(
         @Inject(REAUTHENTICATION_CACHE_SERVICE)
-        private readonly reauthenticationCacheService: InfrastructureServices.ReauthenticationCache.Contract,
+        private readonly reauthenticationCacheService: InfrastructureServices.ReauthenticationCache.PublicContract,
         private readonly reflector: Reflector,
     ) {}
 

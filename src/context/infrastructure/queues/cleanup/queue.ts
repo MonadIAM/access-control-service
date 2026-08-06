@@ -4,8 +4,6 @@ import { Injectable } from "@nestjs/common";
 import ms, { StringValue } from "ms";
 import { Queue } from "bullmq";
 
-import { CleanupJob } from "~context/enums";
-
 import { BullQueue } from "../enums";
 
 @Injectable()
@@ -24,11 +22,13 @@ export class CleanupQueue implements Queues.Cleanup.Contract {
         this.batchAttempts = this.configService.getOrThrow<number>("CLEANUP_BATCH_ATTEMPTS");
     }
 
-    public async schedule(job: CleanupJob, data: Queues.Cleanup.JobData): Promise<void> {
+    public async schedule(props: Queues.Cleanup.Schedule.Props): Queues.Cleanup.Schedule.Result {
+        const { job, data } = props;
         await this.queue.add(job, data);
     }
 
-    public async scheduleNextBatch(job: CleanupJob, data: Queues.Cleanup.JobData): Promise<void> {
+    public async scheduleNextBatch(props: Queues.Cleanup.ScheduleNextBatch.Props): Queues.Cleanup.ScheduleNextBatch.Result {
+        const { job, data } = props;
         await this.queue.add(job, data, {
             attempts: this.batchAttempts,
             delay: this.batchDelay,

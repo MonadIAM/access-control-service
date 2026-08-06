@@ -37,7 +37,7 @@ export class InviteCommands implements Commands.Invite.Contract {
         @Inject(INVITE_SERVICE)
         private readonly inviteService: Services.Invite.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
-        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.Contract,
+        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
     ) {}
 
     public async create(props: Commands.Invite.Create.Props): Commands.Invite.Create.Result {

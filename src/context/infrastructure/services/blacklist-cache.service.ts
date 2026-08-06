@@ -9,11 +9,17 @@ export class BlacklistCacheService implements InfrastructureServices.BlacklistCa
 
     public constructor(@Inject(REDIS_CACHE_CLIENT) private readonly redis: Redis) {}
 
-    public async set({ session, ttl }: InfrastructureServices.BlacklistCache.Set): Promise<void> {
+    public async set(
+        props: InfrastructureServices.BlacklistCache.Set.Props,
+    ): InfrastructureServices.BlacklistCache.Set.Result {
+        const { session, ttl } = props;
         await this.redis.set(`${this.namespace}:${session}`, "1", "EX", ttl);
     }
 
-    public async exists({ session }: InfrastructureServices.BlacklistCache.Exists): Promise<boolean> {
+    public async exists(
+        props: InfrastructureServices.BlacklistCache.Exists.Props,
+    ): InfrastructureServices.BlacklistCache.Exists.Result {
+        const { session } = props;
         return (await this.redis.exists(`${this.namespace}:${session}`)) === 1;
     }
 }
