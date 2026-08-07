@@ -1,36 +1,6 @@
 declare namespace Commands {
     namespace AccountRoleAssignment {
-        interface Contract extends ControllerContract, ConsumerContract, InternalContract {}
-
-        interface InternalContract {
-            notificationRevokePayloadMapper: NotificationRevokePayloadMapper.Signature;
-            notificationGrantPayloadMapper: NotificationGrantPayloadMapper.Signature;
-            accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
-        }
-
-        namespace NotificationRevokePayloadMapper {
-            type Props = Entities.AccountRoleAssignment[];
-
-            type Result = Topics.Notification.CreateMessage["payload"][];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace NotificationGrantPayloadMapper {
-            type Props = Entities.AccountRoleAssignment[];
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace AccessCachePayloadMapper {
-            type Props = Entities.AccountRoleAssignment[];
-
-            type Result = Topics.AccessCache.Message["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
+        interface Contract extends ControllerContract, ConsumerContract {}
 
         interface ConsumerContract {
             assign: Assign.Signature;

@@ -9,8 +9,4 @@ end
 local account_id = tostring(payload.account)
 local realm_id = tostring(payload.realm)
 
-if redis.call("SCARD", make_key("account-roles", realm_id, account_id)) > 0 then
-    return 1
-end
-
-return 0
+return cjson.encode(redis.call("SCARD", make_key("account-roles", realm_id, account_id)) > 0)

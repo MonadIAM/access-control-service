@@ -1,25 +1,26 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import {
-    NotificationContentKind,
-    NotificationTopicAction,
-    AccessCacheTopicAction,
-    MembershipTopicAction,
-    NotificationCategory,
-    PlatformService,
-    MessageTemplate,
-} from "@monadiam/shared";
 
-import { EntityType, ActionType, InvalidationScope, InviteStatus, KafkaTopic } from "~context/enums";
 import { INVITE_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
+import {
+    NotificationTopicAction,
+    AccessCacheTopicAction,
+    MembershipTopicAction,
+    InviteStatus,
+    EntityType,
+    ActionType,
+    KafkaTopic,
+} from "~context/enums";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, INVITE_SERVICE } from "../services";
+import { InviteMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InviteCommands implements Commands.Invite.Contract {
+    private readonly mapper = new InviteMapper();
     private readonly dictionaryPath = "commands.invite";
     private readonly resource = "Invite";
 
@@ -52,17 +53,17 @@ export class InviteCommands implements Commands.Invite.Contract {
             throw Exception.conflict({ messageKey: `${this.dictionaryPath}.INVITEE_ALREADY_MEMBER` });
         }
 
-        await this.transactionalService.run<Entities.Invite[]>({
+        await this.transactionalService.run<Mappers.Invite.NotificationPayload.Props>({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.notificationPayload,
+                actionType: NotificationTopicAction.CREATE,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 entityType: EntityType.INVITE,
                 actionType: ActionType.CREATE,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.notificationPayloadMapper.bind(this),
-                actionType: NotificationTopicAction.CREATE,
-                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             changeLog: true,
             execute: async (transaction) => {
@@ -85,7 +86,7 @@ export class InviteCommands implements Commands.Invite.Contract {
                     transaction,
                 });
 
-                return [entity];
+                return { invites: [entity] };
             },
         });
 
@@ -110,24 +111,17 @@ export class InviteCommands implements Commands.Invite.Contract {
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: ({ assignments }) => ({
-                        assignments: assignments.map(({ id, role }) => ({
-                            assignment: id,
-                            role: role.id,
-                        })),
-                        account: assignments[0].account,
-                        realm: assignments[0].realm.id,
-                    }),
+                    payloadMapper: this.mapper.projectionAssignmentCreatePayload,
                     actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.membershipPayloadMapper.bind(this),
+                    payloadMapper: this.mapper.membershipPayload,
                     actionType: MembershipTopicAction.GRANT,
                     destinationTopic: KafkaTopic.MEMBERSHIP,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -164,17 +158,17 @@ export class InviteCommands implements Commands.Invite.Contract {
     public async cancel(props: Commands.Invite.Cancel.Props): Commands.Invite.Cancel.Result {
         const { input, actor, realm } = props;
 
-        await this.transactionalService.run<Entities.Invite[]>({
+        await this.transactionalService.run<Mappers.Invite.NotificationCancelPayload.Props>({
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.notificationCancelPayload,
+                actionType: NotificationTopicAction.CANCEL,
+                destinationTopic: KafkaTopic.NOTIFICATION,
+            },
             audit: {
                 entityType: EntityType.INVITE,
                 actionType: ActionType.CANCEL,
                 ...props,
-            },
-            outbox: {
-                payloadMapper: this.notificationCancelPayloadMapper.bind(this),
-                actionType: NotificationTopicAction.CANCEL,
-                destinationTopic: KafkaTopic.NOTIFICATION,
             },
             changeLog: true,
             execute: async (transaction) => {
@@ -186,7 +180,7 @@ export class InviteCommands implements Commands.Invite.Contract {
 
                 this.inviteService.cancel({ entity });
 
-                return [entity];
+                return { invites: [entity] };
             },
         });
 
@@ -217,64 +211,5 @@ export class InviteCommands implements Commands.Invite.Contract {
         });
 
         return { message: `${this.dictionaryPath}.DECLINED` };
-    }
-
-    public notificationPayloadMapper(
-        props: Commands.Invite.NotificationPayloadMapper.Props,
-    ): Commands.Invite.NotificationPayloadMapper.Result {
-        const [entity] = props;
-
-        return {
-            params: { inviter: entity.inviter, realm: entity.realm.name },
-            sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
-            template: MessageTemplate.INVITE_RECEIVED,
-            category: NotificationCategory.INVITES,
-            kind: NotificationContentKind.TEMPLATE,
-            dedupKey: `invite:${entity.id}`,
-            recipient: entity.invitee,
-            language: "en",
-        };
-    }
-
-    public notificationCancelPayloadMapper(
-        props: Commands.Invite.NotificationCancelPayloadMapper.Props,
-    ): Commands.Invite.NotificationCancelPayloadMapper.Result {
-        const [entity] = props;
-
-        return {
-            dedupKey: `invite:${entity.id}`,
-            override: {
-                params: { inviter: entity.inviter, realm: entity.realm.name },
-                sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
-                template: MessageTemplate.INVITE_CANCELLED,
-                category: NotificationCategory.INVITES,
-                kind: NotificationContentKind.TEMPLATE,
-                recipient: entity.invitee,
-                language: "en",
-            },
-        };
-    }
-
-    public accessCachePayloadMapper(
-        props: Commands.Invite.AccessCachePayloadMapper.Props,
-    ): Commands.Invite.AccessCachePayloadMapper.Result {
-        return {
-            items: props.assignments.map(({ account, realm }) => ({
-                scope: InvalidationScope.ACCOUNT_REALM,
-                realm: realm.id,
-                account,
-            })),
-        };
-    }
-
-    public membershipPayloadMapper(
-        props: Commands.Invite.MembershipPayloadMapper.Props,
-    ): Commands.Invite.MembershipPayloadMapper.Result {
-        return {
-            invitedBy: props.invitedBy,
-            account: props.account,
-            joinedAt: Date.now(),
-            realm: props.realm,
-        };
     }
 }

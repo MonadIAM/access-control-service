@@ -1,174 +1,319 @@
 declare namespace Scripts {
     namespace RolePermissionAssignment {
-        type Create = {
-            assignments: {
-                permissionRealm: string;
-                permission: string;
-                assignment: string;
-                scope: string;
-            }[];
-            realm: string;
-            role: string;
-        };
-
-        type Purge = {
-            items: {
-                permissionRealm: string;
-                permission: string;
+        namespace Create {
+            type Props = {
+                assignments: {
+                    permissionRealm: string;
+                    permission: string;
+                    assignment: string;
+                    scope: string;
+                }[];
                 realm: string;
                 role: string;
-            }[];
-        };
+            };
 
-        type Update = {
-            isRevoked: boolean;
-            items: {
-                permissionRealm: string;
-                permission: string;
-                assignment: string;
-                realm: string;
-                role: string;
-            }[];
-        };
+            type Result = "OK";
+        }
+
+        namespace Purge {
+            type Props = {
+                items: {
+                    permissionRealm: string;
+                    permission: string;
+                    realm: string;
+                    role: string;
+                }[];
+            };
+
+            type Result = "OK";
+        }
+
+        namespace Update {
+            type Props = {
+                isRevoked: boolean;
+                items: {
+                    permissionRealm: string;
+                    permission: string;
+                    assignment: string;
+                    realm: string;
+                    role: string;
+                }[];
+            };
+
+            type Result = "OK";
+        }
     }
 
     namespace AccountRoleAssignment {
-        type Create = {
-            assignments: {
-                assignment: string;
-                role: string;
-            }[];
-            account: string;
-            realm: string;
-        };
-
-        type Purge = {
-            items: {
+        namespace Create {
+            type Props = {
+                assignments: {
+                    assignment: string;
+                    role: string;
+                }[];
                 account: string;
                 realm: string;
-                role: string;
-            }[];
-        };
+            };
 
-        type Update = {
-            isRevoked: boolean;
-            items: {
-                assignment: string;
-                account: string;
-                realm: string;
-                role: string;
-            }[];
-        };
+            type Result = "OK";
+        }
+
+        namespace Purge {
+            type Props = {
+                items: {
+                    account: string;
+                    realm: string;
+                    role: string;
+                }[];
+            };
+
+            type Result = "OK";
+        }
+
+        namespace Update {
+            type Props = {
+                isRevoked: boolean;
+                items: {
+                    assignment: string;
+                    account: string;
+                    realm: string;
+                    role: string;
+                }[];
+            };
+
+            type Result = "OK";
+        }
+
+        namespace Validate {
+            type Props = {
+                items: {
+                    account: string;
+                    realm: string;
+                    role: string;
+                }[];
+            };
+
+            type Result = {
+                missing: string[];
+                groups: {
+                    remaining: number;
+                    account: string;
+                    realm: string;
+                }[];
+            };
+        }
     }
 
     namespace PermissionOverride {
-        type Create = {
-            permissionRealm: string;
-            permission: string;
-            override: string;
-            account: string;
-            effect: string;
-            realm: string;
-        };
-
-        type Purge = {
-            items: {
-                permissionRealm: string;
-                permission: string;
-                account: string;
-                realm: string;
-            }[];
-        };
-
-        type Update = {
-            isRevoked: boolean;
-            items: {
+        namespace Create {
+            type Props = {
                 permissionRealm: string;
                 permission: string;
                 override: string;
                 account: string;
                 effect: string;
                 realm: string;
-            }[];
-        };
+            };
+
+            type Result = "OK";
+        }
+
+        namespace Purge {
+            type Props = {
+                items: {
+                    permissionRealm: string;
+                    permission: string;
+                    account: string;
+                    realm: string;
+                }[];
+            };
+
+            type Result = "OK";
+        }
+
+        namespace Update {
+            type Props = {
+                isRevoked: boolean;
+                items: {
+                    permissionRealm: string;
+                    permission: string;
+                    override: string;
+                    account: string;
+                    effect: string;
+                    realm: string;
+                }[];
+            };
+
+            type Result = "OK";
+        }
     }
 
     namespace Permission {
-        type Create = {
-            permission: string;
-            realm: string;
-            code: string;
-        };
+        namespace Create {
+            type Props = {
+                permission: string;
+                realm: string;
+                code: string;
+            };
 
-        type Purge = {
-            permissions: string[];
-            realm: string;
-        };
+            type Result = "OK";
+        }
 
-        type Update = {
-            permissions: string[];
-            isRevoked: boolean;
-            realm: string;
-        };
+        namespace Purge {
+            type Props = {
+                permissions: string[];
+                realm: string;
+            };
+
+            type Result = "OK";
+        }
+
+        namespace Update {
+            type Props = {
+                permissions: string[];
+                isRevoked: boolean;
+                realm: string;
+            };
+
+            type Result = "OK";
+        }
+
+        namespace Check {
+            type Props = {
+                permissionRealm: string;
+                permissions: string[];
+                globalOnly?: boolean;
+                systemRealm: string;
+                account: string;
+                realm: string;
+            };
+
+            type Result = string[];
+        }
+
+        namespace Collect {
+            type Props = {
+                permissionRealm: string;
+                systemRealm: string;
+                account: string;
+                realm: string;
+            };
+
+            type Result = Record<string, string>;
+        }
     }
 
     namespace Realm {
-        type Create = {
-            rolePermissionAssignments: {
-                permission: string;
-                assignment: string;
-                scope: string;
-                role: string;
-            }[];
-            accountRoleAssignments: {
-                assignment: string;
+        namespace Create {
+            type Props = {
+                rolePermissionAssignments: {
+                    permission: string;
+                    assignment: string;
+                    scope: string;
+                    role: string;
+                }[];
+                accountRoleAssignments: {
+                    assignment: string;
+                    account: string;
+                    role: string;
+                }[];
+                paths: {
+                    descendant: string;
+                    ancestor: string;
+                    depth: number;
+                }[];
+                permissionRealm: string;
+                roles: string[];
+                realm: string;
+            };
+
+            type Result = "OK";
+        }
+
+        namespace Purge {
+            type Props = {
+                realms: string[];
+            };
+
+            type Result = "OK";
+        }
+
+        namespace Update {
+            type Props = {
+                isRevoked: boolean;
+                realms: string[];
+            };
+
+            type Result = "OK";
+        }
+
+        namespace Collect {
+            type Props = {
                 account: string;
-                role: string;
-            }[];
-            paths: {
-                descendant: string;
-                ancestor: string;
-                depth: number;
-            }[];
-            permissionRealm: string;
-            roles: string[];
-            realm: string;
-        };
+            };
 
-        type Purge = {
-            realms: string[];
-        };
+            type Result = string[];
+        }
 
-        type Update = {
-            isRevoked: boolean;
-            realms: string[];
-        };
+        namespace Check {
+            type Props = {
+                account: string;
+                realm: string;
+            };
+
+            type Result = boolean;
+        }
     }
 
     namespace Role {
-        type Create = {
-            parent: string;
-            realm: string;
-            role: string;
-        };
+        namespace Create {
+            type Props = {
+                parent: string;
+                realm: string;
+                role: string;
+            };
 
-        type Purge = {
-            realm: string;
-            role: string;
-        };
+            type Result = "OK";
+        }
 
-        type Update = {
-            isRevoked: boolean;
-            roles: string[];
-            realm: string;
-        };
+        namespace Purge {
+            type Props = {
+                realm: string;
+                role: string;
+            };
 
-        type Move = {
-            steps: {
-                removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
-                upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
-            }[];
-            realm: string;
-        };
+            type Result = "OK";
+        }
+
+        namespace Update {
+            type Props = {
+                isRevoked: boolean;
+                roles: string[];
+                realm: string;
+            };
+
+            type Result = "OK";
+        }
+    }
+
+    namespace RoleClosure {
+        namespace Update {
+            type Props = {
+                steps: {
+                    removedPaths: {
+                        descendant: { id: string };
+                        ancestor: { id: string };
+                    }[];
+                    upsertedPaths: {
+                        descendant: { id: string };
+                        ancestor: { id: string };
+                        depth: number;
+                    }[];
+                }[];
+                realm: string;
+            };
+
+            type Result = "OK";
+        }
     }
 }

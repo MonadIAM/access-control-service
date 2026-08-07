@@ -1,53 +1,6 @@
 declare namespace Commands {
     namespace Realm {
-        interface Contract extends ControllerContract, InternalContract {}
-
-        interface InternalContract {
-            realmLifecyclePayloadMapper: RealmLifecyclePayloadMapper.Signature;
-            notificationPayloadMapper: NotificationPayloadMapper.Signature;
-            accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
-            membershipPayloadMapper: MembershipPayloadMapper.Signature;
-        }
-
-        namespace RealmLifecyclePayloadMapper {
-            type Props = Entities.Realm[];
-
-            type Result = Topics.Realm.Message["payload"][];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace NotificationPayloadMapper {
-            type Props = Exclude.ExecuteResult;
-
-            type Result = Topics.Notification.CreateMessage["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace AccessCachePayloadMapper {
-            type Props =
-                | {
-                      account: string;
-                      realm: string;
-                  }
-                | Entities.Realm[];
-
-            type Result = Topics.AccessCache.Message["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace MembershipPayloadMapper {
-            type Props = {
-                account: string;
-                realm: string;
-            };
-
-            type Result = Topics.Membership.RevokeMessage["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
+        interface Contract extends ControllerContract {}
 
         interface ControllerContract {
             restore: Restore.Signature;

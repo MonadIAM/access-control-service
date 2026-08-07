@@ -3,19 +3,7 @@ import { MoveMode, RoleActorType, RoleArchetype } from "~context/enums";
 declare global {
     namespace Commands {
         namespace Role {
-            interface Contract extends ControllerContract, InternalContract {}
-
-            interface InternalContract {
-                accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
-            }
-
-            namespace AccessCachePayloadMapper {
-                type Props = Entities.Role[] | { realm: string }[];
-
-                type Result = Topics.AccessCache.Message["payload"];
-
-                type Signature = (props: Props) => Result;
-            }
+            interface Contract extends ControllerContract {}
 
             interface ControllerContract {
                 purgeSubtree: PurgeSubtree.Signature;

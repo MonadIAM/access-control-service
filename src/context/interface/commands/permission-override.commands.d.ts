@@ -3,19 +3,7 @@ import { PermissionOverrideEffect } from "~context/enums";
 declare global {
     namespace Commands {
         namespace PermissionOverride {
-            interface Contract extends ControllerContract, ConsumerContract, InternalContract {}
-
-            interface InternalContract {
-                accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
-            }
-
-            namespace AccessCachePayloadMapper {
-                type Result = Topics.AccessCache.Message["payload"];
-
-                type Props = Entities.PermissionOverride[];
-
-                type Signature = (props: Props) => Result;
-            }
+            interface Contract extends ControllerContract, ConsumerContract {}
 
             interface ConsumerContract {
                 clean: Clean.Signature;

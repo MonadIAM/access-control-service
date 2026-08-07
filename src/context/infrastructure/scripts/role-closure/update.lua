@@ -10,8 +10,8 @@ local realm_id = tostring(payload.realm)
 
 for _, step in ipairs(payload.steps or {}) do
     for _, path in ipairs(step.removedPaths or {}) do
-        local ancestor_id = tostring(path.ancestor)
-        local descendant_id = tostring(path.descendant)
+        local ancestor_id = tostring(path.ancestor.id)
+        local descendant_id = tostring(path.descendant.id)
 
         if ancestor_id ~= descendant_id then
             redis.call("UNLINK", make_key("role-closure", realm_id, ancestor_id, descendant_id))
@@ -21,8 +21,8 @@ for _, step in ipairs(payload.steps or {}) do
     end
 
     for _, path in ipairs(step.upsertedPaths or {}) do
-        local descendant_id = tostring(path.descendant)
-        local ancestor_id = tostring(path.ancestor)
+        local descendant_id = tostring(path.descendant.id)
+        local ancestor_id = tostring(path.ancestor.id)
         local depth = tonumber(path.depth)
 
         redis.call("HSET", make_key("role-closure", realm_id, ancestor_id, descendant_id),

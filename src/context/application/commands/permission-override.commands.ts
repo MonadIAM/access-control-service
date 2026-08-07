@@ -1,17 +1,18 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccessCacheTopicAction } from "@monadiam/shared";
 
 import { PERMISSION_OVERRIDE_REPOSITORY, PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/domain/repositories";
-import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
+import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
 
 import { PERMISSION_OVERRIDE_SERVICE } from "../services";
+import { PermissionOverrideMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideCommands implements Commands.PermissionOverride.Contract {
+    private readonly mapper = new PermissionOverrideMapper();
     private readonly dictionaryPath = "commands.permission-override";
     private readonly resource = "PermissionOverride";
 
@@ -46,21 +47,12 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: ([
-                        { permission, account, effect, id },
-                    ]: Entities.PermissionOverride[]): Scripts.PermissionOverride.Create => ({
-                        permissionRealm: permission.realm.id,
-                        permission: permission.id,
-                        override: id,
-                        account,
-                        effect,
-                        realm,
-                    }),
+                    payloadMapper: this.mapper.projectionCreatePayload,
                     actionType: ProjectionScript.PERMISSION_OVERRIDE_CREATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -93,7 +85,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                         realm: realmEntity,
                         transaction,
                     })
-                    .then((override) => [override]);
+                    .then((override) => ({ overrides: [override] }));
             },
         });
 
@@ -103,23 +95,16 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     public async purge(props: Commands.PermissionOverride.Purge.Props): Commands.PermissionOverride.Purge.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { overrides } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Purge => ({
-                        items: entities.map(({ realm, account, permission }) => ({
-                            permissionRealm: permission.realm.id,
-                            permission: permission.id,
-                            realm: realm.id,
-                            account,
-                        })),
-                    }),
+                    payloadMapper: this.mapper.projectionPurgePayload,
                     actionType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -141,13 +126,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 } else {
                     this.permissionOverrideService.purge({ transaction, entities });
 
-                    return entities;
+                    return { overrides: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+        if (overrides.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: overrides.length } };
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
         }
@@ -156,26 +141,16 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     public async revoke(props: Commands.PermissionOverride.Revoke.Props): Commands.PermissionOverride.Revoke.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { overrides } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Update => ({
-                        items: entities.map(({ id, realm, account, permission, effect }) => ({
-                            permissionRealm: permission.realm.id,
-                            permission: permission.id,
-                            realm: realm.id,
-                            override: id,
-                            account,
-                            effect,
-                        })),
-                        isRevoked: true,
-                    }),
+                    payloadMapper: this.mapper.projectionUpdatePayload,
                     actionType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -198,13 +173,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 } else {
                     this.permissionOverrideService.revoke({ entities });
 
-                    return entities;
+                    return { overrides: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+        if (overrides.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: overrides.length } };
         } else {
             return { message: `${this.dictionaryPath}.REVOKED` };
         }
@@ -213,26 +188,16 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
     public async restore(props: Commands.PermissionOverride.Restore.Props): Commands.PermissionOverride.Restore.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { overrides } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Update => ({
-                        items: entities.map(({ id, realm, account, permission, effect }) => ({
-                            permissionRealm: permission.realm.id,
-                            permission: permission.id,
-                            realm: realm.id,
-                            override: id,
-                            account,
-                            effect,
-                        })),
-                        isRevoked: false,
-                    }),
+                    payloadMapper: this.mapper.projectionUpdatePayload,
                     actionType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -255,13 +220,13 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 } else {
                     this.permissionOverrideService.restore({ entities });
 
-                    return entities;
+                    return { overrides: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+        if (overrides.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: overrides.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
@@ -272,19 +237,12 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.PermissionOverride[]): Scripts.PermissionOverride.Purge => ({
-                        items: entities.map(({ realm, account, permission }) => ({
-                            permissionRealm: permission.realm.id,
-                            permission: permission.id,
-                            realm: realm.id,
-                            account,
-                        })),
-                    }),
+                    payloadMapper: this.mapper.projectionPurgePayload,
                     actionType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -298,20 +256,8 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
 
                 this.permissionOverrideService.purge({ transaction, entities });
 
-                return entities;
+                return { overrides: entities };
             },
         });
-    }
-
-    public accessCachePayloadMapper(
-        entities: Commands.PermissionOverride.AccessCachePayloadMapper.Props,
-    ): Commands.PermissionOverride.AccessCachePayloadMapper.Result {
-        return {
-            items: entities.map(({ account, realm }) => ({
-                scope: InvalidationScope.ACCOUNT_REALM,
-                realm: realm.id,
-                account,
-            })),
-        };
     }
 }

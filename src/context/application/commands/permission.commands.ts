@@ -1,16 +1,17 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccessCacheTopicAction } from "@monadiam/shared";
 
+import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/domain/repositories";
-import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
 
 import { PERMISSION_SERVICE } from "../services";
+import { PermissionMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionCommands implements Commands.Permission.Contract {
+    private readonly mapper = new PermissionMapper();
     private readonly dictionaryPath = "commands.permission";
     private readonly resource = "Permission";
 
@@ -31,11 +32,7 @@ export class PermissionCommands implements Commands.Permission.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             outbox: {
-                payloadMapper: (entity: Entities.Permission): Scripts.Permission.Create => ({
-                    permission: entity.id,
-                    code: entity.code,
-                    realm,
-                }),
+                payloadMapper: this.mapper.projectionCreatePayload,
                 destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 actionType: ProjectionScript.PERMISSION_CREATE,
             },
@@ -51,11 +48,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
                     transaction,
                 });
 
-                return this.permissionService.create({
+                const permission = await this.permissionService.create({
                     realm: realmEntity,
                     transaction,
                     input,
                 });
+
+                return { permission };
             },
         });
 
@@ -89,19 +88,16 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public async purge(props: Commands.Permission.Purge.Props): Commands.Permission.Purge.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { permissions } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Purge => ({
-                        permissions: entities.map(({ id }) => id),
-                        realm,
-                    }),
+                    payloadMapper: this.mapper.projectionPurgePayload,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                     actionType: ProjectionScript.PERMISSION_PURGE,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -122,13 +118,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
                 } else {
                     this.permissionService.purge({ transaction, entities });
-                    return entities;
+                    return { permissions: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+        if (permissions.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: permissions.length } };
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
         }
@@ -137,20 +133,16 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public async revoke(props: Commands.Permission.Revoke.Props): Commands.Permission.Revoke.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { permissions } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Update => ({
-                        permissions: entities.map(({ id }) => id),
-                        isRevoked: true,
-                        realm,
-                    }),
+                    payloadMapper: this.mapper.projectionUpdatePayload,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                     actionType: ProjectionScript.PERMISSION_UPDATE,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -172,13 +164,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 } else {
                     this.permissionService.revoke({ entities });
 
-                    return entities;
+                    return { permissions: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+        if (permissions.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: permissions.length } };
         } else {
             return { message: `${this.dictionaryPath}.REVOKED` };
         }
@@ -187,20 +179,16 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public async restore(props: Commands.Permission.Restore.Props): Commands.Permission.Restore.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { permissions } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.Permission[]): Scripts.Permission.Update => ({
-                        permissions: entities.map(({ id }) => id),
-                        isRevoked: false,
-                        realm,
-                    }),
+                    payloadMapper: this.mapper.projectionUpdatePayload,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                     actionType: ProjectionScript.PERMISSION_UPDATE,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -222,26 +210,15 @@ export class PermissionCommands implements Commands.Permission.Contract {
                 } else {
                     this.permissionService.restore({ entities });
 
-                    return entities;
+                    return { permissions: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+        if (permissions.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: permissions.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
-    }
-
-    public accessCachePayloadMapper(
-        entities: Commands.Permission.AccessCachePayloadMapper.Props,
-    ): Commands.Permission.AccessCachePayloadMapper.Result {
-        return {
-            items: entities.map(({ realm }) => ({
-                scope: InvalidationScope.REALM,
-                realm: realm.id,
-            })),
-        };
     }
 }

@@ -6,51 +6,9 @@ declare global {
             interface Contract extends ControllerContract, InternalContract {}
 
             interface InternalContract {
-                notificationCancelPayloadMapper: NotificationCancelPayloadMapper.Signature;
-                notificationPayloadMapper: NotificationPayloadMapper.Signature;
-                accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
-                membershipPayloadMapper: MembershipPayloadMapper.Signature;
                 decline: Decline.Signature;
                 accept: Accept.Signature;
                 cancel: Cancel.Signature;
-            }
-
-            namespace NotificationCancelPayloadMapper {
-                type Props = Entities.Invite[];
-
-                type Result = Topics.Notification.CancelMessage["payload"];
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace NotificationPayloadMapper {
-                type Props = Entities.Invite[];
-
-                type Result = Topics.Notification.CreateMessage["payload"];
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace AccessCachePayloadMapper {
-                type Props = {
-                    assignments: Entities.AccountRoleAssignment[];
-                };
-
-                type Result = Topics.AccessCache.Message["payload"];
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace MembershipPayloadMapper {
-                type Props = {
-                    invitedBy: string;
-                    account: string;
-                    realm: string;
-                };
-
-                type Result = Topics.Membership.GrantMessage["payload"];
-
-                type Signature = (props: Props) => Result;
             }
 
             namespace Decline {

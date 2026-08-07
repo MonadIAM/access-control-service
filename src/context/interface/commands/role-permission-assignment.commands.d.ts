@@ -1,18 +1,6 @@
 declare namespace Commands {
     namespace RolePermissionAssignment {
-        interface Contract extends ControllerContract, InternalContract {}
-
-        interface InternalContract {
-            accessCachePayloadMapper: AccessCachePayloadMapper.Signature;
-        }
-
-        namespace AccessCachePayloadMapper {
-            type Props = Entities.RolePermissionAssignment[];
-
-            type Result = Topics.AccessCache.Message["payload"];
-
-            type Signature = (props: Props) => Result;
-        }
+        interface Contract extends ControllerContract {}
 
         interface ControllerContract {
             restore: Restore.Signature;

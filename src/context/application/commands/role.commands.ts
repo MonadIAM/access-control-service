@@ -1,16 +1,17 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccessCacheTopicAction } from "@monadiam/shared";
 
-import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
+import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
 
 import { ROLE_SERVICE } from "../services";
+import { RoleMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleCommands implements Commands.Role.Contract {
+    private readonly mapper = new RoleMapper();
     private readonly dictionaryPath = "commands.role";
     private readonly resource = "Role";
 
@@ -31,11 +32,7 @@ export class RoleCommands implements Commands.Role.Contract {
         await this.transactionalService.run({
             resource: this.resource,
             outbox: {
-                payloadMapper: (entity: Entities.Role): Scripts.Role.Create => ({
-                    parent: input.parent,
-                    role: entity.id,
-                    realm,
-                }),
+                payloadMapper: this.mapper.projectionCreatePayload,
                 destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 actionType: ProjectionScript.ROLE_CREATE,
             },
@@ -57,11 +54,13 @@ export class RoleCommands implements Commands.Role.Contract {
                     }),
                 ]);
 
-                return this.roleService.create({
+                const entity = await this.roleService.create({
                     input: { ...input, parent: parentEntity },
                     realm: realmEntity,
                     transaction,
                 });
+
+                return { entity, parent: parentEntity };
             },
         });
 
@@ -99,12 +98,12 @@ export class RoleCommands implements Commands.Role.Contract {
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (): Scripts.Role.Purge => ({ role: id, realm }),
+                    payloadMapper: this.mapper.projectionPurgePayload,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                     actionType: ProjectionScript.ROLE_PURGE,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -127,7 +126,7 @@ export class RoleCommands implements Commands.Role.Contract {
                     realm,
                 });
 
-                return [entity];
+                return { roles: [entity] };
             },
         });
 
@@ -137,16 +136,16 @@ export class RoleCommands implements Commands.Role.Contract {
     public async purgeSubtree(props: Commands.Role.PurgeSubtree.Props): Commands.Role.PurgeSubtree.Result {
         const { realm, id } = props;
 
-        const entities = await this.transactionalService.run({
+        const { entities } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (): Scripts.Role.Purge => ({ role: id, realm }),
+                    payloadMapper: this.mapper.projectionSubtreePurgePayload,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                     actionType: ProjectionScript.ROLE_PURGE,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.subtreeAccessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -163,11 +162,13 @@ export class RoleCommands implements Commands.Role.Contract {
                     transaction,
                 });
 
-                return this.roleService.purgeSubtree({
+                const entities = await this.roleService.purgeSubtree({
                     transaction,
                     entity,
                     realm,
                 });
+
+                return { root: entity, entities };
             },
         });
 
@@ -177,20 +178,16 @@ export class RoleCommands implements Commands.Role.Contract {
     public async revoke(props: Commands.Role.Revoke.Props): Commands.Role.Revoke.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { roles } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.Role[]): Scripts.Role.Update => ({
-                        roles: entities.map(({ id }) => id),
-                        isRevoked: true,
-                        realm,
-                    }),
+                    payloadMapper: this.mapper.projectionUpdatePayload,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                     actionType: ProjectionScript.ROLE_UPDATE,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -211,13 +208,13 @@ export class RoleCommands implements Commands.Role.Contract {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
                 } else {
                     this.roleService.revoke({ entities });
-                    return entities;
+                    return { roles: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+        if (roles.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: roles.length } };
         } else {
             return { message: `${this.dictionaryPath}.REVOKED` };
         }
@@ -226,20 +223,16 @@ export class RoleCommands implements Commands.Role.Contract {
     public async restore(props: Commands.Role.Restore.Props): Commands.Role.Restore.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { roles } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.Role[]): Scripts.Role.Update => ({
-                        roles: entities.map(({ id }) => id),
-                        isRevoked: false,
-                        realm,
-                    }),
+                    payloadMapper: this.mapper.projectionUpdatePayload,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                     actionType: ProjectionScript.ROLE_UPDATE,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -260,13 +253,13 @@ export class RoleCommands implements Commands.Role.Contract {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
                 } else {
                     this.roleService.restore({ entities });
-                    return entities;
+                    return { roles: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+        if (roles.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: roles.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
@@ -279,12 +272,12 @@ export class RoleCommands implements Commands.Role.Contract {
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (steps: Awaited<Services.Role.Move.Result>): Scripts.Role.Move => ({ steps, realm }),
+                    payloadMapper: this.mapper.projectionMovePayload,
                     actionType: ProjectionScript.ROLE_CLOSURE_UPDATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this, [{ realm }]),
+                    payloadMapper: this.mapper.moveAccessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -306,21 +299,12 @@ export class RoleCommands implements Commands.Role.Contract {
                     }),
                 ]);
 
-                return this.roleService.move({ ...input, transaction, targetParent, target, realm });
+                const steps = await this.roleService.move({ ...input, transaction, targetParent, target, realm });
+
+                return { steps, target };
             },
         });
 
         return { message: `${this.dictionaryPath}.REPARENTED` };
-    }
-
-    public accessCachePayloadMapper(
-        entities: Commands.Role.AccessCachePayloadMapper.Props,
-    ): Commands.Role.AccessCachePayloadMapper.Result {
-        return {
-            items: entities.map(({ realm }) => ({
-                realm: typeof realm === "string" ? realm : realm.id,
-                scope: InvalidationScope.REALM,
-            })),
-        };
     }
 }

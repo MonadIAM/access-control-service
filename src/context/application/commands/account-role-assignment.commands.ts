@@ -1,15 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import {
-    NotificationContentKind,
-    NotificationTopicAction,
-    AccessCacheTopicAction,
-    NotificationCategory,
-    PlatformService,
-    MessageTemplate,
-} from "@monadiam/shared";
 
+import { NotificationTopicAction, AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
-import { ActionType, EntityType, KafkaTopic, InvalidationScope } from "~context/enums";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { SYSTEM_USER_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
@@ -17,9 +9,11 @@ import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "../services";
+import { AccountRoleAssignmentMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssignment.Contract {
+    private readonly mapper = new AccountRoleAssignmentMapper();
     private readonly dictionaryPath = "commands.account-role-assignment";
     private readonly resource = "AccountRoleAssignment";
 
@@ -54,26 +48,19 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Create => ({
-                        assignments: entities.map(({ id, role }) => ({
-                            assignment: id,
-                            role: role.id,
-                        })),
-                        account: input.account,
-                        realm,
-                    }),
+                    payloadMapper: this.mapper.projectionCreatePayload,
                     actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
-                },
-                {
-                    payloadMapper: this.notificationGrantPayloadMapper.bind(this),
+                    payloadMapper: this.mapper.notificationGrantPayload,
                     actionType: NotificationTopicAction.CREATE,
                     destinationTopic: KafkaTopic.NOTIFICATION,
+                },
+                {
+                    payloadMapper: this.mapper.accessCachePayload,
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
             ],
             audit: {
@@ -97,12 +84,14 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 if (roleEntities.length < input.roles.length) {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
                 } else {
-                    return this.accountRoleAssignmentService.create({
+                    const assignments = await this.accountRoleAssignmentService.create({
                         input: { account: input.account, roles: roleEntities },
                         realm: realmEntity,
                         transaction,
                         actor,
                     });
+
+                    return { assignments };
                 }
             },
         });
@@ -141,18 +130,12 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Purge => ({
-                        items: entities.map(({ realm, account, role }) => ({
-                            realm: realm.id,
-                            role: role.id,
-                            account,
-                        })),
-                    }),
+                    payloadMapper: this.mapper.projectionPurgePayload,
                     actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -165,7 +148,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             changeLog: true,
             execute: (transaction) => {
                 this.accountRoleAssignmentService.purge({ transaction, entities });
-                return entities;
+                return { assignments: entities };
             },
         });
 
@@ -179,29 +162,21 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     public async revoke(props: Commands.AccountRoleAssignment.Revoke.Props): Commands.AccountRoleAssignment.Revoke.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { assignments } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Update => ({
-                        isRevoked: true,
-                        items: entities.map(({ id, realm, account, role }) => ({
-                            realm: realm.id,
-                            assignment: id,
-                            role: role.id,
-                            account,
-                        })),
-                    }),
+                    payloadMapper: this.mapper.projectionUpdatePayload,
                     actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
                 {
-                    payloadMapper: this.notificationRevokePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.notificationRevokePayload,
                     actionType: NotificationTopicAction.CREATE,
                     destinationTopic: KafkaTopic.NOTIFICATION,
                 },
@@ -224,13 +199,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 } else {
                     this.accountRoleAssignmentService.revoke({ entities });
 
-                    return entities;
+                    return { assignments: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+        if (assignments.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: assignments.length } };
         } else {
             return { message: `${this.dictionaryPath}.REVOKED` };
         }
@@ -241,24 +216,16 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     ): Commands.AccountRoleAssignment.Restore.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { assignments } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Update => ({
-                        isRevoked: false,
-                        items: entities.map(({ id, realm, account, role }) => ({
-                            realm: realm.id,
-                            assignment: id,
-                            role: role.id,
-                            account,
-                        })),
-                    }),
+                    payloadMapper: this.mapper.projectionUpdatePayload,
                     actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -280,13 +247,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 } else {
                     this.accountRoleAssignmentService.restore({ entities });
 
-                    return entities;
+                    return { assignments: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+        if (assignments.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: assignments.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
@@ -297,21 +264,12 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: ([entity]: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Create => ({
-                        realm: SYSTEM_REALM_ID,
-                        account: props.account,
-                        assignments: [
-                            {
-                                assignment: entity.id,
-                                role: SYSTEM_USER_ROLE_ID,
-                            },
-                        ],
-                    }),
+                    payloadMapper: this.mapper.projectionAssignPayload,
                     actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -328,16 +286,18 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     }),
                 ]);
 
-                return [
-                    this.accountRoleAssignmentService.assign({
-                        transaction,
-                        input: {
-                            account: props.account,
-                            realm: realmEntity,
-                            role: roleEntity,
-                        },
-                    }),
-                ];
+                return {
+                    assignments: [
+                        this.accountRoleAssignmentService.assign({
+                            transaction,
+                            input: {
+                                account: props.account,
+                                realm: realmEntity,
+                                role: roleEntity,
+                            },
+                        }),
+                    ],
+                };
             },
         });
     }
@@ -347,18 +307,12 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (entities: Entities.AccountRoleAssignment[]): Scripts.AccountRoleAssignment.Purge => ({
-                        items: entities.map(({ realm, account, role }) => ({
-                            realm: realm.id,
-                            role: role.id,
-                            account,
-                        })),
-                    }),
+                    payloadMapper: this.mapper.projectionPurgePayload,
                     actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -370,56 +324,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 });
 
                 this.accountRoleAssignmentService.purge({ transaction, entities });
-                return entities;
+
+                return { assignments: entities };
             },
         });
-    }
-
-    public notificationGrantPayloadMapper(
-        props: Commands.AccountRoleAssignment.NotificationGrantPayloadMapper.Props,
-    ): Commands.AccountRoleAssignment.NotificationGrantPayloadMapper.Result {
-        const [{ account, realm }] = props;
-
-        return {
-            params: { realm: realm.name, role: props.map(({ role }) => role.name).join(", ") },
-            sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
-            template: MessageTemplate.ASSIGNMENT_GRANTED,
-            kind: NotificationContentKind.TEMPLATE,
-            category: NotificationCategory.SYSTEM,
-            recipient: account,
-            language: "en",
-        };
-    }
-
-    public notificationRevokePayloadMapper(
-        props: Commands.AccountRoleAssignment.NotificationRevokePayloadMapper.Props,
-    ): Commands.AccountRoleAssignment.NotificationRevokePayloadMapper.Result {
-        const byAccount = new Map<string, Entities.AccountRoleAssignment[]>();
-
-        for (const entity of props) {
-            byAccount.set(entity.account, [...(byAccount.get(entity.account) ?? []), entity]);
-        }
-
-        return [...byAccount.entries()].map(([account, entities]) => ({
-            params: { realm: entities[0].realm.name, role: entities.map(({ role }) => role.name).join(", ") },
-            sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
-            template: MessageTemplate.ASSIGNMENT_REVOKED,
-            kind: NotificationContentKind.TEMPLATE,
-            category: NotificationCategory.SYSTEM,
-            recipient: account,
-            language: "en",
-        }));
-    }
-
-    public accessCachePayloadMapper(
-        entities: Commands.AccountRoleAssignment.AccessCachePayloadMapper.Props,
-    ): Commands.AccountRoleAssignment.AccessCachePayloadMapper.Result {
-        return {
-            items: entities.map(({ account, realm }) => ({
-                scope: InvalidationScope.ACCOUNT_REALM,
-                realm: realm.id,
-                account,
-            })),
-        };
     }
 }

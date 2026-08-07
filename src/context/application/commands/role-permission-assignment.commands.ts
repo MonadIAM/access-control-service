@@ -1,7 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { AccessCacheTopicAction } from "@monadiam/shared";
 
-import { ActionType, EntityType, InvalidationScope, KafkaTopic } from "~context/enums";
+import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
@@ -14,9 +13,11 @@ import {
 } from "~context/domain/repositories";
 
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "../services";
+import { RolePermissionAssignmentMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RolePermissionAssignmentCommands implements Commands.RolePermissionAssignment.Contract {
+    private readonly mapper = new RolePermissionAssignmentMapper();
     private readonly dictionaryPath = "commands.role-permission-assignment";
     private readonly resource = "RolePermissionAssignment";
 
@@ -44,23 +45,12 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (
-                        entities: Entities.RolePermissionAssignment[],
-                    ): Scripts.RolePermissionAssignment.Create => ({
-                        assignments: entities.map(({ id, permission, scope }) => ({
-                            permissionRealm: permission.realm.id,
-                            permission: permission.id,
-                            assignment: id,
-                            scope,
-                        })),
-                        role: input.role,
-                        realm,
-                    }),
+                    payloadMapper: this.mapper.projectionCreatePayload,
                     actionType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_CREATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -90,7 +80,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 if (permissionEntities.length < input.permissions.length) {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
                 } else {
-                    return this.rolePermissionAssignmentService.create({
+                    const assignments = await this.rolePermissionAssignmentService.create({
                         input: {
                             permissions: permissionEntities,
                             role: roleEntity,
@@ -98,6 +88,8 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                         realm: realmEntity,
                         transaction,
                     });
+
+                    return { assignments };
                 }
             },
         });
@@ -110,25 +102,16 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ): Commands.RolePermissionAssignment.Purge.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { assignments } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (
-                        entities: Entities.RolePermissionAssignment[],
-                    ): Scripts.RolePermissionAssignment.Purge => ({
-                        items: entities.map(({ realm, role, permission }) => ({
-                            permissionRealm: permission.realm.id,
-                            permission: permission.id,
-                            realm: realm.id,
-                            role: role.id,
-                        })),
-                    }),
+                    payloadMapper: this.mapper.projectionPurgePayload,
                     actionType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_PURGE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -150,13 +133,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
                 } else {
                     this.rolePermissionAssignmentService.purge({ transaction, entities });
-                    return entities;
+                    return { assignments: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+        if (assignments.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: assignments.length } };
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
         }
@@ -167,27 +150,16 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ): Commands.RolePermissionAssignment.Revoke.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { assignments } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (
-                        entities: Entities.RolePermissionAssignment[],
-                    ): Scripts.RolePermissionAssignment.Update => ({
-                        items: entities.map(({ id, realm, role, permission }) => ({
-                            permissionRealm: permission.realm.id,
-                            permission: permission.id,
-                            realm: realm.id,
-                            assignment: id,
-                            role: role.id,
-                        })),
-                        isRevoked: true,
-                    }),
+                    payloadMapper: this.mapper.projectionUpdatePayload,
                     actionType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -209,13 +181,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
                 } else {
                     this.rolePermissionAssignmentService.revoke({ entities });
-                    return entities;
+                    return { assignments: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: entities.length } };
+        if (assignments.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_REVOKED_COUNT`, params: { count: assignments.length } };
         } else {
             return { message: `${this.dictionaryPath}.REVOKED` };
         }
@@ -226,27 +198,16 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     ): Commands.RolePermissionAssignment.Restore.Result {
         const { input, realm } = props;
 
-        const entities = await this.transactionalService.run({
+        const { assignments } = await this.transactionalService.run({
             resource: this.resource,
             outbox: [
                 {
-                    payloadMapper: (
-                        entities: Entities.RolePermissionAssignment[],
-                    ): Scripts.RolePermissionAssignment.Update => ({
-                        items: entities.map(({ id, realm, role, permission }) => ({
-                            permissionRealm: permission.realm.id,
-                            permission: permission.id,
-                            realm: realm.id,
-                            assignment: id,
-                            role: role.id,
-                        })),
-                        isRevoked: false,
-                    }),
+                    payloadMapper: this.mapper.projectionUpdatePayload,
                     actionType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.accessCachePayloadMapper.bind(this),
+                    payloadMapper: this.mapper.accessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
@@ -268,26 +229,15 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
                 } else {
                     this.rolePermissionAssignmentService.restore({ entities });
-                    return entities;
+                    return { assignments: entities };
                 }
             },
         });
 
-        if (entities.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
+        if (assignments.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: assignments.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
-    }
-
-    public accessCachePayloadMapper(
-        entities: Commands.RolePermissionAssignment.AccessCachePayloadMapper.Props,
-    ): Commands.RolePermissionAssignment.AccessCachePayloadMapper.Result {
-        return {
-            items: entities.map(({ realm }) => ({
-                scope: InvalidationScope.REALM,
-                realm: realm.id,
-            })),
-        };
     }
 }

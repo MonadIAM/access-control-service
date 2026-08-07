@@ -7,6 +7,7 @@ local function make_key(...)
 end
 
 local account_id = tostring(payload.account)
+
 local candidate_realm_ids = redis.call("SMEMBERS", make_key("account-realms", account_id))
 local result = {}
 
