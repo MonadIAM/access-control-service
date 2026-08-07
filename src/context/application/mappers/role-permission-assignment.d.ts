@@ -1,52 +1,54 @@
-declare namespace Mappers {
-    namespace RolePermissionAssignment {
-        interface Contract extends PublicContract {}
+declare namespace Commands {
+    namespace Mappers {
+        namespace RolePermissionAssignment {
+            interface Contract extends PublicContract {}
 
-        interface PublicContract {
-            projectionCreatePayload: ProjectionCreatePayload.Signature;
-            projectionUpdatePayload: ProjectionUpdatePayload.Signature;
-            projectionPurgePayload: ProjectionPurgePayload.Signature;
-            accessCachePayload: AccessCachePayload.Signature;
-        }
+            interface PublicContract {
+                projectionCreatePayload: ProjectionCreatePayload.Signature;
+                projectionUpdatePayload: ProjectionUpdatePayload.Signature;
+                projectionPurgePayload: ProjectionPurgePayload.Signature;
+                accessCachePayload: AccessCachePayload.Signature;
+            }
 
-        namespace ProjectionCreatePayload {
-            type Props = {
-                assignments: Entities.RolePermissionAssignment[];
-            };
+            namespace ProjectionCreatePayload {
+                type Props = {
+                    assignments: Entities.RolePermissionAssignment[];
+                };
 
-            type Result = Scripts.RolePermissionAssignment.Create.Props;
+                type Result = Scripts.RolePermissionAssignment.Create.Props;
 
-            type Signature = (props: Props) => Result;
-        }
+                type Signature = (props: Props) => Result;
+            }
 
-        namespace ProjectionUpdatePayload {
-            type Props = {
-                assignments: Entities.RolePermissionAssignment[];
-            };
+            namespace ProjectionUpdatePayload {
+                type Props = {
+                    assignments: Entities.RolePermissionAssignment[];
+                };
 
-            type Result = Scripts.RolePermissionAssignment.Update.Props;
+                type Result = Scripts.RolePermissionAssignment.Update.Props;
 
-            type Signature = (props: Props) => Result;
-        }
+                type Signature = (props: Props) => Result;
+            }
 
-        namespace ProjectionPurgePayload {
-            type Props = {
-                assignments: Entities.RolePermissionAssignment[];
-            };
+            namespace ProjectionPurgePayload {
+                type Props = {
+                    assignments: Entities.RolePermissionAssignment[];
+                };
 
-            type Result = Scripts.RolePermissionAssignment.Purge.Props;
+                type Result = Scripts.RolePermissionAssignment.Purge.Props;
 
-            type Signature = (props: Props) => Result;
-        }
+                type Signature = (props: Props) => Result;
+            }
 
-        namespace AccessCachePayload {
-            type Props = {
-                assignments: Entities.RolePermissionAssignment[];
-            };
+            namespace AccessCachePayload {
+                type Props = {
+                    assignments: Entities.RolePermissionAssignment[];
+                };
 
-            type Result = Topics.AccessCache.Message["payload"];
+                type Result = Topics.AccessCache.Message["payload"];
 
-            type Signature = (props: Props) => Result;
+                type Signature = (props: Props) => Result;
+            }
         }
     }
 }

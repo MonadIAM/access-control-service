@@ -6,12 +6,12 @@ import { AccountRoleAssignment } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
-import { AccountRoleAssignmentAdapter } from "../adapters";
+import { AccountRoleAssignmentMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentRepository
-    extends BaseRepository<Entities.AccountRoleAssignment, Adapters.AccountRoleAssignment.Types>({
-        Adapter: AccountRoleAssignmentAdapter,
+    extends BaseRepository<Entities.AccountRoleAssignment, Repositories.Mappers.AccountRoleAssignment.Types>({
+        Mapper: AccountRoleAssignmentMapper,
         Entity: AccountRoleAssignment,
     })
     implements Repositories.AccountRoleAssignment.Contract

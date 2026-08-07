@@ -32,7 +32,10 @@ declare namespace Repositories {
             type Signature = (props: Props) => Result;
         }
 
-        interface PublicContract extends Repositories.Base.Contract<Entities.RoleConflictGroup, Adapters.Realm.Types> {
+        interface PublicContract extends Repositories.Base.Contract<
+            Entities.RoleConflictGroup,
+            Repositories.Mappers.Realm.Types
+        > {
             wouldExceedGroupLimit: WouldExceedGroupLimit.Signature;
             findViolationDetails: FindViolationDetails.Signature;
             hasAccountViolating: HasAccountViolating.Signature;

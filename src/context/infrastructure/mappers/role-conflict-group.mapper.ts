@@ -2,12 +2,12 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class RoleConflictGroupAdapter implements Adapters.Contract<
+export class RoleConflictGroupMapper implements Repositories.Mappers.Contract<
     Entities.RoleConflictGroup,
-    Adapters.RoleConflictGroup.Types
+    Repositories.Mappers.RoleConflictGroup.Types
 > {
     public buildWhereORM(
-        filters: Adapters.RoleConflictGroup.Filters,
+        filters: Repositories.Mappers.RoleConflictGroup.Filters,
         basic: ORM.ObjectQuery<Entities.RoleConflictGroup> = {},
     ): ORM.ObjectQuery<Entities.RoleConflictGroup> {
         const where: ORM.ObjectQuery<Entities.RoleConflictGroup> = basic;
@@ -44,7 +44,7 @@ export class RoleConflictGroupAdapter implements Adapters.Contract<
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.RoleConflictGroup.Sort,
+        sort: Repositories.Mappers.RoleConflictGroup.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.RoleConflictGroup, P, F> = {},
     ): ORM.FindOptions<Entities.RoleConflictGroup, P, F> {

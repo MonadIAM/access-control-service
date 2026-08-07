@@ -9,12 +9,12 @@ import { ExceptionMapper } from "~common/exceptions";
 import { knex } from "~infrastructure/database";
 import { BaseRepository } from "~common/mixins";
 
-import { PermissionAdapter } from "../adapters";
+import { PermissionMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionRepository
-    extends BaseRepository<Entities.Permission, Adapters.Permission.Types>({
-        Adapter: PermissionAdapter,
+    extends BaseRepository<Entities.Permission, Repositories.Mappers.Permission.Types>({
+        Mapper: PermissionMapper,
         Entity: Permission,
     })
     implements Repositories.Permission.Contract

@@ -2,10 +2,10 @@ import { ExceptionMapper, Exception } from "~common/exceptions";
 
 export function BaseRepository<
     E extends ORM.AnyEntity,
-    A extends Adapters.Meta,
-    C extends Class<Adapters.Contract<E, A>> = Class<Adapters.Contract<E, A>>,
->({ Entity, Adapter }: Repositories.Base.Mixin.Props<E, A, C>): Repositories.Base.Mixin.Result<E, A, C> {
-    return class Mixin extends Adapter implements Repositories.Base.Contract<E, A> {
+    A extends Repositories.Mappers.Meta,
+    C extends Class<Repositories.Mappers.Contract<E, A>> = Class<Repositories.Mappers.Contract<E, A>>,
+>({ Entity, Mapper }: Repositories.Base.Mixin.Props<E, A, C>): Repositories.Base.Mixin.Result<E, A, C> {
+    return class Mixin extends Mapper implements Repositories.Base.Contract<E, A> {
         declare protected readonly readManager: ORM.EntityManager;
         declare protected readonly dictionaryPath: string;
 

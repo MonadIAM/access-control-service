@@ -2,15 +2,15 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class RolePermissionAssignmentAdapter implements Adapters.Contract<
-    Entities.RolePermissionAssignment,
-    Adapters.RolePermissionAssignment.Types
+export class RoleConflictMemberMapper implements Repositories.Mappers.Contract<
+    Entities.RoleConflictMember,
+    Repositories.Mappers.RoleConflictMember.Types
 > {
     public buildWhereORM(
-        filters: Adapters.RolePermissionAssignment.Filters,
-        basic: ORM.ObjectQuery<Entities.RolePermissionAssignment> = {},
-    ): ORM.ObjectQuery<Entities.RolePermissionAssignment> {
-        const where: ORM.ObjectQuery<Entities.RolePermissionAssignment> = basic;
+        filters: Repositories.Mappers.RoleConflictMember.Filters,
+        basic: ORM.ObjectQuery<Entities.RoleConflictMember> = {},
+    ): ORM.ObjectQuery<Entities.RoleConflictMember> {
+        const where: ORM.ObjectQuery<Entities.RoleConflictMember> = basic;
 
         if (filters.id) {
             where.id = ORMAdapter.applyStringFilter(filters.id);
@@ -18,11 +18,11 @@ export class RolePermissionAssignmentAdapter implements Adapters.Contract<
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
+        if (filters.group) {
+            where.group = ORMAdapter.applyStringFilter(filters.group);
+        }
         if (filters.role) {
             where.role = ORMAdapter.applyStringFilter(filters.role);
-        }
-        if (filters.permission) {
-            where.permission = ORMAdapter.applyStringFilter(filters.permission);
         }
         if (filters.updatedAt) {
             where.updatedAt = ORMAdapter.applyOrdinalFilter<Date>(filters.updatedAt);
@@ -38,13 +38,13 @@ export class RolePermissionAssignmentAdapter implements Adapters.Contract<
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.RolePermissionAssignment.Sort,
+        sort: Repositories.Mappers.RoleConflictMember.Sort,
         pagination: Pagination,
-        basic: ORM.FindOptions<Entities.RolePermissionAssignment, P, F> = {},
-    ): ORM.FindOptions<Entities.RolePermissionAssignment, P, F> {
+        basic: ORM.FindOptions<Entities.RoleConflictMember, P, F> = {},
+    ): ORM.FindOptions<Entities.RoleConflictMember, P, F> {
         return {
             ...basic,
-            orderBy: ORMAdapter.orderBy<Entities.RolePermissionAssignment>(sort, { createdAt: QueryOrder.ASC }),
+            orderBy: ORMAdapter.orderBy<Entities.RoleConflictMember>(sort, { createdAt: QueryOrder.ASC }),
             ...ORMAdapter.pagination(pagination),
         };
     }

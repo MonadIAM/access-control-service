@@ -7,12 +7,12 @@ import { ExceptionMapper } from "~common/exceptions";
 import { knex } from "~infrastructure/database";
 import { BaseRepository } from "~common/mixins";
 
-import { RoleConflictGroupAdapter } from "../adapters";
+import { RoleConflictGroupMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupRepository
-    extends BaseRepository<Entities.RoleConflictGroup, Adapters.RoleConflictGroup.Types>({
-        Adapter: RoleConflictGroupAdapter,
+    extends BaseRepository<Entities.RoleConflictGroup, Repositories.Mappers.RoleConflictGroup.Types>({
+        Mapper: RoleConflictGroupMapper,
         Entity: RoleConflictGroup,
     })
     implements Repositories.RoleConflictGroup.Contract

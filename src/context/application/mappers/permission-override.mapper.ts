@@ -1,9 +1,9 @@
 import { InvalidationScope } from "~context/enums";
 
-export class PermissionOverrideMapper implements Mappers.PermissionOverride.Contract {
+export class PermissionOverrideMapper implements Commands.Mappers.PermissionOverride.Contract {
     public projectionCreatePayload(
-        props: Mappers.PermissionOverride.ProjectionCreatePayload.Props,
-    ): Mappers.PermissionOverride.ProjectionCreatePayload.Result {
+        props: Commands.Mappers.PermissionOverride.ProjectionCreatePayload.Props,
+    ): Commands.Mappers.PermissionOverride.ProjectionCreatePayload.Result {
         const [{ permission, account, effect, realm, id }] = props.overrides;
 
         return {
@@ -17,8 +17,8 @@ export class PermissionOverrideMapper implements Mappers.PermissionOverride.Cont
     }
 
     public projectionPurgePayload(
-        props: Mappers.PermissionOverride.ProjectionPurgePayload.Props,
-    ): Mappers.PermissionOverride.ProjectionPurgePayload.Result {
+        props: Commands.Mappers.PermissionOverride.ProjectionPurgePayload.Props,
+    ): Commands.Mappers.PermissionOverride.ProjectionPurgePayload.Result {
         return {
             items: props.overrides.map(({ realm, account, permission }) => ({
                 permissionRealm: permission.realm.id,
@@ -30,8 +30,8 @@ export class PermissionOverrideMapper implements Mappers.PermissionOverride.Cont
     }
 
     public projectionUpdatePayload(
-        props: Mappers.PermissionOverride.ProjectionUpdatePayload.Props,
-    ): Mappers.PermissionOverride.ProjectionUpdatePayload.Result {
+        props: Commands.Mappers.PermissionOverride.ProjectionUpdatePayload.Props,
+    ): Commands.Mappers.PermissionOverride.ProjectionUpdatePayload.Result {
         return {
             items: props.overrides.map(({ id, realm, account, permission, effect }) => ({
                 permissionRealm: permission.realm.id,
@@ -46,8 +46,8 @@ export class PermissionOverrideMapper implements Mappers.PermissionOverride.Cont
     }
 
     public accessCachePayload(
-        props: Mappers.PermissionOverride.AccessCachePayload.Props,
-    ): Mappers.PermissionOverride.AccessCachePayload.Result {
+        props: Commands.Mappers.PermissionOverride.AccessCachePayload.Props,
+    ): Commands.Mappers.PermissionOverride.AccessCachePayload.Result {
         return {
             items: props.overrides.map(({ account, realm }) => ({
                 scope: InvalidationScope.ACCOUNT_REALM,

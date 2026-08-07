@@ -11,7 +11,7 @@ import { PermissionMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionCommands implements Commands.Permission.Contract {
-    private readonly mapper = new PermissionMapper();
+    private readonly mapper: Commands.Mappers.Permission.Contract;
     private readonly dictionaryPath = "commands.permission";
     private readonly resource = "Permission";
 
@@ -24,7 +24,9 @@ export class PermissionCommands implements Commands.Permission.Contract {
         private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(PERMISSION_SERVICE)
         private readonly permissionService: Services.Permission.CommandContract,
-    ) {}
+    ) {
+        this.mapper = new PermissionMapper();
+    }
 
     public async create(props: Commands.Permission.Create.Props): Commands.Permission.Create.Result {
         const { input, realm } = props;

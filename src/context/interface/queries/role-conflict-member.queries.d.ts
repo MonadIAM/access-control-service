@@ -25,8 +25,8 @@ declare global {
 
             namespace FindMany {
                 type Props = {
-                    filters: Adapters.RoleConflictMember.Filters;
-                    sort: Adapters.RoleConflictMember.Sort;
+                    filters: Repositories.Mappers.RoleConflictMember.Filters;
+                    sort: Repositories.Mappers.RoleConflictMember.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
                     realm: string;

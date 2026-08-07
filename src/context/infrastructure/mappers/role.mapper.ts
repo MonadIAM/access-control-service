@@ -3,9 +3,9 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 import { ORMAdapter, QueryBuilderAdapter } from "~infrastructure/database/utils";
 import { RoleActorType, RoleArchetype } from "~context/enums";
 
-export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Role.Types> {
+export class RoleMapper implements Repositories.Mappers.Contract<Entities.Role, Repositories.Mappers.Role.Types> {
     public buildWhereORM(
-        filters: Adapters.Role.Filters,
+        filters: Repositories.Mappers.Role.Filters,
         basic: ORM.ObjectQuery<Entities.Role> = {},
     ): ORM.ObjectQuery<Entities.Role> {
         const where: ORM.ObjectQuery<Entities.Role> = basic;
@@ -51,7 +51,7 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.Role.Sort,
+        sort: Repositories.Mappers.Role.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.Role, P, F> = {},
     ): ORM.FindOptions<Entities.Role, P, F> {
@@ -62,7 +62,7 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
         };
     }
 
-    public buildWhereKnex(query: ORM.QueryBuilder, filters: Adapters.Role.Filters, tableAlias: string): void {
+    public buildWhereKnex(query: ORM.QueryBuilder, filters: Repositories.Mappers.Role.Filters, tableAlias: string): void {
         if (filters.realm) {
             QueryBuilderAdapter.applyStringFilter(query, filters.realm, `${tableAlias}.realm_id`);
         }
@@ -102,7 +102,7 @@ export class RoleAdapter implements Adapters.Contract<Entities.Role, Adapters.Ro
 
     public buildOptionsKnex(
         query: ORM.QueryBuilder,
-        sort: Adapters.Role.Sort,
+        sort: Repositories.Mappers.Role.Sort,
         pagination: Pagination,
         tableAlias: string,
     ): void {

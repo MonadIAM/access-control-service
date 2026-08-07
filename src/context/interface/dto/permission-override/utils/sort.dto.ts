@@ -5,7 +5,7 @@ import { Expose } from "class-transformer";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "PermissionOverrideSort" })
-export class SortDTO implements Adapters.PermissionOverride.Sort {
+export class SortDTO implements Repositories.Mappers.PermissionOverride.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

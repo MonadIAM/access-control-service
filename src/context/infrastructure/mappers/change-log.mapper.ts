@@ -4,9 +4,9 @@ import { ORMAdapter } from "~infrastructure/database/utils";
 import { ChangeLog } from "~common/transaction-manager";
 import { EntityType } from "~context/enums";
 
-export class ChangeLogAdapter implements Adapters.Contract<ChangeLog, Adapters.ChangeLog.Types> {
+export class ChangeLogMapper implements Repositories.Mappers.Contract<ChangeLog, Repositories.Mappers.ChangeLog.Types> {
     public buildWhereORM(
-        filters: Adapters.ChangeLog.Filters,
+        filters: Repositories.Mappers.ChangeLog.Filters,
         basic: ORM.ObjectQuery<ChangeLog> = {},
     ): ORM.ObjectQuery<ChangeLog> {
         const where: ORM.ObjectQuery<ChangeLog> = basic;
@@ -34,7 +34,7 @@ export class ChangeLogAdapter implements Adapters.Contract<ChangeLog, Adapters.C
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.ChangeLog.Sort,
+        sort: Repositories.Mappers.ChangeLog.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<ChangeLog, P, F> = {},
     ): ORM.FindOptions<ChangeLog, P, F> {

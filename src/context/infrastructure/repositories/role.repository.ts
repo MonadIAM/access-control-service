@@ -8,12 +8,12 @@ import { RoleClosure, Role } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
-import { RoleAdapter } from "../adapters";
+import { RoleMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleRepository
-    extends BaseRepository<Entities.Role, Adapters.Role.Types>({
-        Adapter: RoleAdapter,
+    extends BaseRepository<Entities.Role, Repositories.Mappers.Role.Types>({
+        Mapper: RoleMapper,
         Entity: Role,
     })
     implements Repositories.Role.Contract

@@ -32,16 +32,16 @@ declare global {
             namespace FindMany {
                 type DefaultProps = {
                     mode: QueryMode.DEFAULT;
-                    filters: Adapters.AuditLog.Filters;
-                    sort: Adapters.AuditLog.Sort;
+                    filters: Repositories.Mappers.AuditLog.Filters;
+                    sort: Repositories.Mappers.AuditLog.Sort;
                     pagination: Pagination;
                     realm: string;
                 };
 
                 type ManageProps = {
                     mode: QueryMode.MANAGE;
-                    filters: Adapters.AuditLog.Filters;
-                    sort: Adapters.AuditLog.Sort;
+                    filters: Repositories.Mappers.AuditLog.Filters;
+                    sort: Repositories.Mappers.AuditLog.Sort;
                     pagination: Pagination;
                 };
 

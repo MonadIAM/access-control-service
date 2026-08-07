@@ -3,17 +3,18 @@ declare namespace Repositories {
         namespace Mixin {
             type Props<
                 E extends ORM.AnyEntity,
-                A extends Adapters.Meta,
-                C extends Class<Adapters.Contract<E, A>> = Class<Adapters.Contract<E, A>>,
+                A extends Repositories.Mappers.Meta,
+                C extends Class<Repositories.Mappers.Contract<E, A>> = Class<Repositories.Mappers.Contract<E, A>>,
             > = {
                 Entity: ORM.EntityClass<E>;
-                Adapter: C;
+                Mapper: C;
             };
 
-            type Result<E extends ORM.AnyEntity, A extends Adapters.Meta, C extends Class> = C & Class<Contract<E, A>>;
+            type Result<E extends ORM.AnyEntity, A extends Repositories.Mappers.Meta, C extends Class> = C &
+                Class<Contract<E, A>>;
         }
 
-        interface Contract<E, A extends Adapters.Meta> {
+        interface Contract<E, A extends Repositories.Mappers.Meta> {
             find<P extends string = never, F extends string = "*">(props: Find<E, P, F>): Promise<ORM.Loaded<E, P, F>[]>;
 
             findUnique<P extends string = never, F extends string = "*">(
@@ -39,7 +40,7 @@ declare namespace Repositories {
 
         type Find<E, P extends string, F extends string> = FindUnique<E, P, F>;
 
-        type FindMany<E, A extends Adapters.Meta, P extends string, F extends string> =
+        type FindMany<E, A extends Repositories.Mappers.Meta, P extends string, F extends string> =
             | {
                   options?: ORM.FindOptions<E, P, F>;
                   transaction?: ORM.EntityManager;

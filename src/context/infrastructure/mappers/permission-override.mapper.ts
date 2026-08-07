@@ -3,12 +3,12 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 import { ORMAdapter } from "~infrastructure/database/utils";
 import { PermissionOverrideEffect } from "~context/enums";
 
-export class PermissionOverrideAdapter implements Adapters.Contract<
+export class PermissionOverrideMapper implements Repositories.Mappers.Contract<
     Entities.PermissionOverride,
-    Adapters.PermissionOverride.Types
+    Repositories.Mappers.PermissionOverride.Types
 > {
     public buildWhereORM(
-        filters: Adapters.PermissionOverride.Filters,
+        filters: Repositories.Mappers.PermissionOverride.Filters,
         basic: ORM.ObjectQuery<Entities.PermissionOverride> = {},
     ): ORM.ObjectQuery<Entities.PermissionOverride> {
         const where: ORM.ObjectQuery<Entities.PermissionOverride> = basic;
@@ -42,7 +42,7 @@ export class PermissionOverrideAdapter implements Adapters.Contract<
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.PermissionOverride.Sort,
+        sort: Repositories.Mappers.PermissionOverride.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.PermissionOverride, P, F> = {},
     ): ORM.FindOptions<Entities.PermissionOverride, P, F> {

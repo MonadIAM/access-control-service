@@ -4,7 +4,7 @@ declare namespace Repositories {
 
         interface PublicContract extends Repositories.Base.Contract<
             Entities.RoleConflictMember,
-            Adapters.RoleConflictMember.Types
+            Repositories.Mappers.RoleConflictMember.Types
         > {
             wouldExceedMemberLimit: WouldExceedMemberLimit.Signature;
         }

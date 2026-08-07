@@ -7,10 +7,10 @@ import {
     MessageTemplate,
 } from "~context/enums";
 
-export class RealmMapper implements Mappers.Realm.Contract {
+export class RealmMapper implements Commands.Mappers.Realm.Contract {
     public projectionCreatePayload(
-        props: Mappers.Realm.ProjectionCreatePayload.Props,
-    ): Mappers.Realm.ProjectionCreatePayload.Result {
+        props: Commands.Mappers.Realm.ProjectionCreatePayload.Props,
+    ): Commands.Mappers.Realm.ProjectionCreatePayload.Result {
         const { assignments, paths, realm, roles } = props;
 
         return {
@@ -37,21 +37,23 @@ export class RealmMapper implements Mappers.Realm.Contract {
     }
 
     public projectionPurgePayload(
-        props: Mappers.Realm.ProjectionPurgePayload.Props,
-    ): Mappers.Realm.ProjectionPurgePayload.Result {
+        props: Commands.Mappers.Realm.ProjectionPurgePayload.Props,
+    ): Commands.Mappers.Realm.ProjectionPurgePayload.Result {
         return { realms: props.realms.map(({ id }) => id) };
     }
 
     public projectionUpdatePayload(
-        props: Mappers.Realm.ProjectionUpdatePayload.Props,
-    ): Mappers.Realm.ProjectionUpdatePayload.Result {
+        props: Commands.Mappers.Realm.ProjectionUpdatePayload.Props,
+    ): Commands.Mappers.Realm.ProjectionUpdatePayload.Result {
         return {
             realms: props.realms.map(({ id }) => id),
             isRevoked: props.realms[0].isRevoked,
         };
     }
 
-    public accessCachePayload(props: Mappers.Realm.AccessCachePayload.Props): Mappers.Realm.AccessCachePayload.Result {
+    public accessCachePayload(
+        props: Commands.Mappers.Realm.AccessCachePayload.Props,
+    ): Commands.Mappers.Realm.AccessCachePayload.Result {
         return {
             items: props.realms.map(({ id }) => ({
                 scope: InvalidationScope.REALM,
@@ -61,8 +63,8 @@ export class RealmMapper implements Mappers.Realm.Contract {
     }
 
     public realmLifecyclePayload(
-        props: Mappers.Realm.RealmLifecyclePayload.Props,
-    ): Mappers.Realm.RealmLifecyclePayload.Result {
+        props: Commands.Mappers.Realm.RealmLifecyclePayload.Props,
+    ): Commands.Mappers.Realm.RealmLifecyclePayload.Result {
         return props.realms.map(({ id, version }) => ({
             version: version + 1,
             realm: id,
@@ -70,8 +72,8 @@ export class RealmMapper implements Mappers.Realm.Contract {
     }
 
     public excludeAssignmentPurgePayload(
-        props: Mappers.Realm.ExcludeAssignmentPurgePayload.Props,
-    ): Mappers.Realm.ExcludeAssignmentPurgePayload.Result {
+        props: Commands.Mappers.Realm.ExcludeAssignmentPurgePayload.Props,
+    ): Commands.Mappers.Realm.ExcludeAssignmentPurgePayload.Result {
         return {
             items: props.assignments.map(({ realm, account, role }) => ({
                 realm: realm.id,
@@ -82,8 +84,8 @@ export class RealmMapper implements Mappers.Realm.Contract {
     }
 
     public excludeOverridePurgePayload(
-        props: Mappers.Realm.ExcludeOverridePurgePayload.Props,
-    ): Mappers.Realm.ExcludeOverridePurgePayload.Result {
+        props: Commands.Mappers.Realm.ExcludeOverridePurgePayload.Props,
+    ): Commands.Mappers.Realm.ExcludeOverridePurgePayload.Result {
         return {
             items: props.overrides.map(({ permission, account, realm }) => ({
                 permissionRealm: SystemRealm.id,
@@ -95,8 +97,8 @@ export class RealmMapper implements Mappers.Realm.Contract {
     }
 
     public excludeAccessCachePayload(
-        props: Mappers.Realm.ExcludeAccessCachePayload.Props,
-    ): Mappers.Realm.ExcludeAccessCachePayload.Result {
+        props: Commands.Mappers.Realm.ExcludeAccessCachePayload.Props,
+    ): Commands.Mappers.Realm.ExcludeAccessCachePayload.Result {
         return {
             items: [
                 {
@@ -109,15 +111,17 @@ export class RealmMapper implements Mappers.Realm.Contract {
     }
 
     public excludeMembershipPayload(
-        props: Mappers.Realm.ExcludeMembershipPayload.Props,
-    ): Mappers.Realm.ExcludeMembershipPayload.Result {
+        props: Commands.Mappers.Realm.ExcludeMembershipPayload.Props,
+    ): Commands.Mappers.Realm.ExcludeMembershipPayload.Result {
         return {
             account: props.account,
             realm: props.realm.id,
         };
     }
 
-    public notificationPayload(props: Mappers.Realm.NotificationPayload.Props): Mappers.Realm.NotificationPayload.Result {
+    public notificationPayload(
+        props: Commands.Mappers.Realm.NotificationPayload.Props,
+    ): Commands.Mappers.Realm.NotificationPayload.Result {
         return {
             sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
             template: MessageTemplate.REALM_EXCLUDED,

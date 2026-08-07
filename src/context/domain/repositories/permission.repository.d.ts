@@ -17,7 +17,10 @@ declare global {
 
             interface Contract extends PublicContract {}
 
-            interface PublicContract extends Repositories.Base.Contract<Entities.Permission, Adapters.Permission.Types> {
+            interface PublicContract extends Repositories.Base.Contract<
+                Entities.Permission,
+                Repositories.Mappers.Permission.Types
+            > {
                 wouldExceedPermissionLimit: WouldExceedPermissionLimit.Signature;
                 findAccountsByPermissions: FindAccountsByPermissions.Signature;
                 collectEffective: CollectEffective.Signature;
@@ -83,8 +86,8 @@ declare global {
 
             namespace FindEffective {
                 type Props = {
-                    filters: Adapters.Permission.Filters;
-                    sort: Adapters.Permission.Sort;
+                    filters: Repositories.Mappers.Permission.Filters;
+                    sort: Repositories.Mappers.Permission.Sort;
                     pagination: Pagination;
                     where: {
                         account: string;

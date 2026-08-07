@@ -5,7 +5,7 @@ import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "RolePermissionAssignmentFilters" })
-export class FiltersDTO implements Adapters.RolePermissionAssignment.Filters {
+export class FiltersDTO implements Repositories.Mappers.RolePermissionAssignment.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

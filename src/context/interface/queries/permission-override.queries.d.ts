@@ -36,8 +36,8 @@ declare global {
             namespace FindMany {
                 type DefaultProps = {
                     mode: QueryMode.DEFAULT;
-                    filters: Adapters.PermissionOverride.Filters;
-                    sort: Adapters.PermissionOverride.Sort;
+                    filters: Repositories.Mappers.PermissionOverride.Filters;
+                    sort: Repositories.Mappers.PermissionOverride.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
                     realm: string;
@@ -46,8 +46,8 @@ declare global {
 
                 type ManageProps = {
                     mode: QueryMode.MANAGE;
-                    filters: Adapters.PermissionOverride.Filters;
-                    sort: Adapters.PermissionOverride.Sort;
+                    filters: Repositories.Mappers.PermissionOverride.Filters;
+                    sort: Repositories.Mappers.PermissionOverride.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
                     realm: string;

@@ -5,7 +5,7 @@ import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "RealmFilters" })
-export class FiltersDTO implements Adapters.Realm.Filters {
+export class FiltersDTO implements Repositories.Mappers.Realm.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

@@ -25,8 +25,8 @@ declare global {
             namespace FindMany {
                 type DefaultProps = {
                     mode: QueryMode.DEFAULT;
-                    filters: Adapters.AccountRoleAssignment.DefaultFilters;
-                    sort: Adapters.AccountRoleAssignment.Sort;
+                    filters: Repositories.Mappers.AccountRoleAssignment.DefaultFilters;
+                    sort: Repositories.Mappers.AccountRoleAssignment.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
                     realm: string;
@@ -34,8 +34,8 @@ declare global {
 
                 type ManageProps = {
                     mode: QueryMode.MANAGE;
-                    filters: Adapters.AccountRoleAssignment.ManageFilters;
-                    sort: Adapters.AccountRoleAssignment.Sort;
+                    filters: Repositories.Mappers.AccountRoleAssignment.ManageFilters;
+                    sort: Repositories.Mappers.AccountRoleAssignment.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
                 };

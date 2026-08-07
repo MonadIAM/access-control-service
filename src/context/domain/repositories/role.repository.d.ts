@@ -44,7 +44,7 @@ declare global {
 
             interface PublicContract extends Repositories.Base.Contract<
                 Entities.Role,
-                Adapters.RolePermissionAssignment.Types
+                Repositories.Mappers.RolePermissionAssignment.Types
             > {
                 wouldExceedRoleLimit: WouldExceedRoleLimit.Signature;
                 findAccountsByRoles: FindAccountsByRoles.Signature;
@@ -107,7 +107,7 @@ declare global {
             namespace FindDescendants {
                 type Props = {
                     populate: readonly ORM.EntityKey<Entities.Role>[];
-                    filters: Adapters.Role.DefaultFilters;
+                    filters: Repositories.Mappers.Role.DefaultFilters;
                     pagination: Pagination;
                     ancestor: string;
                     realm: string;
@@ -146,8 +146,8 @@ declare global {
 
             namespace FindDelegable {
                 type Props = {
-                    filters: Adapters.Role.Filters;
-                    sort: Adapters.Role.Sort;
+                    filters: Repositories.Mappers.Role.Filters;
+                    sort: Repositories.Mappers.Role.Sort;
                     pagination: Pagination;
                     where: {
                         type: DelegatorType;
@@ -163,8 +163,8 @@ declare global {
 
             namespace FindEffective {
                 type Props = {
-                    filters: Adapters.Role.Filters;
-                    sort: Adapters.Role.Sort;
+                    filters: Repositories.Mappers.Role.Filters;
+                    sort: Repositories.Mappers.Role.Sort;
                     pagination: Pagination;
                     where: {
                         account: string;
@@ -180,7 +180,7 @@ declare global {
             namespace FindAncestors {
                 type Props = {
                     populate: readonly ORM.EntityKey<Entities.Role>[];
-                    filters: Adapters.Role.DefaultFilters;
+                    filters: Repositories.Mappers.Role.DefaultFilters;
                     pagination: Pagination;
                     descendant: string;
                     realm: string;

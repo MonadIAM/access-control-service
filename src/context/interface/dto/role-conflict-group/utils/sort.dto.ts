@@ -5,7 +5,7 @@ import { Expose } from "class-transformer";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "RoleConflictGroupsSort" })
-export class SortDTO implements Adapters.RoleConflictGroup.Sort {
+export class SortDTO implements Repositories.Mappers.RoleConflictGroup.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

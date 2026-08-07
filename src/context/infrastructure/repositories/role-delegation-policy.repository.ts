@@ -7,12 +7,12 @@ import { ExceptionMapper } from "~common/exceptions";
 import { knex } from "~infrastructure/database";
 import { BaseRepository } from "~common/mixins";
 
-import { RoleDelegationPolicyAdapter } from "../adapters";
+import { RoleDelegationPolicyMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyRepository
-    extends BaseRepository<Entities.RoleDelegationPolicy, Adapters.RoleDelegationPolicy.Types>({
-        Adapter: RoleDelegationPolicyAdapter,
+    extends BaseRepository<Entities.RoleDelegationPolicy, Repositories.Mappers.RoleDelegationPolicy.Types>({
+        Mapper: RoleDelegationPolicyMapper,
         Entity: RoleDelegationPolicy,
     })
     implements Repositories.RoleDelegationPolicy.Contract

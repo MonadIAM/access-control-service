@@ -1,9 +1,9 @@
 import { InvalidationScope } from "~context/enums";
 
-export class RoleMapper implements Mappers.Role.Contract {
+export class RoleMapper implements Commands.Mappers.Role.Contract {
     public projectionCreatePayload(
-        props: Mappers.Role.ProjectionCreatePayload.Props,
-    ): Mappers.Role.ProjectionCreatePayload.Result {
+        props: Commands.Mappers.Role.ProjectionCreatePayload.Props,
+    ): Commands.Mappers.Role.ProjectionCreatePayload.Result {
         return {
             realm: props.entity.realm.id,
             parent: props.parent.id,
@@ -12,8 +12,8 @@ export class RoleMapper implements Mappers.Role.Contract {
     }
 
     public projectionPurgePayload(
-        props: Mappers.Role.ProjectionPurgePayload.Props,
-    ): Mappers.Role.ProjectionPurgePayload.Result {
+        props: Commands.Mappers.Role.ProjectionPurgePayload.Props,
+    ): Commands.Mappers.Role.ProjectionPurgePayload.Result {
         return {
             realm: props.roles[0].realm.id,
             role: props.roles[0].id,
@@ -21,8 +21,8 @@ export class RoleMapper implements Mappers.Role.Contract {
     }
 
     public projectionSubtreePurgePayload(
-        props: Mappers.Role.ProjectionSubtreePurgePayload.Props,
-    ): Mappers.Role.ProjectionSubtreePurgePayload.Result {
+        props: Commands.Mappers.Role.ProjectionSubtreePurgePayload.Props,
+    ): Commands.Mappers.Role.ProjectionSubtreePurgePayload.Result {
         return {
             realm: props.root.realm.id,
             role: props.root.id,
@@ -30,8 +30,8 @@ export class RoleMapper implements Mappers.Role.Contract {
     }
 
     public subtreeAccessCachePayload(
-        props: Mappers.Role.SubtreeAccessCachePayload.Props,
-    ): Mappers.Role.SubtreeAccessCachePayload.Result {
+        props: Commands.Mappers.Role.SubtreeAccessCachePayload.Props,
+    ): Commands.Mappers.Role.SubtreeAccessCachePayload.Result {
         return {
             items: props.entities.map(({ realm }) => ({
                 scope: InvalidationScope.REALM,
@@ -41,8 +41,8 @@ export class RoleMapper implements Mappers.Role.Contract {
     }
 
     public projectionUpdatePayload(
-        props: Mappers.Role.ProjectionUpdatePayload.Props,
-    ): Mappers.Role.ProjectionUpdatePayload.Result {
+        props: Commands.Mappers.Role.ProjectionUpdatePayload.Props,
+    ): Commands.Mappers.Role.ProjectionUpdatePayload.Result {
         return {
             roles: props.roles.map(({ id }) => id),
             isRevoked: props.roles[0].isRevoked,
@@ -51,8 +51,8 @@ export class RoleMapper implements Mappers.Role.Contract {
     }
 
     public projectionMovePayload(
-        props: Mappers.Role.ProjectionMovePayload.Props,
-    ): Mappers.Role.ProjectionMovePayload.Result {
+        props: Commands.Mappers.Role.ProjectionMovePayload.Props,
+    ): Commands.Mappers.Role.ProjectionMovePayload.Result {
         return {
             realm: props.target.realm.id,
             steps: props.steps,
@@ -60,8 +60,8 @@ export class RoleMapper implements Mappers.Role.Contract {
     }
 
     public moveAccessCachePayload(
-        props: Mappers.Role.MoveAccessCachePayload.Props,
-    ): Mappers.Role.MoveAccessCachePayload.Result {
+        props: Commands.Mappers.Role.MoveAccessCachePayload.Props,
+    ): Commands.Mappers.Role.MoveAccessCachePayload.Result {
         return {
             items: [
                 {
@@ -72,7 +72,9 @@ export class RoleMapper implements Mappers.Role.Contract {
         };
     }
 
-    public accessCachePayload(props: Mappers.Role.AccessCachePayload.Props): Mappers.Role.AccessCachePayload.Result {
+    public accessCachePayload(
+        props: Commands.Mappers.Role.AccessCachePayload.Props,
+    ): Commands.Mappers.Role.AccessCachePayload.Result {
         return {
             items: props.roles.map(({ realm }) => ({
                 scope: InvalidationScope.REALM,

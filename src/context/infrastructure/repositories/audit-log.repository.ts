@@ -4,12 +4,12 @@ import { Injectable, Scope } from "@nestjs/common";
 import { AuditLog } from "~common/transaction-manager";
 import { BaseRepository } from "~common/mixins";
 
-import { AuditLogAdapter } from "../adapters";
+import { AuditLogMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuditLogRepository
-    extends BaseRepository<SystemEntities.AuditLog, Adapters.AuditLog.Types>({
-        Adapter: AuditLogAdapter,
+    extends BaseRepository<SystemEntities.AuditLog, Repositories.Mappers.AuditLog.Types>({
+        Mapper: AuditLogMapper,
         Entity: AuditLog,
     })
     implements Repositories.AuditLog.Contract

@@ -7,12 +7,12 @@ import { ExceptionMapper } from "~common/exceptions";
 import { Realm } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 
-import { RealmAdapter } from "../adapters";
+import { RealmMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmRepository
-    extends BaseRepository<Entities.Realm, Adapters.Realm.Types>({
-        Adapter: RealmAdapter,
+    extends BaseRepository<Entities.Realm, Repositories.Mappers.Realm.Types>({
+        Mapper: RealmMapper,
         Entity: Realm,
     })
     implements Repositories.Realm.Contract

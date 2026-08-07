@@ -5,7 +5,7 @@ import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "ChangeLogFilters" })
-export class FiltersDTO implements Adapters.ChangeLog.Filters {
+export class FiltersDTO implements Repositories.Mappers.ChangeLog.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

@@ -2,9 +2,12 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { ORMAdapter, QueryBuilderAdapter } from "~infrastructure/database/utils";
 
-export class PermissionAdapter implements Adapters.Contract<Entities.Permission, Adapters.Permission.Types> {
+export class PermissionMapper implements Repositories.Mappers.Contract<
+    Entities.Permission,
+    Repositories.Mappers.Permission.Types
+> {
     public buildWhereORM(
-        filters: Adapters.Permission.Filters,
+        filters: Repositories.Mappers.Permission.Filters,
         basic: ORM.ObjectQuery<Entities.Permission> = {},
     ): ORM.ObjectQuery<Entities.Permission> {
         const where: ORM.ObjectQuery<Entities.Permission> = basic;
@@ -41,7 +44,7 @@ export class PermissionAdapter implements Adapters.Contract<Entities.Permission,
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.Permission.Sort,
+        sort: Repositories.Mappers.Permission.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.Permission, P, F> = {},
     ): ORM.FindOptions<Entities.Permission, P, F> {
@@ -52,7 +55,11 @@ export class PermissionAdapter implements Adapters.Contract<Entities.Permission,
         };
     }
 
-    public buildWhereKnex(query: ORM.QueryBuilder, filters: Adapters.Permission.Filters, tableAlias: string): void {
+    public buildWhereKnex(
+        query: ORM.QueryBuilder,
+        filters: Repositories.Mappers.Permission.Filters,
+        tableAlias: string,
+    ): void {
         if (filters.realm) {
             QueryBuilderAdapter.applyStringFilter(query, filters.realm, `${tableAlias}.realm_id`);
         }
@@ -80,7 +87,7 @@ export class PermissionAdapter implements Adapters.Contract<Entities.Permission,
 
     public buildOptionsKnex(
         query: ORM.QueryBuilder,
-        sort: Adapters.Permission.Sort,
+        sort: Repositories.Mappers.Permission.Sort,
         pagination: Pagination,
         tableAlias: string,
     ): void {

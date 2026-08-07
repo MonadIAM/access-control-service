@@ -24,8 +24,8 @@ declare global {
             namespace FindDelegableByAccount {
                 type DefaultProps = {
                     mode: QueryMode.DEFAULT;
-                    filters: Adapters.Role.DefaultFilters;
-                    sort: Adapters.Role.Sort;
+                    filters: Repositories.Mappers.Role.DefaultFilters;
+                    sort: Repositories.Mappers.Role.Sort;
                     pagination: Pagination;
                     realm: string;
                     actor: string;
@@ -33,8 +33,8 @@ declare global {
 
                 type ManageProps = {
                     mode: QueryMode.MANAGE;
-                    filters: Adapters.Role.ManageFilters;
-                    sort: Adapters.Role.Sort;
+                    filters: Repositories.Mappers.Role.ManageFilters;
+                    sort: Repositories.Mappers.Role.Sort;
                     pagination: Pagination;
                     account: string;
                 };
@@ -48,8 +48,8 @@ declare global {
 
             namespace FindDelegableByRole {
                 type Props = {
-                    filters: Adapters.Role.DefaultFilters;
-                    sort: Adapters.Role.Sort;
+                    filters: Repositories.Mappers.Role.DefaultFilters;
+                    sort: Repositories.Mappers.Role.Sort;
                     pagination: Pagination;
                     realm: string;
                     id: string;
@@ -72,7 +72,7 @@ declare global {
 
             namespace FindDescendants {
                 type Props = {
-                    filters: Adapters.Role.DefaultFilters;
+                    filters: Repositories.Mappers.Role.DefaultFilters;
                     view: ResponseViewType;
                     pagination: Pagination;
                     ancestor: string;
@@ -86,7 +86,7 @@ declare global {
 
             namespace FindAncestors {
                 type Props = {
-                    filters: Adapters.Role.DefaultFilters;
+                    filters: Repositories.Mappers.Role.DefaultFilters;
                     view: ResponseViewType;
                     pagination: Pagination;
                     descendant: string;
@@ -124,8 +124,8 @@ declare global {
             namespace FindEffective {
                 type DefaultProps = {
                     mode: QueryMode.DEFAULT;
-                    filters: Adapters.Role.DefaultFilters;
-                    sort: Adapters.Role.Sort;
+                    filters: Repositories.Mappers.Role.DefaultFilters;
+                    sort: Repositories.Mappers.Role.Sort;
                     pagination: Pagination;
                     realm: string;
                     actor: string;
@@ -133,8 +133,8 @@ declare global {
 
                 type ManageProps = {
                     mode: QueryMode.MANAGE;
-                    filters: Adapters.Role.ManageFilters;
-                    sort: Adapters.Role.Sort;
+                    filters: Repositories.Mappers.Role.ManageFilters;
+                    sort: Repositories.Mappers.Role.Sort;
                     pagination: Pagination;
                     account: string;
                 };
@@ -161,8 +161,8 @@ declare global {
             namespace FindMany {
                 type DefaultProps = {
                     mode: QueryMode.DEFAULT;
-                    filters: Adapters.Role.DefaultFilters;
-                    sort: Adapters.Role.Sort;
+                    filters: Repositories.Mappers.Role.DefaultFilters;
+                    sort: Repositories.Mappers.Role.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
                     realm: string;
@@ -170,8 +170,8 @@ declare global {
 
                 type ManageProps = {
                     mode: QueryMode.MANAGE;
-                    filters: Adapters.Role.ManageFilters;
-                    sort: Adapters.Role.Sort;
+                    filters: Repositories.Mappers.Role.ManageFilters;
+                    sort: Repositories.Mappers.Role.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
                 };

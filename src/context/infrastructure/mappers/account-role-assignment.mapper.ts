@@ -2,12 +2,12 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class AccountRoleAssignmentAdapter implements Adapters.Contract<
+export class AccountRoleAssignmentMapper implements Repositories.Mappers.Contract<
     Entities.AccountRoleAssignment,
-    Adapters.AccountRoleAssignment.Types
+    Repositories.Mappers.AccountRoleAssignment.Types
 > {
     public buildWhereORM(
-        filters: Adapters.AccountRoleAssignment.Filters,
+        filters: Repositories.Mappers.AccountRoleAssignment.Filters,
         basic: ORM.ObjectQuery<Entities.AccountRoleAssignment> = {},
     ): ORM.ObjectQuery<Entities.AccountRoleAssignment> {
         const where: ORM.ObjectQuery<Entities.AccountRoleAssignment> = basic;
@@ -41,7 +41,7 @@ export class AccountRoleAssignmentAdapter implements Adapters.Contract<
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.AccountRoleAssignment.Sort,
+        sort: Repositories.Mappers.AccountRoleAssignment.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.AccountRoleAssignment, P, F> = {},
     ): ORM.FindOptions<Entities.AccountRoleAssignment, P, F> {

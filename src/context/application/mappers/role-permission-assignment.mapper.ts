@@ -1,9 +1,9 @@
 import { InvalidationScope } from "~context/enums";
 
-export class RolePermissionAssignmentMapper implements Mappers.RolePermissionAssignment.Contract {
+export class RolePermissionAssignmentMapper implements Commands.Mappers.RolePermissionAssignment.Contract {
     public projectionCreatePayload(
-        props: Mappers.RolePermissionAssignment.ProjectionCreatePayload.Props,
-    ): Mappers.RolePermissionAssignment.ProjectionCreatePayload.Result {
+        props: Commands.Mappers.RolePermissionAssignment.ProjectionCreatePayload.Props,
+    ): Commands.Mappers.RolePermissionAssignment.ProjectionCreatePayload.Result {
         return {
             realm: props.assignments[0].realm.id,
             role: props.assignments[0].role.id,
@@ -17,8 +17,8 @@ export class RolePermissionAssignmentMapper implements Mappers.RolePermissionAss
     }
 
     public projectionPurgePayload(
-        props: Mappers.RolePermissionAssignment.ProjectionPurgePayload.Props,
-    ): Mappers.RolePermissionAssignment.ProjectionPurgePayload.Result {
+        props: Commands.Mappers.RolePermissionAssignment.ProjectionPurgePayload.Props,
+    ): Commands.Mappers.RolePermissionAssignment.ProjectionPurgePayload.Result {
         return {
             items: props.assignments.map(({ realm, role, permission }) => ({
                 permissionRealm: permission.realm.id,
@@ -30,8 +30,8 @@ export class RolePermissionAssignmentMapper implements Mappers.RolePermissionAss
     }
 
     public projectionUpdatePayload(
-        props: Mappers.RolePermissionAssignment.ProjectionUpdatePayload.Props,
-    ): Mappers.RolePermissionAssignment.ProjectionUpdatePayload.Result {
+        props: Commands.Mappers.RolePermissionAssignment.ProjectionUpdatePayload.Props,
+    ): Commands.Mappers.RolePermissionAssignment.ProjectionUpdatePayload.Result {
         return {
             isRevoked: props.assignments[0].isRevoked,
             items: props.assignments.map(({ id, realm, role, permission }) => ({
@@ -45,8 +45,8 @@ export class RolePermissionAssignmentMapper implements Mappers.RolePermissionAss
     }
 
     public accessCachePayload(
-        props: Mappers.RolePermissionAssignment.AccessCachePayload.Props,
-    ): Mappers.RolePermissionAssignment.AccessCachePayload.Result {
+        props: Commands.Mappers.RolePermissionAssignment.AccessCachePayload.Props,
+    ): Commands.Mappers.RolePermissionAssignment.AccessCachePayload.Result {
         return {
             items: props.assignments.map(({ realm }) => ({
                 scope: InvalidationScope.REALM,

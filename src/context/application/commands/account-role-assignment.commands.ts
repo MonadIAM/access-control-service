@@ -13,7 +13,7 @@ import { AccountRoleAssignmentMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssignment.Contract {
-    private readonly mapper = new AccountRoleAssignmentMapper();
+    private readonly mapper: Commands.Mappers.AccountRoleAssignment.Contract;
     private readonly dictionaryPath = "commands.account-role-assignment";
     private readonly resource = "AccountRoleAssignment";
 
@@ -30,7 +30,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
         private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
-    ) {}
+    ) {
+        this.mapper = new AccountRoleAssignmentMapper();
+    }
 
     public async create(props: Commands.AccountRoleAssignment.Create.Props): Commands.AccountRoleAssignment.Create.Result {
         const { input, actor, realm } = props;

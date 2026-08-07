@@ -2,7 +2,7 @@ declare namespace Repositories {
     namespace Realm {
         interface Contract extends PublicContract {}
 
-        interface PublicContract extends Repositories.Base.Contract<Entities.Realm, Adapters.Realm.Types> {
+        interface PublicContract extends Repositories.Base.Contract<Entities.Realm, Repositories.Mappers.Realm.Types> {
             wouldExceedRealmLimit: WouldExceedRealmLimit.Signature;
             getLookupList: GetLookupList.Signature;
         }

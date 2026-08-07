@@ -4,12 +4,12 @@ import { Injectable, Scope } from "@nestjs/common";
 import { Invite } from "~context/domain/entities";
 import { BaseRepository } from "~common/mixins";
 
-import { InviteAdapter } from "../adapters";
+import { InviteMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InviteRepository
-    extends BaseRepository<Entities.Invite, Adapters.Invite.Types>({
-        Adapter: InviteAdapter,
+    extends BaseRepository<Entities.Invite, Repositories.Mappers.Invite.Types>({
+        Mapper: InviteMapper,
         Entity: Invite,
     })
     implements Repositories.Invite.Contract

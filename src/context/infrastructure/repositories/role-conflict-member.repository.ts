@@ -6,12 +6,12 @@ import { RoleConflictMember } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
-import { RoleConflictMemberAdapter } from "../adapters";
+import { RoleConflictMemberMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberRepository
-    extends BaseRepository<Entities.RoleConflictMember, Adapters.RoleConflictMember.Types>({
-        Adapter: RoleConflictMemberAdapter,
+    extends BaseRepository<Entities.RoleConflictMember, Repositories.Mappers.RoleConflictMember.Types>({
+        Mapper: RoleConflictMemberMapper,
         Entity: RoleConflictMember,
     })
     implements Repositories.RoleConflictMember.Contract

@@ -6,12 +6,12 @@ import { RolePermissionAssignment } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
-import { RolePermissionAssignmentAdapter } from "../adapters";
+import { RolePermissionAssignmentMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RolePermissionAssignmentRepository
-    extends BaseRepository<Entities.RolePermissionAssignment, Adapters.RolePermissionAssignment.Types>({
-        Adapter: RolePermissionAssignmentAdapter,
+    extends BaseRepository<Entities.RolePermissionAssignment, Repositories.Mappers.RolePermissionAssignment.Types>({
+        Mapper: RolePermissionAssignmentMapper,
         Entity: RolePermissionAssignment,
     })
     implements Repositories.RolePermissionAssignment.Contract

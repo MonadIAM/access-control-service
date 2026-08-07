@@ -4,7 +4,7 @@ declare namespace Repositories {
 
         interface PublicContract extends Repositories.Base.Contract<
             Entities.PermissionOverride,
-            Adapters.PermissionOverride.Types
+            Repositories.Mappers.PermissionOverride.Types
         > {
             wouldExceedOverrideLimit: WouldExceedOverrideLimit.Signature;
         }

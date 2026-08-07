@@ -24,7 +24,7 @@ import { RealmMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmCommands implements Commands.Realm.Contract {
-    private readonly mapper = new RealmMapper();
+    private readonly mapper: Commands.Mappers.Realm.Contract;
     private readonly dictionaryPath = "commands.realm";
     private readonly resource = "Realm";
 
@@ -45,7 +45,9 @@ export class RealmCommands implements Commands.Realm.Contract {
         private readonly realmService: Services.Realm.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
         private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
-    ) {}
+    ) {
+        this.mapper = new RealmMapper();
+    }
 
     public async create(props: Commands.Realm.Create.Props): Commands.Realm.Create.Result {
         const { input, actor } = props;

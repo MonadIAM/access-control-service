@@ -2,12 +2,12 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class RoleDelegationPolicyAdapter implements Adapters.Contract<
+export class RoleDelegationPolicyMapper implements Repositories.Mappers.Contract<
     Entities.RoleDelegationPolicy,
-    Adapters.RoleDelegationPolicy.Types
+    Repositories.Mappers.RoleDelegationPolicy.Types
 > {
     public buildWhereORM(
-        filters: Adapters.RoleDelegationPolicy.Filters,
+        filters: Repositories.Mappers.RoleDelegationPolicy.Filters,
         basic: ORM.ObjectQuery<Entities.RoleDelegationPolicy> = {},
     ): ORM.ObjectQuery<Entities.RoleDelegationPolicy> {
         const where: ORM.ObjectQuery<Entities.RoleDelegationPolicy> = basic;
@@ -41,7 +41,7 @@ export class RoleDelegationPolicyAdapter implements Adapters.Contract<
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.RoleDelegationPolicy.Sort,
+        sort: Repositories.Mappers.RoleDelegationPolicy.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.RoleDelegationPolicy, P, F> = {},
     ): ORM.FindOptions<Entities.RoleDelegationPolicy, P, F> {

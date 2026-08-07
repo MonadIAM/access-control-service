@@ -12,7 +12,7 @@ import { PermissionOverrideMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideCommands implements Commands.PermissionOverride.Contract {
-    private readonly mapper = new PermissionOverrideMapper();
+    private readonly mapper: Commands.Mappers.PermissionOverride.Contract;
     private readonly dictionaryPath = "commands.permission-override";
     private readonly resource = "PermissionOverride";
 
@@ -29,7 +29,9 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         private readonly permissionOverrideService: Services.PermissionOverride.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
         private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
-    ) {}
+    ) {
+        this.mapper = new PermissionOverrideMapper();
+    }
 
     public async create(props: Commands.PermissionOverride.Create.Props): Commands.PermissionOverride.Create.Result {
         const { input, realm } = props;

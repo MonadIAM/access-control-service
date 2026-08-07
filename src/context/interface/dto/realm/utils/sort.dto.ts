@@ -5,7 +5,7 @@ import { Expose } from "class-transformer";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "RealmSort" })
-export class SortDTO implements Adapters.Realm.Sort {
+export class SortDTO implements Repositories.Mappers.Realm.Sort {
     @Expose()
     @Validator.IsOptional()
     @Validator.IsEnum(QueryOrder)

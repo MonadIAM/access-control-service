@@ -2,9 +2,9 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { ORMAdapter } from "~infrastructure/database/utils";
 
-export class RealmAdapter implements Adapters.Contract<Entities.Realm, Adapters.Realm.Types> {
+export class RealmMapper implements Repositories.Mappers.Contract<Entities.Realm, Repositories.Mappers.Realm.Types> {
     public buildWhereORM(
-        filters: Adapters.Realm.Filters,
+        filters: Repositories.Mappers.Realm.Filters,
         basic: ORM.ObjectQuery<Entities.Realm> = {},
     ): ORM.ObjectQuery<Entities.Realm> {
         const where: ORM.ObjectQuery<Entities.Realm> = basic;
@@ -35,7 +35,7 @@ export class RealmAdapter implements Adapters.Contract<Entities.Realm, Adapters.
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.Realm.Sort,
+        sort: Repositories.Mappers.Realm.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.Realm, P, F> = {},
     ): ORM.FindOptions<Entities.Realm, P, F> {

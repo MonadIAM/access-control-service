@@ -17,7 +17,7 @@ import { RolePermissionAssignmentMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RolePermissionAssignmentCommands implements Commands.RolePermissionAssignment.Contract {
-    private readonly mapper = new RolePermissionAssignmentMapper();
+    private readonly mapper: Commands.Mappers.RolePermissionAssignment.Contract;
     private readonly dictionaryPath = "commands.role-permission-assignment";
     private readonly resource = "RolePermissionAssignment";
 
@@ -34,7 +34,9 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
         private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_SERVICE)
         private readonly rolePermissionAssignmentService: Services.RolePermissionAssignment.CommandContract,
-    ) {}
+    ) {
+        this.mapper = new RolePermissionAssignmentMapper();
+    }
 
     public async create(
         props: Commands.RolePermissionAssignment.Create.Props,

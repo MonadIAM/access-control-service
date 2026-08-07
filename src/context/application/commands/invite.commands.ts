@@ -20,7 +20,7 @@ import { InviteMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class InviteCommands implements Commands.Invite.Contract {
-    private readonly mapper = new InviteMapper();
+    private readonly mapper: Commands.Mappers.Invite.Contract;
     private readonly dictionaryPath = "commands.invite";
     private readonly resource = "Invite";
 
@@ -39,7 +39,9 @@ export class InviteCommands implements Commands.Invite.Contract {
         private readonly inviteService: Services.Invite.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
         private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
-    ) {}
+    ) {
+        this.mapper = new InviteMapper();
+    }
 
     public async create(props: Commands.Invite.Create.Props): Commands.Invite.Create.Result {
         const { input, actor, realm } = props;
@@ -53,7 +55,7 @@ export class InviteCommands implements Commands.Invite.Contract {
             throw Exception.conflict({ messageKey: `${this.dictionaryPath}.INVITEE_ALREADY_MEMBER` });
         }
 
-        await this.transactionalService.run<Mappers.Invite.NotificationPayload.Props>({
+        await this.transactionalService.run<Commands.Mappers.Invite.NotificationPayload.Props>({
             resource: this.resource,
             outbox: {
                 payloadMapper: this.mapper.notificationPayload,
@@ -158,7 +160,7 @@ export class InviteCommands implements Commands.Invite.Contract {
     public async cancel(props: Commands.Invite.Cancel.Props): Commands.Invite.Cancel.Result {
         const { input, actor, realm } = props;
 
-        await this.transactionalService.run<Mappers.Invite.NotificationCancelPayload.Props>({
+        await this.transactionalService.run<Commands.Mappers.Invite.NotificationCancelPayload.Props>({
             resource: this.resource,
             outbox: {
                 payloadMapper: this.mapper.notificationCancelPayload,

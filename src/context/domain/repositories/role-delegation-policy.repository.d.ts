@@ -12,7 +12,7 @@ declare namespace Repositories {
 
         interface PublicContract extends Repositories.Base.Contract<
             Entities.RoleDelegationPolicy,
-            Adapters.RoleDelegationPolicy.Types
+            Repositories.Mappers.RoleDelegationPolicy.Types
         > {
             wouldExceedPolicyLimit: WouldExceedPolicyLimit.Signature;
             existsTransitivePath: ExistsTransitivePath.Signature;

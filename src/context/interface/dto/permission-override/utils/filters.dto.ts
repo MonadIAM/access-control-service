@@ -5,7 +5,7 @@ import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "PermissionOverrideFilters" })
-export class FiltersDTO implements Adapters.PermissionOverride.Filters {
+export class FiltersDTO implements Repositories.Mappers.PermissionOverride.Filters {
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()

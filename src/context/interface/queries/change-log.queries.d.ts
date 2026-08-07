@@ -19,8 +19,8 @@ declare namespace Queries {
 
         namespace FindMany {
             type Props = {
-                filters: Adapters.ChangeLog.Filters;
-                sort: Adapters.ChangeLog.Sort;
+                filters: Repositories.Mappers.ChangeLog.Filters;
+                sort: Repositories.Mappers.ChangeLog.Sort;
                 pagination: Pagination;
             };
 

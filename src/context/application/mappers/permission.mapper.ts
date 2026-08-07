@@ -1,9 +1,9 @@
 import { InvalidationScope } from "~context/enums";
 
-export class PermissionMapper implements Mappers.Permission.Contract {
+export class PermissionMapper implements Commands.Mappers.Permission.Contract {
     public projectionCreatePayload(
-        props: Mappers.Permission.ProjectionCreatePayload.Props,
-    ): Mappers.Permission.ProjectionCreatePayload.Result {
+        props: Commands.Mappers.Permission.ProjectionCreatePayload.Props,
+    ): Commands.Mappers.Permission.ProjectionCreatePayload.Result {
         return {
             permission: props.permission.id,
             code: props.permission.code,
@@ -12,8 +12,8 @@ export class PermissionMapper implements Mappers.Permission.Contract {
     }
 
     public projectionPurgePayload(
-        props: Mappers.Permission.ProjectionPurgePayload.Props,
-    ): Mappers.Permission.ProjectionPurgePayload.Result {
+        props: Commands.Mappers.Permission.ProjectionPurgePayload.Props,
+    ): Commands.Mappers.Permission.ProjectionPurgePayload.Result {
         return {
             permissions: props.permissions.map(({ id }) => id),
             realm: props.permissions[0].realm.id,
@@ -21,8 +21,8 @@ export class PermissionMapper implements Mappers.Permission.Contract {
     }
 
     public projectionUpdatePayload(
-        props: Mappers.Permission.ProjectionUpdatePayload.Props,
-    ): Mappers.Permission.ProjectionUpdatePayload.Result {
+        props: Commands.Mappers.Permission.ProjectionUpdatePayload.Props,
+    ): Commands.Mappers.Permission.ProjectionUpdatePayload.Result {
         return {
             permissions: props.permissions.map(({ id }) => id),
             isRevoked: props.permissions[0].isRevoked,
@@ -31,8 +31,8 @@ export class PermissionMapper implements Mappers.Permission.Contract {
     }
 
     public accessCachePayload(
-        props: Mappers.Permission.AccessCachePayload.Props,
-    ): Mappers.Permission.AccessCachePayload.Result {
+        props: Commands.Mappers.Permission.AccessCachePayload.Props,
+    ): Commands.Mappers.Permission.AccessCachePayload.Result {
         return {
             items: props.permissions.map(({ realm }) => ({
                 scope: InvalidationScope.REALM,

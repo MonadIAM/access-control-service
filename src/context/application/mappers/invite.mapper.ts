@@ -6,8 +6,10 @@ import {
     MessageTemplate,
 } from "~context/enums";
 
-export class InviteMapper implements Mappers.Invite.Contract {
-    public notificationPayload(props: Mappers.Invite.NotificationPayload.Props): Mappers.Invite.NotificationPayload.Result {
+export class InviteMapper implements Commands.Mappers.Invite.Contract {
+    public notificationPayload(
+        props: Commands.Mappers.Invite.NotificationPayload.Props,
+    ): Commands.Mappers.Invite.NotificationPayload.Result {
         const [entity] = props.invites;
 
         return {
@@ -23,8 +25,8 @@ export class InviteMapper implements Mappers.Invite.Contract {
     }
 
     public notificationCancelPayload(
-        props: Mappers.Invite.NotificationCancelPayload.Props,
-    ): Mappers.Invite.NotificationCancelPayload.Result {
+        props: Commands.Mappers.Invite.NotificationCancelPayload.Props,
+    ): Commands.Mappers.Invite.NotificationCancelPayload.Result {
         const [entity] = props.invites;
 
         return {
@@ -42,8 +44,8 @@ export class InviteMapper implements Mappers.Invite.Contract {
     }
 
     public projectionAssignmentCreatePayload(
-        props: Mappers.Invite.ProjectionAssignmentCreatePayload.Props,
-    ): Mappers.Invite.ProjectionAssignmentCreatePayload.Result {
+        props: Commands.Mappers.Invite.ProjectionAssignmentCreatePayload.Props,
+    ): Commands.Mappers.Invite.ProjectionAssignmentCreatePayload.Result {
         return {
             assignments: props.assignments.map(({ id, role }) => ({
                 assignment: id,
@@ -54,7 +56,9 @@ export class InviteMapper implements Mappers.Invite.Contract {
         };
     }
 
-    public accessCachePayload(props: Mappers.Invite.AccessCachePayload.Props): Mappers.Invite.AccessCachePayload.Result {
+    public accessCachePayload(
+        props: Commands.Mappers.Invite.AccessCachePayload.Props,
+    ): Commands.Mappers.Invite.AccessCachePayload.Result {
         return {
             items: props.assignments.map(({ account, realm }) => ({
                 scope: InvalidationScope.ACCOUNT_REALM,
@@ -64,7 +68,9 @@ export class InviteMapper implements Mappers.Invite.Contract {
         };
     }
 
-    public membershipPayload(props: Mappers.Invite.MembershipPayload.Props): Mappers.Invite.MembershipPayload.Result {
+    public membershipPayload(
+        props: Commands.Mappers.Invite.MembershipPayload.Props,
+    ): Commands.Mappers.Invite.MembershipPayload.Result {
         return {
             invitedBy: props.invitedBy,
             account: props.account,

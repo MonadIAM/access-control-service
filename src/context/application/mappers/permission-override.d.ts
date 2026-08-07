@@ -1,52 +1,54 @@
-declare namespace Mappers {
-    namespace PermissionOverride {
-        interface Contract extends PublicContract {}
+declare namespace Commands {
+    namespace Mappers {
+        namespace PermissionOverride {
+            interface Contract extends PublicContract {}
 
-        interface PublicContract {
-            projectionCreatePayload: ProjectionCreatePayload.Signature;
-            projectionUpdatePayload: ProjectionUpdatePayload.Signature;
-            projectionPurgePayload: ProjectionPurgePayload.Signature;
-            accessCachePayload: AccessCachePayload.Signature;
-        }
+            interface PublicContract {
+                projectionCreatePayload: ProjectionCreatePayload.Signature;
+                projectionUpdatePayload: ProjectionUpdatePayload.Signature;
+                projectionPurgePayload: ProjectionPurgePayload.Signature;
+                accessCachePayload: AccessCachePayload.Signature;
+            }
 
-        namespace ProjectionCreatePayload {
-            type Props = {
-                overrides: Entities.PermissionOverride[];
-            };
+            namespace ProjectionCreatePayload {
+                type Props = {
+                    overrides: Entities.PermissionOverride[];
+                };
 
-            type Result = Scripts.PermissionOverride.Create.Props;
+                type Result = Scripts.PermissionOverride.Create.Props;
 
-            type Signature = (props: Props) => Result;
-        }
+                type Signature = (props: Props) => Result;
+            }
 
-        namespace ProjectionUpdatePayload {
-            type Props = {
-                overrides: Entities.PermissionOverride[];
-            };
+            namespace ProjectionUpdatePayload {
+                type Props = {
+                    overrides: Entities.PermissionOverride[];
+                };
 
-            type Result = Scripts.PermissionOverride.Update.Props;
+                type Result = Scripts.PermissionOverride.Update.Props;
 
-            type Signature = (props: Props) => Result;
-        }
+                type Signature = (props: Props) => Result;
+            }
 
-        namespace ProjectionPurgePayload {
-            type Props = {
-                overrides: Entities.PermissionOverride[];
-            };
+            namespace ProjectionPurgePayload {
+                type Props = {
+                    overrides: Entities.PermissionOverride[];
+                };
 
-            type Result = Scripts.PermissionOverride.Purge.Props;
+                type Result = Scripts.PermissionOverride.Purge.Props;
 
-            type Signature = (props: Props) => Result;
-        }
+                type Signature = (props: Props) => Result;
+            }
 
-        namespace AccessCachePayload {
-            type Props = {
-                overrides: Entities.PermissionOverride[];
-            };
+            namespace AccessCachePayload {
+                type Props = {
+                    overrides: Entities.PermissionOverride[];
+                };
 
-            type Result = Topics.AccessCache.Message["payload"];
+                type Result = Topics.AccessCache.Message["payload"];
 
-            type Signature = (props: Props) => Result;
+                type Signature = (props: Props) => Result;
+            }
         }
     }
 }

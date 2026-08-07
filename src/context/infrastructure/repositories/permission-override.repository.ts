@@ -6,12 +6,12 @@ import { PermissionOverride } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
 
-import { PermissionOverrideAdapter } from "../adapters";
+import { PermissionOverrideMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionOverrideRepository
-    extends BaseRepository<Entities.PermissionOverride, Adapters.PermissionOverride.Types>({
-        Adapter: PermissionOverrideAdapter,
+    extends BaseRepository<Entities.PermissionOverride, Repositories.Mappers.PermissionOverride.Types>({
+        Mapper: PermissionOverrideMapper,
         Entity: PermissionOverride,
     })
     implements Repositories.PermissionOverride.Contract

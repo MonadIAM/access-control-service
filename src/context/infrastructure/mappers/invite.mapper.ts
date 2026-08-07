@@ -3,9 +3,9 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 import { ORMAdapter } from "~infrastructure/database/utils";
 import { InviteStatus } from "~context/enums";
 
-export class InviteAdapter implements Adapters.Contract<Entities.Invite, Adapters.Invite.Types> {
+export class InviteMapper implements Repositories.Mappers.Contract<Entities.Invite, Repositories.Mappers.Invite.Types> {
     public buildWhereORM(
-        filters: Adapters.Invite.Filters,
+        filters: Repositories.Mappers.Invite.Filters,
         basic: ORM.ObjectQuery<Entities.Invite> = {},
     ): ORM.ObjectQuery<Entities.Invite> {
         const where: ORM.ObjectQuery<Entities.Invite> = basic;
@@ -39,7 +39,7 @@ export class InviteAdapter implements Adapters.Contract<Entities.Invite, Adapter
     }
 
     public buildOptionsORM<P extends string = never, F extends string = "*">(
-        sort: Adapters.Invite.Sort,
+        sort: Repositories.Mappers.Invite.Sort,
         pagination: Pagination,
         basic: ORM.FindOptions<Entities.Invite, P, F> = {},
     ): ORM.FindOptions<Entities.Invite, P, F> {

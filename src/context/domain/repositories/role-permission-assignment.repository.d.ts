@@ -4,7 +4,7 @@ declare namespace Repositories {
 
         interface PublicContract extends Repositories.Base.Contract<
             Entities.RolePermissionAssignment,
-            Adapters.RolePermissionAssignment.Types
+            Repositories.Mappers.RolePermissionAssignment.Types
         > {
             wouldExceedPermissionLimit: WouldExceedPermissionLimit.Signature;
         }

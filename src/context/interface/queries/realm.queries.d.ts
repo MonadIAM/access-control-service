@@ -56,8 +56,8 @@ declare global {
             namespace FindMany {
                 type DefaultProps = {
                     mode: QueryMode.DEFAULT;
-                    filters: Adapters.Realm.Filters;
-                    sort: Adapters.Realm.Sort;
+                    filters: Repositories.Mappers.Realm.Filters;
+                    sort: Repositories.Mappers.Realm.Sort;
                     pagination: Pagination;
                     view: ResponseViewType;
                     account: string;
@@ -65,8 +65,8 @@ declare global {
 
                 type ManageProps = {
                     mode: QueryMode.MANAGE;
-                    filters: Adapters.Realm.Filters;
-                    sort: Adapters.Realm.Sort;
+                    filters: Repositories.Mappers.Realm.Filters;
+                    sort: Repositories.Mappers.Realm.Sort;
                     pagination: Pagination;
                     view: ResponseViewType;
                 };

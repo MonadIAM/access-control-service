@@ -6,10 +6,10 @@ import {
     MessageTemplate,
 } from "~context/enums";
 
-export class AccountRoleAssignmentMapper implements Mappers.AccountRoleAssignment.Contract {
+export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRoleAssignment.Contract {
     public projectionCreatePayload(
-        props: Mappers.AccountRoleAssignment.ProjectionCreatePayload.Props,
-    ): Mappers.AccountRoleAssignment.ProjectionCreatePayload.Result {
+        props: Commands.Mappers.AccountRoleAssignment.ProjectionCreatePayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.ProjectionCreatePayload.Result {
         return {
             assignments: props.assignments.map(({ id, role }) => ({
                 assignment: id,
@@ -21,8 +21,8 @@ export class AccountRoleAssignmentMapper implements Mappers.AccountRoleAssignmen
     }
 
     public projectionAssignPayload(
-        props: Mappers.AccountRoleAssignment.ProjectionAssignPayload.Props,
-    ): Mappers.AccountRoleAssignment.ProjectionAssignPayload.Result {
+        props: Commands.Mappers.AccountRoleAssignment.ProjectionAssignPayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.ProjectionAssignPayload.Result {
         const [entity] = props.assignments;
 
         return {
@@ -38,8 +38,8 @@ export class AccountRoleAssignmentMapper implements Mappers.AccountRoleAssignmen
     }
 
     public projectionPurgePayload(
-        props: Mappers.AccountRoleAssignment.ProjectionPurgePayload.Props,
-    ): Mappers.AccountRoleAssignment.ProjectionPurgePayload.Result {
+        props: Commands.Mappers.AccountRoleAssignment.ProjectionPurgePayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.ProjectionPurgePayload.Result {
         return {
             items: props.assignments.map(({ realm, account, role }) => ({
                 realm: realm.id,
@@ -50,8 +50,8 @@ export class AccountRoleAssignmentMapper implements Mappers.AccountRoleAssignmen
     }
 
     public projectionUpdatePayload(
-        props: Mappers.AccountRoleAssignment.ProjectionUpdatePayload.Props,
-    ): Mappers.AccountRoleAssignment.ProjectionUpdatePayload.Result {
+        props: Commands.Mappers.AccountRoleAssignment.ProjectionUpdatePayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.ProjectionUpdatePayload.Result {
         return {
             isRevoked: props.assignments[0].isRevoked,
             items: props.assignments.map(({ id, realm, account, role }) => ({
@@ -64,8 +64,8 @@ export class AccountRoleAssignmentMapper implements Mappers.AccountRoleAssignmen
     }
 
     public notificationGrantPayload(
-        props: Mappers.AccountRoleAssignment.NotificationGrantPayload.Props,
-    ): Mappers.AccountRoleAssignment.NotificationGrantPayload.Result {
+        props: Commands.Mappers.AccountRoleAssignment.NotificationGrantPayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.NotificationGrantPayload.Result {
         const [{ account, realm }] = props.assignments;
 
         return {
@@ -80,8 +80,8 @@ export class AccountRoleAssignmentMapper implements Mappers.AccountRoleAssignmen
     }
 
     public notificationRevokePayload(
-        props: Mappers.AccountRoleAssignment.NotificationRevokePayload.Props,
-    ): Mappers.AccountRoleAssignment.NotificationRevokePayload.Result {
+        props: Commands.Mappers.AccountRoleAssignment.NotificationRevokePayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.NotificationRevokePayload.Result {
         const byAccount = new Map<string, Entities.AccountRoleAssignment[]>();
 
         for (const entity of props.assignments) {
@@ -100,8 +100,8 @@ export class AccountRoleAssignmentMapper implements Mappers.AccountRoleAssignmen
     }
 
     public accessCachePayload(
-        props: Mappers.AccountRoleAssignment.AccessCachePayload.Props,
-    ): Mappers.AccountRoleAssignment.AccessCachePayload.Result {
+        props: Commands.Mappers.AccountRoleAssignment.AccessCachePayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.AccessCachePayload.Result {
         return {
             items: props.assignments.map(({ account, realm }) => ({
                 scope: InvalidationScope.ACCOUNT_REALM,

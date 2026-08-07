@@ -5,7 +5,7 @@ import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
 
 @ApiSchema({ name: "RoleConflictMemberFilters" })
-export class FiltersDTO implements Adapters.RoleConflictMember.Filters {
+export class FiltersDTO implements Repositories.Mappers.RoleConflictMember.Filters {
     @Expose()
     @Validator.IsOptional()
     @Type(() => StringFilterDTO)

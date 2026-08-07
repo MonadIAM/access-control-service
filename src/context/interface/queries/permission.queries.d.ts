@@ -15,8 +15,8 @@ declare global {
             namespace FindEffective {
                 type DefaultProps = {
                     mode: QueryMode.DEFAULT;
-                    filters: Adapters.Permission.DefaultFilters;
-                    sort: Adapters.Permission.Sort;
+                    filters: Repositories.Mappers.Permission.DefaultFilters;
+                    sort: Repositories.Mappers.Permission.Sort;
                     pagination: Pagination;
                     realm: string;
                     actor: string;
@@ -24,8 +24,8 @@ declare global {
 
                 type ManageProps = {
                     mode: QueryMode.MANAGE;
-                    filters: Adapters.Permission.DefaultFilters;
-                    sort: Adapters.Permission.Sort;
+                    filters: Repositories.Mappers.Permission.DefaultFilters;
+                    sort: Repositories.Mappers.Permission.Sort;
                     pagination: Pagination;
                     account: string;
                     realm: string;
@@ -76,8 +76,8 @@ declare global {
             namespace FindMany {
                 type DefaultProps = {
                     mode: QueryMode.DEFAULT;
-                    filters: Adapters.Permission.DefaultFilters;
-                    sort: Adapters.Permission.Sort;
+                    filters: Repositories.Mappers.Permission.DefaultFilters;
+                    sort: Repositories.Mappers.Permission.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
                     realm: string;
@@ -85,8 +85,8 @@ declare global {
 
                 type ManageProps = {
                     mode: QueryMode.MANAGE;
-                    filters: Adapters.Permission.ManageFilters;
-                    sort: Adapters.Permission.Sort;
+                    filters: Repositories.Mappers.Permission.ManageFilters;
+                    sort: Repositories.Mappers.Permission.Sort;
                     view: ResponseViewType;
                     pagination: Pagination;
                 };

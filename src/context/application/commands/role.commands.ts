@@ -11,7 +11,7 @@ import { RoleMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleCommands implements Commands.Role.Contract {
-    private readonly mapper = new RoleMapper();
+    private readonly mapper: Commands.Mappers.Role.Contract;
     private readonly dictionaryPath = "commands.role";
     private readonly resource = "Role";
 
@@ -24,7 +24,9 @@ export class RoleCommands implements Commands.Role.Contract {
         private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ROLE_SERVICE)
         private readonly roleService: Services.Role.CommandContract,
-    ) {}
+    ) {
+        this.mapper = new RoleMapper();
+    }
 
     public async create(props: Commands.Role.Create.Props): Commands.Role.Create.Result {
         const { input, realm } = props;

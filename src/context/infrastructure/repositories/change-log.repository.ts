@@ -4,12 +4,12 @@ import { Injectable, Scope } from "@nestjs/common";
 import { ChangeLog } from "~common/transaction-manager";
 import { BaseRepository } from "~common/mixins";
 
-import { ChangeLogAdapter } from "../adapters";
+import { ChangeLogMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ChangeLogRepository
-    extends BaseRepository<SystemEntities.ChangeLog, Adapters.ChangeLog.Types>({
-        Adapter: ChangeLogAdapter,
+    extends BaseRepository<SystemEntities.ChangeLog, Repositories.Mappers.ChangeLog.Types>({
+        Mapper: ChangeLogMapper,
         Entity: ChangeLog,
     })
     implements Repositories.ChangeLog.Contract
