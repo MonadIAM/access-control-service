@@ -1,3 +1,4 @@
+import { DiagLogLevel } from "@opentelemetry/api";
 import { type StringValue } from "ms";
 
 import { Validator } from "~common/validator";
@@ -72,6 +73,19 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     declare public ALLOWED_UI_ORIGINS: string;
+
+    // ---------------------------------------------------------------------------
+    // OpenTelemetry
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsString()
+    declare public OTEL_EXPORTER_OTLP_ENDPOINT: string;
+
+    @Validator.IsIn(Object.keys(DiagLogLevel))
+    declare public OTEL_LOG_LEVEL: keyof typeof DiagLogLevel;
+
+    @Validator.IsIn(["none", "otlp", "console"])
+    declare public OTEL_LOGS_EXPORTER: "none" | "otlp" | "console";
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - common

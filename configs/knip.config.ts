@@ -18,6 +18,8 @@ const config: KnipConfig = {
         "src/context/infrastructure/schemas/*.ts",
         // Barrel files
         "src/**/index.ts",
+        // Preload script
+        "src/observability/tracing/tracing.ts",
     ],
     ignoreDependencies: [
         "@mikro-orm/entity-generator",
