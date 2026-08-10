@@ -53,4 +53,12 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
             entity.restore();
         }
     }
+
+    public clean(props: Services.PermissionOverride.Clean.Props): Services.PermissionOverride.Clean.Result {
+        const { transaction, entities } = props;
+        transaction.clear();
+        for (const entity of entities) {
+            transaction.remove(entity);
+        }
+    }
 }

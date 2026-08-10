@@ -325,7 +325,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     transaction,
                 });
 
-                this.accountRoleAssignmentService.purge({ transaction, entities });
+                this.accountRoleAssignmentService.clean({ transaction, entities });
 
                 return { assignments: entities };
             },

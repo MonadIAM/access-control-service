@@ -8,6 +8,7 @@ declare namespace Services {
             assign: Assign.Signature;
             revoke: Revoke.Signature;
             purge: Purge.Signature;
+            clean: Clean.Signature;
         }
 
         namespace Restore {
@@ -62,6 +63,17 @@ declare namespace Services {
         }
 
         namespace Purge {
+            type Props = {
+                transaction: ORM.EntityManager;
+                entities: Entities.AccountRoleAssignment[];
+            };
+
+            type Result = void;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Clean {
             type Props = {
                 transaction: ORM.EntityManager;
                 entities: Entities.AccountRoleAssignment[];

@@ -256,7 +256,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                     transaction,
                 });
 
-                this.permissionOverrideService.purge({ transaction, entities });
+                this.permissionOverrideService.clean({ transaction, entities });
 
                 return { overrides: entities };
             },

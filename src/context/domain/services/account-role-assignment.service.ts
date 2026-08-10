@@ -96,4 +96,11 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         transaction.persist(entity);
         return entity;
     }
+
+    public clean(props: Services.AccountRoleAssignment.Clean.Props): Services.AccountRoleAssignment.Clean.Result {
+        const { transaction, entities } = props;
+        for (const entity of entities) {
+            transaction.remove(entity);
+        }
+    }
 }

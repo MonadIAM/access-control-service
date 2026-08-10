@@ -10,6 +10,7 @@ declare global {
                 create: Create.Signature;
                 revoke: Revoke.Signature;
                 purge: Purge.Signature;
+                clean: Clean.Signature;
             }
 
             namespace Restore {
@@ -49,6 +50,17 @@ declare global {
             }
 
             namespace Purge {
+                type Props = {
+                    transaction: ORM.EntityManager;
+                    entities: Entities.PermissionOverride[];
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Clean {
                 type Props = {
                     transaction: ORM.EntityManager;
                     entities: Entities.PermissionOverride[];
