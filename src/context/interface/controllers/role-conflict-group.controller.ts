@@ -21,6 +21,9 @@ import { PermissionCode } from "~context/enums";
 import { ROLE_CONFLICT_GROUP_COMMANDS } from "../commands";
 import { ROLE_CONFLICT_GROUP_QUERIES } from "../queries";
 import {
+    ViolatingAccountsQueryDTO,
+    ViolatingAccountsBodyDTO,
+    ViolatingAccountsListDTO,
     RoleConflictGroupDTO,
     GetDetailsQueryDTO,
     GetDetailsBodyDTO,
@@ -136,11 +139,35 @@ export class RoleConflictGroupController {
         UNAUTHORIZED,
         FORBIDDEN,
     )
-    public findViolationDetails(
+    public findGroupsViolatedByAccount(
         @Body() { account, roles }: GetDetailsBodyDTO,
         @Query() { realm }: GetDetailsQueryDTO,
-    ): Queries.RoleConflictGroup.FindViolationDetails.Result {
-        return this.roleConflictGroupQueries.findViolationDetails({ account, realm, roles });
+    ): Queries.RoleConflictGroup.FindGroupsViolatedByAccount.Result {
+        return this.roleConflictGroupQueries.findGroupsViolatedByAccount({ account, realm, roles });
+    }
+
+    @HttpCode(OK)
+    @FormatResponse(ViolatingAccountsListDTO)
+    @Post("violating-accounts")
+    @ApiResponse({ status: OK, type: ViolatingAccountsListDTO })
+    @RequirePermission(ROLE_CONFLICT_GROUP_CREATE)
+    @ApiOperation({
+        summary: "Returns accounts that already violate a candidate {roles, maxAllowed} pair",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
+    public findAccountsViolatingRule(
+        @Body() { roles, maxAllowed }: ViolatingAccountsBodyDTO,
+        @Query() { realm }: ViolatingAccountsQueryDTO,
+    ): Queries.RoleConflictGroup.FindAccountsViolatingRule.Result {
+        return this.roleConflictGroupQueries.findAccountsViolatingRule({ roles, maxAllowed, realm });
     }
 
     @Post("create")

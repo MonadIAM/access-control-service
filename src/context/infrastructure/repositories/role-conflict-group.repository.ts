@@ -2,7 +2,7 @@ import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { AccountRoleAssignment, RoleConflictGroup } from "~context/domain/entities";
+import { RoleConflictGroup } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { knex } from "~infrastructure/database";
 import { BaseRepository } from "~common/mixins";
@@ -28,12 +28,12 @@ export class RoleConflictGroupRepository
         this.groupLimit = this.configService.getOrThrow<number>("CONFLICT_GROUP_PER_REALM_LIMIT");
     }
 
-    public async findViolationDetails(
-        props: Repositories.RoleConflictGroup.FindViolationDetails.Props,
-    ): Repositories.RoleConflictGroup.FindViolationDetails.Result {
+    public async findGroupsViolatedByAccount(
+        props: Repositories.RoleConflictGroup.FindGroupsViolatedByAccount.Props,
+    ): Repositories.RoleConflictGroup.FindGroupsViolatedByAccount.Result {
         try {
             const entityManager = this.readManager.fork();
-            const violationsBaseQuery = this.getViolationsQuery(props);
+            const violationsBaseQuery = this.getGroupsViolatedByAccountQuery(props);
 
             const query = knex
                 .with("violations", violationsBaseQuery)
@@ -55,12 +55,12 @@ export class RoleConflictGroupRepository
         }
     }
 
-    public async hasViolations(
-        props: Repositories.RoleConflictGroup.HasViolations.Props,
-    ): Repositories.RoleConflictGroup.HasViolations.Result {
+    public async hasGroupsViolatedByAccount(
+        props: Repositories.RoleConflictGroup.HasGroupsViolatedByAccount.Props,
+    ): Repositories.RoleConflictGroup.HasGroupsViolatedByAccount.Result {
         try {
             const entityManager = props.transaction ?? this.readManager.fork();
-            const violationsBaseQuery = this.getViolationsQuery(props);
+            const violationsBaseQuery = this.getGroupsViolatedByAccountQuery(props);
 
             const query = knex.select(knex.raw("1 as exists")).from(violationsBaseQuery.as("v")).limit(1).toSQL();
 
@@ -76,24 +76,39 @@ export class RoleConflictGroupRepository
         }
     }
 
-    public async hasAccountViolating(
-        props: Repositories.RoleConflictGroup.HasAccountViolating.Props,
-    ): Repositories.RoleConflictGroup.HasAccountViolating.Result {
+    public async hasAccountsViolatingRule(
+        props: Repositories.RoleConflictGroup.HasAccountsViolatingRule.Props,
+    ): Repositories.RoleConflictGroup.HasAccountsViolatingRule.Result {
         try {
-            const { transaction, identifiers, maxAllowed } = props;
-            const entityManager = transaction ?? this.readManager.fork();
-            const builder = entityManager.createQueryBuilder(AccountRoleAssignment, "arm");
+            const entityManager = props.transaction ?? this.readManager.fork();
+            const accountViolationsBaseQuery = this.getAccountsViolatingRuleQuery(props);
 
-            builder
-                .select(["arm.account as account"])
-                .where({ role: { $in: identifiers } })
-                .groupBy("arm.account")
-                .having("count(distinct arm.role_id) > ?", [maxAllowed])
-                .limit(1);
+            const query = knex.select(knex.raw("1 as exists")).from(accountViolationsBaseQuery.as("v")).limit(1).toSQL();
 
-            const result = await builder.execute<Repositories.RoleConflictGroup.AccountRow[]>("all");
+            const existsRows = await entityManager.execute<Repositories.RoleConflictGroup.ExistsRow[]>(
+                query.sql,
+                [...query.bindings],
+                "all",
+            );
 
-            return result.length > 0;
+            return existsRows.length > 0;
+        } catch (error) {
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
+        }
+    }
+
+    public async findAccountsViolatingRule(
+        props: Repositories.RoleConflictGroup.FindAccountsViolatingRule.Props,
+    ): Repositories.RoleConflictGroup.FindAccountsViolatingRule.Result {
+        try {
+            const entityManager = props.transaction ?? this.readManager.fork();
+            const query = this.getAccountsViolatingRuleQuery(props).toSQL();
+
+            return await entityManager.execute<Repositories.RoleConflictGroup.AccountViolationRow[]>(
+                query.sql,
+                [...query.bindings],
+                "all",
+            );
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.constructor.name);
         }
@@ -113,9 +128,9 @@ export class RoleConflictGroupRepository
         }
     }
 
-    public getViolationsQuery(
-        props: Repositories.RoleConflictGroup.GetViolationsQuery.Props,
-    ): Repositories.RoleConflictGroup.GetViolationsQuery.Result {
+    public getGroupsViolatedByAccountQuery(
+        props: Repositories.RoleConflictGroup.GetGroupsViolatedByAccountQuery.Props,
+    ): Repositories.RoleConflictGroup.GetGroupsViolatedByAccountQuery.Result {
         // NOTE[SQL-02]: see NOTES.md#SQL-02
         // NOTE[SQL-06]: see NOTES.md#SQL-06
         const directAfterCte = knex.select(knex.raw("role_id::uuid")).from(
@@ -140,5 +155,18 @@ export class RoleConflictGroupRepository
             .where("grp.realm_id", props.realm)
             .groupBy("grp.id", "grp.max_allowed")
             .havingRaw("count(distinct mem.role_id) > grp.max_allowed");
+    }
+
+    public getAccountsViolatingRuleQuery(
+        props: Repositories.RoleConflictGroup.GetAccountsViolatingRuleQuery.Props,
+    ): Repositories.RoleConflictGroup.GetAccountsViolatingRuleQuery.Result {
+        return knex
+            .select("arm.account as account")
+            .select(knex.raw("count(distinct arm.role_id)::int as matched_count"))
+            .from({ arm: "access_control.account_role_assignment" })
+            .where("arm.realm_id", props.realm)
+            .whereIn("arm.role_id", props.identifiers)
+            .groupBy("arm.account")
+            .havingRaw("count(distinct arm.role_id) > ?", [props.maxAllowed]);
     }
 }

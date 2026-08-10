@@ -1,3 +1,4 @@
+export { ViolatingAccountsQueryDTO, ViolatingAccountsBodyDTO } from "./req/violating-accounts.dto";
 export { GetDetailsQueryDTO, GetDetailsBodyDTO } from "./req/violation-details.dto";
 export { GetListQueryDTO, GetListBodyDTO } from "./req/get-list.dto";
 export { RestoreQueryDTO, RestoreBodyDTO } from "./req/restore.dto";
@@ -7,6 +8,7 @@ export { UpdateQueryDTO, UpdateBodyDTO } from "./req/update.dto";
 export { PurgeQueryDTO, PurgeBodyDTO } from "./req/purge.dto";
 export { GetByIdQueryDTO } from "./req/get-by-id.dto";
 
+export { ViolatingAccountsListDTO } from "./res/account-violation.dto";
 export { RoleConflictGroupLookupDTO } from "./res/lookup-entity.dto";
 export { RoleConflictGroupDTO } from "./res/entity.dto";
 export { ListDTO } from "./res/list.dto";

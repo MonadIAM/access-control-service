@@ -37,7 +37,7 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
                 roles: roleIds,
                 transaction,
             }),
-            this.roleConflictGroupRepository.hasViolations({
+            this.roleConflictGroupRepository.hasGroupsViolatedByAccount({
                 account: input.account,
                 realm: realm.id,
                 roles: roleIds,

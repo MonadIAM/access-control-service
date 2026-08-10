@@ -9,17 +9,19 @@ declare namespace Repositories {
             exists: number;
         };
 
-        type AccountRow = {
+        type AccountViolationRow = {
             account: string;
+            matchedCount: number;
         };
 
         interface Contract extends PublicContract, InternalContract {}
 
         interface InternalContract {
-            getViolationsQuery: GetViolationsQuery.Signature;
+            getGroupsViolatedByAccountQuery: GetGroupsViolatedByAccountQuery.Signature;
+            getAccountsViolatingRuleQuery: GetAccountsViolatingRuleQuery.Signature;
         }
 
-        namespace GetViolationsQuery {
+        namespace GetGroupsViolatedByAccountQuery {
             type Props = {
                 transaction?: ORM.EntityManager;
                 account: string;
@@ -32,31 +34,35 @@ declare namespace Repositories {
             type Signature = (props: Props) => Result;
         }
 
-        interface PublicContract extends Repositories.Base.Contract<
-            Entities.RoleConflictGroup,
-            Repositories.Mappers.Realm.Types
-        > {
-            wouldExceedGroupLimit: WouldExceedGroupLimit.Signature;
-            findViolationDetails: FindViolationDetails.Signature;
-            hasAccountViolating: HasAccountViolating.Signature;
-            hasViolations: HasViolations.Signature;
-        }
-
-        interface QueryContract extends Pick<PublicContract, "findViolationDetails" | "findUniqueOrThrow" | "findMany"> {}
-
-        namespace WouldExceedGroupLimit {
+        namespace GetAccountsViolatingRuleQuery {
             type Props = {
-                transaction?: ORM.EntityManager;
-                count?: number;
+                identifiers: string[];
+                maxAllowed: number;
                 realm: string;
             };
 
-            type Result = Promise<boolean>;
+            type Result = ORM.QueryBuilder;
 
             type Signature = (props: Props) => Result;
         }
 
-        namespace FindViolationDetails {
+        interface PublicContract extends Repositories.Base.Contract<
+            Entities.RoleConflictGroup,
+            Repositories.Mappers.Realm.Types
+        > {
+            findGroupsViolatedByAccount: FindGroupsViolatedByAccount.Signature;
+            hasGroupsViolatedByAccount: HasGroupsViolatedByAccount.Signature;
+            findAccountsViolatingRule: FindAccountsViolatingRule.Signature;
+            hasAccountsViolatingRule: HasAccountsViolatingRule.Signature;
+            wouldExceedGroupLimit: WouldExceedGroupLimit.Signature;
+        }
+
+        interface QueryContract extends Pick<
+            PublicContract,
+            "findGroupsViolatedByAccount" | "findAccountsViolatingRule" | "findUniqueOrThrow" | "findMany"
+        > {}
+
+        namespace FindGroupsViolatedByAccount {
             type Props = {
                 account: string;
                 roles: string[];
@@ -68,11 +74,12 @@ declare namespace Repositories {
             type Signature = (props: Props) => Result;
         }
 
-        namespace HasAccountViolating {
+        namespace HasGroupsViolatedByAccount {
             type Props = {
                 transaction?: ORM.EntityManager;
-                identifiers: string[];
-                maxAllowed: number;
+                account: string;
+                roles: string[];
+                realm: string;
             };
 
             type Result = Promise<boolean>;
@@ -80,11 +87,36 @@ declare namespace Repositories {
             type Signature = (props: Props) => Result;
         }
 
-        namespace HasViolations {
+        namespace FindAccountsViolatingRule {
             type Props = {
                 transaction?: ORM.EntityManager;
-                account: string;
-                roles: string[];
+                identifiers: string[];
+                maxAllowed: number;
+                realm: string;
+            };
+
+            type Result = Promise<AccountViolationRow[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace HasAccountsViolatingRule {
+            type Props = {
+                transaction?: ORM.EntityManager;
+                identifiers: string[];
+                maxAllowed: number;
+                realm: string;
+            };
+
+            type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace WouldExceedGroupLimit {
+            type Props = {
+                transaction?: ORM.EntityManager;
+                count?: number;
                 realm: string;
             };
 

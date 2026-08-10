@@ -6,12 +6,13 @@ declare global {
             interface Contract extends ControllerContract {}
 
             interface ControllerContract {
-                findViolationDetails: FindViolationDetails.Signature;
+                findGroupsViolatedByAccount: FindGroupsViolatedByAccount.Signature;
+                findAccountsViolatingRule: FindAccountsViolatingRule.Signature;
                 findUnique: FindUnique.Signature;
                 findMany: FindMany.Signature;
             }
 
-            namespace FindViolationDetails {
+            namespace FindGroupsViolatedByAccount {
                 type Props = {
                     account: string;
                     roles: string[];
@@ -19,6 +20,18 @@ declare global {
                 };
 
                 type Result = Promise<Entities.RoleConflictGroup[]>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace FindAccountsViolatingRule {
+                type Props = {
+                    roles: string[];
+                    maxAllowed: number;
+                    realm: string;
+                };
+
+                type Result = Promise<Repositories.RoleConflictGroup.AccountViolationRow[]>;
 
                 type Signature = (props: Props) => Result;
             }

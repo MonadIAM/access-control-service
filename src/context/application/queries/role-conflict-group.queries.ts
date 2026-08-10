@@ -31,12 +31,22 @@ export class RoleConflictGroupQueries implements Queries.RoleConflictGroup.Contr
         });
     }
 
-    public findViolationDetails(
-        props: Queries.RoleConflictGroup.FindViolationDetails.Props,
-    ): Queries.RoleConflictGroup.FindViolationDetails.Result {
-        return this.roleConflictGroupRepository.findViolationDetails({
+    public findGroupsViolatedByAccount(
+        props: Queries.RoleConflictGroup.FindGroupsViolatedByAccount.Props,
+    ): Queries.RoleConflictGroup.FindGroupsViolatedByAccount.Result {
+        return this.roleConflictGroupRepository.findGroupsViolatedByAccount({
             account: props.account,
             roles: props.roles,
+            realm: props.realm,
+        });
+    }
+
+    public findAccountsViolatingRule(
+        props: Queries.RoleConflictGroup.FindAccountsViolatingRule.Props,
+    ): Queries.RoleConflictGroup.FindAccountsViolatingRule.Result {
+        return this.roleConflictGroupRepository.findAccountsViolatingRule({
+            maxAllowed: props.maxAllowed,
+            identifiers: props.roles,
             realm: props.realm,
         });
     }
