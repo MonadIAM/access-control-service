@@ -17,6 +17,12 @@ class PatchDTO {
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: String })
     declare public description?: string;
+
+    @Expose()
+    @Validator.IsPositiveInt()
+    @Validator.IsOptional()
+    @ApiProperty({ required: false, type: Number })
+    declare public maxAllowed?: number;
 }
 
 @ApiSchema({ name: "RoleConflictGroupUpdateBody" })

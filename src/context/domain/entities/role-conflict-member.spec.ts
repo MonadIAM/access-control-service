@@ -3,11 +3,22 @@ import { isUUID } from "class-validator";
 
 import { RoleConflictMember } from "./role-conflict-member.entity";
 import { RoleConflictGroup } from "./role-conflict-group.entity";
+import { Realm } from "./realm.entity";
 import { Role } from "./role.entity";
+
+function createGroup(overrides?: Partial<Entities.RoleConflictGroup.ConstructorProps>): RoleConflictGroup {
+    return new RoleConflictGroup({
+        code: "SoD_FINANCE",
+        name: "Finance Separation",
+        maxAllowed: 1,
+        realm: {} as Realm,
+        ...overrides,
+    });
+}
 
 function createMember(overrides?: Partial<Entities.RoleConflictMember.ConstructorProps>): RoleConflictMember {
     return new RoleConflictMember({
-        group: {} as RoleConflictGroup,
+        group: createGroup(),
         role: {} as Role,
         ...overrides,
     });
@@ -60,6 +71,14 @@ describe("RoleConflictMember Entity", () => {
             const member = createMember();
 
             expect(() => member.canPurge()).not.toThrow();
+        });
+
+        it("should throw when the owning group is revoked", () => {
+            const group = createGroup();
+            group.revoke();
+            const member = createMember({ group });
+
+            expect(() => member.canPurge()).toThrow("CANNOT_MODIFY_MEMBERS_REVOKED");
         });
     });
 });

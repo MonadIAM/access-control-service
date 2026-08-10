@@ -12,10 +12,12 @@ declare namespace Services {
 
         namespace Restore {
             type Props = {
+                transaction: ORM.EntityManager;
                 entities: Entities.RoleConflictGroup[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<void>;
 
             type Signature = (props: Props) => Result;
         }
@@ -40,11 +42,12 @@ declare namespace Services {
 
         namespace Update {
             type Props = {
+                transaction: ORM.EntityManager;
                 patch: Partial<Entities.RoleConflictGroup.MutableFields>;
                 entity: Entities.RoleConflictGroup;
             };
 
-            type Result = void;
+            type Result = Promise<void>;
 
             type Signature = (props: Props) => Result;
         }

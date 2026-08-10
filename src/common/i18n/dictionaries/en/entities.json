@@ -37,7 +37,9 @@
     "ALREADY_REVOKED": "The conflict group is already in a revoked state.",
     "ALREADY_ACTIVE": "The conflict group is already in an active state.",
     "CANNOT_PURGE_ACTIVE": "Deletion is not allowed: the group is active. Revoke it first.",
-    "CANNOT_PURGE_SYSTEM": "Deletion is not allowed: the group is system-defined."
+    "CANNOT_PURGE_SYSTEM": "Deletion is not allowed: the group is system-defined.",
+    "CANNOT_UPDATE_REVOKED": "The group is revoked and cannot be updated. Restore it first.",
+    "CANNOT_MODIFY_MEMBERS_REVOKED": "The group is revoked: members cannot be added or removed. Restore it first."
   },
   "realm": {
     "NO_CHANGES_DETECTED": "The realm state already matches the provided changes.",

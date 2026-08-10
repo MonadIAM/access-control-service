@@ -47,6 +47,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
                         transaction,
                     }),
                     this.roleConflictGroupRepository.findUniqueOrThrow({
+                        options: { populate: ["members", "members.role"] },
                         where: { id: input.group, realm },
                         transaction,
                     }),
@@ -80,6 +81,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
             execute: async (transaction) => {
                 const entities = await this.roleConflictMemberRepository.find({
                     where: { id: { $in: input.identifiers }, group: { realm } },
+                    options: { populate: ["group"] },
                     transaction,
                 });
 

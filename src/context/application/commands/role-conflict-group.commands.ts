@@ -76,11 +76,12 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             changeLog: true,
             execute: async (transaction) => {
                 const entity = await this.roleConflictGroupRepository.findUniqueOrThrow({
+                    options: { populate: ["members", "members.role"] },
                     where: { id, realm },
                     transaction,
                 });
 
-                this.roleConflictGroupService.update({ entity, patch: input.patch });
+                await this.roleConflictGroupService.update({ entity, patch: input.patch, transaction });
             },
         });
 
@@ -173,7 +174,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
                 if (entities.length < input.identifiers.length) {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.GROUPS_NOT_FOUND` });
                 } else {
-                    this.roleConflictGroupService.restore({ entities });
+                    await this.roleConflictGroupService.restore({ entities, transaction, realm });
                     return entities;
                 }
             },

@@ -30,6 +30,8 @@ export class RoleConflictMember implements Entities.RoleConflictMember.Contract 
     }
 
     public canPurge(): void {
+        this.group.canModifyMembers();
+
         if (this.isSystemManaged) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
         }

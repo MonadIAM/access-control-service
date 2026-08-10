@@ -18,11 +18,13 @@
     "EXISTS_TRANSITIVE_PATH": "Creating this policy would introduce a transitive delegation cycle."
   },
   "role-conflict-member": {
-    "MEMBER_LIMIT_EXCEEDED": "The allowed member limit for the conflict group has been exceeded."
+    "MEMBER_LIMIT_EXCEEDED": "The allowed member limit for the conflict group has been exceeded.",
+    "HAS_ACCOUNTS_VIOLATING_RULE": "This rule is already violated by existing account role assignments."
   },
   "role-conflict-group": {
     "LIMIT_EXCEEDED": "The allowed conflict group limit for the realm has been exceeded.",
-    "MEMBER_LIMIT_EXCEEDED": "The allowed member limit for the conflict group has been exceeded."
+    "MEMBER_LIMIT_EXCEEDED": "The allowed member limit for the conflict group has been exceeded.",
+    "HAS_ACCOUNTS_VIOLATING_RULE": "This rule is already violated by existing account role assignments."
   },
   "permission": {
     "LIMIT_EXCEEDED": "The allowed permission limit for the realm has been exceeded."

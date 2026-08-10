@@ -114,6 +114,13 @@ describe("RoleConflictGroup Entity", () => {
 
             expect(() => group.update({ patch: { name: "Same" } })).toThrow("NO_CHANGES_DETECTED");
         });
+
+        it("should throw when the group is revoked", () => {
+            const group = createGroup();
+            group.revoke();
+
+            expect(() => group.update({ patch: { name: "New" } })).toThrow("CANNOT_UPDATE_REVOKED");
+        });
     });
 
     describe("revoke", () => {
@@ -169,6 +176,21 @@ describe("RoleConflictGroup Entity", () => {
             group.revoke();
 
             expect(() => group.canPurge()).not.toThrow();
+        });
+    });
+
+    describe("canModifyMembers", () => {
+        it("should throw when the group is revoked", () => {
+            const group = createGroup();
+            group.revoke();
+
+            expect(() => group.canModifyMembers()).toThrow("CANNOT_MODIFY_MEMBERS_REVOKED");
+        });
+
+        it("should pass for an active group", () => {
+            const group = createGroup();
+
+            expect(() => group.canModifyMembers()).not.toThrow();
         });
     });
 });

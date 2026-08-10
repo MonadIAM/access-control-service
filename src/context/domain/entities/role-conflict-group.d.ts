@@ -20,6 +20,7 @@ declare namespace Entities {
             members: ORM.Collection<Entities.RoleConflictMember>;
 
             update(props: ChangeDataProps): void;
+            canModifyMembers(): void;
             canPurge(): void;
             restore(): void;
             revoke(): void;

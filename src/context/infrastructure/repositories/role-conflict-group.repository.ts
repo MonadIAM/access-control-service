@@ -114,6 +114,36 @@ export class RoleConflictGroupRepository
         }
     }
 
+    public async hasGroupsWithViolatingAccounts(
+        props: Repositories.RoleConflictGroup.HasGroupsWithViolatingAccounts.Props,
+    ): Repositories.RoleConflictGroup.HasGroupsWithViolatingAccounts.Result {
+        try {
+            const entityManager = props.transaction ?? this.readManager.fork();
+            const baseQuery = knex
+                .select("mem.group_id as group_id")
+                .from({ mem: "access_control.role_conflict_member" })
+                .join({ arm: "access_control.account_role_assignment" }, "arm.role_id", "mem.role_id")
+                .join({ grp: "access_control.role_conflict_group" }, "grp.id", "mem.group_id")
+                .whereIn("mem.group_id", props.groups)
+                .where("grp.realm_id", props.realm)
+                .where("arm.realm_id", props.realm)
+                .groupBy("mem.group_id", "arm.account", "grp.max_allowed")
+                .havingRaw("count(distinct arm.role_id) > grp.max_allowed");
+
+            const query = knex.select(knex.raw("1 as exists")).from(baseQuery.as("v")).limit(1).toSQL();
+
+            const existsRows = await entityManager.execute<Repositories.RoleConflictGroup.ExistsRow[]>(
+                query.sql,
+                [...query.bindings],
+                "all",
+            );
+
+            return existsRows.length > 0;
+        } catch (error) {
+            throw ExceptionMapper.fromORM(error, this.constructor.name);
+        }
+    }
+
     public async wouldExceedGroupLimit(
         props: Repositories.RoleConflictGroup.WouldExceedGroupLimit.Props,
     ): Repositories.RoleConflictGroup.WouldExceedGroupLimit.Result {
@@ -153,6 +183,7 @@ export class RoleConflictGroupRepository
             .join({ mem: "access_control.role_conflict_member" }, "mem.group_id", "grp.id")
             .join({ da: "direct_after" }, "da.role_id", "mem.role_id")
             .where("grp.realm_id", props.realm)
+            .where("grp.is_revoked", false)
             .groupBy("grp.id", "grp.max_allowed")
             .havingRaw("count(distinct mem.role_id) > grp.max_allowed");
     }

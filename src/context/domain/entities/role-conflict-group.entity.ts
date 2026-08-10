@@ -40,6 +40,10 @@ export class RoleConflictGroup implements Entities.RoleConflictGroup.Contract {
     }
 
     public update({ patch }: Entities.RoleConflictGroup.ChangeDataProps): void {
+        if (this.isRevoked) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_UPDATE_REVOKED` });
+        }
+
         const now = new Date();
         let affected = 0;
         for (const [key, value] of Object.typedEntries(patch)) {
@@ -55,6 +59,12 @@ export class RoleConflictGroup implements Entities.RoleConflictGroup.Contract {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NO_CHANGES_DETECTED` });
         } else {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EMPTY_UPDATE_PATCH` });
+        }
+    }
+
+    public canModifyMembers(): void {
+        if (this.isRevoked) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_MODIFY_MEMBERS_REVOKED` });
         }
     }
 

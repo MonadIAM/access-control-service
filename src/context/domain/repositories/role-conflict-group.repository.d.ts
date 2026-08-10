@@ -50,6 +50,7 @@ declare namespace Repositories {
             Entities.RoleConflictGroup,
             Repositories.Mappers.Realm.Types
         > {
+            hasGroupsWithViolatingAccounts: HasGroupsWithViolatingAccounts.Signature;
             findGroupsViolatedByAccount: FindGroupsViolatedByAccount.Signature;
             hasGroupsViolatedByAccount: HasGroupsViolatedByAccount.Signature;
             findAccountsViolatingRule: FindAccountsViolatingRule.Signature;
@@ -61,6 +62,18 @@ declare namespace Repositories {
             PublicContract,
             "findGroupsViolatedByAccount" | "findAccountsViolatingRule" | "findUniqueOrThrow" | "findMany"
         > {}
+
+        namespace HasGroupsWithViolatingAccounts {
+            type Props = {
+                transaction?: ORM.EntityManager;
+                groups: string[];
+                realm: string;
+            };
+
+            type Result = Promise<boolean>;
+
+            type Signature = (props: Props) => Result;
+        }
 
         namespace FindGroupsViolatedByAccount {
             type Props = {

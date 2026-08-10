@@ -32,25 +32,52 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
             if (limitExceeded) {
                 throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.LIMIT_EXCEEDED` });
             } else {
-                const group = new RoleConflictGroup({
-                    description: input.description,
+                const hasViolators = await this.roleConflictGroupRepository.hasAccountsViolatingRule({
+                    identifiers: input.members.map((role) => role.id),
                     maxAllowed: input.maxAllowed,
-                    code: input.code,
-                    name: input.name,
-                    realm,
+                    realm: realm.id,
+                    transaction,
                 });
 
-                for (const role of input.members) {
-                    transaction.persist(new RoleConflictMember({ group, role }));
-                }
+                if (hasViolators) {
+                    throw Exception.invariantViolation({
+                        messageKey: `${this.dictionaryPath}.HAS_ACCOUNTS_VIOLATING_RULE`,
+                    });
+                } else {
+                    const group = new RoleConflictGroup({
+                        description: input.description,
+                        maxAllowed: input.maxAllowed,
+                        code: input.code,
+                        name: input.name,
+                        realm,
+                    });
 
-                transaction.persist(group);
+                    for (const role of input.members) {
+                        transaction.persist(new RoleConflictMember({ group, role }));
+                    }
+
+                    transaction.persist(group);
+                }
             }
         }
     }
 
-    public update(props: Services.RoleConflictGroup.Update.Props): Services.RoleConflictGroup.Update.Result {
-        const { entity, patch } = props;
+    public async update(props: Services.RoleConflictGroup.Update.Props): Services.RoleConflictGroup.Update.Result {
+        const { transaction, entity, patch } = props;
+
+        if (patch.maxAllowed && patch.maxAllowed < entity.maxAllowed) {
+            const hasViolators = await this.roleConflictGroupRepository.hasAccountsViolatingRule({
+                identifiers: entity.members.getItems().map((member) => member.role.id),
+                maxAllowed: patch.maxAllowed,
+                realm: entity.realm.id,
+                transaction,
+            });
+
+            if (hasViolators) {
+                throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.HAS_ACCOUNTS_VIOLATING_RULE` });
+            }
+        }
+
         entity.update({ patch });
     }
 
@@ -70,8 +97,19 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
         }
     }
 
-    public restore(props: Services.RoleConflictGroup.Restore.Props): Services.RoleConflictGroup.Restore.Result {
-        const { entities } = props;
+    public async restore(props: Services.RoleConflictGroup.Restore.Props): Services.RoleConflictGroup.Restore.Result {
+        const { transaction, entities, realm } = props;
+
+        const hasViolators = await this.roleConflictGroupRepository.hasGroupsWithViolatingAccounts({
+            groups: entities.map((entity) => entity.id),
+            transaction,
+            realm,
+        });
+
+        if (hasViolators) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.HAS_ACCOUNTS_VIOLATING_RULE` });
+        }
+
         for (const entity of entities) {
             entity.restore();
         }
