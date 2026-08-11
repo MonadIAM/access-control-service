@@ -12,6 +12,7 @@ declare namespace Entities {
             depthLimit?: number;
             isSystemManaged: boolean;
             isRevoked: boolean;
+            expiresAt?: Date;
 
             delegator: Entities.Role;
             target: Entities.Role;
@@ -31,6 +32,7 @@ declare namespace Entities {
             depthLimit?: number;
             isSystemManaged?: boolean;
             isRevoked?: boolean;
+            expiresAt?: Date;
             delegator: Entities.Role;
             target: Entities.Role;
             realm: Entities.Realm;

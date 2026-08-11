@@ -24,6 +24,10 @@ export const PermissionOverrideSchema = new EntitySchema<PermissionOverride>({
             name: "permission_override_permission_idx",
             properties: ["permission"],
         },
+        {
+            name: "permission_override_expires_at_idx",
+            properties: ["expiresAt"],
+        },
     ],
 
     properties: {
@@ -47,6 +51,7 @@ export const PermissionOverrideSchema = new EntitySchema<PermissionOverride>({
             deleteRule: "cascade",
         },
 
+        expiresAt: { type: "timestamptz", length: 3, nullable: true },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },

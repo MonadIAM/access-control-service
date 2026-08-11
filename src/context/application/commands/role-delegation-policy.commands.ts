@@ -3,6 +3,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ROLE_DELEGATION_POLICY_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ActionType, EntityType } from "~context/enums";
+import { SYSTEM_ACCOUNT_ID } from "~context/constants";
 import { Exception } from "~common/exceptions";
 
 import { ROLE_DELEGATION_POLICY_SERVICE } from "../services";
@@ -64,6 +65,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
                         input: {
                             description: input.description,
                             depthLimit: input.depthLimit,
+                            expiresAt: input.expiresAt,
                             delegator: delegatorEntity,
                             target: targetEntity,
                         },
@@ -197,6 +199,48 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
+        }
+    }
+
+    public async expire(props: Commands.RoleDelegationPolicy.Expire.Props): Commands.RoleDelegationPolicy.Expire.Result {
+        const now = props.now ?? new Date();
+        const policies = await this.roleDelegationPolicyRepository.find({
+            where: { isRevoked: false, expiresAt: { $lte: now } },
+            options: { limit: props.batchSize },
+        });
+
+        if (policies.length) {
+            let expired = 0;
+            await this.transactionalService.run({
+                resource: this.resource,
+                audit: {
+                    actor: SYSTEM_ACCOUNT_ID,
+                    entityType: EntityType.DELEGATION_POLICY,
+                    actionType: ActionType.REVOKE,
+                    input: {
+                        identifiers: policies.map(({ id }) => id),
+                        expiresAt: now.toISOString(),
+                        reason: "expired",
+                    },
+                    context: {
+                        userAgent: "scheduler",
+                        ip: "127.0.0.1",
+                    },
+                },
+                changeLog: true,
+                execute: (transaction) => {
+                    for (const policy of policies) {
+                        transaction.merge(policy);
+                    }
+                    this.roleDelegationPolicyService.revoke({ entities: policies });
+                    expired = policies.length;
+                    return policies;
+                },
+            });
+
+            return expired;
+        } else {
+            return 0;
         }
     }
 }

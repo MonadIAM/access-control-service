@@ -16,6 +16,7 @@ export class PermissionOverride implements Entities.PermissionOverride.Contract 
     public account: string;
     public effect: PermissionOverrideEffect;
     public isRevoked: boolean;
+    public expiresAt?: Date;
 
     public permission: Entities.Permission;
     public realm: Entities.Realm;
@@ -31,6 +32,12 @@ export class PermissionOverride implements Entities.PermissionOverride.Contract 
 
         this.permission = props.permission;
         this.realm = props.realm;
+
+        if (props.expiresAt) {
+            const normalized = new Date(props.expiresAt);
+            normalized.setHours(0, 0, 0, 0);
+            this.expiresAt = normalized;
+        }
     }
 
     public revoke(): void {
@@ -44,18 +51,26 @@ export class PermissionOverride implements Entities.PermissionOverride.Contract 
     }
 
     public restore(): void {
-        if (this.isRevoked) {
+        if (!this.isRevoked) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
+        } else if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_RESTORE_EXPIRED` });
+        } else {
             const now = new Date();
             this.isRevoked = false;
             this.updatedAt = now;
-        } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
     public canPurge(): void {
         if (!this.isRevoked) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
+        }
+    }
+
+    public canCreate(): void {
+        if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_CREATE_EXPIRED` });
         }
     }
 }

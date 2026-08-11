@@ -17,6 +17,12 @@ export class CreateBodyDTO {
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
     declare public account: string;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.IsDate()
+    @ApiProperty({ required: false, type: Date })
+    declare public expiresAt?: Date;
 }
 
 @ApiSchema({ name: "AccountRoleAssignmentCreateQuery" })

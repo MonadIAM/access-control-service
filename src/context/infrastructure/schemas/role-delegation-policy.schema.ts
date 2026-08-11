@@ -23,6 +23,10 @@ export const RoleDelegationPolicySchema = new EntitySchema<RoleDelegationPolicy>
             name: "role_delegation_policy_target_idx",
             properties: ["target"],
         },
+        {
+            name: "role_delegation_policy_expires_at_idx",
+            properties: ["expiresAt"],
+        },
     ],
 
     properties: {
@@ -53,6 +57,7 @@ export const RoleDelegationPolicySchema = new EntitySchema<RoleDelegationPolicy>
             deleteRule: "cascade",
         },
 
+        expiresAt: { type: "timestamptz", length: 3, nullable: true },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },

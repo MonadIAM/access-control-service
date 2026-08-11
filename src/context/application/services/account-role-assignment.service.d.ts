@@ -28,6 +28,7 @@ declare namespace Services {
                 actor: string;
                 input: {
                     roles: Entities.Role[];
+                    expiresAt?: Date;
                     account: string;
                 };
             };
@@ -43,6 +44,7 @@ declare namespace Services {
                 input: {
                     realm: Entities.Realm;
                     role: Entities.Role;
+                    expiresAt?: Date;
                     account: string;
                 };
             };

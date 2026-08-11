@@ -34,6 +34,7 @@ declare global {
                     role?: LinkFilterDTO;
                     updatedAt?: OrdinalFilterDTO<Date>;
                     createdAt?: OrdinalFilterDTO<Date>;
+                    expiresAt?: OrdinalFilterDTO<Date>;
                     isRevoked?: boolean;
                 };
 
@@ -46,6 +47,7 @@ declare global {
                 type Sort = {
                     createdAt?: QueryOrder;
                     updatedAt?: QueryOrder;
+                    expiresAt?: QueryOrder;
                 };
 
                 interface Types {
@@ -107,12 +109,14 @@ declare global {
                     realm?: LinkFilterDTO;
                     updatedAt?: OrdinalFilterDTO<Date>;
                     createdAt?: OrdinalFilterDTO<Date>;
+                    expiresAt?: OrdinalFilterDTO<Date>;
                     isRevoked?: boolean;
                 };
 
                 type Sort = {
                     createdAt?: QueryOrder;
                     updatedAt?: QueryOrder;
+                    expiresAt?: QueryOrder;
                 };
 
                 interface Types {
@@ -221,6 +225,7 @@ declare global {
                     depthLimit?: OrdinalFilterDTO<number>;
                     updatedAt?: OrdinalFilterDTO<Date>;
                     createdAt?: OrdinalFilterDTO<Date>;
+                    expiresAt?: OrdinalFilterDTO<Date>;
                     delegator?: LinkFilterDTO;
                     target?: LinkFilterDTO;
                     realm?: LinkFilterDTO;
@@ -232,6 +237,7 @@ declare global {
                 type Sort = {
                     updatedAt?: QueryOrder;
                     createdAt?: QueryOrder;
+                    expiresAt?: QueryOrder;
                 };
 
                 interface Types {

@@ -26,6 +26,7 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.LIMIT_EXCEEDED` });
         } else {
             const entity = new PermissionOverride({ ...input, realm });
+            entity.canCreate();
             transaction.persist(entity);
             return entity;
         }

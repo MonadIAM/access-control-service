@@ -43,6 +43,23 @@
           "enumItems": [],
           "mappedType": "datetime"
         },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 3,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
         "id": {
           "name": "id",
           "type": "uuid",
@@ -171,6 +188,16 @@
           "composite": false,
           "constraint": false,
           "keyName": "account_role_assignment_account_idx",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "expires_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "account_role_assignment_expires_at_idx",
           "primary": false,
           "unique": false
         },
@@ -521,6 +548,23 @@
           "mappedType": "enum",
           "nativeEnumName": "permission_override_effect"
         },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 3,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
         "id": {
           "name": "id",
           "type": "uuid",
@@ -632,6 +676,16 @@
           "composite": false,
           "constraint": false,
           "keyName": "permission_override_account_idx",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "expires_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "permission_override_expires_at_idx",
           "primary": false,
           "unique": false
         },
@@ -1867,6 +1921,23 @@
           "enumItems": [],
           "mappedType": "text"
         },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamptz(3)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 3,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
         "id": {
           "name": "id",
           "type": "uuid",
@@ -1995,6 +2066,16 @@
           "composite": false,
           "constraint": false,
           "keyName": "role_delegation_policy_delegator_idx",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "expires_at"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "role_delegation_policy_expires_at_idx",
           "primary": false,
           "unique": false
         },

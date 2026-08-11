@@ -36,6 +36,7 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
             const entity = new RoleDelegationPolicy({
                 description: input.description,
                 depthLimit: input.depthLimit,
+                expiresAt: input.expiresAt,
                 delegator: input.delegator,
                 target: input.target,
                 realm,

@@ -2,8 +2,8 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { NotificationTopicAction, AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
+import { SYSTEM_ACCOUNT_ID, SYSTEM_USER_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
-import { SYSTEM_USER_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
@@ -87,7 +87,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
                 } else {
                     const assignments = await this.accountRoleAssignmentService.create({
-                        input: { account: input.account, roles: roleEntities },
+                        input: { account: input.account, expiresAt: input.expiresAt, roles: roleEntities },
                         realm: realmEntity,
                         transaction,
                         actor,
@@ -330,5 +330,59 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 return { assignments: entities };
             },
         });
+    }
+
+    public async expire(props: Commands.AccountRoleAssignment.Expire.Props): Commands.AccountRoleAssignment.Expire.Result {
+        const now = props.now ?? new Date();
+        const assignments = await this.accountRoleAssignmentRepository.find({
+            where: { isRevoked: false, expiresAt: { $lte: now } },
+            options: { limit: props.batchSize },
+        });
+
+        if (assignments.length) {
+            let expired = 0;
+            await this.transactionalService.run({
+                resource: this.resource,
+                outbox: [
+                    {
+                        payloadMapper: this.mapper.projectionUpdatePayload,
+                        actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
+                        destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    },
+                    {
+                        payloadMapper: this.mapper.accessCachePayload,
+                        actionType: AccessCacheTopicAction.INVALIDATE,
+                        destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    },
+                ],
+                audit: {
+                    actor: SYSTEM_ACCOUNT_ID,
+                    entityType: EntityType.ROLE_ASSIGNMENT,
+                    actionType: ActionType.REVOKE,
+                    input: {
+                        identifiers: assignments.map(({ id }) => id),
+                        expiresAt: now.toISOString(),
+                        reason: "expired",
+                    },
+                    context: {
+                        userAgent: "scheduler",
+                        ip: "127.0.0.1",
+                    },
+                },
+                changeLog: true,
+                execute: (transaction) => {
+                    for (const assignment of assignments) {
+                        transaction.merge(assignment);
+                    }
+                    this.accountRoleAssignmentService.revoke({ entities: assignments });
+                    expired = assignments.length;
+                    return { assignments };
+                },
+            });
+
+            return expired;
+        } else {
+            return 0;
+        }
     }
 }

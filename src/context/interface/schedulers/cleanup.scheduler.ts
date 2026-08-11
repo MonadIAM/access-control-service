@@ -8,8 +8,8 @@ import { CleanupJob } from "~context/enums";
 
 @Injectable()
 export class CleanupScheduler {
-    private readonly auditLogRetentionTTL: StringValue;
     private readonly changeLogRetentionTTL: StringValue;
+    private readonly auditLogRetentionTTL: StringValue;
     private readonly batchSize: number;
 
     public constructor(
@@ -39,6 +39,16 @@ export class CleanupScheduler {
             job: CleanupJob.CHANGE_LOG,
             data: {
                 olderThanMs: ms(this.changeLogRetentionTTL),
+                batchSize: this.batchSize,
+            },
+        });
+    }
+
+    @Cron(CronExpression.EVERY_HOUR)
+    public async scheduleExpiredAccessRecords(): Promise<void> {
+        await this.cleanupQueue.schedule({
+            job: CleanupJob.EXPIRED_ACCESS_RECORDS,
+            data: {
                 batchSize: this.batchSize,
             },
         });

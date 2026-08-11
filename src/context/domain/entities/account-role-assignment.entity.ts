@@ -15,6 +15,7 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
     public account: string;
     public isSystemManaged: boolean;
     public isRevoked: boolean;
+    public expiresAt?: Date;
 
     public realm: Entities.Realm;
     public role: Entities.Role;
@@ -30,6 +31,12 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
 
         this.realm = props.realm;
         this.role = props.role;
+
+        if (props.expiresAt) {
+            const normalized = new Date(props.expiresAt);
+            normalized.setHours(0, 0, 0, 0);
+            this.expiresAt = normalized;
+        }
     }
 
     public revoke(): void {
@@ -43,12 +50,14 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
     }
 
     public restore(): void {
-        if (this.isRevoked) {
+        if (!this.isRevoked) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
+        } else if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_RESTORE_EXPIRED` });
+        } else {
             const now = new Date();
             this.isRevoked = false;
             this.updatedAt = now;
-        } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
@@ -65,6 +74,8 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_REVOKED_ROLE` });
         } else if (this.role.isSystemManaged) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_SYSTEM_ROLE` });
+        } else if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_EXPIRED` });
         }
     }
 }

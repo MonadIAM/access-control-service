@@ -26,6 +26,12 @@ export class CreateBodyDTO {
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
     declare public description: string;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.IsDate()
+    @ApiProperty({ required: false, type: Date })
+    declare public expiresAt?: Date;
 }
 
 @ApiSchema({ name: "RoleDelegationPolicyCreateQuery" })

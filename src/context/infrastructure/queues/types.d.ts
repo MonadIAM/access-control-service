@@ -32,10 +32,16 @@ declare global {
 
             type Handler = (job: Job) => Promise<Result>;
 
-            type JobData = {
+            type RetentionJobData = {
                 olderThanMs: number;
                 batchSize: number;
             };
+
+            type ExpirationJobData = {
+                batchSize: number;
+            };
+
+            type JobData = RetentionJobData | ExpirationJobData;
 
             interface Contract {
                 scheduleNextBatch: ScheduleNextBatch.Signature;

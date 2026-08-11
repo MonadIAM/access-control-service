@@ -50,6 +50,23 @@ describe("PermissionOverride Entity", () => {
             expect(override.isRevoked).toBe(true);
         });
 
+        it("should normalize explicit expiration to the start of the day", () => {
+            const expiresAt = new Date(2999, 4, 15, 13, 45, 30, 123);
+            const expected = new Date(expiresAt);
+            expected.setHours(0, 0, 0, 0);
+
+            const override = createOverride({ expiresAt });
+
+            expect(override.expiresAt).toEqual(expected);
+            expect(override.expiresAt).not.toBe(expiresAt);
+        });
+
+        it("should leave expiration undefined when not provided", () => {
+            const override = createOverride();
+
+            expect(override.expiresAt).toBeUndefined();
+        });
+
         it("should auto-generate id, createdAt, version", () => {
             const override = createOverride();
 
@@ -87,10 +104,26 @@ describe("PermissionOverride Entity", () => {
             expect(override.updatedAt).toBeInstanceOf(Date);
         });
 
+        it("should restore a revoked override with future expiration", () => {
+            const override = createOverride({ expiresAt: new Date(2999, 4, 15, 13, 45, 30, 123) });
+            override.revoke();
+            override.restore();
+
+            expect(override.isRevoked).toBe(false);
+            expect(override.updatedAt).toBeInstanceOf(Date);
+        });
+
         it("should throw when already active", () => {
             const override = createOverride();
 
             expect(() => override.restore()).toThrow("ALREADY_ACTIVE");
+        });
+
+        it("should throw when expired", () => {
+            const override = createOverride({ expiresAt: new Date(2000, 0, 1, 13, 45, 30, 123) });
+            override.revoke();
+
+            expect(() => override.restore()).toThrow("CANNOT_RESTORE_EXPIRED");
         });
     });
 
@@ -106,6 +139,26 @@ describe("PermissionOverride Entity", () => {
             override.revoke();
 
             expect(() => override.canPurge()).not.toThrow();
+        });
+    });
+
+    describe("canCreate", () => {
+        it("should pass when non-expiring", () => {
+            const override = createOverride();
+
+            expect(() => override.canCreate()).not.toThrow();
+        });
+
+        it("should pass when expiration is in the future", () => {
+            const override = createOverride({ expiresAt: new Date(2999, 4, 15, 13, 45, 30, 123) });
+
+            expect(() => override.canCreate()).not.toThrow();
+        });
+
+        it("should throw for expired override", () => {
+            const override = createOverride({ expiresAt: new Date(2000, 0, 1, 13, 45, 30, 123) });
+
+            expect(() => override.canCreate()).toThrow("CANNOT_CREATE_EXPIRED");
         });
     });
 });

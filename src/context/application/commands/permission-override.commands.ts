@@ -5,6 +5,7 @@ import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~con
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
+import { SYSTEM_ACCOUNT_ID } from "~context/constants";
 import { Exception } from "~common/exceptions";
 
 import { PERMISSION_OVERRIDE_SERVICE } from "../services";
@@ -83,6 +84,7 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                             permission: permissionEntity,
                             account: input.account,
                             effect: input.effect,
+                            expiresAt: input.expiresAt,
                         },
                         realm: realmEntity,
                         transaction,
@@ -261,5 +263,59 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                 return { overrides: entities };
             },
         });
+    }
+
+    public async expire(props: Commands.PermissionOverride.Expire.Props): Commands.PermissionOverride.Expire.Result {
+        const now = props.now ?? new Date();
+        const overrides = await this.permissionOverrideRepository.find({
+            where: { isRevoked: false, expiresAt: { $lte: now } },
+            options: { limit: props.batchSize, populate: ["permission.realm"] },
+        });
+
+        if (overrides.length) {
+            let expired = 0;
+            await this.transactionalService.run({
+                resource: this.resource,
+                outbox: [
+                    {
+                        payloadMapper: this.mapper.projectionUpdatePayload,
+                        actionType: ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
+                        destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    },
+                    {
+                        payloadMapper: this.mapper.accessCachePayload,
+                        actionType: AccessCacheTopicAction.INVALIDATE,
+                        destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    },
+                ],
+                audit: {
+                    actor: SYSTEM_ACCOUNT_ID,
+                    entityType: EntityType.PERMISSION_OVERRIDE,
+                    actionType: ActionType.REVOKE,
+                    input: {
+                        identifiers: overrides.map(({ id }) => id),
+                        expiresAt: now.toISOString(),
+                        reason: "expired",
+                    },
+                    context: {
+                        userAgent: "scheduler",
+                        ip: "127.0.0.1",
+                    },
+                },
+                changeLog: true,
+                execute: (transaction) => {
+                    for (const override of overrides) {
+                        transaction.merge(override);
+                    }
+                    this.permissionOverrideService.revoke({ entities: overrides });
+                    expired = overrides.length;
+                    return { overrides };
+                },
+            });
+
+            return expired;
+        } else {
+            return 0;
+        }
     }
 }

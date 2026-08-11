@@ -16,6 +16,7 @@ export class RoleDelegationPolicy implements Entities.RoleDelegationPolicy.Contr
     public depthLimit?: number;
     public isSystemManaged: boolean;
     public isRevoked: boolean;
+    public expiresAt?: Date;
 
     public delegator: Entities.Role;
     public target: Entities.Role;
@@ -35,6 +36,12 @@ export class RoleDelegationPolicy implements Entities.RoleDelegationPolicy.Contr
         this.delegator = props.delegator;
         this.target = props.target;
         this.realm = props.realm;
+
+        if (props.expiresAt) {
+            const normalized = new Date(props.expiresAt);
+            normalized.setHours(0, 0, 0, 0);
+            this.expiresAt = normalized;
+        }
     }
 
     public update({ patch }: Entities.RoleDelegationPolicy.ChangeDataProps): void {
@@ -67,12 +74,14 @@ export class RoleDelegationPolicy implements Entities.RoleDelegationPolicy.Contr
     }
 
     public restore(): void {
-        if (this.isRevoked) {
+        if (!this.isRevoked) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
+        } else if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_RESTORE_EXPIRED` });
+        } else {
             const now = new Date();
             this.isRevoked = false;
             this.updatedAt = now;
-        } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
@@ -91,6 +100,8 @@ export class RoleDelegationPolicy implements Entities.RoleDelegationPolicy.Contr
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_DELEGATE_SYSTEM_TARGET` });
         } else if (this.delegator.isRevoked) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REVOKED_ROLE_CANNOT_DELEGATE_ROLES` });
+        } else if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_DELEGATE_EXPIRED` });
         }
     }
 }

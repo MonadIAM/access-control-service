@@ -86,7 +86,8 @@ export enum AssignmentScope {
 
 export enum CleanupJob {
     /* eslint-disable prettier/prettier */
-    CHANGE_LOG = "cleanup-change-log",
-    AUDIT_LOG  = "cleanup-audit-log",
+    EXPIRED_ACCESS_RECORDS = "expire-access-records",
+    CHANGE_LOG             = "cleanup-change-log",
+    AUDIT_LOG              = "cleanup-audit-log",
     /* eslint-enable prettier/prettier */
 }

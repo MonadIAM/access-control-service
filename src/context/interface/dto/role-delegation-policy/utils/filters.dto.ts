@@ -63,6 +63,13 @@ export class FiltersDTO implements Repositories.Mappers.RoleDelegationPolicy.Fil
 
     @Expose()
     @Validator.IsOptional()
+    @Validator.ValidateNested()
+    @Type(() => OrdinalFilterDTO)
+    @ApiProperty({ required: false, type: OrdinalFilterDTO })
+    public expiresAt?: OrdinalFilterDTO<Date>;
+
+    @Expose()
+    @Validator.IsOptional()
     @Validator.IsBoolean()
     @ApiProperty({ required: false, type: Boolean })
     public isRevoked?: boolean;

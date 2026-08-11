@@ -47,6 +47,23 @@ describe("AccountRoleAssignment Entity", () => {
             expect(assignment.isRevoked).toBe(true);
         });
 
+        it("should normalize explicit expiration to the start of the day", () => {
+            const expiresAt = new Date(2999, 4, 15, 13, 45, 30, 123);
+            const expected = new Date(expiresAt);
+            expected.setHours(0, 0, 0, 0);
+
+            const assignment = createAssignment({ expiresAt });
+
+            expect(assignment.expiresAt).toEqual(expected);
+            expect(assignment.expiresAt).not.toBe(expiresAt);
+        });
+
+        it("should leave expiration undefined when not provided", () => {
+            const assignment = createAssignment();
+
+            expect(assignment.expiresAt).toBeUndefined();
+        });
+
         it("should auto-generate id, createdAt, version", () => {
             const assignment = createAssignment();
 
@@ -84,10 +101,26 @@ describe("AccountRoleAssignment Entity", () => {
             expect(assignment.updatedAt).toBeInstanceOf(Date);
         });
 
+        it("should restore a revoked assignment with future expiration", () => {
+            const assignment = createAssignment({ expiresAt: new Date(2999, 4, 15, 13, 45, 30, 123) });
+            assignment.revoke();
+            assignment.restore();
+
+            expect(assignment.isRevoked).toBe(false);
+            expect(assignment.updatedAt).toBeInstanceOf(Date);
+        });
+
         it("should throw when already active", () => {
             const assignment = createAssignment();
 
             expect(() => assignment.restore()).toThrow("ALREADY_ACTIVE");
+        });
+
+        it("should throw when expired", () => {
+            const assignment = createAssignment({ expiresAt: new Date(2000, 0, 1, 13, 45, 30, 123) });
+            assignment.revoke();
+
+            expect(() => assignment.restore()).toThrow("CANNOT_RESTORE_EXPIRED");
         });
     });
 
@@ -120,6 +153,12 @@ describe("AccountRoleAssignment Entity", () => {
             expect(() => assignment.canAssign()).not.toThrow();
         });
 
+        it("should pass when expiration is in the future", () => {
+            const assignment = createAssignment({ expiresAt: new Date(2999, 4, 15, 13, 45, 30, 123) });
+
+            expect(() => assignment.canAssign()).not.toThrow();
+        });
+
         it("should throw for revoked role", () => {
             const assignment = createAssignment({ role: stubRole({ isRevoked: true }) });
 
@@ -130,6 +169,12 @@ describe("AccountRoleAssignment Entity", () => {
             const assignment = createAssignment({ role: stubRole({ isSystemManaged: true }) });
 
             expect(() => assignment.canAssign()).toThrow("CANNOT_ASSIGN_SYSTEM_ROLE");
+        });
+
+        it("should throw for expired assignment", () => {
+            const assignment = createAssignment({ expiresAt: new Date(2000, 0, 1, 13, 45, 30, 123) });
+
+            expect(() => assignment.canAssign()).toThrow("CANNOT_ASSIGN_EXPIRED");
         });
     });
 });

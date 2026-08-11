@@ -29,6 +29,7 @@ declare namespace Services {
                     target: Entities.Role;
                     description: string;
                     depthLimit?: number;
+                    expiresAt?: Date;
                 };
             };
 

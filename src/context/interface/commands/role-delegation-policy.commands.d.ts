@@ -1,6 +1,21 @@
 declare namespace Commands {
     namespace RoleDelegationPolicy {
-        interface Contract extends ControllerContract {}
+        interface Contract extends ControllerContract, ProcessorContract {}
+
+        interface ProcessorContract {
+            expire: Expire.Signature;
+        }
+
+        namespace Expire {
+            type Props = {
+                batchSize: number;
+                now?: Date;
+            };
+
+            type Result = Promise<number>;
+
+            type Signature = (props: Props) => Result;
+        }
 
         interface ControllerContract {
             restore: Restore.Signature;
@@ -31,10 +46,11 @@ declare namespace Commands {
                 actor: string;
                 realm: string;
                 input: {
-                    delegator: string;
-                    target: string;
                     depthLimit?: number;
                     description: string;
+                    delegator: string;
+                    expiresAt?: Date;
+                    target: string;
                 };
                 context: Extract.Meta;
             };

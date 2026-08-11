@@ -14,21 +14,24 @@ declare global {
                 account: string;
                 effect: PermissionOverrideEffect;
                 isRevoked: boolean;
+                expiresAt?: Date;
 
                 permission: Entities.Permission;
                 realm: Entities.Realm;
 
+                canCreate(): void;
                 canPurge(): void;
                 restore(): void;
                 revoke(): void;
             }
 
             type ConstructorProps = {
-                account: string;
                 effect: PermissionOverrideEffect;
-                isRevoked?: boolean;
                 permission: Entities.Permission;
                 realm: Entities.Realm;
+                isRevoked?: boolean;
+                expiresAt?: Date;
+                account: string;
             };
         }
     }

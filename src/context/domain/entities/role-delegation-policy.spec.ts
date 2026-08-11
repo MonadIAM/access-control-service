@@ -70,6 +70,23 @@ describe("RoleDelegationPolicy Entity", () => {
             const policy = createPolicy();
             expect(policy.description).toBeUndefined();
         });
+
+        it("should normalize explicit expiration to the start of the day", () => {
+            const expiresAt = new Date(2999, 4, 15, 13, 45, 30, 123);
+            const expected = new Date(expiresAt);
+            expected.setHours(0, 0, 0, 0);
+
+            const policy = createPolicy({ expiresAt });
+
+            expect(policy.expiresAt).toEqual(expected);
+            expect(policy.expiresAt).not.toBe(expiresAt);
+        });
+
+        it("should leave expiration undefined when not provided", () => {
+            const policy = createPolicy();
+
+            expect(policy.expiresAt).toBeUndefined();
+        });
     });
 
     describe("update", () => {
@@ -154,6 +171,22 @@ describe("RoleDelegationPolicy Entity", () => {
 
             expect(() => policy.restore()).toThrow("ALREADY_ACTIVE");
         });
+
+        it("should restore a revoked policy with future expiration", () => {
+            const policy = createPolicy({ expiresAt: new Date(2999, 4, 15, 13, 45, 30, 123) });
+            policy.revoke();
+            policy.restore();
+
+            expect(policy.isRevoked).toBe(false);
+            expect(policy.updatedAt).toBeInstanceOf(Date);
+        });
+
+        it("should throw when expired", () => {
+            const policy = createPolicy({ expiresAt: new Date(2000, 0, 1, 13, 45, 30, 123) });
+            policy.revoke();
+
+            expect(() => policy.restore()).toThrow("CANNOT_RESTORE_EXPIRED");
+        });
     });
 
     describe("canPurge", () => {
@@ -201,6 +234,18 @@ describe("RoleDelegationPolicy Entity", () => {
             const policy = createPolicy({ delegator: stubRole({ isRevoked: true }) });
 
             expect(() => policy.canCreate()).toThrow("REVOKED_ROLE_CANNOT_DELEGATE_ROLES");
+        });
+
+        it("should pass when expiration is in the future", () => {
+            const policy = createPolicy({ expiresAt: new Date(2999, 4, 15, 13, 45, 30, 123) });
+
+            expect(() => policy.canCreate()).not.toThrow();
+        });
+
+        it("should throw for expired policy", () => {
+            const policy = createPolicy({ expiresAt: new Date(2000, 0, 1, 13, 45, 30, 123) });
+
+            expect(() => policy.canCreate()).toThrow("CANNOT_DELEGATE_EXPIRED");
         });
     });
 });

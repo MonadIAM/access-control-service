@@ -11,22 +11,24 @@ declare namespace Entities {
             account: string;
             isSystemManaged: boolean;
             isRevoked: boolean;
+            expiresAt?: Date;
 
             realm: Entities.Realm;
             role: Entities.Role;
 
+            canAssign(): void;
             canPurge(): void;
             restore(): void;
             revoke(): void;
-            canAssign(): void;
         }
 
         type ConstructorProps = {
-            account: string;
             isSystemManaged?: boolean;
-            isRevoked?: boolean;
             realm: Entities.Realm;
             role: Entities.Role;
+            isRevoked?: boolean;
+            expiresAt?: Date;
+            account: string;
         };
     }
 }

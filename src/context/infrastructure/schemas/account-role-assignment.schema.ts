@@ -23,6 +23,10 @@ export const AccountRoleAssignmentSchema = new EntitySchema<AccountRoleAssignmen
             name: "account_role_assignment_role_idx",
             properties: ["role"],
         },
+        {
+            name: "account_role_assignment_expires_at_idx",
+            properties: ["expiresAt"],
+        },
     ],
 
     properties: {
@@ -46,6 +50,7 @@ export const AccountRoleAssignmentSchema = new EntitySchema<AccountRoleAssignmen
             deleteRule: "cascade",
         },
 
+        expiresAt: { type: "timestamptz", length: 3, nullable: true },
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },
         version: { type: "int", version: true },

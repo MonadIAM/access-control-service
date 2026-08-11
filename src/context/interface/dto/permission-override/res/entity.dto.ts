@@ -48,6 +48,12 @@ export class PermissionOverrideDTO {
     declare public createdAt: Date;
 
     @Expose()
+    @Validator.IsDate()
+    @Validator.IsOptional()
+    @ApiProperty({ required: false, type: Date })
+    declare public expiresAt?: Date;
+
+    @Expose()
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
     declare public isRevoked: boolean;

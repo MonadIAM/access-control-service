@@ -45,6 +45,7 @@ export class RoleDelegationPolicyRepository
                         .whereRaw("rc.depth <= rdp.depth_limit")
                         .andWhere("rdp.delegator_id", from)
                         .andWhere("rdp.is_revoked", false)
+                        .andWhereRaw("(rdp.expires_at is null or rdp.expires_at > now())")
                         .distinct();
 
                     cte.union((union: ORM.QueryBuilder) => {
@@ -55,6 +56,7 @@ export class RoleDelegationPolicyRepository
                             .join("access_control.role_closure as rc", "rc.ancestor_id", "rdp.target_id")
                             .whereRaw("rc.depth <= rdp.depth_limit")
                             .andWhere("rdp.is_revoked", false)
+                            .andWhereRaw("(rdp.expires_at is null or rdp.expires_at > now())")
                             .distinct();
                     });
                 })
@@ -98,6 +100,7 @@ export class RoleDelegationPolicyRepository
                 .join("access_control.role_closure as rc", "rc.ancestor_id", "rdp.target_id")
                 .where("rdp.realm_id", realm)
                 .andWhere("rdp.is_revoked", false)
+                .andWhereRaw("(rdp.expires_at is null or rdp.expires_at > now())")
                 .andWhereRaw("rc.depth <= rdp.depth_limit");
 
             const query = knex

@@ -1,6 +1,21 @@
 declare namespace Commands {
     namespace AccountRoleAssignment {
-        interface Contract extends ControllerContract, ConsumerContract {}
+        interface Contract extends ControllerContract, ConsumerContract, ProcessorContract {}
+
+        interface ProcessorContract {
+            expire: Expire.Signature;
+        }
+
+        namespace Expire {
+            type Props = {
+                batchSize: number;
+                now?: Date;
+            };
+
+            type Result = Promise<number>;
+
+            type Signature = (props: Props) => Result;
+        }
 
         interface ConsumerContract {
             assign: Assign.Signature;
@@ -57,6 +72,7 @@ declare namespace Commands {
                 input: {
                     account: string;
                     roles: string[];
+                    expiresAt?: Date;
                 };
                 context: Extract.Meta;
             };

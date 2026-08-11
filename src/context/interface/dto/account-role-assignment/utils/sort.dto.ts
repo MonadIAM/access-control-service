@@ -17,4 +17,10 @@ export class SortDTO implements Repositories.Mappers.AccountRoleAssignment.Sort 
     @Validator.IsEnum(QueryOrder)
     @ApiProperty({ required: false, enum: QueryOrder, enumName: "QueryOrder" })
     public updatedAt?: QueryOrder;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.IsEnum(QueryOrder)
+    @ApiProperty({ required: false, enum: QueryOrder, enumName: "QueryOrder" })
+    public expiresAt?: QueryOrder;
 }

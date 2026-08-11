@@ -30,6 +30,7 @@ declare global {
                     input: {
                         effect: PermissionOverrideEffect;
                         permission: Entities.Permission;
+                        expiresAt?: Date;
                         account: string;
                     };
                 };

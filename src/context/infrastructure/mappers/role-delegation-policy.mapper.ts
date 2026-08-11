@@ -33,6 +33,9 @@ export class RoleDelegationPolicyMapper implements Repositories.Mappers.Contract
         if (filters.createdAt) {
             where.createdAt = ORMAdapter.applyOrdinalFilter<Date>(filters.createdAt);
         }
+        if (filters.expiresAt) {
+            where.expiresAt = ORMAdapter.applyOrdinalFilter<Date>(filters.expiresAt);
+        }
         if (filters.isRevoked !== undefined) {
             where.isRevoked = { $eq: filters.isRevoked };
         }
