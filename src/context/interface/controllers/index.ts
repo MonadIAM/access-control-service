@@ -9,12 +9,10 @@ import { RoleConflictGroupController } from "./role-conflict-group.controller";
 import { PermissionManageController } from "./manage-permission.controller";
 import { ChangeLogManageController } from "./manage-change-log.controller";
 import { AuditLogManageController } from "./manage-audit-log.controller";
-import { InviteManageController } from "./manage-invite.controller";
 import { RealmManageController } from "./manage-realm.controller";
 import { RoleManageController } from "./manage-role.controller";
 import { PermissionController } from "./permission.controller";
 import { AuditLogController } from "./audit-log.controller";
-import { InviteController } from "./invite.controller";
 import { RealmController } from "./realm.controller";
 import { RoleController } from "./role.controller";
 
@@ -30,12 +28,10 @@ export const HTTP_CONTROLLERS = [
     PermissionManageController,
     ChangeLogManageController,
     AuditLogManageController,
-    InviteManageController,
     RealmManageController,
     PermissionController,
     RoleManageController,
     AuditLogController,
-    InviteController,
     RealmController,
     RoleController,
 ];
@@ -52,12 +48,10 @@ export {
     PermissionManageController,
     ChangeLogManageController,
     AuditLogManageController,
-    InviteManageController,
     RealmManageController,
     PermissionController,
     RoleManageController,
     AuditLogController,
-    InviteController,
     RealmController,
     RoleController,
 };

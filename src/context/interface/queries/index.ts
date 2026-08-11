@@ -7,6 +7,5 @@ export const ROLE_CONFLICT_GROUP_QUERIES = Symbol("Queries.RoleConflictGroup.Con
 export const PERMISSION_QUERIES = Symbol("Queries.Permission.Contract");
 export const CHANGE_LOG_QUERIES = Symbol("Queries.ChangeLog.Contract");
 export const AUDIT_LOG_QUERIES = Symbol("Queries.AuditLog.Contract");
-export const INVITE_QUERIES = Symbol("Queries.Invite.Contract");
 export const REALM_QUERIES = Symbol("Queries.Realm.Contract");
 export const ROLE_QUERIES = Symbol("Queries.Role.Contract");

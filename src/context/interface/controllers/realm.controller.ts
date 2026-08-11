@@ -24,8 +24,6 @@ import {
     GetLookupListQueryDTO,
     GetLookupListBodyDTO,
     GetByIdQueryDTO,
-    ExcludeQueryDTO,
-    ExcludeBodyDTO,
     GetListQueryDTO,
     GetListBodyDTO,
     UpdateQueryDTO,
@@ -39,8 +37,7 @@ import {
     ListDTO,
 } from "../dto/realm";
 
-const { REALM_READ_PERSONAL, REALM_RESTORE, REALM_EXCLUDE, REALM_CREATE, REALM_UPDATE, REALM_REVOKE, REALM_PURGE } =
-    PermissionCode;
+const { REALM_READ_PERSONAL, REALM_RESTORE, REALM_CREATE, REALM_UPDATE, REALM_REVOKE, REALM_PURGE } = PermissionCode;
 const {
     INTERNAL_SERVER_ERROR,
     UNPROCESSABLE_ENTITY,
@@ -276,33 +273,5 @@ export class RealmController {
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
         return this.realmCommands.purge({ context, actor, input });
-    }
-
-    @HttpCode(OK)
-    @Delete("exclude")
-    @RequirePermission(REALM_EXCLUDE)
-    @FormatResponse(SuccessMessageDTO)
-    @ApiResponse({ status: OK, type: SuccessMessageDTO })
-    @ApiOperation({
-        summary: "Excludes an account from a realm, removing all assignments and overrides",
-        security: [{ identity: [] }],
-    })
-    @Swagger.Exceptions(
-        INTERNAL_SERVER_ERROR,
-        UNPROCESSABLE_ENTITY,
-        SERVICE_UNAVAILABLE,
-        REQUEST_TIMEOUT,
-        UNAUTHORIZED,
-        BAD_REQUEST,
-        NOT_FOUND,
-        FORBIDDEN,
-    )
-    public exclude(
-        @Query() { realm }: ExcludeQueryDTO,
-        @Body() input: ExcludeBodyDTO,
-        @Extract.Session() { account: actor }: Extract.Session.Auth,
-        @Extract.Meta() context: Extract.Meta,
-    ): Promise<MessageResult> {
-        return this.realmCommands.exclude({ context, actor, realm, input });
     }
 }

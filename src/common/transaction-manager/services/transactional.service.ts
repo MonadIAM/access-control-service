@@ -22,6 +22,32 @@ export class TransactionalService implements TransactionManager.Service.Contract
         this.serviceName = this.configService.getOrThrow<string>("SERVICE_NAME");
     }
 
+    public async emit(params: TransactionManager.Service.Emit.Props): TransactionManager.Service.Emit.Result {
+        try {
+            const writeManager = this.writeManager.fork();
+            const outbox = new Outbox(params);
+
+            if (params.audit) {
+                const auditEntry = new AuditLog(params.audit);
+                return await this.operationContext.run({ changeLogEnabled: false, auditEntry: auditEntry.id }, () =>
+                    writeManager.transactional(async (transaction) => {
+                        transaction.persist(auditEntry);
+                        transaction.persist(this.buildAuditLogArchiveOutbox(auditEntry));
+                        transaction.persist(outbox);
+                        await transaction.flush();
+                    }),
+                );
+            } else {
+                return writeManager.transactional(async (transaction) => {
+                    transaction.persist(outbox);
+                    await transaction.flush();
+                });
+            }
+        } catch (error) {
+            throw ExceptionMapper.fromORM(error, params.resource);
+        }
+    }
+
     public async run<T extends ORM.AnyEntity | ORM.AnyEntity[]>(
         params: TransactionManager.Service.Run.Props<T>,
     ): TransactionManager.Service.Run.Result<T> {

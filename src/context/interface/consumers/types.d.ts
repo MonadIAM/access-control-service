@@ -76,6 +76,22 @@ declare global {
             }
         }
 
+        namespace Membership {
+            type Message = Topics.Membership.Message;
+
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                handle: Handle.Signature;
+            }
+
+            namespace Handle {
+                type Result = Promise<void>;
+
+                type Signature = (message: Message, ctx: KafkaContext) => Result;
+            }
+        }
+
         namespace Retry {
             type Message = Consumers.DLQ.Message;
 

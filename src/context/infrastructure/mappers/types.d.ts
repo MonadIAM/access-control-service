@@ -26,34 +26,6 @@ declare global {
                 ): void;
             }
 
-            namespace Invite {
-                type DefaultFilters = {
-                    updatedAt?: OrdinalFilterDTO<Date>;
-                    createdAt?: OrdinalFilterDTO<Date>;
-                    status?: StringFilterDTO;
-                    id?: StringFilterDTO;
-                };
-
-                type ManageFilters = DefaultFilters & {
-                    invitee?: LinkFilterDTO;
-                    inviter?: LinkFilterDTO;
-                    realm?: LinkFilterDTO;
-                    role?: LinkFilterDTO;
-                };
-
-                type Filters = DefaultFilters & ManageFilters;
-
-                type Sort = {
-                    createdAt?: QueryOrder;
-                    updatedAt?: QueryOrder;
-                };
-
-                interface Types {
-                    Filters: Filters;
-                    Sort: Sort;
-                }
-            }
-
             namespace AccountRoleAssignment {
                 type DefaultFilters = {
                     id?: StringFilterDTO;

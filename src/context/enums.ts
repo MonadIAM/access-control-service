@@ -39,24 +39,9 @@ export enum EntityType {
     CONFLICT_MEMBER       = "CONFLICT_MEMBER",
     CONFLICT_GROUP        = "CONFLICT_GROUP",
     PERMISSION            = "PERMISSION",
-    INVITE                = "INVITE",
     REALM                 = "REALM",
     ROLE                  = "ROLE",
     /* eslint-enable prettier/prettier */
-}
-
-export enum InviteStatus {
-    /* eslint-disable prettier/prettier */
-    CANCELLED = "CANCELLED",
-    ACCEPTED  = "ACCEPTED",
-    DECLINED  = "DECLINED",
-    PENDING   = "PENDING",
-    /* eslint-enable prettier/prettier */
-}
-
-export enum InviteQueryScope {
-    AS_INVITER = "AS_INVITER",
-    AS_INVITEE = "AS_INVITEE",
 }
 
 export enum QueryMode {
@@ -70,11 +55,8 @@ export enum ActionType {
     /* eslint-disable prettier/prettier */
     REPARENT = "REPARENT",
     RESTORE  = "RESTORE",
-    DECLINE  = "DECLINE",
     EXCLUDE  = "EXCLUDE",
     REVOKE   = "REVOKE",
-    CANCEL   = "CANCEL",
-    ACCEPT   = "ACCEPT",
     CREATE   = "CREATE",
     UPDATE   = "UPDATE",
     DELETE   = "DELETE",

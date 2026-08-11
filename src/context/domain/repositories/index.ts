@@ -8,6 +8,5 @@ export const ROLE_CLOSURE_REPOSITORY = Symbol("Repositories.RoleClosure.Contract
 export const PERMISSION_REPOSITORY = Symbol("Repositories.Permission.Contract");
 export const CHANGE_LOG_REPOSITORY = Symbol("Repositories.ChangeLog.Contract");
 export const AUDIT_LOG_REPOSITORY = Symbol("Repositories.AuditLog.Contract");
-export const INVITE_REPOSITORY = Symbol("Repositories.Invite.Contract");
 export const REALM_REPOSITORY = Symbol("Repositories.Realm.Contract");
 export const ROLE_REPOSITORY = Symbol("Repositories.Role.Contract");

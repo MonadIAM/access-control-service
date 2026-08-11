@@ -13,6 +13,9 @@ export const USER_PERMISSION_CODES: string[] = [
     PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_RESTORE,
     PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
 
+    PermissionCode.INVITE_READ_PERSONAL,
+    PermissionCode.INVITE_CHANGE_STATUS,
+
     PermissionCode.PERMISSION_OVERRIDE_READ_PERSONAL,
 
     PermissionCode.ROLE_PERMISSION_ASSIGNMENT_READ_COMMON,
@@ -89,6 +92,11 @@ export const ADMIN_PERMISSION_CODES: string[] = [
 
     PermissionCode.AUDIT_LOG_READ_ABSOLUTE,
     PermissionCode.CHANGE_LOG_READ_ABSOLUTE,
+
+    PermissionCode.REALM_EXCLUDE,
+
+    PermissionCode.INVITE_READ_ABSOLUTE,
+    PermissionCode.INVITE_CREATE,
 
     PermissionCode.ROLE_PERMISSION_ASSIGNMENT_READ_ABSOLUTE,
     PermissionCode.ACCOUNT_ROLE_ASSIGNMENT_READ_ABSOLUTE,

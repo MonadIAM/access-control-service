@@ -415,24 +415,28 @@ const dataset = [
         "View change logs within a realm.",
     ),
 
+    // ---------------------------------------------------------------------------
+    // Identity
+    // ---------------------------------------------------------------------------
+
     // Invite
     entry(
         "00000003-0012-4000-8000-000000000001",
         PermissionCode.INVITE_READ_PERSONAL,
         "Read Personal Invites",
-        "View invites sent or received by the current account.",
+        "View invite workflow records sent or received by the current account.",
     ),
     entry(
         "00000003-0012-4000-8000-000000000002",
         PermissionCode.INVITE_READ_ABSOLUTE,
         "Read Absolute Invites",
-        "View all invites within a realm.",
+        "View all invite workflow records.",
     ),
     entry(
         "00000003-0012-4000-8000-000000000003",
         PermissionCode.INVITE_CREATE,
         "Create Invite",
-        "Send an invite to an account for a role within a realm.",
+        "Start an invite workflow for an account to join a realm.",
     ),
     entry(
         "00000003-0012-4000-8000-000000000004",
@@ -440,10 +444,6 @@ const dataset = [
         "Change Invite Status",
         "Accept, decline, or cancel a pending invite.",
     ),
-
-    // ---------------------------------------------------------------------------
-    // Identity
-    // ---------------------------------------------------------------------------
 
     // Account
     entry(

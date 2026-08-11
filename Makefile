@@ -44,7 +44,7 @@ seed: seed-pg seed-redis
 seed-pg:
 	npx mikro-orm seeder:run
 seed-redis:
-	npx ts-node ./src/infrastructure/redis/seeder.ts
+	npx ts-node --transpile-only -r tsconfig-paths/register ./src/infrastructure/redis/seeder.ts
 
 # Test
 test:

@@ -45,6 +45,7 @@ declare global {
             interface PublicContract {
                 run<T extends ORM.AnyEntity | ORM.AnyEntity[]>(props: Run.ResultProps<T>): Promise<T>;
                 run(props: Run.VoidProps): Promise<void>;
+                emit(props: Emit.Props): Emit.Result;
             }
 
             namespace Run {
@@ -67,6 +68,21 @@ declare global {
                 type Props<T extends ORM.AnyEntity | ORM.AnyEntity[]> = ResultProps<T> | VoidProps;
 
                 type Result<T> = Promise<T | void>;
+            }
+
+            namespace Emit {
+                type Props = {
+                    [D in keyof OutboxPayloadMap]: {
+                        audit?: SystemEntities.AuditLog.ConstructorProps;
+                        payload: OutboxPayloadMap[D];
+                        metadata?: UnknownObject;
+                        destinationTopic: D;
+                        actionType: string;
+                        resource?: string;
+                    };
+                }[keyof OutboxPayloadMap];
+
+                type Result = Promise<void>;
             }
 
             type OutboxPayloadMap = {

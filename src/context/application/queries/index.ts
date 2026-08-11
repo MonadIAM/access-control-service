@@ -10,7 +10,6 @@ import {
     PERMISSION_QUERIES,
     CHANGE_LOG_QUERIES,
     AUDIT_LOG_QUERIES,
-    INVITE_QUERIES,
     REALM_QUERIES,
     ROLE_QUERIES,
 } from "~context/interface/queries";
@@ -24,7 +23,6 @@ import { RoleConflictGroupQueries } from "./role-conflict-group.queries";
 import { PermissionQueries } from "./permission.queries";
 import { ChangeLogQueries } from "./change-log.queries";
 import { AuditLogQueries } from "./audit-log.queries";
-import { InviteQueries } from "./invite.queries";
 import { RealmQueries } from "./realm.queries";
 import { RoleQueries } from "./role.queries";
 
@@ -64,10 +62,6 @@ export const QUERIES: ClassProvider[] = [
     {
         provide: AUDIT_LOG_QUERIES,
         useClass: AuditLogQueries,
-    },
-    {
-        provide: INVITE_QUERIES,
-        useClass: InviteQueries,
     },
     {
         provide: REALM_QUERIES,

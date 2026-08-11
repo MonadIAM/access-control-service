@@ -1,25 +1,12 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
+import { AccessCacheTopicAction, RealmTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
+import { REALM_REPOSITORY } from "~context/domain/repositories";
 import { Exception } from "~common/exceptions";
-import {
-    ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
-    PERMISSION_OVERRIDE_REPOSITORY,
-    REALM_REPOSITORY,
-} from "~context/domain/repositories";
-import {
-    NotificationTopicAction,
-    AccessCacheTopicAction,
-    MembershipTopicAction,
-    RealmTopicAction,
-    ActionType,
-    EntityType,
-    KafkaTopic,
-} from "~context/enums";
 
-import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE, REALM_SERVICE } from "../services";
+import { REALM_SERVICE } from "../services";
 import { RealmMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -31,20 +18,10 @@ export class RealmCommands implements Commands.Realm.Contract {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY)
-        private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.PublicContract,
-        @Inject(PERMISSION_OVERRIDE_REPOSITORY)
-        private readonly permissionOverrideRepository: Repositories.PermissionOverride.PublicContract,
         @Inject(REALM_REPOSITORY)
         private readonly realmRepository: Repositories.Realm.PublicContract,
-        @Inject(ACCOUNT_ROLE_ASSIGNMENT_SERVICE)
-        private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.CommandContract,
-        @Inject(PERMISSION_OVERRIDE_SERVICE)
-        private readonly permissionOverrideService: Services.PermissionOverride.CommandContract,
         @Inject(REALM_SERVICE)
         private readonly realmService: Services.Realm.CommandContract,
-        @Inject(PROJECTION_CACHE_SERVICE)
-        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
     ) {
         this.mapper = new RealmMapper();
     }
@@ -249,78 +226,5 @@ export class RealmCommands implements Commands.Realm.Contract {
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
         }
-    }
-
-    public async exclude(props: Commands.Realm.Exclude.Props): Commands.Realm.Exclude.Result {
-        const { realm, input } = props;
-
-        const isAlreadyMember = await this.projectionCacheService.checkRealm({
-            account: input.account,
-            realm,
-        });
-
-        if (!isAlreadyMember) {
-            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ACCOUNT_NOT_MEMBER` });
-        }
-
-        await this.transactionalService.run<Commands.Realm.Exclude.ExecuteResult>({
-            resource: this.resource,
-            outbox: [
-                {
-                    payloadMapper: this.mapper.excludeAssignmentPurgePayload,
-                    actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
-                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
-                },
-                {
-                    payloadMapper: this.mapper.excludeOverridePurgePayload,
-                    actionType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
-                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
-                },
-                {
-                    payloadMapper: this.mapper.excludeAccessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
-                },
-                {
-                    payloadMapper: this.mapper.excludeMembershipPayload,
-                    actionType: MembershipTopicAction.REVOKE,
-                    destinationTopic: KafkaTopic.MEMBERSHIP,
-                },
-                {
-                    payloadMapper: this.mapper.notificationPayload,
-                    actionType: NotificationTopicAction.CREATE,
-                    destinationTopic: KafkaTopic.NOTIFICATION,
-                },
-            ],
-            audit: {
-                actionType: ActionType.EXCLUDE,
-                entityType: EntityType.REALM,
-                ...props,
-            },
-            changeLog: true,
-            execute: async (transaction) => {
-                const [assignments, overrides, realmEntity] = await Promise.all([
-                    this.accountRoleAssignmentRepository.find({
-                        where: { account: input.account, realm },
-                        transaction,
-                    }),
-                    this.permissionOverrideRepository.find({
-                        where: { account: input.account, realm },
-                        transaction,
-                    }),
-                    this.realmRepository.findUniqueOrThrow({
-                        where: { id: realm },
-                        transaction,
-                    }),
-                ]);
-
-                this.accountRoleAssignmentService.purge({ transaction, entities: assignments });
-                this.permissionOverrideService.purge({ transaction, entities: overrides });
-
-                return { assignments, overrides, realm: realmEntity, account: input.account };
-            },
-        });
-
-        return { message: `${this.dictionaryPath}.EXCLUDED` };
     }
 }

@@ -10,7 +10,6 @@ import {
     PERMISSION_SERVICE,
     CHANGE_LOG_SERVICE,
     AUDIT_LOG_SERVICE,
-    INVITE_SERVICE,
     REALM_SERVICE,
     ROLE_SERVICE,
 } from "~context/application/services";
@@ -24,7 +23,6 @@ import { RoleConflictGroupService } from "./role-conflict-group.service";
 import { PermissionService } from "./permission.service";
 import { ChangeLogService } from "./change-log.service";
 import { AuditLogService } from "./audit-log.service";
-import { InviteService } from "./invite.service";
 import { RealmService } from "./realm.service";
 import { RoleService } from "./role.service";
 
@@ -64,10 +62,6 @@ export const DOMAIN_SERVICES: ClassProvider[] = [
     {
         provide: AUDIT_LOG_SERVICE,
         useClass: AuditLogService,
-    },
-    {
-        provide: INVITE_SERVICE,
-        useClass: InviteService,
     },
     {
         provide: REALM_SERVICE,

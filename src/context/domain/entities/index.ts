@@ -6,6 +6,5 @@ export { PermissionOverride } from "./permission-override.entity";
 export { RoleConflictGroup } from "./role-conflict-group.entity";
 export { RoleClosure } from "./role-closure.entity";
 export { Permission } from "./permission.entity";
-export { Invite } from "./invite.entity";
 export { Realm } from "./realm.entity";
 export { Role } from "./role.entity";

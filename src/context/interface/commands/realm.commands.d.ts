@@ -4,7 +4,6 @@ declare namespace Commands {
 
         interface ControllerContract {
             restore: Restore.Signature;
-            exclude: Exclude.Signature;
             create: Create.Signature;
             update: Update.Signature;
             revoke: Revoke.Signature;
@@ -19,29 +18,6 @@ declare namespace Commands {
                     reason: string;
                 };
                 context: Extract.Meta;
-            };
-
-            type Result = Promise<MessageResult>;
-
-            type Signature = (props: Props) => Result;
-        }
-
-        namespace Exclude {
-            type Props = {
-                actor: string;
-                realm: string;
-                input: {
-                    account: string;
-                    reason: string;
-                };
-                context: Extract.Meta;
-            };
-
-            type ExecuteResult = {
-                assignments: Entities.AccountRoleAssignment[];
-                overrides: Entities.PermissionOverride[];
-                realm: Entities.Realm;
-                account: string;
             };
 
             type Result = Promise<MessageResult>;

@@ -7,6 +7,5 @@ export { RoleConflictGroupMapper } from "./role-conflict-group.mapper";
 export { PermissionMapper } from "./permission.mapper";
 export { ChangeLogMapper } from "./change-log.mapper";
 export { AuditLogMapper } from "./audit-log.mapper";
-export { InviteMapper } from "./invite.mapper";
 export { RealmMapper } from "./realm.mapper";
 export { RoleMapper } from "./role.mapper";

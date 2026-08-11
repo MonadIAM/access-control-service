@@ -11,7 +11,6 @@ import {
     CHANGE_LOG_REPOSITORY,
     PERMISSION_REPOSITORY,
     AUDIT_LOG_REPOSITORY,
-    INVITE_REPOSITORY,
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
 } from "~context/domain/repositories";
@@ -26,7 +25,6 @@ import { RoleClosureRepository } from "./role-closure.repository";
 import { PermissionRepository } from "./permission.repository";
 import { ChangeLogRepository } from "./change-log.repository";
 import { AuditLogRepository } from "./audit-log.repository";
-import { InviteRepository } from "./invite.repository";
 import { RealmRepository } from "./realm.repository";
 import { RoleRepository } from "./role.repository";
 
@@ -70,10 +68,6 @@ export const REPOSITORIES: ClassProvider[] = [
     {
         provide: AUDIT_LOG_REPOSITORY,
         useClass: AuditLogRepository,
-    },
-    {
-        provide: INVITE_REPOSITORY,
-        useClass: InviteRepository,
     },
     {
         provide: REALM_REPOSITORY,

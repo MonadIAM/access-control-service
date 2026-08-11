@@ -36,9 +36,6 @@
     "LIMIT_EXCEEDED": "The allowed realm limit for the account has been exceeded.",
     "MISSING_SYSTEM_PERMISSIONS": "One or more required system permissions were not found."
   },
-  "invite": {
-    "ROLE_NOT_IN_REALM": "The specified role does not belong to the given realm."
-  },
   "account-role-assignment": {
     "DELEGATION_NOT_ALLOWED": "Insufficient privileges to assign this role.",
     "ACCOUNT_ROLE_LIMIT_EXCEEDED": "The allowed role limit for the account has been exceeded.",

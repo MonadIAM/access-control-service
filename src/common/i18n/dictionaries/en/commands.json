@@ -106,15 +106,6 @@
     "OVERRIDES_NOT_FOUND": "Some of the specified overrides were not found.",
     "ACCOUNT_NOT_MEMBER": "The specified account is not a member of this realm."
   },
-  "invite": {
-    "CREATED": "Invite successfully sent.",
-    "ACCEPTED": "Invite successfully accepted.",
-    "DECLINED": "Invite successfully declined.",
-    "CANCELLED": "Invite successfully cancelled.",
-
-    "INVITE_NOT_FOUND": "The specified invite was not found.",
-    "INVITEE_ALREADY_MEMBER": "The specified account is already a member of this realm."
-  },
   "account-role-assignment": {
     "CREATED": "Roles successfully assigned to the account.",
     "PURGED": "Role assignment successfully deleted.",

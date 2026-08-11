@@ -6,10 +6,11 @@ import { KAFKA_RETRY_QUEUE } from "~context/infrastructure/queues";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { KafkaTopic } from "~context/enums";
 
-const RETRY_TOPICS = [KafkaTopic.ACCOUNT_RETRY, KafkaTopic.PROJECTION_JOURNAL_RETRY];
+const RETRY_TOPICS = [KafkaTopic.MEMBERSHIP_RETRY, KafkaTopic.ACCOUNT_RETRY, KafkaTopic.PROJECTION_JOURNAL_RETRY];
 
 const DEAD_TOPIC_MAP: Partial<Record<string, string>> = {
     [KafkaTopic.PROJECTION_JOURNAL]: KafkaTopic.PROJECTION_JOURNAL_DEAD,
+    [KafkaTopic.MEMBERSHIP]: KafkaTopic.MEMBERSHIP_DEAD,
     [KafkaTopic.ACCOUNT]: KafkaTopic.ACCOUNT_DEAD,
 };
 

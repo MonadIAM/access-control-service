@@ -1,11 +1,5 @@
 import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
-import {
-    NotificationContentKind,
-    NotificationCategory,
-    InvalidationScope,
-    PlatformService,
-    MessageTemplate,
-} from "~context/enums";
+import { InvalidationScope } from "~context/enums";
 
 export class RealmMapper implements Commands.Mappers.Realm.Contract {
     public projectionCreatePayload(
@@ -69,67 +63,5 @@ export class RealmMapper implements Commands.Mappers.Realm.Contract {
             version: version + 1,
             realm: id,
         }));
-    }
-
-    public excludeAssignmentPurgePayload(
-        props: Commands.Mappers.Realm.ExcludeAssignmentPurgePayload.Props,
-    ): Commands.Mappers.Realm.ExcludeAssignmentPurgePayload.Result {
-        return {
-            items: props.assignments.map(({ realm, account, role }) => ({
-                realm: realm.id,
-                role: role.id,
-                account,
-            })),
-        };
-    }
-
-    public excludeOverridePurgePayload(
-        props: Commands.Mappers.Realm.ExcludeOverridePurgePayload.Props,
-    ): Commands.Mappers.Realm.ExcludeOverridePurgePayload.Result {
-        return {
-            items: props.overrides.map(({ permission, account, realm }) => ({
-                permissionRealm: SystemRealm.id,
-                permission: permission.id,
-                realm: realm.id,
-                account,
-            })),
-        };
-    }
-
-    public excludeAccessCachePayload(
-        props: Commands.Mappers.Realm.ExcludeAccessCachePayload.Props,
-    ): Commands.Mappers.Realm.ExcludeAccessCachePayload.Result {
-        return {
-            items: [
-                {
-                    scope: InvalidationScope.ACCOUNT_REALM,
-                    account: props.account,
-                    realm: props.realm.id,
-                },
-            ],
-        };
-    }
-
-    public excludeMembershipPayload(
-        props: Commands.Mappers.Realm.ExcludeMembershipPayload.Props,
-    ): Commands.Mappers.Realm.ExcludeMembershipPayload.Result {
-        return {
-            account: props.account,
-            realm: props.realm.id,
-        };
-    }
-
-    public notificationPayload(
-        props: Commands.Mappers.Realm.NotificationPayload.Props,
-    ): Commands.Mappers.Realm.NotificationPayload.Result {
-        return {
-            sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
-            template: MessageTemplate.REALM_EXCLUDED,
-            kind: NotificationContentKind.TEMPLATE,
-            category: NotificationCategory.SYSTEM,
-            params: { realm: props.realm.name },
-            recipient: props.account,
-            language: "en",
-        };
     }
 }
