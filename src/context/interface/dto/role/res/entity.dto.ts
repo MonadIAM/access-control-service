@@ -29,11 +29,6 @@ export class RoleDTO {
     declare public isSystemManaged: boolean;
 
     @Expose()
-    @Validator.IsBoolean()
-    @ApiProperty({ required: true, type: Boolean })
-    declare public nonDelegable: boolean;
-
-    @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
     declare public code: string;

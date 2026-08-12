@@ -20,7 +20,6 @@ export class Role implements Entities.Role.Contract {
     public archetype: RoleArchetype;
     public description?: string;
     public isSystemManaged: boolean;
-    public nonDelegable: boolean;
     public isRevoked: boolean;
 
     public realm: Entities.Realm;
@@ -37,7 +36,6 @@ export class Role implements Entities.Role.Contract {
         this.id = randomUUID();
 
         this.isSystemManaged = props.isSystemManaged ?? false;
-        this.nonDelegable = props.nonDelegable ?? false;
         this.isRevoked = props.isRevoked ?? false;
 
         this.code = props.code;

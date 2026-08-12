@@ -35,12 +35,6 @@ export class DefaultFiltersDTO implements Repositories.Mappers.Role.DefaultFilte
 
     @Expose()
     @Validator.IsOptional()
-    @Validator.IsBoolean()
-    @ApiProperty({ required: false, type: Boolean })
-    public nonDelegable?: boolean;
-
-    @Expose()
-    @Validator.IsOptional()
     @Validator.ValidateNested()
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })

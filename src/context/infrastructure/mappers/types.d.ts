@@ -279,7 +279,6 @@ declare global {
                     id?: StringFilterDTO;
                     permission?: LinkFilterDTO;
                     isSystemManaged?: boolean;
-                    nonDelegable?: boolean;
                     isRevoked?: boolean;
                 };
 

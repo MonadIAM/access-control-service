@@ -35,11 +35,6 @@ export class CreateBodyDTO {
     declare public archetype: RoleArchetype;
 
     @Expose()
-    @Validator.IsBoolean()
-    @ApiProperty({ required: true, type: Boolean })
-    declare public nonDelegable: boolean;
-
-    @Expose()
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
     declare public parent: string;

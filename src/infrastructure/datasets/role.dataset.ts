@@ -10,14 +10,12 @@ const entry = (
     name: string,
     description: string,
     actorType = RoleActorType.HUMAN,
-    nonDelegable = false,
 ) => ({
     id,
     code,
     name,
     description,
     is_system_managed: true,
-    non_delegable: nonDelegable,
     is_revoked: false,
     archetype: RoleArchetype.COMPOSITE,
     actor_type: actorType,
@@ -33,7 +31,6 @@ const dataset = [
         "System",
         "Role not available to users",
         RoleActorType.SYSTEM,
-        true,
     ),
     entry(
         SYSTEM_USER_ROLE_ID,
@@ -47,7 +44,6 @@ const dataset = [
         "Administrator",
         "The role that grants maximum privileges within the entire system",
         RoleActorType.HUMAN,
-        true,
     ),
 ];
 

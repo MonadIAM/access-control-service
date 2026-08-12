@@ -40,23 +40,20 @@ describe("Role Entity", () => {
             expect(role.realm).toBe(realm);
         });
 
-        it("should default isSystemManaged, nonDelegable, isRevoked to false", () => {
+        it("should default isSystemManaged and isRevoked to false", () => {
             const role = createRole();
 
             expect(role.isSystemManaged).toBe(false);
-            expect(role.nonDelegable).toBe(false);
             expect(role.isRevoked).toBe(false);
         });
 
         it("should respect explicit boolean overrides", () => {
             const role = createRole({
                 isSystemManaged: true,
-                nonDelegable: true,
                 isRevoked: true,
             });
 
             expect(role.isSystemManaged).toBe(true);
-            expect(role.nonDelegable).toBe(true);
             expect(role.isRevoked).toBe(true);
         });
 

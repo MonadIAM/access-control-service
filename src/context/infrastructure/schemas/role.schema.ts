@@ -39,7 +39,6 @@ export const RoleSchema = new EntitySchema<Role>({
         archetype: { enum: true, items: () => RoleArchetype, nativeEnumName: "role_archetype" },
 
         isSystemManaged: { type: "boolean" },
-        nonDelegable: { type: "boolean" },
         isRevoked: { type: "boolean" },
 
         realm: {

@@ -17,7 +17,6 @@ declare global {
                 archetype: RoleArchetype;
                 description?: string;
                 isSystemManaged: boolean;
-                nonDelegable: boolean;
                 isRevoked: boolean;
 
                 realm: Entities.Realm;
@@ -43,7 +42,6 @@ declare global {
                 archetype: RoleArchetype;
                 description?: string;
                 isSystemManaged?: boolean;
-                nonDelegable?: boolean;
                 isRevoked?: boolean;
                 realm: Entities.Realm;
             };

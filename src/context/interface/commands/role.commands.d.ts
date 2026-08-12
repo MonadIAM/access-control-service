@@ -57,7 +57,6 @@ declare global {
                         description?: string;
                         actorType: RoleActorType;
                         archetype: RoleArchetype;
-                        nonDelegable: boolean;
                         parent: string;
                         children: string[];
                     };

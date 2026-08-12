@@ -22,9 +22,6 @@ export class RoleMapper implements Repositories.Mappers.Contract<Entities.Role, 
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
-        if (filters.nonDelegable !== undefined) {
-            where.nonDelegable = { $eq: filters.nonDelegable };
-        }
         if (filters.code) {
             where.code = ORMAdapter.applyStringFilter(filters.code);
         }
@@ -91,9 +88,6 @@ export class RoleMapper implements Repositories.Mappers.Contract<Entities.Role, 
 
         if (filters.isSystemManaged !== undefined) {
             query.where(`${tableAlias}.is_system_managed`, filters.isSystemManaged);
-        }
-        if (filters.nonDelegable !== undefined) {
-            query.where(`${tableAlias}.non_delegable`, filters.nonDelegable);
         }
         if (filters.isRevoked !== undefined) {
             query.where(`${tableAlias}.is_revoked`, filters.isRevoked);
