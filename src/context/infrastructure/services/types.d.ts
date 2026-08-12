@@ -1,3 +1,5 @@
+import { PrivilegeScope } from "@monadiam/shared";
+
 import { ProjectionScript } from "../scripts";
 
 declare global {
@@ -81,7 +83,7 @@ declare global {
                     realm: string;
                 };
 
-                type Result = Promise<Record<string, string>>;
+                type Result = Promise<Record<string, PrivilegeScope>>;
 
                 type Signature = (props: Props) => Result;
             }

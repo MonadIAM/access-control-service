@@ -106,6 +106,7 @@ export class MembershipMapper implements Commands.Mappers.Membership.Contract {
         props: Commands.Mappers.Membership.LeaveConfirmedPayload.Props,
     ): Commands.Mappers.Membership.LeaveConfirmedPayload.Result {
         return {
+            requestedBy: props.request.requestedBy,
             process: props.request.process,
             command: props.request.command,
             account: props.request.account,
