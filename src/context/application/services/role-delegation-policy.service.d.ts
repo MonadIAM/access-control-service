@@ -27,7 +27,7 @@ declare namespace Services {
                 input: {
                     delegator: Entities.Role;
                     target: Entities.Role;
-                    description: string;
+                    justification: string;
                     depthLimit?: number;
                     expiresAt?: Date;
                 };
@@ -40,7 +40,7 @@ declare namespace Services {
 
         namespace Update {
             type Props = {
-                patch: Partial<Entities.RoleConflictGroup.MutableFields>;
+                patch: Partial<Entities.RoleDelegationPolicy.MutableFields>;
                 entity: Entities.RoleDelegationPolicy;
             };
 

@@ -34,7 +34,7 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EXISTS_TRANSITIVE_PATH` });
         } else {
             const entity = new RoleDelegationPolicy({
-                description: input.description,
+                justification: input.justification,
                 depthLimit: input.depthLimit,
                 expiresAt: input.expiresAt,
                 delegator: input.delegator,

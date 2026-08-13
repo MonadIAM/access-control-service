@@ -31,6 +31,7 @@ declare global {
                     id?: StringFilterDTO;
                     account?: LinkFilterDTO;
                     isSystemManaged?: boolean;
+                    justification?: StringFilterDTO;
                     role?: LinkFilterDTO;
                     updatedAt?: OrdinalFilterDTO<Date>;
                     createdAt?: OrdinalFilterDTO<Date>;
@@ -105,6 +106,7 @@ declare global {
                     id?: StringFilterDTO;
                     account?: LinkFilterDTO;
                     effect?: StringFilterDTO;
+                    justification?: StringFilterDTO;
                     permission?: LinkFilterDTO;
                     realm?: LinkFilterDTO;
                     updatedAt?: OrdinalFilterDTO<Date>;

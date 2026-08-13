@@ -13,6 +13,7 @@ declare global {
 
                 account: string;
                 effect: PermissionOverrideEffect;
+                justification?: string;
                 isRevoked: boolean;
                 expiresAt?: Date;
 
@@ -30,6 +31,7 @@ declare global {
                 permission: Entities.Permission;
                 realm: Entities.Realm;
                 isRevoked?: boolean;
+                justification?: string;
                 expiresAt?: Date;
                 account: string;
             };

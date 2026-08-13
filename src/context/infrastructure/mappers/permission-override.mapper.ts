@@ -22,6 +22,9 @@ export class PermissionOverrideMapper implements Repositories.Mappers.Contract<
         if (filters.effect) {
             where.effect = ORMAdapter.applyStringFilter<PermissionOverrideEffect>(filters.effect);
         }
+        if (filters.justification) {
+            where.justification = ORMAdapter.applyStringFilter(filters.justification);
+        }
         if (filters.permission) {
             where.permission = ORMAdapter.applyStringFilter(filters.permission);
         }

@@ -9,6 +9,7 @@ declare namespace Entities {
             version: number;
 
             account: string;
+            justification?: string;
             isSystemManaged: boolean;
             isRevoked: boolean;
             expiresAt?: Date;
@@ -27,6 +28,7 @@ declare namespace Entities {
             realm: Entities.Realm;
             role: Entities.Role;
             isRevoked?: boolean;
+            justification?: string;
             expiresAt?: Date;
             account: string;
         };

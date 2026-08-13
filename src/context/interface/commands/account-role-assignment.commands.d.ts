@@ -72,6 +72,7 @@ declare namespace Commands {
                 input: {
                     account: string;
                     roles: string[];
+                    justification: string;
                     expiresAt?: Date;
                 };
                 context: Extract.Meta;

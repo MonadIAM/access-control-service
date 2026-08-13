@@ -35,6 +35,7 @@ export const PermissionOverrideSchema = new EntitySchema<PermissionOverride>({
 
         account: { type: "uuid", fieldName: "account" },
         effect: { enum: true, items: () => PermissionOverrideEffect, nativeEnumName: "permission_override_effect" },
+        justification: { type: "text", nullable: true },
 
         isRevoked: { type: "boolean" },
 

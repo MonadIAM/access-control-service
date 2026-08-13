@@ -12,7 +12,7 @@ export class RoleDelegationPolicy implements Entities.RoleDelegationPolicy.Contr
     public updatedAt?: Date;
     public version: number = 1;
 
-    public description?: string;
+    public justification?: string;
     public depthLimit?: number;
     public isSystemManaged: boolean;
     public isRevoked: boolean;
@@ -31,7 +31,7 @@ export class RoleDelegationPolicy implements Entities.RoleDelegationPolicy.Contr
         this.isRevoked = props.isRevoked ?? false;
         this.depthLimit = props.depthLimit ?? 0;
 
-        this.description = props.description;
+        this.justification = props.justification;
 
         this.delegator = props.delegator;
         this.target = props.target;

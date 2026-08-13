@@ -38,6 +38,18 @@ describe("PermissionOverride Entity", () => {
             expect(override.realm).toBe(realm);
         });
 
+        it("should assign justification when provided", () => {
+            const override = createOverride({ justification: "Temporary access for incident response" });
+
+            expect(override.justification).toBe("Temporary access for incident response");
+        });
+
+        it("should leave justification undefined when not provided", () => {
+            const override = createOverride();
+
+            expect(override.justification).toBeUndefined();
+        });
+
         it("should default isRevoked to false", () => {
             const override = createOverride();
 

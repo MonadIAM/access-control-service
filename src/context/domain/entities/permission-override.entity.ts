@@ -15,6 +15,7 @@ export class PermissionOverride implements Entities.PermissionOverride.Contract 
 
     public account: string;
     public effect: PermissionOverrideEffect;
+    public justification?: string;
     public isRevoked: boolean;
     public expiresAt?: Date;
 
@@ -27,6 +28,7 @@ export class PermissionOverride implements Entities.PermissionOverride.Contract 
 
         this.isRevoked = props.isRevoked ?? false;
 
+        this.justification = props.justification;
         this.account = props.account;
         this.effect = props.effect;
 

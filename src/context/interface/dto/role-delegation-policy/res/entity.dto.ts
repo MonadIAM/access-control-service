@@ -26,7 +26,7 @@ export class RoleDelegationPolicyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
-    declare public description: string;
+    declare public justification: string;
 
     @Expose()
     @Validator.ValidateNested()

@@ -65,6 +65,7 @@ declare global {
                         effect: PermissionOverrideEffect;
                         permission: string;
                         account: string;
+                        justification: string;
                         expiresAt?: Date;
                     };
                     context: Extract.Meta;

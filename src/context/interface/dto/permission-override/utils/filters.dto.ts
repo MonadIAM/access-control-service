@@ -30,6 +30,13 @@ export class FiltersDTO implements Repositories.Mappers.PermissionOverride.Filte
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
+    @Type(() => StringFilterDTO)
+    @ApiProperty({ required: false, type: StringFilterDTO })
+    public justification?: StringFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
     @Type(() => LinkFilterDTO)
     @ApiProperty({ required: false, type: LinkFilterDTO })
     public permission?: LinkFilterDTO;

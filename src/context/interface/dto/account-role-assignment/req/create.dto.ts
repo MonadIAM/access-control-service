@@ -19,6 +19,12 @@ export class CreateBodyDTO {
     declare public account: string;
 
     @Expose()
+    @Validator.IsString()
+    @Validator.MinLength(1)
+    @ApiProperty({ required: true, type: String })
+    declare public justification: string;
+
+    @Expose()
     @Validator.IsOptional()
     @Validator.IsDate()
     @ApiProperty({ required: false, type: Date })

@@ -87,7 +87,12 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
                 } else {
                     const assignments = await this.accountRoleAssignmentService.create({
-                        input: { account: input.account, expiresAt: input.expiresAt, roles: roleEntities },
+                        input: {
+                            justification: input.justification,
+                            expiresAt: input.expiresAt,
+                            account: input.account,
+                            roles: roleEntities,
+                        },
                         realm: realmEntity,
                         transaction,
                         actor,

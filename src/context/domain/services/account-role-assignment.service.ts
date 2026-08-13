@@ -55,6 +55,7 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
             const entities: Entities.AccountRoleAssignment[] = [];
             for (const role of input.roles) {
                 const entity = new AccountRoleAssignment({
+                    justification: input.justification,
                     expiresAt: input.expiresAt,
                     account: input.account,
                     realm,

@@ -47,7 +47,7 @@ declare namespace Commands {
                 realm: string;
                 input: {
                     depthLimit?: number;
-                    description: string;
+                    justification: string;
                     delegator: string;
                     expiresAt?: Date;
                     target: string;

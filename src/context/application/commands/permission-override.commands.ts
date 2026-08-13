@@ -82,9 +82,10 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                     .create({
                         input: {
                             permission: permissionEntity,
+                            justification: input.justification,
+                            expiresAt: input.expiresAt,
                             account: input.account,
                             effect: input.effect,
-                            expiresAt: input.expiresAt,
                         },
                         realm: realmEntity,
                         transaction,

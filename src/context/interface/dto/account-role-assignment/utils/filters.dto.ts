@@ -29,6 +29,13 @@ export class DefaultFiltersDTO implements Repositories.Mappers.AccountRoleAssign
     @Expose()
     @Validator.IsOptional()
     @Validator.ValidateNested()
+    @Type(() => StringFilterDTO)
+    @ApiProperty({ required: false, type: StringFilterDTO })
+    public justification?: StringFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.ValidateNested()
     @Type(() => LinkFilterDTO)
     @ApiProperty({ required: false, type: LinkFilterDTO })
     public role?: LinkFilterDTO;

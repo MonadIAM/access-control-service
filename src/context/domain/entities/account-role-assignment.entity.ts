@@ -13,6 +13,7 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
     public version: number = 1;
 
     public account: string;
+    public justification?: string;
     public isSystemManaged: boolean;
     public isRevoked: boolean;
     public expiresAt?: Date;
@@ -27,6 +28,7 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;
 
+        this.justification = props.justification;
         this.account = props.account;
 
         this.realm = props.realm;

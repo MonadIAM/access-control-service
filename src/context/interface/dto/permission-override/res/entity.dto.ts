@@ -25,6 +25,12 @@ export class PermissionOverrideDTO {
     declare public effect: PermissionOverrideEffect;
 
     @Expose()
+    @Validator.IsString()
+    @Validator.IsOptional()
+    @ApiProperty({ required: false, type: String })
+    declare public justification?: string;
+
+    @Expose()
     @Validator.ValidateNested()
     @Type(() => PermissionLookupDTO)
     @ApiProperty({ required: true, type: PermissionLookupDTO })

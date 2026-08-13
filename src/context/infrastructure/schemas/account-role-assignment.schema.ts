@@ -33,6 +33,7 @@ export const AccountRoleAssignmentSchema = new EntitySchema<AccountRoleAssignmen
         id: { primary: true, type: "uuid" },
 
         account: { type: "uuid", fieldName: "account" },
+        justification: { type: "text", nullable: true },
 
         isSystemManaged: { type: "boolean" },
         isRevoked: { type: "boolean" },

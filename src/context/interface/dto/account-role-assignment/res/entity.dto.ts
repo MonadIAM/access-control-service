@@ -24,6 +24,12 @@ export class AccountRoleAssignmentDTO {
     declare public isSystemManaged: boolean;
 
     @Expose()
+    @Validator.IsString()
+    @Validator.IsOptional()
+    @ApiProperty({ required: false, type: String })
+    declare public justification?: string;
+
+    @Expose()
     @Validator.ValidateNested()
     @Type(() => RoleLookupDTO)
     @ApiProperty({ required: true, type: RoleLookupDTO })

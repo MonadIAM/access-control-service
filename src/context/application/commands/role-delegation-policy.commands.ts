@@ -63,7 +63,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
 
                     await this.roleDelegationPolicyService.create({
                         input: {
-                            description: input.description,
+                            justification: input.justification,
                             depthLimit: input.depthLimit,
                             expiresAt: input.expiresAt,
                             delegator: delegatorEntity,

@@ -8,7 +8,7 @@ declare namespace Entities {
             updatedAt?: Date;
             version: number;
 
-            description?: string;
+            justification?: string;
             depthLimit?: number;
             isSystemManaged: boolean;
             isRevoked: boolean;
@@ -25,10 +25,10 @@ declare namespace Entities {
             revoke(): void;
         }
 
-        type MutableFields = Pick<Contract, "depthLimit" | "description">;
+        type MutableFields = Pick<Contract, "depthLimit" | "justification">;
 
         type ConstructorProps = {
-            description?: string;
+            justification?: string;
             depthLimit?: number;
             isSystemManaged?: boolean;
             isRevoked?: boolean;

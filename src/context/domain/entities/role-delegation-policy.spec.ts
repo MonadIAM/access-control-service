@@ -61,14 +61,14 @@ describe("RoleDelegationPolicy Entity", () => {
             expect(policy.updatedAt).toBeUndefined();
         });
 
-        it("should assign description when provided", () => {
-            const policy = createPolicy({ description: "Allow delegation" });
-            expect(policy.description).toBe("Allow delegation");
+        it("should assign justification when provided", () => {
+            const policy = createPolicy({ justification: "Allow delegation" });
+            expect(policy.justification).toBe("Allow delegation");
         });
 
-        it("should leave description undefined when omitted", () => {
+        it("should leave justification undefined when omitted", () => {
             const policy = createPolicy();
-            expect(policy.description).toBeUndefined();
+            expect(policy.justification).toBeUndefined();
         });
 
         it("should normalize explicit expiration to the start of the day", () => {
@@ -91,39 +91,39 @@ describe("RoleDelegationPolicy Entity", () => {
 
     describe("update", () => {
         it("should update a single field", () => {
-            const policy = createPolicy({ description: "Old" });
+            const policy = createPolicy({ justification: "Old" });
 
-            policy.update({ patch: { description: "New" } });
+            policy.update({ patch: { justification: "New" } });
 
-            expect(policy.description).toBe("New");
+            expect(policy.justification).toBe("New");
             expect(policy.updatedAt).toBeInstanceOf(Date);
         });
 
         it("should update multiple fields at once", () => {
-            const policy = createPolicy({ description: "Old", depthLimit: 1 });
+            const policy = createPolicy({ justification: "Old", depthLimit: 1 });
 
-            policy.update({ patch: { description: "New", depthLimit: 3 } });
+            policy.update({ patch: { justification: "New", depthLimit: 3 } });
 
-            expect(policy.description).toBe("New");
+            expect(policy.justification).toBe("New");
             expect(policy.depthLimit).toBe(3);
         });
 
         it("should skip unchanged fields", () => {
-            const policy = createPolicy({ description: "Same", depthLimit: 1 });
+            const policy = createPolicy({ justification: "Same", depthLimit: 1 });
 
-            policy.update({ patch: { description: "Same", depthLimit: 5 } });
+            policy.update({ patch: { justification: "Same", depthLimit: 5 } });
 
-            expect(policy.description).toBe("Same");
+            expect(policy.justification).toBe("Same");
             expect(policy.depthLimit).toBe(5);
         });
 
         it("should ignore undefined values in patch", () => {
             const policy = createPolicy({ depthLimit: 2 });
 
-            policy.update({ patch: { depthLimit: 4, description: undefined } });
+            policy.update({ patch: { depthLimit: 4, justification: undefined } });
 
             expect(policy.depthLimit).toBe(4);
-            expect(policy.description).toBeUndefined();
+            expect(policy.justification).toBeUndefined();
         });
 
         it("should throw when patch is empty object", () => {
@@ -133,9 +133,9 @@ describe("RoleDelegationPolicy Entity", () => {
         });
 
         it("should throw when no values actually changed", () => {
-            const policy = createPolicy({ description: "Same" });
+            const policy = createPolicy({ justification: "Same" });
 
-            expect(() => policy.update({ patch: { description: "Same" } })).toThrow("NO_CHANGES_DETECTED");
+            expect(() => policy.update({ patch: { justification: "Same" } })).toThrow("NO_CHANGES_DETECTED");
         });
     });
 

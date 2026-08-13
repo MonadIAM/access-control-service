@@ -27,6 +27,7 @@ declare namespace Services {
                 realm: Entities.Realm;
                 actor: string;
                 input: {
+                    justification?: string;
                     roles: Entities.Role[];
                     expiresAt?: Date;
                     account: string;

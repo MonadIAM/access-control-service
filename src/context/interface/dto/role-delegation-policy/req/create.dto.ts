@@ -24,8 +24,9 @@ export class CreateBodyDTO {
 
     @Expose()
     @Validator.IsString()
+    @Validator.MinLength(1)
     @ApiProperty({ required: true, type: String })
-    declare public description: string;
+    declare public justification: string;
 
     @Expose()
     @Validator.IsOptional()

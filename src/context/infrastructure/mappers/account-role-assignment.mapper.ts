@@ -21,6 +21,9 @@ export class AccountRoleAssignmentMapper implements Repositories.Mappers.Contrac
         if (filters.isSystemManaged !== undefined) {
             where.isSystemManaged = { $eq: filters.isSystemManaged };
         }
+        if (filters.justification) {
+            where.justification = ORMAdapter.applyStringFilter(filters.justification);
+        }
         if (filters.role) {
             where.role = ORMAdapter.applyStringFilter(filters.role);
         }

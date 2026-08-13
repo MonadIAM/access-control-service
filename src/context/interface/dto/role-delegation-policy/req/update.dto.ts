@@ -15,7 +15,7 @@ class PatchDTO {
     @Validator.IsString()
     @Validator.IsOptional()
     @ApiProperty({ required: false, type: String })
-    declare public description?: string;
+    declare public justification?: string;
 }
 
 @ApiSchema({ name: "RoleDelegationPolicyUpdateBody" })

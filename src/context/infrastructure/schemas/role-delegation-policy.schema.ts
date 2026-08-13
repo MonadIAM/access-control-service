@@ -32,7 +32,7 @@ export const RoleDelegationPolicySchema = new EntitySchema<RoleDelegationPolicy>
     properties: {
         id: { primary: true, type: "uuid" },
 
-        description: { type: "text", nullable: true },
+        justification: { type: "text", nullable: true },
         depthLimit: { type: "smallint" },
 
         isSystemManaged: { type: "boolean" },
