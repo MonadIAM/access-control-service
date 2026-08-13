@@ -2,7 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { NotificationTopicAction, AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
-import { SYSTEM_ACCOUNT_ID, SYSTEM_USER_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
+import { CONSUMER_META, SYSTEM_ACCOUNT_ID, SYSTEM_USER_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
@@ -281,6 +281,19 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
             ],
+            audit: {
+                actor: SYSTEM_ACCOUNT_ID,
+                entityType: EntityType.ROLE_ASSIGNMENT,
+                actionType: ActionType.CREATE,
+                realm: SYSTEM_REALM_ID,
+                input: {
+                    account: props.account,
+                    realm: SYSTEM_REALM_ID,
+                    role: SYSTEM_USER_ROLE_ID,
+                },
+                context: CONSUMER_META,
+            },
+            changeLog: true,
             execute: async (transaction) => {
                 const [realmEntity, roleEntity] = await Promise.all([
                     this.realmRepository.findUniqueOrThrow({
@@ -324,6 +337,16 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
             ],
+            audit: {
+                actor: SYSTEM_ACCOUNT_ID,
+                entityType: EntityType.ROLE_ASSIGNMENT,
+                actionType: ActionType.DELETE,
+                input: {
+                    account: props.account,
+                },
+                context: CONSUMER_META,
+            },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.accountRoleAssignmentRepository.find({
                     where: { account: props.account },

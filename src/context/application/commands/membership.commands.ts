@@ -1,8 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { NotificationTopicAction, AccessCacheTopicAction, MembershipTopicAction, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
+import { CONSUMER_META } from "~context/constants";
 import { Exception } from "~common/exceptions";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
@@ -10,6 +10,14 @@ import {
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
 } from "~context/domain/repositories";
+import {
+    NotificationTopicAction,
+    AccessCacheTopicAction,
+    MembershipTopicAction,
+    ActionType,
+    EntityType,
+    KafkaTopic,
+} from "~context/enums";
 
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE } from "../services";
 import { MembershipMapper } from "../mappers";
@@ -61,6 +69,15 @@ export class MembershipCommands implements Commands.Membership.Contract {
                         destinationTopic: KafkaTopic.MEMBERSHIP,
                     },
                 ],
+                audit: {
+                    actor: input.invitedBy,
+                    entityType: EntityType.ROLE_ASSIGNMENT,
+                    actionType: ActionType.CREATE,
+                    realm: input.realm,
+                    input,
+                    context: CONSUMER_META,
+                },
+                changeLog: true,
                 execute: async (transaction) => {
                     const existingAssignment = await this.accountRoleAssignmentRepository.findUnique({
                         where: { account: input.account, realm: input.realm, role: input.role, isRevoked: false },
@@ -135,6 +152,15 @@ export class MembershipCommands implements Commands.Membership.Contract {
                         destinationTopic: KafkaTopic.NOTIFICATION,
                     },
                 ],
+                audit: {
+                    actor: input.requestedBy,
+                    entityType: EntityType.ROLE_ASSIGNMENT,
+                    actionType: ActionType.DELETE,
+                    realm: input.realm,
+                    input,
+                    context: CONSUMER_META,
+                },
+                changeLog: true,
                 execute: async (transaction) => {
                     const [assignments, overrides, realm] = await Promise.all([
                         this.accountRoleAssignmentRepository.find({
@@ -174,6 +200,14 @@ export class MembershipCommands implements Commands.Membership.Contract {
             actionType: MembershipTopicAction.JOIN_REJECTED,
             destinationTopic: KafkaTopic.MEMBERSHIP,
             resource: this.resource,
+            audit: {
+                actor: props.request.invitedBy,
+                entityType: EntityType.ROLE_ASSIGNMENT,
+                actionType: ActionType.CREATE,
+                realm: props.request.realm,
+                input: props,
+                context: CONSUMER_META,
+            },
         });
     }
 
@@ -183,6 +217,14 @@ export class MembershipCommands implements Commands.Membership.Contract {
             actionType: MembershipTopicAction.LEAVE_REJECTED,
             destinationTopic: KafkaTopic.MEMBERSHIP,
             resource: this.resource,
+            audit: {
+                actor: props.request.requestedBy,
+                entityType: EntityType.ROLE_ASSIGNMENT,
+                actionType: ActionType.DELETE,
+                realm: props.request.realm,
+                input: props,
+                context: CONSUMER_META,
+            },
         });
     }
 }

@@ -3,9 +3,9 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { PERMISSION_OVERRIDE_REPOSITORY, PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/domain/repositories";
 import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
+import { CONSUMER_META, SYSTEM_ACCOUNT_ID } from "~context/constants";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { SYSTEM_ACCOUNT_ID } from "~context/constants";
 import { Exception } from "~common/exceptions";
 
 import { PERMISSION_OVERRIDE_SERVICE } from "../services";
@@ -252,6 +252,16 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
             ],
+            audit: {
+                actor: SYSTEM_ACCOUNT_ID,
+                entityType: EntityType.PERMISSION_OVERRIDE,
+                actionType: ActionType.DELETE,
+                input: {
+                    account: props.account,
+                },
+                context: CONSUMER_META,
+            },
+            changeLog: true,
             execute: async (transaction) => {
                 const entities = await this.permissionOverrideRepository.find({
                     options: { populate: ["permission.realm"] },

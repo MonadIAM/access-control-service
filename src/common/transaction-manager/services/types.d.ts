@@ -60,7 +60,7 @@ declare global {
                 type VoidProps = {
                     execute(transaction: ORM.EntityManager): Promise<void> | void;
                     audit?: SystemEntities.AuditLog.ConstructorProps;
-                    changeLog?: never;
+                    changeLog?: boolean;
                     resource?: string;
                     outbox?: never;
                 };
