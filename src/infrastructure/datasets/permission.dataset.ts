@@ -743,18 +743,44 @@ const dataset = [
         "Permanently delete a revoked service client within a realm.",
     ),
 
-    // Membership History
+    // Membership
     entry(
         "00000003-0013-4000-8000-200000000001",
+        PermissionCode.MEMBERSHIP_READ_PERSONAL,
+        "Read Personal Membership",
+        "View active realm membership records for the current account.",
+    ),
+    entry(
+        "00000003-0013-4000-8000-200000000002",
+        PermissionCode.MEMBERSHIP_READ_COMMON,
+        "Read Common Membership",
+        "View active realm membership records within a realm.",
+    ),
+    entry(
+        "00000003-0013-4000-8000-200000000003",
+        PermissionCode.MEMBERSHIP_READ_ABSOLUTE,
+        "Read Absolute Membership",
+        "View all active realm membership records.",
+    ),
+
+    // Membership History
+    entry(
+        "00000003-0014-4000-8000-200000000001",
         PermissionCode.MEMBERSHIP_HISTORY_READ_PERSONAL,
         "Read Personal Membership History",
         "View realm membership history records for the current account.",
     ),
     entry(
-        "00000003-0013-4000-8000-200000000002",
+        "00000003-0014-4000-8000-200000000002",
         PermissionCode.MEMBERSHIP_HISTORY_READ_ABSOLUTE,
         "Read Absolute Membership History",
         "View all realm membership history records.",
+    ),
+    entry(
+        "00000003-0014-4000-8000-200000000003",
+        PermissionCode.MEMBERSHIP_HISTORY_READ_COMMON,
+        "Read Common Membership History",
+        "View realm membership history records within a realm.",
     ),
 
     // ---------------------------------------------------------------------------
