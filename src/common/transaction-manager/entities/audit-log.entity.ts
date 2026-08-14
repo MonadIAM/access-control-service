@@ -8,7 +8,7 @@ export class AuditLog {
     public entityType: string;
 
     public realm?: string;
-    public actor: string;
+    public actor?: string;
 
     public ip?: string;
     public userAgent?: string;

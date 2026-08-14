@@ -12,7 +12,7 @@ declare global {
             type ConstructorProps = {
                 actionType: string;
                 entityType: string;
-                actor: string;
+                actor?: string;
                 realm?: string;
                 input?: UnknownObject;
                 context: Extract.Meta;

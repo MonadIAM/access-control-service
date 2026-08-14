@@ -29,7 +29,7 @@ export const AuditLogSchema = new EntitySchema<AuditLog>({
         entityType: { type: "string", length: 64 },
 
         realm: { type: "uuid", nullable: true },
-        actor: { type: "uuid" },
+        actor: { type: "uuid", nullable: true },
 
         ip: { type: "text", columnType: "inet", nullable: true },
         userAgent: { type: "text", nullable: true },
