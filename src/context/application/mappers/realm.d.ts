@@ -42,6 +42,7 @@ declare namespace Commands {
             namespace RealmLifecyclePayload {
                 type Props = {
                     realms: Entities.Realm[];
+                    actor: string;
                 };
 
                 type Result = Topics.Realm.Message["payload"][];

@@ -79,7 +79,7 @@ export class RealmCommands implements Commands.Realm.Contract {
     }
 
     public async purge(props: Commands.Realm.Purge.Props): Commands.Realm.Purge.Result {
-        const { input } = props;
+        const { input, actor } = props;
 
         const { realms } = await this.transactionalService.run({
             resource: this.resource,
@@ -116,7 +116,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
                 } else {
                     this.realmService.purge({ transaction, entities });
-                    return { realms: entities };
+                    return { realms: entities, actor };
                 }
             },
         });
@@ -129,7 +129,7 @@ export class RealmCommands implements Commands.Realm.Contract {
     }
 
     public async revoke(props: Commands.Realm.Revoke.Props): Commands.Realm.Revoke.Result {
-        const { input } = props;
+        const { input, actor } = props;
 
         const { realms } = await this.transactionalService.run({
             resource: this.resource,
@@ -166,7 +166,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
                 } else {
                     this.realmService.revoke({ entities });
-                    return { realms: entities };
+                    return { realms: entities, actor };
                 }
             },
         });
@@ -179,7 +179,7 @@ export class RealmCommands implements Commands.Realm.Contract {
     }
 
     public async restore(props: Commands.Realm.Restore.Props): Commands.Realm.Restore.Result {
-        const { input } = props;
+        const { input, actor } = props;
 
         const { realms } = await this.transactionalService.run({
             resource: this.resource,
@@ -216,7 +216,7 @@ export class RealmCommands implements Commands.Realm.Contract {
                     throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
                 } else {
                     this.realmService.restore({ entities });
-                    return { realms: entities };
+                    return { realms: entities, actor };
                 }
             },
         });

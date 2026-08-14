@@ -69,13 +69,17 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
         const [{ account, realm }] = props.assignments;
 
         return {
-            params: { realm: realm.name, role: props.assignments.map(({ role }) => role.name).join(", ") },
-            sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
-            template: MessageTemplate.ASSIGNMENT_GRANTED,
-            kind: NotificationContentKind.TEMPLATE,
-            category: NotificationCategory.SYSTEM,
-            recipient: account,
-            language: "en",
+            actor: props.actor,
+            realm: realm.id,
+            input: {
+                params: { realm: realm.name, role: props.assignments.map(({ role }) => role.name).join(", ") },
+                sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
+                template: MessageTemplate.ASSIGNMENT_GRANTED,
+                kind: NotificationContentKind.TEMPLATE,
+                category: NotificationCategory.SYSTEM,
+                recipient: account,
+                language: "en",
+            },
         };
     }
 
@@ -89,13 +93,17 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
         }
 
         return [...byAccount.entries()].map(([account, entities]) => ({
-            params: { realm: entities[0].realm.name, role: entities.map(({ role }) => role.name).join(", ") },
-            sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
-            template: MessageTemplate.ASSIGNMENT_REVOKED,
-            kind: NotificationContentKind.TEMPLATE,
-            category: NotificationCategory.SYSTEM,
-            recipient: account,
-            language: "en",
+            actor: props.actor,
+            realm: entities[0].realm.id,
+            input: {
+                params: { realm: entities[0].realm.name, role: entities.map(({ role }) => role.name).join(", ") },
+                sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
+                template: MessageTemplate.ASSIGNMENT_REVOKED,
+                kind: NotificationContentKind.TEMPLATE,
+                category: NotificationCategory.SYSTEM,
+                recipient: account,
+                language: "en",
+            },
         }));
     }
 

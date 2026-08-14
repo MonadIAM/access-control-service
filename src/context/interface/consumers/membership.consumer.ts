@@ -30,16 +30,19 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
         @Ctx() context: KafkaContext,
     ): Consumers.Membership.Handle.Result {
         try {
-            const { actionType, payload } = message;
-            switch (actionType) {
+            switch (message.actionType) {
                 case MembershipTopicAction.JOIN_REQUESTED:
-                    await this.membershipCommands.join({ input: payload });
+                    await this.membershipCommands.join({
+                        ...message.payload,
+                    });
                     break;
                 case MembershipTopicAction.LEAVE_REQUESTED:
-                    await this.membershipCommands.leave({ input: payload });
+                    await this.membershipCommands.leave({
+                        ...message.payload,
+                    });
                     break;
                 default:
-                    this.logger.warn(`Unknown membership action type: ${String(actionType)}`);
+                    this.logger.warn(`Unknown membership action type: ${message.actionType}`);
             }
         } catch (error) {
             if (Exception.isRetryable(error)) {
@@ -50,8 +53,8 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
                         },
                         value: {
                             originalTopic: KafkaTopic.MEMBERSHIP,
-                            payload: message,
                             error: String(error),
+                            payload: message,
                         },
                     }),
                 );
@@ -61,8 +64,8 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
                     this.kafkaClient.emit(KafkaTopic.MEMBERSHIP_DEAD, {
                         value: {
                             originalTopic: KafkaTopic.MEMBERSHIP,
-                            payload: message,
                             error: String(error),
+                            payload: message,
                         },
                     }),
                 );

@@ -16,7 +16,7 @@ export class MembershipMapper implements Commands.Mappers.Membership.Contract {
                 role: role.id,
             })),
             account: props.request.account,
-            realm: props.request.realm,
+            realm: props.realm,
         };
     }
 
@@ -28,7 +28,7 @@ export class MembershipMapper implements Commands.Mappers.Membership.Contract {
                 {
                     scope: InvalidationScope.ACCOUNT_REALM,
                     account: props.request.account,
-                    realm: props.request.realm,
+                    realm: props.realm,
                 },
             ],
         };
@@ -40,15 +40,17 @@ export class MembershipMapper implements Commands.Mappers.Membership.Contract {
         const [assignment] = props.assignments;
 
         return {
-            assignment: assignment.id,
-            invitedBy: props.request.invitedBy,
-            joinedAt: Date.now(),
-            process: props.request.process,
-            command: props.request.command,
-            account: props.request.account,
-            invite: props.request.invite,
-            realm: props.request.realm,
-            role: assignment.role.id,
+            actor: props.actor,
+            realm: props.realm,
+            input: {
+                process: props.request.process,
+                command: props.request.command,
+                account: props.request.account,
+                invite: props.request.invite,
+                assignment: assignment.id,
+                role: assignment.role.id,
+                joinedAt: Date.now(),
+            },
         };
     }
 
@@ -56,10 +58,14 @@ export class MembershipMapper implements Commands.Mappers.Membership.Contract {
         props: Commands.Mappers.Membership.JoinRejectedPayload.Props,
     ): Commands.Mappers.Membership.JoinRejectedPayload.Result {
         return {
-            process: props.request.process,
-            command: props.request.command,
-            invite: props.request.invite,
-            reason: props.reason,
+            actor: props.request.actor,
+            realm: props.request.realm,
+            input: {
+                process: props.request.input.process,
+                command: props.request.input.command,
+                invite: props.request.input.invite,
+                reason: props.reason,
+            },
         };
     }
 
@@ -96,7 +102,7 @@ export class MembershipMapper implements Commands.Mappers.Membership.Contract {
                 {
                     scope: InvalidationScope.ACCOUNT_REALM,
                     account: props.request.account,
-                    realm: props.request.realm,
+                    realm: props.realm,
                 },
             ],
         };
@@ -106,12 +112,14 @@ export class MembershipMapper implements Commands.Mappers.Membership.Contract {
         props: Commands.Mappers.Membership.LeaveConfirmedPayload.Props,
     ): Commands.Mappers.Membership.LeaveConfirmedPayload.Result {
         return {
-            requestedBy: props.request.requestedBy,
-            process: props.request.process,
-            command: props.request.command,
-            account: props.request.account,
-            leftAt: Date.now(),
-            realm: props.request.realm,
+            actor: props.actor,
+            realm: props.realm,
+            input: {
+                process: props.request.process,
+                command: props.request.command,
+                account: props.request.account,
+                leftAt: Date.now(),
+            },
         };
     }
 
@@ -119,11 +127,14 @@ export class MembershipMapper implements Commands.Mappers.Membership.Contract {
         props: Commands.Mappers.Membership.LeaveRejectedPayload.Props,
     ): Commands.Mappers.Membership.LeaveRejectedPayload.Result {
         return {
-            process: props.request.process,
-            command: props.request.command,
-            account: props.request.account,
-            reason: props.reason,
+            actor: props.request.actor,
             realm: props.request.realm,
+            input: {
+                process: props.request.input.process,
+                command: props.request.input.command,
+                account: props.request.input.account,
+                reason: props.reason,
+            },
         };
     }
 
@@ -131,13 +142,17 @@ export class MembershipMapper implements Commands.Mappers.Membership.Contract {
         props: Commands.Mappers.Membership.NotificationPayload.Props,
     ): Commands.Mappers.Membership.NotificationPayload.Result {
         return {
-            sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
-            template: MessageTemplate.REALM_EXCLUDED,
-            kind: NotificationContentKind.TEMPLATE,
-            category: NotificationCategory.SYSTEM,
-            params: { realm: props.realm.name },
-            recipient: props.request.account,
-            language: "en",
+            actor: props.actor,
+            realm: props.realm,
+            input: {
+                sourceService: PlatformService.ACCESS_CONTROL_SERVICE,
+                template: MessageTemplate.REALM_EXCLUDED,
+                kind: NotificationContentKind.TEMPLATE,
+                category: NotificationCategory.SYSTEM,
+                params: { realm: props.realmEntity.name },
+                recipient: props.request.account,
+                language: "en",
+            },
         };
     }
 }

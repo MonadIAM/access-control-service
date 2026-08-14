@@ -60,8 +60,11 @@ export class RealmMapper implements Commands.Mappers.Realm.Contract {
         props: Commands.Mappers.Realm.RealmLifecyclePayload.Props,
     ): Commands.Mappers.Realm.RealmLifecyclePayload.Result {
         return props.realms.map(({ id, version }) => ({
-            version: version + 1,
+            actor: props.actor,
             realm: id,
+            input: {
+                version: version + 1,
+            },
         }));
     }
 }

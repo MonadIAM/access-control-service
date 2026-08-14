@@ -47,7 +47,7 @@ export class MembershipCommands implements Commands.Membership.Contract {
     }
 
     public async join(props: Commands.Membership.Join.Props): Commands.Membership.Join.Result {
-        const { input } = props;
+        const { input, actor, realm } = props;
 
         try {
             await this.transactionalService.run<Commands.Membership.Join.ExecuteResult>({
@@ -70,57 +70,58 @@ export class MembershipCommands implements Commands.Membership.Contract {
                     },
                 ],
                 audit: {
-                    actor: input.invitedBy,
                     entityType: EntityType.ROLE_ASSIGNMENT,
                     actionType: ActionType.CREATE,
-                    realm: input.realm,
-                    input,
                     context: CONSUMER_META,
+                    ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const existingAssignment = await this.accountRoleAssignmentRepository.findUnique({
-                        where: { account: input.account, realm: input.realm, role: input.role, isRevoked: false },
+                        where: { account: input.account, realm, role: input.role, isRevoked: false },
                         options: { populate: ["realm", "role"] },
                         transaction,
                     });
 
                     if (existingAssignment) {
-                        return { request: input, assignments: [existingAssignment] };
+                        return { request: input, actor, realm, assignments: [existingAssignment] };
                     }
 
-                    const [realm, role] = await Promise.all([
+                    const [realmEntity, role] = await Promise.all([
                         this.realmRepository.findUniqueOrThrow({
-                            where: { id: input.realm },
+                            where: { id: realm },
                             transaction,
                         }),
                         this.roleRepository.findUniqueOrThrow({
-                            where: { id: input.role, realm: input.realm },
+                            where: { id: input.role, realm },
                             transaction,
                         }),
                     ]);
 
                     const assignments = await this.accountRoleAssignmentService.create({
                         input: { account: input.account, roles: [role] },
-                        actor: input.invitedBy,
+                        realm: realmEntity,
+                        actor,
                         transaction,
-                        realm,
                     });
 
-                    return { request: input, assignments };
+                    return { request: input, actor, realm, assignments };
                 },
             });
         } catch (error) {
             if (Exception.isRetryable(error)) {
                 throw error;
             } else {
-                await this.rejectJoin({ request: input, reason: error instanceof Error ? error.message : String(error) });
+                await this.rejectJoin({
+                    request: { actor, realm, input },
+                    reason: error instanceof Error ? error.message : String(error),
+                });
             }
         }
     }
 
     public async leave(props: Commands.Membership.Leave.Props): Commands.Membership.Leave.Result {
-        const { input } = props;
+        const { input, actor, realm } = props;
 
         try {
             await this.transactionalService.run<Commands.Membership.Leave.ExecuteResult>({
@@ -153,28 +154,26 @@ export class MembershipCommands implements Commands.Membership.Contract {
                     },
                 ],
                 audit: {
-                    actor: input.requestedBy,
                     entityType: EntityType.ROLE_ASSIGNMENT,
                     actionType: ActionType.DELETE,
-                    realm: input.realm,
-                    input,
                     context: CONSUMER_META,
+                    ...props,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
-                    const [assignments, overrides, realm] = await Promise.all([
+                    const [assignments, overrides, realmEntity] = await Promise.all([
                         this.accountRoleAssignmentRepository.find({
-                            where: { account: input.account, realm: input.realm },
+                            where: { account: input.account, realm },
                             options: { populate: ["realm", "role"] },
                             transaction,
                         }),
                         this.permissionOverrideRepository.find({
-                            where: { account: input.account, realm: input.realm },
+                            where: { account: input.account, realm },
                             options: { populate: ["permission.realm", "realm"] },
                             transaction,
                         }),
                         this.realmRepository.findUniqueOrThrow({
-                            where: { id: input.realm },
+                            where: { id: realm },
                             transaction,
                         }),
                     ]);
@@ -182,14 +181,17 @@ export class MembershipCommands implements Commands.Membership.Contract {
                     this.permissionOverrideService.clean({ transaction, entities: overrides });
                     this.accountRoleAssignmentService.clean({ transaction, entities: assignments });
 
-                    return { request: input, assignments, overrides, realm };
+                    return { request: input, actor, realm, assignments, overrides, realmEntity };
                 },
             });
         } catch (error) {
             if (Exception.isRetryable(error)) {
                 throw error;
             } else {
-                await this.rejectLeave({ request: input, reason: error instanceof Error ? error.message : String(error) });
+                await this.rejectLeave({
+                    request: { actor, realm, input },
+                    reason: error instanceof Error ? error.message : String(error),
+                });
             }
         }
     }
@@ -201,12 +203,12 @@ export class MembershipCommands implements Commands.Membership.Contract {
             destinationTopic: KafkaTopic.MEMBERSHIP,
             resource: this.resource,
             audit: {
-                actor: props.request.invitedBy,
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: ActionType.CREATE,
+                context: CONSUMER_META,
+                actor: props.request.actor,
                 realm: props.request.realm,
                 input: props,
-                context: CONSUMER_META,
             },
         });
     }
@@ -218,12 +220,12 @@ export class MembershipCommands implements Commands.Membership.Contract {
             destinationTopic: KafkaTopic.MEMBERSHIP,
             resource: this.resource,
             audit: {
-                actor: props.request.requestedBy,
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: ActionType.DELETE,
+                context: CONSUMER_META,
+                actor: props.request.actor,
                 realm: props.request.realm,
                 input: props,
-                context: CONSUMER_META,
             },
         });
     }

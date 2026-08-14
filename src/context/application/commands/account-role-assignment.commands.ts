@@ -98,7 +98,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                         actor,
                     });
 
-                    return { assignments };
+                    return { assignments, actor };
                 }
             },
         });
@@ -167,7 +167,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     }
 
     public async revoke(props: Commands.AccountRoleAssignment.Revoke.Props): Commands.AccountRoleAssignment.Revoke.Result {
-        const { input, realm } = props;
+        const { input, realm, actor } = props;
 
         const { assignments } = await this.transactionalService.run({
             resource: this.resource,
@@ -206,7 +206,7 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 } else {
                     this.accountRoleAssignmentService.revoke({ entities });
 
-                    return { assignments: entities };
+                    return { assignments: entities, actor };
                 }
             },
         });

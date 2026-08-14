@@ -16,6 +16,7 @@ declare namespace Commands {
             namespace NotificationRevokePayload {
                 type Props = {
                     assignments: Entities.AccountRoleAssignment[];
+                    actor: string;
                 };
 
                 type Result = Topics.Notification.CreateMessage["payload"][];
@@ -26,6 +27,7 @@ declare namespace Commands {
             namespace NotificationGrantPayload {
                 type Props = {
                     assignments: Entities.AccountRoleAssignment[];
+                    actor: string;
                 };
 
                 type Result = Topics.Notification.CreateMessage["payload"];

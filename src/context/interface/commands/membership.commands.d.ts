@@ -36,12 +36,16 @@ declare namespace Commands {
 
         namespace Join {
             type Props = {
-                input: Topics.Membership.JoinRequestedMessage["payload"];
+                input: Topics.Membership.JoinRequestedMessage["payload"]["input"];
+                actor: string;
+                realm: string;
             };
 
             type ExecuteResult = {
-                request: Topics.Membership.JoinRequestedMessage["payload"];
+                request: Topics.Membership.JoinRequestedMessage["payload"]["input"];
                 assignments: Entities.AccountRoleAssignment[];
+                actor: string;
+                realm: string;
             };
 
             type Result = Promise<void>;
@@ -51,14 +55,18 @@ declare namespace Commands {
 
         namespace Leave {
             type Props = {
-                input: Topics.Membership.LeaveRequestedMessage["payload"];
+                input: Topics.Membership.LeaveRequestedMessage["payload"]["input"];
+                actor: string;
+                realm: string;
             };
 
             type ExecuteResult = {
-                request: Topics.Membership.LeaveRequestedMessage["payload"];
+                request: Topics.Membership.LeaveRequestedMessage["payload"]["input"];
                 assignments: Entities.AccountRoleAssignment[];
                 overrides: Entities.PermissionOverride[];
-                realm: Entities.Realm;
+                realmEntity: Entities.Realm;
+                actor: string;
+                realm: string;
             };
 
             type Result = Promise<void>;
