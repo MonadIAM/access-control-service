@@ -7,7 +7,7 @@
         "watch": true
       },
       {
-        "include": "common/i18n/dictionaries/**/*.json",
+        "include": "common/dictionaries/**/*.json",
         "outDir": "dist/src",
         "watch": true
       },

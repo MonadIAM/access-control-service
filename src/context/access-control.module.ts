@@ -1,4 +1,5 @@
 import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
+import { ThrottlerGuard } from "@nestjs/throttler";
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 
@@ -42,6 +43,10 @@ import { QUERIES } from "./application/queries";
         {
             provide: APP_GUARD,
             useExisting: AuthnGuard,
+        },
+        {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
         },
         {
             provide: APP_GUARD,

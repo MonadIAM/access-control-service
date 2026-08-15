@@ -1,8 +1,7 @@
 import { ThrottlerStorageRedisService } from "@nest-lab/throttler-storage-redis";
-import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ThrottlerModule } from "@nestjs/throttler";
 import { Module, Global } from "@nestjs/common";
-import { APP_GUARD } from "@nestjs/core";
 import ms, { StringValue } from "ms";
 import { Redis } from "ioredis";
 
@@ -26,12 +25,6 @@ import { RedisModule, REDIS_LIMITER_CLIENT } from "~infrastructure/redis";
                 errorMessage: "global.throttle",
             }),
         }),
-    ],
-    providers: [
-        {
-            provide: APP_GUARD,
-            useClass: ThrottlerGuard,
-        },
     ],
 })
 export class RateLimiterModule {}

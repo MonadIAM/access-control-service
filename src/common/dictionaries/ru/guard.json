@@ -7,7 +7,7 @@
     "GLOBAL_SCOPE_REQUIRES_DIRECT_LOGIN": "Глобальные права требуют сессии, полученной через прямой вход в MonadIAM.",
     "INSUFFICIENT_PERMISSIONS": "Недостаточно прав для выполнения операции."
   },
-  "auth": {
+  "authn": {
     "INVALID_TOKEN": "Токен аутентификации недействителен или просрочен.",
     "TOKEN_MISSING": "Требуется токен аутентификации.",
     "SESSION_REVOKED": "Сессия была отозвана."

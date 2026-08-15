@@ -14,7 +14,7 @@ import {
             fallbackLanguage: "en",
             loader: I18nJsonLoader,
             loaderOptions: {
-                path: join(__dirname, "/dictionaries/"),
+                path: join(__dirname, "../dictionaries/"),
                 watch: true,
             },
             resolvers: [
