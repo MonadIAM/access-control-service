@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { SYSTEM_REALM_ID } from "@monadiam/shared";
 
 import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
-import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
@@ -74,7 +74,7 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                         transaction,
                     }),
                     this.permissionRepository.find({
-                        where: { id: { $in: input.permissions }, realm: { $in: [realm, SystemRealm.id] } },
+                        where: { id: { $in: input.permissions }, realm: { $in: [realm, SYSTEM_REALM_ID] } },
                         transaction,
                     }),
                 ]);

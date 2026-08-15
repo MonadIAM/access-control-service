@@ -1,6 +1,10 @@
 {
   "permission": {
     "ACCOUNT_REQUIRED": "Для выполнения операции требуется аутентифицированная учетная запись.",
+    "REALM_REQUIRED": "Для проверки прав требуется область доступа.",
+    "REALM_SCOPE_MISSING": "Сессия не содержит область realm.",
+    "REALM_OUT_OF_SESSION_SCOPE": "Запрошенный realm вне области действия сессии.",
+    "GLOBAL_SCOPE_REQUIRES_DIRECT_LOGIN": "Глобальные права требуют сессии, полученной через прямой вход в MonadIAM.",
     "INSUFFICIENT_PERMISSIONS": "Недостаточно прав для выполнения операции."
   },
   "auth": {

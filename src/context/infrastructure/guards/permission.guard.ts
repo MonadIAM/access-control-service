@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/commo
 import { Reflector } from "@nestjs/core";
 
 import { REQUIRE_GLOBAL_PERMISSION, REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
-import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
+import { SYSTEM_REALM_ID } from "~context/constants";
 import { PermissionCode } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
@@ -42,11 +42,26 @@ export class PermissionGuard implements CanActivate {
         }
 
         const request = context.switchToHttp().getRequest<Req<{ Querystring: { realm?: string } }>>();
-        const realm = request.query?.realm ?? SystemRealm.id;
+        const realm = request.query?.realm ?? SYSTEM_REALM_ID;
         const account = request.session?.account;
+        const realms = request.session?.realms;
 
         if (!account) {
             throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.ACCOUNT_REQUIRED` });
+        }
+
+        if (!realm) {
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REALM_REQUIRED` });
+        }
+
+        if (!realms?.length) {
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REALM_SCOPE_MISSING` });
+        }
+
+        if (globalPermissions && !(realms.length === 1 && realms[0] === SYSTEM_REALM_ID)) {
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.GLOBAL_SCOPE_REQUIRES_DIRECT_LOGIN` });
+        } else if (!realms.includes(realm)) {
+            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REALM_OUT_OF_SESSION_SCOPE` });
         }
 
         const matched = await this.projectionCacheService.checkPermissions({

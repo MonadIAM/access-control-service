@@ -1,4 +1,5 @@
-import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
+import { SYSTEM_REALM_ID } from "@monadiam/shared";
+
 import { InvalidationScope } from "~context/enums";
 
 export class RealmMapper implements Commands.Mappers.Realm.Contract {
@@ -25,7 +26,7 @@ export class RealmMapper implements Commands.Mappers.Realm.Contract {
                 depth,
             })),
             roles: roles.map(({ id }) => id),
-            permissionRealm: SystemRealm.id,
+            permissionRealm: SYSTEM_REALM_ID,
             realm: realm.id,
         };
     }

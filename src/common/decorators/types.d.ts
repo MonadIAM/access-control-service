@@ -6,12 +6,19 @@ declare namespace Extract {
 
     namespace Session {
         type Public = {
+            realms?: string[];
             account?: string;
             session?: string;
+            client?: string;
+            scope?: string;
         };
+
         type Auth = {
+            realms: string[];
             account: string;
             session: string;
+            client: string;
+            scope: string;
         };
     }
 }

@@ -1,6 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-
-import { SystemRealm } from "~infrastructure/datasets/realm.dataset";
+import { SYSTEM_REALM_ID } from "@monadiam/shared";
 
 import { SCRIPT_EXECUTOR_SERVICE } from "./tokens";
 import { ProjectionScript } from "../scripts";
@@ -16,10 +15,10 @@ export class ProjectionCacheService implements InfrastructureServices.Projection
         props: InfrastructureServices.ProjectionCache.CheckPermissions.Props,
     ): InfrastructureServices.ProjectionCache.CheckPermissions.Result {
         const args: Scripts.Permission.Check.Props = {
-            permissionRealm: SystemRealm.id,
+            permissionRealm: SYSTEM_REALM_ID,
             permissions: props.permissions,
             globalOnly: props.globalOnly,
-            systemRealm: SystemRealm.id,
+            systemRealm: SYSTEM_REALM_ID,
             account: props.account,
             realm: props.realm,
         };
@@ -36,8 +35,8 @@ export class ProjectionCacheService implements InfrastructureServices.Projection
         props: InfrastructureServices.ProjectionCache.CollectPermissions.Props,
     ): InfrastructureServices.ProjectionCache.CollectPermissions.Result {
         const args: Scripts.Permission.Collect.Props = {
-            permissionRealm: SystemRealm.id,
-            systemRealm: SystemRealm.id,
+            permissionRealm: SYSTEM_REALM_ID,
+            systemRealm: SYSTEM_REALM_ID,
             account: props.account,
             realm: props.realm,
         };

@@ -1,6 +1,10 @@
 {
   "permission": {
     "ACCOUNT_REQUIRED": "An authenticated account is required to perform this operation.",
+    "REALM_REQUIRED": "A realm is required to check permissions.",
+    "REALM_SCOPE_MISSING": "The session does not carry a realm scope.",
+    "REALM_OUT_OF_SESSION_SCOPE": "The requested realm is outside the session's scope.",
+    "GLOBAL_SCOPE_REQUIRES_DIRECT_LOGIN": "Global permissions require a session established via a direct MonadIAM login.",
     "INSUFFICIENT_PERMISSIONS": "Insufficient permissions to perform this operation."
   },
   "auth": {
