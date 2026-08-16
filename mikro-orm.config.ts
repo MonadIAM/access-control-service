@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import path from "path";
 import ms from "ms";
 
-dotenv.config({ path: [".vault.env", ".env"] });
+dotenv.config();
 
 const sslEnabled: boolean = process.env.POSTGRES_SSL === "true";
 const rejectUnauthorized: boolean = process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED === "true";

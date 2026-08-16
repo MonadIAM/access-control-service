@@ -291,9 +291,6 @@ export class EnvironmentVariablesDTO {
     declare public VAULT_PORT: number;
 
     @Validator.IsString()
-    declare public VAULT_ROOT_TOKEN: string;
-
-    @Validator.IsString()
     declare public VAULT_KV_MOUNT: string;
 
     @Validator.IsString()

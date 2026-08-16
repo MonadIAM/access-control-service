@@ -6,7 +6,7 @@ import Redis from "ioredis";
 
 import datasets from "../datasets";
 
-dotenv.config({ path: [".vault.env", ".env"] });
+dotenv.config();
 
 class ProjectionSeed {
     private static readonly redis = new Redis({

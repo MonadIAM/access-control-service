@@ -4,6 +4,7 @@ import { Global, Module } from "@nestjs/common";
 
 import { ChangeLogSubscriber, TransactionManagerModule } from "~common/transaction-manager";
 
+import { CredentialsWatcher } from "./utils/credentials-watcher";
 import { MikroOrmConfig } from "./database.config";
 
 @Global()
@@ -44,7 +45,7 @@ import { MikroOrmConfig } from "./database.config";
             },
         }),
     ],
-    providers: [MikroOrmConfig],
+    providers: [MikroOrmConfig, CredentialsWatcher],
     exports: [MikroOrmConfig],
 })
 export class DatabaseModule {}

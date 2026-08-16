@@ -53,7 +53,7 @@ docker exec -it access-control-service-postgres-replica psql -U lambdius -d acce
 | Command                                              | Makefile                  | Description                                                        |
 |:-----------------------------------------------------|:--------------------------|:-------------------------------------------------------------------|
 | **Infrastructure**                                   |                           |                                                                    |
-| `[ -f .env.example ] && cp -f .env.example .env ...` | `make env`                | Generate `.env` and `.vault.env` from their examples (if present). |
+| `[ -f .env.example ] && cp -f .env.example .env ...` | `make env`                | Generate `.env` from its example (if present).                     |
 | `docker-compose up -d`                               | `make up`                 | Start all services in detached mode.                               |
 | `docker-compose stop`                                | `make stop`               | Stop containers without removing them.                             |
 | `docker-compose down`                                | `make down`               | Stop and remove containers and networks.                           |

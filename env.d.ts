@@ -139,7 +139,7 @@ declare global {
 
             VAULT_IMAGE: string;
             VAULT_PORT: `${number}`;
-            VAULT_ROOT_TOKEN: string;
+            VAULT_APPROLE_NAME: string;
             VAULT_KV_MOUNT: string;
             VAULT_KV_RUNTIME_PATH: string;
             VAULT_KV_REPLICATION_PATH: string;
