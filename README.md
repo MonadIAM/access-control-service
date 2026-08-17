@@ -7,11 +7,12 @@
 
 1. Make sure the [infra](https://github.com/MonadIAM/infra) repository is already running locally.
 
-2. Make sure `DOCKER_NETWORK_KAFKA`, `DOCKER_NETWORK_MONITORING`, and `DOCKER_NETWORK_VAULT` in `.env` match the actual Docker network names (defaults below), or your custom ones.
+2. Make sure `DOCKER_NETWORK_KAFKA`, `DOCKER_NETWORK_MONITORING`, `DOCKER_NETWORK_VAULT`, and `DOCKER_NETWORK_CONSUL` in `.env` match the actual Docker network names (defaults below), or your custom ones.
 
-3. Create shared Docker networks for inter-service communication, monitoring, and Vault:
+3. Create shared Docker networks for inter-service communication, monitoring, Vault, and Consul (shared DCS for Patroni - see the PostgreSQL HA section below):
 ```sh
 docker network create monitoring-network
+docker network create consul-net
 docker network create kafka-net
 docker network create vault-net
 ```
@@ -26,21 +27,24 @@ docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all
 ----
 
 <details>
-<summary><strong>PostgreSQL Streaming Replication</strong></summary>
+<summary><strong>PostgreSQL HA (Patroni)</strong></summary>
 
-The service uses `PostgreSQL` in streaming replication mode to improve read performance.
+PostgreSQL runs as a Patroni-managed cluster instead of a hand-rolled primary/replica pair - automatic failover, no fixed "primary container".
 
 #### Architecture
-- *Primary* (`postgresql-primary`) — main write instance (port `5432`)
-- *Replica* (`postgresql-replica`) — read-only replica (port `5433`)
+- *`postgresql-1` / `postgresql-2`* — symmetric Patroni-managed nodes; which one is leader vs. replica is decided at runtime via the shared Consul cluster (from `infra`), not fixed by container name.
+- *`haproxy-write`* — routes to whichever node currently holds the leader lock (Patroni REST `GET /leader`). This is what `POSTGRES_WRITE_HOST`/`POSTGRES_HOST` point at.
+- *`haproxy-read`* — routes to healthy replicas (Patroni REST `GET /replica`). This is what `POSTGRES_READ_HOST` points at.
+- Both HAProxy instances build their backend list from the Consul service catalog via `consul-template` (`docker/haproxy/*.ctmpl`) - adding/removing a Patroni node needs no HAProxy config change.
+- The Debezium outbox connector keeps a permanent logical replication slot (`outbox_slot`, registered in `docker/postgres/patroni.yml`) so it survives a leader failover without a full resync.
 
-#### Checking replication status
+#### Checking cluster status
 ```sh
-# Check on primary:
-docker exec -it access-control-service-postgres-primary psql -U lambdius -d access-control-service -c "SELECT * FROM pg_stat_replication;"
-# Check on replica:
-docker exec -it access-control-service-postgres-replica psql -U lambdius -d access-control-service -c "SELECT pg_is_in_recovery();"
-# Should return `t` (true), meaning the replica is in recovery mode (read-only).
+# Cluster-wide view (leader/replica roles, lag, timeline) via patronictl, from either node:
+docker exec -it access-control-service-postgres-1 patronictl -c /patroni.yml list
+
+# Per-node role via the Patroni REST API (port 8008 isn't published to the host, so this is run from inside the container):
+docker exec -it access-control-service-postgres-1 curl -s http://127.0.0.1:8008/patroni
 ```
 
 </details>
@@ -78,7 +82,6 @@ docker exec -it access-control-service-postgres-replica psql -U lambdius -d acce
 | **Test**                                             |                           |                                                                    |
 | `npx jest --config ./jest.unit.config.ts`            | `make test`               | Run unit tests.                                                    |
 | `npx jest --config ./jest.unit.config.ts --coverage` | `make coverage`           | Run unit tests with coverage report.                               |
-
 
 </details>
 

@@ -51,6 +51,8 @@ declare global {
             POSTGRES_PORT: `${number}`;
             POSTGRES_PRIMARY_PUBLISHED_PORT: `${number}`;
             POSTGRES_REPLICA_PUBLISHED_PORT: `${number}`;
+            POSTGRES_NODE_1_PUBLISHED_PORT: `${number}`;
+            POSTGRES_NODE_2_PUBLISHED_PORT: `${number}`;
             POSTGRES_SSL: "true" | "false";
             POSTGRES_SSL_REJECT_UNAUTHORIZED: "true" | "false";
             POSTGRES_POOL_MAX: `${number}`;
@@ -79,7 +81,6 @@ declare global {
             // ---------------------------------------------------------------------------
 
             POSTGRES_REPLICATION_USER: string;
-            POSTGRES_REPLICATION_SLOT: string;
 
             // ---------------------------------------------------------------------------
             // Redis

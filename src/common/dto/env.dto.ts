@@ -118,6 +118,14 @@ export class EnvironmentVariablesDTO {
     @Validator.Max(65535)
     declare public POSTGRES_REPLICA_PUBLISHED_PORT: number;
 
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public POSTGRES_NODE_1_PUBLISHED_PORT: number;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    declare public POSTGRES_NODE_2_PUBLISHED_PORT: number;
+
     @Validator.IsBoolean()
     declare public POSTGRES_SSL: boolean;
 
@@ -168,9 +176,6 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     declare public POSTGRES_REPLICATION_USER: string;
-
-    @Validator.IsString()
-    declare public POSTGRES_REPLICATION_SLOT: string;
 
     // ---------------------------------------------------------------------------
     // Redis

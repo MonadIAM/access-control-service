@@ -4,8 +4,14 @@ set -eu
 VAULT_ADDR="${VAULT_ADDR:-http://localhost:8200}"
 export VAULT_ADDR
 
+if [ -z "${VAULT_TOKEN:-}" ] && [ -f ../infra/.env ]; then
+    VAULT_TOKEN="$(grep -E '^VAULT_ROOT_TOKEN=' ../infra/.env | head -n1 | cut -d= -f2- | tr -d '"')"
+    [ -n "$VAULT_TOKEN" ] && export VAULT_TOKEN
+fi
+
 if [ -z "${VAULT_TOKEN:-}" ]; then
-    echo "Set VAULT_TOKEN before running this (e.g. the value of VAULT_ROOT_TOKEN in infra/.env for local dev)." >&2
+    echo "Set VAULT_TOKEN before running this (e.g. the value of VAULT_ROOT_TOKEN in infra/.env for local dev)," >&2
+    echo "or make sure ../infra/.env exists with VAULT_ROOT_TOKEN set - it's picked up automatically." >&2
     exit 1
 fi
 
