@@ -10,10 +10,12 @@ services:
     env_file:
       - .env
     environment:
-      VAULT_ADDR: "http://vault:${VAULT_PORT}"
+      VAULT_ADDR: "https://vault:${VAULT_PORT}"
+      VAULT_CACERT: /vault/tls/ca.crt
       VAULT_TOKEN: ${VAULT_PROVISIONER_TOKEN:?}
     volumes:
       - ./docker/vault/bootstrap.sh:/bootstrap.sh:ro
+      - vault_ca:/vault/tls:ro
       - vault_agent_config:/vault/config
       - vault_agent_bootstrap:/vault/agent-bootstrap
     entrypoint: ["sh", "/bootstrap.sh"]
@@ -28,11 +30,13 @@ services:
       vault-bootstrap:
         condition: service_completed_successfully
     environment:
-      VAULT_ADDR: "http://vault:${VAULT_PORT}"
+      VAULT_ADDR: "https://vault:${VAULT_PORT}"
+      VAULT_CACERT: /vault/tls/ca.crt
     entrypoint: ["vault"]
     command: ["agent", "-config=/agent.hcl"]
     volumes:
       - ./docker/vault/agent.hcl:/agent.hcl:ro
+      - vault_ca:/vault/tls:ro
       - vault_agent_config:/vault/config:ro
       - vault_agent_bootstrap:/vault/agent-bootstrap
       - vault_agent_token:/vault/token
@@ -303,6 +307,9 @@ services:
       start_period: 20s
 
 volumes:
+  vault_ca:
+    external: true
+    name: ${DOCKER_VOLUME_VAULT_CA:-vault_ca}
   vault_agent_bootstrap: {}
   application_secrets: {}
   postgresql_secrets: {}

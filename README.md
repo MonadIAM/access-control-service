@@ -7,7 +7,7 @@
 
 1. Make sure the [infra](https://github.com/MonadIAM/infra) repository is already running locally.
 
-2. Make sure `DOCKER_NETWORK_KAFKA`, `DOCKER_NETWORK_MONITORING`, `DOCKER_NETWORK_VAULT`, and `DOCKER_NETWORK_CONSUL` in `.env` match the actual Docker network names (defaults below), or your custom ones.
+2. Make sure `DOCKER_NETWORK_KAFKA`, `DOCKER_NETWORK_MONITORING`, `DOCKER_NETWORK_VAULT`, `DOCKER_NETWORK_CONSUL`, and `DOCKER_VOLUME_VAULT_CA` in `.env` match the actual shared Docker resource names (defaults below), or your custom ones.
 
 3. Create shared Docker networks for inter-service communication, monitoring, Vault, and Consul (shared DCS for Patroni - see the PostgreSQL HA section below):
 ```sh
