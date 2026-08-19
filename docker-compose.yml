@@ -55,6 +55,18 @@ services:
       retries: 60
       start_period: 5s
 
+  consul-register:
+    image: ${CONSUL_IMAGE:?}
+    container_name: ${SERVICE_NAME}-consul-register
+    environment:
+      CONSUL_HTTP_ADDR: "http://consul:8500"
+    volumes:
+      - ./docker/consul/service.hcl:/consul/service.hcl:ro
+      - ./docker/consul/register-service.sh:/register-service.sh:ro
+    entrypoint: ["sh", "/register-service.sh"]
+    networks:
+      consul_net:
+
   service:
     <<: *base
     build:
@@ -67,7 +79,6 @@ services:
     env_file:
       - .env
     ports:
-      - "${GRPC_PORT}:${GRPC_PORT}"
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
       vault-agent:
@@ -85,6 +96,9 @@ services:
       postgres_net:
       redis_net:
       internal:
+      consul_net:
+        aliases:
+          - access-control-service-connect
     stop_grace_period: 1s
     logging:
       driver: loki
@@ -100,6 +114,32 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+
+  consul-connect:
+    <<: *base
+    image: ${CONSUL_ENVOY_IMAGE:-monadiam-consul-envoy:local}
+    container_name: ${SERVICE_NAME}-connect
+    depends_on:
+      consul-register:
+        condition: service_completed_successfully
+      service:
+        condition: service_started
+    environment:
+      CONSUL_HTTP_ADDR: "http://consul:8500"
+      CONSUL_GRPC_ADDR: "http://consul:8502"
+    command:
+      [
+        "connect",
+        "envoy",
+        "-sidecar-for=access-control-service",
+        "-http-addr=http://consul:8500",
+        "-grpc-addr=http://consul:8502",
+        "-admin-bind=127.0.0.1:19000",
+        "--",
+        "--log-level",
+        "warn",
+      ]
+    network_mode: "service:service"
 
 volumes:
   vault_ca:
@@ -129,3 +169,6 @@ networks:
   vault_net:
     external: true
     name: ${DOCKER_NETWORK_VAULT}
+  consul_net:
+    external: true
+    name: ${DOCKER_NETWORK_CONSUL}

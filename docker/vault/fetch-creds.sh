@@ -4,17 +4,14 @@ set -eu
 VAULT_ADDR="${VAULT_ADDR:-https://localhost:8200}"
 export VAULT_ADDR
 
-VAULT_CACERT="${VAULT_CACERT:-../infra/infrastructure/vault/tls/ca.crt}"
+if [ -z "${VAULT_CACERT:-}" ]; then
+    echo "Set VAULT_CACERT to the Vault CA certificate path before running this." >&2
+    exit 1
+fi
 export VAULT_CACERT
 
-if [ -z "${VAULT_TOKEN:-}" ] && [ -f ../infra/infrastructure/vault/init-keys/root-token ]; then
-    VAULT_TOKEN="$(cat ../infra/infrastructure/vault/init-keys/root-token)"
-    [ -n "$VAULT_TOKEN" ] && export VAULT_TOKEN
-fi
-
 if [ -z "${VAULT_TOKEN:-}" ]; then
-    echo "Set VAULT_TOKEN before running this (e.g. the root token in infra/infrastructure/vault/init-keys/root-token for local dev)," >&2
-    echo "or make sure ../infra/infrastructure/vault/init-keys/root-token exists - it's picked up automatically." >&2
+    echo "Set VAULT_TOKEN before running this." >&2
     exit 1
 fi
 
