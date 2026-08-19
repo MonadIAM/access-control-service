@@ -1,5 +1,8 @@
 .PHONY: coverage swagger postman docs
 
+REDIS_SEED_HOST ?= 127.0.0.1
+REDIS_SEED_PORT ?= 7021
+
 # Infrastructure
 env:
 	[ -f .env.example ] && cp -f .env.example .env || echo '.env.example not found'
@@ -51,7 +54,7 @@ seed-pg:
 seed-redis:
 	CREDS="$$(sh docker/vault/fetch-creds.sh)" || exit 1; \
 	eval "$$CREDS"; \
-	npx ts-node --transpile-only -r tsconfig-paths/register ./src/infrastructure/redis/seeder.ts
+	REDIS_HOST="$(REDIS_SEED_HOST)" REDIS_PORT="$(REDIS_SEED_PORT)" npx ts-node --transpile-only -r tsconfig-paths/register ./src/infrastructure/redis/seeder.ts
 
 # Test
 test:

@@ -10,13 +10,13 @@ dotenv.config();
 
 class ProjectionSeed {
     private static readonly redis = new Redis({
-        port: Number(process.env.REDIS_PUBLISHED_PORT),
+        port: Number(process.env.REDIS_PORT),
+        host: process.env.REDIS_HOST,
         db: Number(process.env.REDIS_DB_CACHE),
         password: process.env.REDIS_PASSWORD,
         enableAutoPipelining: true,
         maxRetriesPerRequest: 20,
         lazyConnect: true,
-        host: "127.0.0.1",
     });
 
     public static async run(): Promise<void> {

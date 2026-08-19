@@ -92,9 +92,6 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    declare public POSTGRES_IMAGE: string;
-
-    @Validator.IsString()
     declare public POSTGRES_DB: string;
 
     @Validator.IsString()
@@ -109,22 +106,6 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     declare public POSTGRES_PORT: number;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public POSTGRES_PRIMARY_PUBLISHED_PORT: number;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public POSTGRES_REPLICA_PUBLISHED_PORT: number;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public POSTGRES_NODE_1_PUBLISHED_PORT: number;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public POSTGRES_NODE_2_PUBLISHED_PORT: number;
 
     @Validator.IsBoolean()
     declare public POSTGRES_SSL: boolean;
@@ -171,18 +152,8 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_READ_POOL_IDLE_MS: StringValue;
 
     // ---------------------------------------------------------------------------
-    // PostgreSQL - replication
-    // ---------------------------------------------------------------------------
-
-    @Validator.IsString()
-    declare public POSTGRES_REPLICATION_USER: string;
-
-    // ---------------------------------------------------------------------------
     // Redis
     // ---------------------------------------------------------------------------
-
-    @Validator.IsString()
-    declare public REDIS_IMAGE: string;
 
     @Validator.IsString()
     declare public REDIS_HOST: string;
@@ -190,10 +161,6 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     declare public REDIS_PORT: number;
-
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    declare public REDIS_PUBLISHED_PORT: number;
 
     @Validator.IsString()
     declare public REDIS_PASSWORD: string;
@@ -222,13 +189,6 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsMsString()
     declare public KAFKA_RETRY_INITIAL_TIME: StringValue;
-
-    @Validator.IsString()
-    declare public KAFKA_CONNECT_IMAGE: string;
-
-    @Validator.IsInt()
-    @Validator.Min(0)
-    declare public KAFKA_CONNECT_PORT: number;
 
     @Validator.IsInt()
     declare public KAFKAJS_NO_PARTITIONER_WARNING: number;
@@ -275,14 +235,16 @@ export class EnvironmentVariablesDTO {
     declare public DOCKER_NETWORK_KAFKA: string;
 
     @Validator.IsString()
-    declare public DOCKER_NETWORK_VAULT: string;
-
-    // ---------------------------------------------------------------------------
-    // Debezium
-    // ---------------------------------------------------------------------------
+    declare public DOCKER_NETWORK_POSTGRES: string;
 
     @Validator.IsString()
-    declare public DEBEZIUM_INIT_IMAGE: string;
+    declare public DOCKER_NETWORK_REDIS: string;
+
+    @Validator.IsString()
+    declare public DOCKER_NETWORK_VAULT: string;
+
+    @Validator.IsString()
+    declare public DOCKER_VOLUME_VAULT_CA: string;
 
     // ---------------------------------------------------------------------------
     // Vault
@@ -296,13 +258,20 @@ export class EnvironmentVariablesDTO {
     declare public VAULT_PORT: number;
 
     @Validator.IsString()
+    declare public VAULT_APPROLE_NAME: string;
+
+    @Validator.IsString()
     declare public VAULT_KV_MOUNT: string;
 
     @Validator.IsString()
     declare public VAULT_KV_RUNTIME_PATH: string;
 
+    // ---------------------------------------------------------------------------
+    // Vault (bootstrap)
+    // ---------------------------------------------------------------------------
+
     @Validator.IsString()
-    declare public VAULT_KV_REPLICATION_PATH: string;
+    declare public VAULT_PROVISIONER_TOKEN: string;
 
     // ---------------------------------------------------------------------------
     // Domain-specific limits

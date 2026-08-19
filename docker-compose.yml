@@ -41,9 +41,6 @@ services:
       - vault_agent_bootstrap:/vault/agent-bootstrap
       - vault_agent_token:/vault/token
       - application_secrets:/secrets/application
-      - postgresql_secrets:/secrets/postgresql
-      - redis_secrets:/secrets/redis
-      - debezium_secrets:/secrets/debezium
     networks:
       vault_net:
       internal:
@@ -51,206 +48,12 @@ services:
       test:
         [
           "CMD-SHELL",
-          "test -f /secrets/application/redis_password && test -f /secrets/postgresql/postgresql_replication_password && test -f /secrets/postgresql/postgresql_password && test -f /secrets/debezium/postgresql_password",
+          "test -f /secrets/application/postgresql_username && test -f /secrets/application/postgresql_password && test -f /secrets/application/redis_password",
         ]
       interval: 5s
       timeout: 3s
       retries: 60
       start_period: 5s
-
-  consul-ready:
-    image: ${CONSUL_IMAGE:?}
-    container_name: ${SERVICE_NAME}-consul-ready
-    entrypoint: ["sh", "-c"]
-    command:
-      - |
-        until consul members -http-addr=http://consul:8500 >/dev/null 2>&1; do
-          echo "Waiting for shared Consul cluster..."
-          sleep 2
-        done
-    networks:
-      consul_net:
-
-  postgresql-1:
-    <<: *base
-    build:
-      context: ./docker/postgres
-      args:
-        POSTGRES_BASE_IMAGE: ${POSTGRES_IMAGE:?}
-    container_name: ${SERVICE_NAME}-postgres-1
-    env_file:
-      - .env
-    environment:
-      PATRONI_NAME: postgresql-1
-      PATRONI_NODE_HOST: ${SERVICE_NAME}-postgres-1
-    ports:
-      - "${POSTGRES_NODE_1_PUBLISHED_PORT}:${POSTGRES_PORT}"
-    depends_on:
-      consul-ready:
-        condition: service_completed_successfully
-      vault-agent:
-        condition: service_healthy
-    volumes:
-      - postgres_1_data:/var/lib/postgresql/data
-      - postgresql_secrets:/vault/secrets:ro
-    networks:
-      internal:
-      consul_net:
-    healthcheck:
-      test: ["CMD", "curl", "-fs", "http://127.0.0.1:8008/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
-
-  postgresql-2:
-    <<: *base
-    build:
-      context: ./docker/postgres
-      args:
-        POSTGRES_BASE_IMAGE: ${POSTGRES_IMAGE:?}
-    container_name: ${SERVICE_NAME}-postgres-2
-    env_file:
-      - .env
-    environment:
-      PATRONI_NAME: postgresql-2
-      PATRONI_NODE_HOST: ${SERVICE_NAME}-postgres-2
-    ports:
-      - "${POSTGRES_NODE_2_PUBLISHED_PORT}:${POSTGRES_PORT}"
-    depends_on:
-      postgresql-1:
-        condition: service_started
-      consul-ready:
-        condition: service_completed_successfully
-      vault-agent:
-        condition: service_healthy
-    volumes:
-      - postgres_2_data:/var/lib/postgresql/data
-      - postgresql_secrets:/vault/secrets:ro
-    networks:
-      internal:
-      consul_net:
-    healthcheck:
-      test: ["CMD", "curl", "-fs", "http://127.0.0.1:8008/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
-
-  haproxy-write:
-    <<: *base
-    build:
-      context: ./docker/haproxy
-      args:
-        HAPROXY_BASE_IMAGE: ${HAPROXY_IMAGE:?}
-    container_name: ${SERVICE_NAME}-haproxy-write
-    command:
-      - "-consul-addr=consul:8500"
-      - "-template=/etc/haproxy-templates/haproxy-write.ctmpl:/usr/local/etc/haproxy/haproxy.cfg"
-      - "-exec=haproxy -f /usr/local/etc/haproxy/haproxy.cfg -db"
-    ports:
-      - "${POSTGRES_PRIMARY_PUBLISHED_PORT}:${POSTGRES_PORT}"
-    depends_on:
-      consul-ready:
-        condition: service_completed_successfully
-    networks:
-      internal:
-      vault_net:
-      consul_net:
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:7000/"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 15s
-
-  haproxy-read:
-    <<: *base
-    build:
-      context: ./docker/haproxy
-      args:
-        HAPROXY_BASE_IMAGE: ${HAPROXY_IMAGE:?}
-    container_name: ${SERVICE_NAME}-haproxy-read
-    command:
-      - "-consul-addr=consul:8500"
-      - "-template=/etc/haproxy-templates/haproxy-read.ctmpl:/usr/local/etc/haproxy/haproxy.cfg"
-      - "-exec=haproxy -f /usr/local/etc/haproxy/haproxy.cfg -db"
-    ports:
-      - "${POSTGRES_REPLICA_PUBLISHED_PORT}:${POSTGRES_PORT}"
-    depends_on:
-      consul-ready:
-        condition: service_completed_successfully
-    networks:
-      internal:
-      consul_net:
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:7000/"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 15s
-
-  redis:
-    <<: *base
-    image: ${REDIS_IMAGE:?}
-    container_name: ${SERVICE_NAME}-redis
-    ports:
-      - "${REDIS_PUBLISHED_PORT}:${REDIS_PORT}"
-    depends_on:
-      vault-agent:
-        condition: service_healthy
-    volumes:
-      - redis_data:/data
-      - redis_secrets:/vault/secrets:ro
-      - ./docker/redis/entrypoint.sh:/usr/local/bin/vault-entrypoint.sh:ro
-    entrypoint: ["sh", "/usr/local/bin/vault-entrypoint.sh"]
-    networks:
-      internal:
-
-  kafka-connect:
-    <<: *base
-    image: ${KAFKA_CONNECT_IMAGE:?}
-    container_name: ${SERVICE_NAME}-kafka-connect
-    ports:
-      - "${KAFKA_CONNECT_PORT}:8083"
-    env_file:
-      - .env
-    environment:
-      BOOTSTRAP_SERVERS: ${KAFKA_BROKER}
-      GROUP_ID: ${SERVICE_NAME}-connect
-      CONFIG_STORAGE_TOPIC: ${SERVICE_NAME}-connect-configs
-      OFFSET_STORAGE_TOPIC: ${SERVICE_NAME}-connect-offsets
-      STATUS_STORAGE_TOPIC: ${SERVICE_NAME}-connect-status
-    depends_on:
-      haproxy-write:
-        condition: service_healthy
-    networks:
-      kafka_net:
-      internal:
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8083/ || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
-
-  debezium-init:
-    image: ${DEBEZIUM_INIT_IMAGE:?}
-    container_name: ${SERVICE_NAME}-debezium-init
-    env_file:
-      - .env
-    volumes:
-      - ./docker/debezium/connector.outbox.json.tpl:/connector.outbox.json.tpl:ro
-      - ./docker/debezium/init.sh:/init.sh:ro
-      - debezium_secrets:/vault/secrets:ro
-    depends_on:
-      kafka-connect:
-        condition: service_healthy
-      vault-agent:
-        condition: service_healthy
-    entrypoint: ["sh", "/init.sh"]
-    networks:
-      internal:
 
   service:
     <<: *base
@@ -267,16 +70,6 @@ services:
       - "${GRPC_PORT}:${GRPC_PORT}"
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
-      haproxy-write:
-        condition: service_healthy
-      haproxy-read:
-        condition: service_healthy
-      redis:
-        condition: service_started
-      kafka-connect:
-        condition: service_started
-      debezium-init:
-        condition: service_completed_successfully
       vault-agent:
         condition: service_healthy
     volumes:
@@ -289,6 +82,8 @@ services:
         aliases:
           - access-control-service
       kafka_net:
+      postgres_net:
+      redis_net:
       internal:
     stop_grace_period: 1s
     logging:
@@ -312,15 +107,9 @@ volumes:
     name: ${DOCKER_VOLUME_VAULT_CA:-vault_ca}
   vault_agent_bootstrap: {}
   application_secrets: {}
-  postgresql_secrets: {}
   vault_agent_config: {}
   vault_agent_token: {}
-  debezium_secrets: {}
-  postgres_1_data: {}
-  postgres_2_data: {}
-  redis_secrets: {}
   uploads_data: {}
-  redis_data: {}
 
 networks:
   internal:
@@ -328,12 +117,15 @@ networks:
   monitoring_net:
     external: true
     name: ${DOCKER_NETWORK_MONITORING}
-  consul_net:
-    external: true
-    name: ${DOCKER_NETWORK_CONSUL}
   kafka_net:
     external: true
     name: ${DOCKER_NETWORK_KAFKA}
+  postgres_net:
+    external: true
+    name: ${DOCKER_NETWORK_POSTGRES}
+  redis_net:
+    external: true
+    name: ${DOCKER_NETWORK_REDIS}
   vault_net:
     external: true
     name: ${DOCKER_NETWORK_VAULT}

@@ -13,7 +13,7 @@ const cqrsEnabled: boolean = process.env.POSTGRES_CQRS_ENABLED === "true";
 
 const host: string = "127.0.0.1";
 
-const port: number = Number(process.env.POSTGRES_PRIMARY_PUBLISHED_PORT);
+const port: number = Number(process.env.POSTGRES_PORT);
 const poolMax: number = Number(cqrsEnabled ? process.env.POSTGRES_WRITE_POOL_MAX : process.env.POSTGRES_POOL_MAX);
 
 const poolIdleTimeoutMillis: Optional<number> = cqrsEnabled

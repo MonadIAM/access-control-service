@@ -43,16 +43,11 @@ declare global {
             // PostgreSQL - common
             // ---------------------------------------------------------------------------
 
-            POSTGRES_IMAGE: string;
             POSTGRES_DB: string;
             POSTGRES_USER: string;
             POSTGRES_PASSWORD: string;
             POSTGRES_HOST: string;
             POSTGRES_PORT: `${number}`;
-            POSTGRES_PRIMARY_PUBLISHED_PORT: `${number}`;
-            POSTGRES_REPLICA_PUBLISHED_PORT: `${number}`;
-            POSTGRES_NODE_1_PUBLISHED_PORT: `${number}`;
-            POSTGRES_NODE_2_PUBLISHED_PORT: `${number}`;
             POSTGRES_SSL: "true" | "false";
             POSTGRES_SSL_REJECT_UNAUTHORIZED: "true" | "false";
             POSTGRES_POOL_MAX: `${number}`;
@@ -77,19 +72,11 @@ declare global {
             POSTGRES_READ_HOST: string;
 
             // ---------------------------------------------------------------------------
-            // PostgreSQL - replication
-            // ---------------------------------------------------------------------------
-
-            POSTGRES_REPLICATION_USER: string;
-
-            // ---------------------------------------------------------------------------
             // Redis
             // ---------------------------------------------------------------------------
 
-            REDIS_IMAGE: string;
             REDIS_HOST: string;
             REDIS_PORT: `${number}`;
-            REDIS_PUBLISHED_PORT: `${number}`;
             REDIS_PASSWORD: string;
             REDIS_DB_CACHE: `${number}`;
             REDIS_DB_LIMITER: `${number}`;
@@ -102,8 +89,6 @@ declare global {
             KAFKA_BROKER: string;
             KAFKA_RETRY_ATTEMPTS: `${number}`;
             KAFKA_RETRY_INITIAL_TIME: StringValue;
-            KAFKA_CONNECT_IMAGE: string;
-            KAFKA_CONNECT_PORT: `${number}`;
             KAFKAJS_NO_PARTITIONER_WARNING: `${number}`;
             KAFKA_DLQ_MAX_RETRIES: `${number}`;
             KAFKA_DLQ_RETRY_BASE_DELAY: StringValue;
@@ -125,14 +110,11 @@ declare global {
             // ---------------------------------------------------------------------------
 
             DOCKER_NETWORK_KAFKA: string;
+            DOCKER_NETWORK_POSTGRES: string;
+            DOCKER_NETWORK_REDIS: string;
             DOCKER_NETWORK_MONITORING: string;
             DOCKER_NETWORK_VAULT: string;
-
-            // ---------------------------------------------------------------------------
-            // Debezium
-            // ---------------------------------------------------------------------------
-
-            DEBEZIUM_INIT_IMAGE: string;
+            DOCKER_VOLUME_VAULT_CA: string;
 
             // ---------------------------------------------------------------------------
             // Vault
@@ -143,7 +125,12 @@ declare global {
             VAULT_APPROLE_NAME: string;
             VAULT_KV_MOUNT: string;
             VAULT_KV_RUNTIME_PATH: string;
-            VAULT_KV_REPLICATION_PATH: string;
+
+            // ---------------------------------------------------------------------------
+            // Vault (bootstrap)
+            // ---------------------------------------------------------------------------
+
+            VAULT_PROVISIONER_TOKEN: string;
 
             // ---------------------------------------------------------------------------
             // Domain-specific limits
