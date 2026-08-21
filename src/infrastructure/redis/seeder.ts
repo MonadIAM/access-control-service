@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { isString } from "class-validator";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import dotenv from "dotenv";
 import Redis from "ioredis";
@@ -14,6 +15,13 @@ class ProjectionSeed {
         host: process.env.REDIS_HOST,
         db: Number(process.env.REDIS_DB_CACHE),
         password: process.env.REDIS_PASSWORD,
+        tls: {
+            rejectUnauthorized: process.env.REDIS_TLS_REJECT_UNAUTHORIZED === "true",
+            cert: readFileSync(process.env.REDIS_TLS_CERT_FILE, "utf8"),
+            key: readFileSync(process.env.REDIS_TLS_KEY_FILE, "utf8"),
+            ca: readFileSync(process.env.REDIS_TLS_CA_FILE, "utf8"),
+            servername: process.env.REDIS_HOST,
+        },
         enableAutoPipelining: true,
         maxRetriesPerRequest: 20,
         lazyConnect: true,

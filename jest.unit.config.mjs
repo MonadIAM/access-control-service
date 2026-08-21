@@ -1,14 +1,8 @@
-/**
- * @jest-config-loader ts-node
- */
-import type { Config } from "@jest/types";
+import common from "./configs/jest.base.config.mjs";
 
-import common from "./configs/jest.base.config";
-
-const config: Config.InitialOptions = {
+const config = {
     ...common,
 
-    // Test file matching patterns
     testMatch: ["**/?*.spec.ts"],
 
     collectCoverageFrom: [

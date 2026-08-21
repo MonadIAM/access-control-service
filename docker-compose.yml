@@ -1,16 +1,16 @@
 x-base: &base
   restart: on-failure
 
-name: ${SERVICE_NAME}
+name: ${SERVICE_NAME:?}
 
 services:
   vault-bootstrap:
     image: ${VAULT_IMAGE:?}
-    container_name: ${SERVICE_NAME}-vault-bootstrap
+    container_name: ${SERVICE_NAME:?}-vault-bootstrap
     env_file:
       - .env
     environment:
-      VAULT_ADDR: "https://vault:${VAULT_PORT}"
+      VAULT_ADDR: "https://vault:${VAULT_PORT:?}"
       VAULT_CACERT: /vault/tls/ca.crt
       VAULT_TOKEN: ${VAULT_PROVISIONER_TOKEN:?}
     volumes:
@@ -24,13 +24,13 @@ services:
 
   vault-agent:
     image: ${VAULT_IMAGE:?}
-    container_name: ${SERVICE_NAME}-vault-agent
+    container_name: ${SERVICE_NAME:?}-vault-agent
     restart: always
     depends_on:
       vault-bootstrap:
         condition: service_completed_successfully
     environment:
-      VAULT_ADDR: "https://vault:${VAULT_PORT}"
+      VAULT_ADDR: "https://vault:${VAULT_PORT:?}"
       VAULT_CACERT: /vault/tls/ca.crt
     entrypoint: ["vault"]
     command: ["agent", "-config=/agent.hcl"]
@@ -57,7 +57,7 @@ services:
 
   consul-register:
     image: ${CONSUL_IMAGE:?}
-    container_name: ${SERVICE_NAME}-consul-register
+    container_name: ${SERVICE_NAME:?}-consul-register
     environment:
       CONSUL_HTTP_ADDR: "http://consul:8500"
     volumes:
@@ -74,18 +74,19 @@ services:
       dockerfile: docker/app/Dockerfile
       args:
         BASE_IMAGE: ${APP_BASE_IMAGE:?}
-    image: ${SERVICE_NAME}:latest
-    container_name: ${SERVICE_NAME}-app
+    image: ${SERVICE_NAME:?}:latest
+    container_name: ${SERVICE_NAME:?}-app
     env_file:
       - .env
     ports:
-      - "${APP_PORT}:${APP_PORT}"
+      - "${APP_PORT:?}:${APP_PORT:?}"
     depends_on:
       vault-agent:
         condition: service_healthy
     volumes:
       - uploads_data:/app/uploads
       - application_secrets:/vault/secrets:ro
+      - service_tls:/tls:ro
       - ./docker/app/entrypoint.sh:/usr/local/bin/vault-entrypoint.sh:ro
     entrypoint: ["sh", "/usr/local/bin/vault-entrypoint.sh"]
     networks:
@@ -103,13 +104,13 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: "http://host.docker.internal:3100/loki/api/v${API_VERSION}/push"
+        loki-url: "http://host.docker.internal:3100/loki/api/v${API_VERSION:?}/push"
         loki-external-labels: "job=access-control-service,container_name={{.Name}}"
         loki-batch-size: "100"
         loki-retries: "3"
         loki-timeout: "1s"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:${APP_PORT}/api/v${API_VERSION}/health/liveness"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:${APP_PORT:?}/api/v${API_VERSION:?}/health/liveness"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -117,8 +118,8 @@ services:
 
   consul-connect:
     <<: *base
-    image: ${CONSUL_ENVOY_IMAGE:-monadiam-consul-envoy:local}
-    container_name: ${SERVICE_NAME}-connect
+    image: ${CONSUL_ENVOY_IMAGE:?}
+    container_name: ${SERVICE_NAME:?}-connect
     depends_on:
       consul-register:
         condition: service_completed_successfully
@@ -141,10 +142,35 @@ services:
       ]
     network_mode: "service:service"
 
+  ops:
+    build:
+      context: .
+      dockerfile: docker/ops/Dockerfile
+      args:
+        BASE_IMAGE: ${APP_BASE_IMAGE:?}
+    image: ${SERVICE_NAME:?}-ops:latest
+    profiles:
+      - ops
+    env_file:
+      - .env
+    depends_on:
+      vault-agent:
+        condition: service_healthy
+    volumes:
+      - ./src/infrastructure/database/migrations:/app/src/infrastructure/database/migrations
+      - application_secrets:/vault/secrets:ro
+      - service_tls:/tls:ro
+    networks:
+      postgres_net:
+      redis_net:
+
 volumes:
+  service_tls:
+    external: true
+    name: ${DOCKER_VOLUME_SERVICE_TLS:?}
   vault_ca:
     external: true
-    name: ${DOCKER_VOLUME_VAULT_CA:-vault_ca}
+    name: ${DOCKER_VOLUME_VAULT_CA:?}
   vault_agent_bootstrap: {}
   application_secrets: {}
   vault_agent_config: {}
@@ -156,19 +182,19 @@ networks:
     driver: bridge
   monitoring_net:
     external: true
-    name: ${DOCKER_NETWORK_MONITORING}
-  kafka_net:
-    external: true
-    name: ${DOCKER_NETWORK_KAFKA}
+    name: ${DOCKER_NETWORK_MONITORING:?}
   postgres_net:
     external: true
-    name: ${DOCKER_NETWORK_POSTGRES}
-  redis_net:
-    external: true
-    name: ${DOCKER_NETWORK_REDIS}
-  vault_net:
-    external: true
-    name: ${DOCKER_NETWORK_VAULT}
+    name: ${DOCKER_NETWORK_POSTGRES:?}
   consul_net:
     external: true
-    name: ${DOCKER_NETWORK_CONSUL}
+    name: ${DOCKER_NETWORK_CONSUL:?}
+  kafka_net:
+    external: true
+    name: ${DOCKER_NETWORK_KAFKA:?}
+  redis_net:
+    external: true
+    name: ${DOCKER_NETWORK_REDIS:?}
+  vault_net:
+    external: true
+    name: ${DOCKER_NETWORK_VAULT:?}

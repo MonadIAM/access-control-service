@@ -14,6 +14,10 @@ export class StringFilterDTO {
 
     @Expose()
     @Validator.IsListOrSingleString()
-    @ApiProperty({ required: true, oneOf: [{ type: "string" }, { type: "array", items: { type: "string" } }] })
+    @ApiProperty({
+        required: true,
+        type: Object,
+        oneOf: [{ type: "array", items: { type: "string" } }, { type: "string" }],
+    })
     declare public value: string | string[];
 }

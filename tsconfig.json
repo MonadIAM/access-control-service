@@ -15,7 +15,6 @@
   },
   "include": [
     "./mikro-orm.config.ts",
-    "./jest.unit.config.ts",
     "./env.d.ts",
     "src/**/*",
     "cli/**/*",

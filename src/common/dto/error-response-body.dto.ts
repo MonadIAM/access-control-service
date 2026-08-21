@@ -10,6 +10,7 @@ class ValidationErrorDetailsDTO {
     @ApiProperty({
         required: false,
         nullable: true,
+        type: Object,
         oneOf: [
             { type: "object", additionalProperties: true },
             { type: "array", items: {} },
@@ -62,7 +63,11 @@ export class ErrorResponseBodyDTO {
 
     @Expose()
     @Validator.IsListOrSingleString()
-    @ApiProperty({ required: true, oneOf: [{ type: "array", items: { type: "string" } }, { type: "string" }] })
+    @ApiProperty({
+        required: true,
+        type: Object,
+        oneOf: [{ type: "array", items: { type: "string" } }, { type: "string" }],
+    })
     declare public message: string | string[];
 
     @Expose()

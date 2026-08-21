@@ -46,14 +46,13 @@ declare global {
             POSTGRES_DB: string;
             POSTGRES_USER: string;
             POSTGRES_PASSWORD: string;
-            POSTGRES_HOST: string;
-            POSTGRES_PORT: `${number}`;
-            POSTGRES_SSL: "true" | "false";
             POSTGRES_SSL_REJECT_UNAUTHORIZED: "true" | "false";
+            POSTGRES_SSL_CA_FILE: string;
+            POSTGRES_SSL_CERT_FILE: string;
+            POSTGRES_SSL_KEY_FILE: string;
             POSTGRES_POOL_MAX: `${number}`;
             POSTGRES_POOL_IDLE_MS: StringValue;
             POSTGRES_LOGGING: "true" | "false";
-            POSTGRES_CQRS_ENABLED: "true" | "false";
 
             // ---------------------------------------------------------------------------
             // PostgreSQL - write
@@ -62,6 +61,7 @@ declare global {
             POSTGRES_WRITE_POOL_MAX: `${number}`;
             POSTGRES_WRITE_POOL_IDLE_MS: StringValue;
             POSTGRES_WRITE_HOST: string;
+            POSTGRES_WRITE_PORT: `${number}`;
 
             // ---------------------------------------------------------------------------
             // PostgreSQL - read
@@ -70,6 +70,7 @@ declare global {
             POSTGRES_READ_POOL_MAX: `${number}`;
             POSTGRES_READ_POOL_IDLE_MS: StringValue;
             POSTGRES_READ_HOST: string;
+            POSTGRES_READ_PORT: `${number}`;
 
             // ---------------------------------------------------------------------------
             // Redis
@@ -78,6 +79,10 @@ declare global {
             REDIS_HOST: string;
             REDIS_PORT: `${number}`;
             REDIS_PASSWORD: string;
+            REDIS_TLS_REJECT_UNAUTHORIZED: "true" | "false";
+            REDIS_TLS_CA_FILE: string;
+            REDIS_TLS_CERT_FILE: string;
+            REDIS_TLS_KEY_FILE: string;
             REDIS_DB_CACHE: `${number}`;
             REDIS_DB_LIMITER: `${number}`;
             REDIS_DB_QUEUE: `${number}`;
@@ -110,11 +115,12 @@ declare global {
             // ---------------------------------------------------------------------------
 
             DOCKER_NETWORK_KAFKA: string;
+            DOCKER_NETWORK_MONITORING: string;
             DOCKER_NETWORK_POSTGRES: string;
             DOCKER_NETWORK_REDIS: string;
-            DOCKER_NETWORK_MONITORING: string;
             DOCKER_NETWORK_VAULT: string;
             DOCKER_VOLUME_VAULT_CA: string;
+            DOCKER_VOLUME_SERVICE_TLS: string;
 
             // ---------------------------------------------------------------------------
             // Vault

@@ -1,16 +1,25 @@
 import { ConfigService } from "@nestjs/config";
 import { RedisOptions } from "ioredis";
+import { readFileSync } from "fs";
 
 export class RedisConfig {
     private constructor() {}
 
     private static getBaseOptions(config: ConfigService): RedisOptions {
+        const rejectUnauthorized = config.getOrThrow<string>("REDIS_TLS_REJECT_UNAUTHORIZED") === "true";
+        const servername = config.getOrThrow<string>("REDIS_HOST");
+
+        const cert = readFileSync(config.getOrThrow<string>("REDIS_TLS_CERT_FILE"), "utf8");
+        const key = readFileSync(config.getOrThrow<string>("REDIS_TLS_KEY_FILE"), "utf8");
+        const ca = readFileSync(config.getOrThrow<string>("REDIS_TLS_CA_FILE"), "utf8");
+
         return {
+            tls: { rejectUnauthorized, servername, cert, key, ca },
+            password: config.getOrThrow<string>("REDIS_PASSWORD"),
             port: +config.getOrThrow<number>("REDIS_PORT"),
             host: config.getOrThrow<string>("REDIS_HOST"),
-            password: config.getOrThrow<string>("REDIS_PASSWORD"),
-            lazyConnect: true,
             enableAutoPipelining: true,
+            lazyConnect: true,
             retryStrategy: (attempt): number => {
                 return Math.min(100 * Math.pow(2, attempt), 2000);
             },

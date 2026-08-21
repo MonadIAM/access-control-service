@@ -109,16 +109,27 @@ declare global {
 
             interface InternalContract {
                 resolveHost: ResolveHost.Signature;
+                resolvePort: ResolvePort.Signature;
             }
 
             namespace ResolveHost {
                 type Props = {
                     kind: ORM.ConnectionKind;
                     config: ConfigService;
-                    cqrsEnabled: boolean;
                 };
 
                 type Result = string;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace ResolvePort {
+                type Props = {
+                    kind: ORM.ConnectionKind;
+                    config: ConfigService;
+                };
+
+                type Result = number;
 
                 type Signature = (props: Props) => Result;
             }

@@ -27,22 +27,11 @@ import { MikroOrmConfig } from "./database.config";
             contextName: "read",
             imports: [ConfigModule],
             inject: [MikroOrmConfig, ConfigService],
-            useFactory: (orm: MikroOrmConfig, config: ConfigService) => {
-                const cqrsEnabled = config.getOrThrow<string>("POSTGRES_CQRS_ENABLED") === "true";
-                if (cqrsEnabled) {
-                    return {
-                        ...orm.buildOptions({ kind: "read", config }),
-                        registerRequestContext: false,
-                        autoLoadEntities: true,
-                    };
-                } else {
-                    return {
-                        ...orm.buildOptions({ kind: "write", config }),
-                        registerRequestContext: false,
-                        autoLoadEntities: true,
-                    };
-                }
-            },
+            useFactory: (orm: MikroOrmConfig, config: ConfigService) => ({
+                ...orm.buildOptions({ kind: "read", config }),
+                registerRequestContext: false,
+                autoLoadEntities: true,
+            }),
         }),
     ],
     providers: [MikroOrmConfig, CredentialsWatcher],
