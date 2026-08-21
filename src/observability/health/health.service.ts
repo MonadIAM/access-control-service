@@ -10,6 +10,7 @@ import {
 
 import { DatabaseHealthIndicator } from "~infrastructure/database/database.health";
 import { RedisHealthIndicator } from "~infrastructure/redis/redis.health";
+import { KafkaUtils } from "~infrastructure/kafka/utils";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class HealthService {
@@ -48,12 +49,8 @@ export class HealthService {
 
     private checkKafka(): Promise<HealthIndicatorResult<"kafka">> {
         return this.microservice.pingCheck("kafka", {
+            options: { client: KafkaUtils.buildClientConfig(this.config) },
             transport: Transport.KAFKA,
-            options: {
-                client: {
-                    brokers: [this.config.getOrThrow<string>("KAFKA_BROKER")],
-                },
-            },
         });
     }
 }

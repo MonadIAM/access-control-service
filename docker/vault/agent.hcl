@@ -40,3 +40,9 @@ template {
     destination = "/secrets/application/redis_password"
     perms       = "0440"
 }
+
+template {
+    contents    = "{{ with secret \"kv/data/access-control-service/runtime\" }}{{ .Data.data.kafka_sasl_password }}{{ end }}"
+    destination = "/secrets/application/kafka_sasl_password"
+    perms       = "0440"
+}

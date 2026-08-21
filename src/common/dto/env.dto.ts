@@ -200,6 +200,24 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public KAFKA_BROKER: string;
 
+    @Validator.IsBoolean()
+    declare public KAFKA_SSL_REJECT_UNAUTHORIZED: boolean;
+
+    @Validator.IsString()
+    declare public KAFKA_SSL_CA_FILE: string;
+
+    @Validator.IsString()
+    declare public KAFKA_SSL_CERT_FILE: string;
+
+    @Validator.IsString()
+    declare public KAFKA_SSL_KEY_FILE: string;
+
+    @Validator.IsString()
+    declare public KAFKA_SASL_USERNAME: string;
+
+    @Validator.IsString()
+    declare public KAFKA_SASL_PASSWORD_FILE: string;
+
     @Validator.IsPositiveInt()
     declare public KAFKA_RETRY_ATTEMPTS: number;
 

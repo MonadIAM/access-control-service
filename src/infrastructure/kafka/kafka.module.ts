@@ -4,6 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
 import { KAFKA_SERVICE, KAFKA_CONFIG } from "./tokens";
+import { KafkaUtils } from "./utils";
 
 @Global()
 @Module({
@@ -15,13 +16,8 @@ import { KAFKA_SERVICE, KAFKA_CONFIG } from "./tokens";
                 useFactory: (config: ConfigService) => ({
                     transport: Transport.KAFKA,
                     options: {
-                        client: {
-                            clientId: config.getOrThrow("SERVICE_NAME"),
-                            brokers: [config.getOrThrow("KAFKA_BROKER")],
-                        },
-                        consumer: {
-                            groupId: `${config.getOrThrow("SERVICE_NAME")}-producer-client`,
-                        },
+                        consumer: { groupId: `${config.getOrThrow("SERVICE_NAME")}-producer` },
+                        client: KafkaUtils.buildClientConfig(config, { withClientId: true }),
                     },
                 }),
             },
@@ -35,14 +31,14 @@ import { KAFKA_SERVICE, KAFKA_CONFIG } from "./tokens";
                 transport: Transport.KAFKA,
                 options: {
                     client: {
-                        brokers: [config.getOrThrow("KAFKA_BROKER")],
+                        ...KafkaUtils.buildClientConfig(config),
                         retry: {
                             initialRetryTime: ms(config.getOrThrow<StringValue>("KAFKA_RETRY_INITIAL_TIME")),
                             retries: config.getOrThrow<number>("KAFKA_RETRY_ATTEMPTS"),
                         },
                     },
                     consumer: {
-                        groupId: `${config.getOrThrow("SERVICE_NAME")}-consumer-server`,
+                        groupId: `${config.getOrThrow("SERVICE_NAME")}-consumer`,
                         allowAutoTopicCreation: false,
                     },
                 },

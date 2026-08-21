@@ -92,6 +92,12 @@ declare global {
             // ---------------------------------------------------------------------------
 
             KAFKA_BROKER: string;
+            KAFKA_SSL_REJECT_UNAUTHORIZED: "true" | "false";
+            KAFKA_SSL_CA_FILE: string;
+            KAFKA_SSL_CERT_FILE: string;
+            KAFKA_SSL_KEY_FILE: string;
+            KAFKA_SASL_USERNAME: string;
+            KAFKA_SASL_PASSWORD_FILE: string;
             KAFKA_RETRY_ATTEMPTS: `${number}`;
             KAFKA_RETRY_INITIAL_TIME: StringValue;
             KAFKAJS_NO_PARTITIONER_WARNING: `${number}`;
