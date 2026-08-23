@@ -1,4 +1,4 @@
-import importPlugin from "eslint-plugin-import";
+import { importX } from "eslint-plugin-import-x";
 import tslint from "typescript-eslint";
 import globals from "globals";
 
@@ -33,11 +33,11 @@ export default [
             }
         },
         plugins: {
-            import: importPlugin
+            "import-x": importX
         },
         rules: {
-            "import/prefer-default-export": "off",
-            "import/order": [
+            "import-x/prefer-default-export": "off",
+            "import-x/order": [
                 "error",
                 {
                     groups: [

@@ -23,8 +23,6 @@ const config: KnipConfig = {
         "@mikro-orm/cli",
         "@fastify/swagger-ui",
         "@fastify/swagger",
-        "@jest/globals",
-        "fastify",
         "ts-jest",
     ],
 };

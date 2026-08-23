@@ -5,7 +5,7 @@
 <details>
 <summary><strong>Environment Setup</strong></summary>
 
-> The application requires `Node.js v22.17.0` and `npm v11.6.2`;
+> The application requires `Node.js v24.18.0` and `pnpm v11.22.0`;
 > other versions are not supported.
 
 [VSCode](https://code.visualstudio.com/) is the recommended editor for development.

@@ -30,13 +30,13 @@ prune:
 
 # Development
 lint:
-	npm run lint
+	pnpm run lint
 knip:
-	npm run knip
+	pnpm run knip
 swagger:
-	npm run swagger
+	pnpm run swagger
 postman:
-	npm run postman
+	pnpm run postman
 docs: swagger postman
 
 # Database

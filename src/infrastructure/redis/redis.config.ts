@@ -1,5 +1,5 @@
 import { ConfigService } from "@nestjs/config";
-import { RedisOptions } from "ioredis";
+import { RedisOptions } from "bullmq";
 import { readFileSync } from "fs";
 
 export class RedisConfig {
@@ -23,7 +23,7 @@ export class RedisConfig {
             retryStrategy: (attempt): number => {
                 return Math.min(100 * Math.pow(2, attempt), 2000);
             },
-            reconnectOnError: (error): boolean => {
+            reconnectOnError: (error: Error): boolean => {
                 const message = error.message.toLowerCase();
                 return message.includes("read only") ?? message.includes("econnreset");
             },

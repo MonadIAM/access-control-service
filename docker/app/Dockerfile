@@ -6,20 +6,24 @@ FROM ${BASE_IMAGE} AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+RUN corepack enable && corepack prepare pnpm@11.22.0 --activate
 
-RUN --mount=type=cache,target=/root/.npm npm ci
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile
 
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # --- Stage 2: Runtime ---
 FROM ${BASE_IMAGE} AS runner
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
+RUN corepack enable && corepack prepare pnpm@11.22.0 --activate
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile --prod
 
 COPY --from=builder /app/dist ./dist
 
