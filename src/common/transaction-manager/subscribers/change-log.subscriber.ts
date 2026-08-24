@@ -1,10 +1,12 @@
 import { ChangeLogTopicAction } from "@monadiam/shared";
 import { ChangeSetType } from "@mikro-orm/core";
 import { ConfigService } from "@nestjs/config";
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 
 import { ChangeLog, AuditLog, Outbox } from "~common/transaction-manager/entities";
+import { LOG_MASKING_SERVICE } from "~common/transaction-manager/services";
 import { OperationContext } from "~common/transaction-manager/utilities";
+import { DeltaChanges } from "~common/transaction-manager/value-objects";
 import { KafkaTopic } from "~context/enums";
 
 const EXCLUDED_ENTITIES = new Set([AuditLog.name, ChangeLog.name, Outbox.name]);
@@ -14,33 +16,40 @@ export class ChangeLogSubscriber implements ORM.EventSubscriber {
     private readonly serviceName: string;
 
     public constructor(
+        @Inject(LOG_MASKING_SERVICE)
+        private readonly logMaskingService: TransactionManager.LogMasking.Contract,
         private readonly operationContext: OperationContext,
         private readonly configService: ConfigService,
     ) {
         this.serviceName = this.configService.getOrThrow<string>("SERVICE_NAME");
     }
 
-    public onFlush({ uow, em }: ORM.FlushEventArgs): void {
+    public async onFlush({ uow, em }: ORM.FlushEventArgs): Promise<void> {
         const context = this.operationContext.get();
         if (context?.changeLogEnabled) {
             const changeSets = uow.getChangeSets().filter((set) => !EXCLUDED_ENTITIES.has(set.meta.className));
 
             if (changeSets.length) {
-                for (const changeSet of changeSets) {
+                for await (const changeSet of changeSets) {
                     const delta = this.buildDelta(changeSet);
                     if (Object.keys(delta).length) {
-                        const record = new ChangeLog({
+                        const maskedDelta = await this.logMaskingService.maskChangeLog({ delta });
+
+                        const entity = new ChangeLog({
                             entity: String(changeSet.getPrimaryKey()),
                             entityType: changeSet.meta.className,
                             auditEntry: context.auditEntry,
                             changeType: changeSet.type,
-                            delta,
+                            delta: maskedDelta,
                         });
 
-                        em.persist(record);
-                        uow.computeChangeSet(record);
+                        const hash = await this.logMaskingService.sign({ entity });
+                        entity.sign(hash);
 
-                        const outbox = this.buildChangeLogArchiveOutbox(record);
+                        em.persist(entity);
+                        uow.computeChangeSet(entity);
+
+                        const outbox = this.buildChangeLogArchiveOutbox(entity);
                         em.persist(outbox);
                         uow.computeChangeSet(outbox);
                     }
@@ -49,8 +58,8 @@ export class ChangeLogSubscriber implements ORM.EventSubscriber {
         }
     }
 
-    private buildDelta(changeSet: TransactionManager.ChangeLogSubscriber.BuildDelta): DeltaChanges {
-        const delta: DeltaChanges = {};
+    private buildDelta(changeSet: TransactionManager.ChangeLogSubscriber.BuildDelta): ValueObjects.DeltaChanges {
+        const delta: ValueObjects.DeltaChanges.ConstructorProps = {};
 
         switch (changeSet.type) {
             case ChangeSetType.CREATE: {
@@ -78,7 +87,7 @@ export class ChangeLogSubscriber implements ORM.EventSubscriber {
             }
         }
 
-        return delta;
+        return new DeltaChanges(delta);
     }
 
     private buildChangeLogArchiveOutbox(record: ChangeLog): Outbox {

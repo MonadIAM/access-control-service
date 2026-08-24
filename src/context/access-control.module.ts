@@ -5,7 +5,6 @@ import { Module } from "@nestjs/common";
 
 import { TransactionManagerModule } from "~common/transaction-manager";
 import { FormatResponseInterceptor } from "~common/interceptors";
-import { COMMON_SERVICES } from "~common/services";
 
 import { ReauthenticationGuard, PermissionGuard, AuthnGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
@@ -27,7 +26,6 @@ import { QUERIES } from "./application/queries";
     providers: [
         ...INFRASTRUCTURE_SERVICES,
         ...DOMAIN_SERVICES,
-        ...COMMON_SERVICES,
         ...REPOSITORIES,
         ...SCHEDULERS,
         ...COMMANDS,

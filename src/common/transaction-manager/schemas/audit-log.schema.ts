@@ -36,6 +36,9 @@ export const AuditLogSchema = new EntitySchema<AuditLog>({
 
         input: { type: "jsonb", nullable: true },
 
+        signature: { type: "text" },
+        keyVersion: { type: "integer" },
+
         createdAt: { type: "timestamptz", length: 3 },
     },
 });

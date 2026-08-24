@@ -1,13 +1,14 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { AuditLogTopicAction } from "@monadiam/shared";
 import { ConfigService } from "@nestjs/config";
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 
 import { ExceptionMapper } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
 
 import { OperationContext } from "../utilities/operation-context";
 import { AuditLog, Outbox } from "../entities";
+import { LOG_MASKING_SERVICE } from "./tokens";
 
 @Injectable()
 export class TransactionalService implements TransactionManager.Service.Contract {
@@ -16,6 +17,8 @@ export class TransactionalService implements TransactionManager.Service.Contract
     public constructor(
         @InjectEntityManager("write")
         private readonly writeManager: ORM.EntityManager,
+        @Inject(LOG_MASKING_SERVICE)
+        private readonly logMaskingService: TransactionManager.LogMasking.Contract,
         private readonly operationContext: OperationContext,
         private readonly configService: ConfigService,
     ) {
@@ -28,11 +31,18 @@ export class TransactionalService implements TransactionManager.Service.Contract
             const outbox = new Outbox(params);
 
             if (params.audit) {
-                const auditEntry = new AuditLog(params.audit);
-                return await this.operationContext.run({ changeLogEnabled: false, auditEntry: auditEntry.id }, () =>
+                const entity = new AuditLog(params.audit);
+                return await this.operationContext.run({ changeLogEnabled: false, auditEntry: entity.id }, () =>
                     writeManager.transactional(async (transaction) => {
-                        transaction.persist(auditEntry);
-                        transaction.persist(this.buildAuditLogArchiveOutbox(auditEntry));
+                        if (entity.input) {
+                            entity.input = await this.logMaskingService.maskAuditLog({ input: entity.input });
+                        }
+
+                        const hash = await this.logMaskingService.sign({ entity });
+                        entity.sign(hash);
+
+                        transaction.persist(entity);
+                        transaction.persist(this.buildAuditLogArchiveOutbox(entity));
                         transaction.persist(outbox);
                         await transaction.flush();
                     }),
@@ -55,17 +65,24 @@ export class TransactionalService implements TransactionManager.Service.Contract
             const writeManager = this.writeManager.fork();
 
             if (params.audit) {
-                const auditEntry = new AuditLog(params.audit);
+                const entity = new AuditLog(params.audit);
 
                 return await this.operationContext.run(
                     {
                         changeLogEnabled: params.changeLog ?? false,
-                        auditEntry: auditEntry.id,
+                        auditEntry: entity.id,
                     },
                     async () => {
                         return await writeManager.transactional(async (transaction) => {
-                            transaction.persist(auditEntry);
-                            transaction.persist(this.buildAuditLogArchiveOutbox(auditEntry));
+                            if (entity.input) {
+                                entity.input = await this.logMaskingService.maskAuditLog({ input: entity.input });
+                            }
+
+                            const hash = await this.logMaskingService.sign({ entity });
+                            entity.sign(hash);
+
+                            transaction.persist(entity);
+                            transaction.persist(this.buildAuditLogArchiveOutbox(entity));
 
                             return await this.executeWithEffects({ transaction, params });
                         });

@@ -7,7 +7,7 @@ import { ChangeLog } from "./change-log.entity";
 const AUDIT_ENTRY_ID = "00000000-0000-4000-8000-000000000001";
 const ENTITY_ID = "00000000-0000-4000-8000-000000000002";
 
-const BASE_DELTA: DeltaChanges = {
+const BASE_DELTA: ValueObjects.DeltaChanges.Contract = {
     name: { old: "Old Name", new: "New Name" },
 };
 

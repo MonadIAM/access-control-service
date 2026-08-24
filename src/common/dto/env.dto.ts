@@ -290,12 +290,24 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public VAULT_IMAGE: string;
 
+    @Validator.IsString()
+    declare public VAULT_AGENT_SOCKET_PATH: string;
+
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     declare public VAULT_PORT: number;
 
     @Validator.IsString()
     declare public VAULT_APPROLE_NAME: string;
+
+    @Validator.IsString()
+    declare public VAULT_TRANSIT_MOUNT: string;
+
+    @Validator.IsString()
+    declare public VAULT_TRANSIT_AUDIT_MASK_KEY: string;
+
+    @Validator.IsString()
+    declare public VAULT_TRANSIT_AUDIT_LOG_KEY: string;
 
     @Validator.IsString()
     declare public VAULT_KV_MOUNT: string;

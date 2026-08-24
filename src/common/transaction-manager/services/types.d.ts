@@ -2,6 +2,111 @@ import { KafkaTopic } from "~context/enums";
 
 declare global {
     namespace TransactionManager {
+        namespace LogMasking {
+            type FieldClassification = Record<DataClassification, string[]>;
+            type DataClassification = "SECRET" | "PII";
+
+            type AuditTarget = {
+                path: (string | number)[];
+                value: string;
+            };
+
+            type ChangeTarget = {
+                kind: "old" | "new";
+                field: string;
+                value: string;
+            };
+
+            interface Contract extends PublicContract, InternalContract {}
+
+            interface PublicContract {
+                maskChangeLog: MaskChangeLog.Signature;
+                maskAuditLog: MaskAuditLog.Signature;
+                sign: Sign.Signature;
+            }
+
+            namespace MaskAuditLog {
+                type Props = {
+                    input: UnknownObject;
+                };
+
+                type Result = Promise<UnknownObject>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace MaskChangeLog {
+                type Props = {
+                    delta: ValueObjects.DeltaChanges;
+                };
+
+                type Result = Promise<ValueObjects.DeltaChanges>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Sign {
+                type Props = {
+                    entity: SystemEntities.AuditLog | SystemEntities.ChangeLog;
+                };
+
+                type Result = Promise<{
+                    keyVersion: number;
+                    signature: string;
+                }>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            interface InternalContract {
+                normalize: Normalize.Signature;
+                unflatten: Unflatten.Signature;
+                flatten: Flatten.Signature;
+                mask: Mask.Signature;
+            }
+
+            namespace Normalize {
+                type Props = string;
+
+                type Result = string;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Unflatten {
+                type Props = {
+                    path: (string | number)[];
+                    value: unknown;
+                    node: unknown;
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Flatten {
+                type Props = {
+                    path?: (string | number)[];
+                    targets: AuditTarget[];
+                    sensitive?: boolean;
+                    node: unknown;
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Mask {
+                type Props = string;
+
+                type Result = string;
+
+                type Signature = (props: Props) => Result;
+            }
+        }
+
         namespace Service {
             interface Contract extends PublicContract, InternalContract {}
 

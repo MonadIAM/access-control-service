@@ -29,6 +29,9 @@ export const ChangeLogSchema = new EntitySchema<ChangeLog>({
 
         delta: { type: "jsonb" },
 
+        signature: { type: "text" },
+        keyVersion: { type: "integer" },
+
         createdAt: { type: "timestamptz", length: 3 },
     },
 });

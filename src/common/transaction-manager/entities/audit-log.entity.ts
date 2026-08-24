@@ -14,6 +14,8 @@ export class AuditLog {
     public userAgent?: string;
 
     public input?: UnknownObject;
+    public keyVersion?: number;
+    public signature?: string;
 
     public constructor(props: SystemEntities.AuditLog.ConstructorProps) {
         this.id = randomUUID();
@@ -29,5 +31,10 @@ export class AuditLog {
         this.ip = props.context.ip;
 
         this.input = props.input;
+    }
+
+    public sign(props: SystemEntities.AuditLog.Sign.Props): SystemEntities.AuditLog.Sign.Result {
+        this.keyVersion = props.keyVersion;
+        this.signature = props.signature;
     }
 }

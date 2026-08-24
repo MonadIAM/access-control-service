@@ -23,6 +23,15 @@ auto_auth {
     }
 }
 
+cache {
+    use_auto_auth_token = true
+}
+
+listener "unix" {
+    address     = "/vault/proxy/agent.sock"
+    tls_disable = true
+}
+
 template {
     contents    = "{{ with secret \"database/creds/access-control-service-app\" }}{{ .Data.username }}{{ end }}"
     destination = "/secrets/application/postgresql_username"

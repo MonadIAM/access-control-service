@@ -47,7 +47,7 @@ jobs:
         run: pnpm run knip
 
       - name: Run unit tests
-        run: NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config ./jest.unit.config.ts
+        run: NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config ./jest.unit.config.mjs
 
   build:
     runs-on: ubuntu-latest

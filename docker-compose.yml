@@ -41,6 +41,7 @@ services:
       - vault_agent_bootstrap:/vault/agent-bootstrap
       - vault_agent_token:/vault/token
       - application_secrets:/secrets/application
+      - vault_agent_proxy:/vault/proxy
     networks:
       vault_net:
       internal:
@@ -86,6 +87,7 @@ services:
     volumes:
       - uploads_data:/app/uploads
       - application_secrets:/vault/secrets:ro
+      - vault_agent_proxy:/vault/proxy:ro
       - service_tls:/tls:ro
       - ./docker/app/entrypoint.sh:/usr/local/bin/vault-entrypoint.sh:ro
     entrypoint: ["sh", "/usr/local/bin/vault-entrypoint.sh"]
@@ -175,6 +177,7 @@ volumes:
   application_secrets: {}
   vault_agent_config: {}
   vault_agent_token: {}
+  vault_agent_proxy: {}
   uploads_data: {}
 
 networks:

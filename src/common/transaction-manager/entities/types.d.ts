@@ -5,8 +5,6 @@ import { AuditLog as AuditLogEntity } from "./audit-log.entity";
 import { Outbox as OutboxEntity } from "./outbox.entity";
 
 declare global {
-    type DeltaChanges = Record<string, { old: unknown; new: unknown }>;
-
     namespace SystemEntities {
         namespace AuditLog {
             type ConstructorProps = {
@@ -17,6 +15,17 @@ declare global {
                 input?: UnknownObject;
                 context: Extract.Meta;
             };
+
+            namespace Sign {
+                type Props = {
+                    keyVersion: number;
+                    signature: string;
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
+            }
         }
 
         type AuditLog = AuditLogEntity;
@@ -27,8 +36,19 @@ declare global {
                 changeType: ORM.ChangeSetType;
                 entityType: string;
                 entity: string;
-                delta: DeltaChanges;
+                delta: ValueObjects.DeltaChanges;
             };
+
+            namespace Sign {
+                type Props = {
+                    keyVersion: number;
+                    signature: string;
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
+            }
         }
 
         type ChangeLog = ChangeLogEntity;
