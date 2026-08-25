@@ -88,6 +88,19 @@ export class EnvironmentVariablesDTO {
     declare public OTEL_LOGS_EXPORTER: "none" | "otlp" | "console";
 
     // ---------------------------------------------------------------------------
+    // Loki
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsBoolean()
+    declare public LOKI_ENABLED: boolean;
+
+    @Validator.IsString()
+    declare public LOKI_URL: string;
+
+    @Validator.IsPositiveInt()
+    declare public LOKI_BATCH_INTERVAL: number;
+
+    // ---------------------------------------------------------------------------
     // PostgreSQL - common
     // ---------------------------------------------------------------------------
 

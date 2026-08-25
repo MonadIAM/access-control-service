@@ -103,14 +103,6 @@ services:
         aliases:
           - access-control-service-connect
     stop_grace_period: 1s
-    logging:
-      driver: loki
-      options:
-        loki-url: "http://host.docker.internal:3100/loki/api/v${API_VERSION:?}/push"
-        loki-external-labels: "job=access-control-service,container_name={{.Name}}"
-        loki-batch-size: "100"
-        loki-retries: "3"
-        loki-timeout: "1s"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:${APP_PORT:?}/api/v${API_VERSION:?}/health/liveness"]
       interval: 30s
