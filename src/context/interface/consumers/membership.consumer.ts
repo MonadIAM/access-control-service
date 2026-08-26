@@ -3,11 +3,10 @@ import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { MembershipTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
+import { MEMBERSHIP_COMMANDS } from "~context/application/commands";
 import { KafkaUtils, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
-
-import { MEMBERSHIP_COMMANDS } from "../commands";
 
 @Controller()
 export class MembershipConsumer implements Consumers.Membership.Contract, OnModuleInit {

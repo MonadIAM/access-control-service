@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/domain/repositories";
+import { ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberQueries implements Queries.RoleConflictMember.Contract {

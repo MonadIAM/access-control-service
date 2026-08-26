@@ -1,5 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { ROLE_CONFLICT_MEMBER_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ActionType, EntityType } from "~context/enums";
 import { Exception } from "~common/exceptions";
@@ -7,9 +8,7 @@ import {
     ROLE_CONFLICT_MEMBER_REPOSITORY,
     ROLE_CONFLICT_GROUP_REPOSITORY,
     ROLE_REPOSITORY,
-} from "~context/domain/repositories";
-
-import { ROLE_CONFLICT_MEMBER_SERVICE } from "../services";
+} from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberCommands implements Commands.RoleConflictMember.Contract {

@@ -1,8 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/infrastructure/repositories";
 import { Exception } from "~common/exceptions";
 
-import { PERMISSION_OVERRIDE_REPOSITORY } from "../repositories";
 import { PermissionOverride } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })

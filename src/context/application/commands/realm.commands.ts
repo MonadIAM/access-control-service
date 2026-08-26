@@ -1,12 +1,12 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { AccessCacheTopicAction, RealmTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
+import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { REALM_REPOSITORY } from "~context/domain/repositories";
+import { REALM_SERVICE } from "~context/domain/services";
 import { Exception } from "~common/exceptions";
 
-import { REALM_SERVICE } from "../services";
 import { RealmMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

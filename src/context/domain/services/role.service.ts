@@ -1,10 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
+import { ROLE_CLOSURE_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { RoleArchetype, MoveMode } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
-import { ROLE_CLOSURE_REPOSITORY, ROLE_REPOSITORY } from "../repositories";
 import { Role } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })

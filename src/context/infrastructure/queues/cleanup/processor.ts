@@ -2,14 +2,14 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Job } from "bullmq";
 
-import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE } from "~context/application/services";
+import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CleanupJob } from "~context/enums";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_COMMANDS,
     ROLE_DELEGATION_POLICY_COMMANDS,
     PERMISSION_OVERRIDE_COMMANDS,
-} from "~context/interface/commands";
+} from "~context/application/commands";
 
 import { CLEANUP_QUEUE } from "../tokens";
 import { BullQueue } from "../enums";

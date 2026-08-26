@@ -3,9 +3,9 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
 import { MonitoringInterceptor } from "~common/interceptors";
+import { REALM_QUERIES } from "~context/application/queries";
 import { PermissionCode } from "~context/enums";
 
-import { REALM_QUERIES } from "../queries";
 import {
     ManageGetLookupListQueryDTO,
     ManageGetListQueryDTO,

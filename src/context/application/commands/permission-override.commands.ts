@@ -1,14 +1,18 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { PERMISSION_OVERRIDE_REPOSITORY, PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/domain/repositories";
 import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
+import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
 import { CONSUMER_META, SYSTEM_ACCOUNT_ID } from "~context/constants";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
+import {
+    PERMISSION_OVERRIDE_REPOSITORY,
+    PERMISSION_REPOSITORY,
+    REALM_REPOSITORY,
+} from "~context/infrastructure/repositories";
 
-import { PERMISSION_OVERRIDE_SERVICE } from "../services";
 import { PermissionOverrideMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

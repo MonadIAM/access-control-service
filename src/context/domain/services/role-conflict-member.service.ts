@@ -1,8 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { ROLE_CONFLICT_GROUP_REPOSITORY, ROLE_CONFLICT_MEMBER_REPOSITORY } from "~context/infrastructure/repositories";
 import { Exception } from "~common/exceptions";
 
-import { ROLE_CONFLICT_GROUP_REPOSITORY, ROLE_CONFLICT_MEMBER_REPOSITORY } from "../repositories";
 import { RoleConflictMember } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })

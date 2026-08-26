@@ -1,11 +1,11 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { ADMIN_PERMISSION_CODES, USER_PERMISSION_CODES } from "~infrastructure/datasets/bootstrap";
+import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { RoleActorType, RoleArchetype } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 import { RolePermissionAssignment, AccountRoleAssignment, RoleClosure, Realm, Role } from "../entities";
-import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "../repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RealmService implements Services.Realm.Contract {

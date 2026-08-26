@@ -2,10 +2,10 @@ import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseIntercepto
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger } from "~common/decorators";
+import { PERMISSION_OVERRIDE_QUERIES } from "~context/application/queries";
 import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
-import { PERMISSION_OVERRIDE_QUERIES } from "../queries";
 import {
     ManageGetByIdQueryDTO,
     ManageGetListQueryDTO,

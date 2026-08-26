@@ -1,5 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { CONSUMER_META } from "~context/constants";
@@ -9,7 +10,7 @@ import {
     PERMISSION_OVERRIDE_REPOSITORY,
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
-} from "~context/domain/repositories";
+} from "~context/infrastructure/repositories";
 import {
     NotificationTopicAction,
     AccessCacheTopicAction,
@@ -19,7 +20,6 @@ import {
     KafkaTopic,
 } from "~context/enums";
 
-import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE } from "../services";
 import { MembershipMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

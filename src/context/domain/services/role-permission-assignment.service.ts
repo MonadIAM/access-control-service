@@ -1,8 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { ROLE_PERMISSION_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { Exception } from "~common/exceptions";
 
-import { ROLE_PERMISSION_ASSIGNMENT_REPOSITORY } from "../repositories";
 import { RolePermissionAssignment } from "../entities";
 
 @Injectable({ scope: Scope.DEFAULT })

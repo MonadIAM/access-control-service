@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { CHANGE_LOG_REPOSITORY } from "../repositories";
+import { CHANGE_LOG_REPOSITORY } from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class ChangeLogService implements Services.ChangeLog.Contract {

@@ -1,14 +1,18 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { NotificationTopicAction, AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
-import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/domain/repositories";
 import { CONSUMER_META, SYSTEM_ACCOUNT_ID, SYSTEM_USER_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
+import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
+import {
+    ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
+    REALM_REPOSITORY,
+    ROLE_REPOSITORY,
+} from "~context/infrastructure/repositories";
 
-import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "../services";
 import { AccountRoleAssignmentMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })

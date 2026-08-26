@@ -2,6 +2,7 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { SYSTEM_REALM_ID } from "@monadiam/shared";
 
 import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
+import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
@@ -10,9 +11,8 @@ import {
     PERMISSION_REPOSITORY,
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
-} from "~context/domain/repositories";
+} from "~context/infrastructure/repositories";
 
-import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "../services";
 import { RolePermissionAssignmentMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
