@@ -1,5 +1,7 @@
 x-base: &base
   restart: on-failure
+  env_file:
+    - .env
 
 name: ${SERVICE_NAME:?}
 
@@ -9,15 +11,10 @@ services:
     container_name: ${SERVICE_NAME:?}-vault-bootstrap
     env_file:
       - .env
-    environment:
-      VAULT_ADDR: "https://vault:${VAULT_PORT:?}"
-      VAULT_CACERT: /vault/tls/ca.crt
-      VAULT_TOKEN: ${VAULT_PROVISIONER_TOKEN:?}
     volumes:
       - ./docker/vault/bootstrap.sh:/bootstrap.sh:ro
-      - vault_ca:/vault/tls:ro
-      - vault_agent_config:/vault/config
       - vault_agent_bootstrap:/vault/agent-bootstrap
+      - vault_agent_config:/vault/config
     entrypoint: ["sh", "/bootstrap.sh"]
     networks:
       vault_net:
@@ -29,44 +26,27 @@ services:
     depends_on:
       vault-bootstrap:
         condition: service_completed_successfully
-    environment:
-      VAULT_ADDR: "https://vault:${VAULT_PORT:?}"
-      VAULT_CACERT: /vault/tls/ca.crt
     entrypoint: ["vault"]
     command: ["agent", "-config=/agent.hcl"]
     volumes:
       - ./docker/vault/agent.hcl:/agent.hcl:ro
-      - vault_ca:/vault/tls:ro
-      - vault_agent_config:/vault/config:ro
       - vault_agent_bootstrap:/vault/agent-bootstrap
-      - vault_agent_token:/vault/token
       - application_secrets:/secrets/application
+      - vault_agent_config:/vault/config:ro
+      - vault_agent_token:/vault/token
       - vault_agent_proxy:/vault/proxy
     networks:
       vault_net:
-      internal:
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "test -f /secrets/application/postgresql_username && test -f /secrets/application/postgresql_password && test -f /secrets/application/redis_password && test -f /secrets/application/kafka_sasl_password",
+          "test -f /secrets/application/postgresql_username && test -f /secrets/application/postgresql_password && test -f /secrets/application/redis_password",
         ]
       interval: 5s
       timeout: 3s
       retries: 60
       start_period: 5s
-
-  consul-register:
-    image: ${CONSUL_IMAGE:?}
-    container_name: ${SERVICE_NAME:?}-consul-register
-    environment:
-      CONSUL_HTTP_ADDR: "http://consul:8500"
-    volumes:
-      - ./docker/consul/service.hcl:/consul/service.hcl:ro
-      - ./docker/consul/register-service.sh:/register-service.sh:ro
-    entrypoint: ["sh", "/register-service.sh"]
-    networks:
-      consul_net:
 
   service:
     <<: *base
@@ -77,31 +57,27 @@ services:
         BASE_IMAGE: ${APP_BASE_IMAGE:?}
     image: ${SERVICE_NAME:?}:latest
     container_name: ${SERVICE_NAME:?}-app
-    env_file:
-      - .env
     ports:
       - "${APP_PORT:?}:${APP_PORT:?}"
     depends_on:
       vault-agent:
         condition: service_healthy
     volumes:
-      - uploads_data:/app/uploads
+      - ./docker/app/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
+      - ./docker/app/with-vault-secrets.sh:/usr/local/bin/with-vault-secrets.sh:ro
+      - ./mikro-orm.config.ts:/app/mikro-orm.config.ts:ro
+      - ./tsconfig.build.json:/app/tsconfig.build.json:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./src:/app/src
       - application_secrets:/vault/secrets:ro
       - vault_agent_proxy:/vault/proxy:ro
-      - service_tls:/tls:ro
-      - ./docker/app/entrypoint.sh:/usr/local/bin/vault-entrypoint.sh:ro
-    entrypoint: ["sh", "/usr/local/bin/vault-entrypoint.sh"]
+      - uploads_data:/app/uploads
+    entrypoint: ["sh", "/usr/local/bin/entrypoint.sh"]
     networks:
-      monitoring_net:
-        aliases:
-          - access-control-service
       kafka_net:
       postgres_net:
       redis_net:
-      internal:
-      consul_net:
-        aliases:
-          - access-control-service-connect
+      vault_net:
     stop_grace_period: 1s
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:${APP_PORT:?}/api/v${API_VERSION:?}/health/liveness"]
@@ -110,86 +86,24 @@ services:
       retries: 3
       start_period: 20s
 
-  consul-connect:
-    <<: *base
-    image: ${CONSUL_ENVOY_IMAGE:?}
-    container_name: ${SERVICE_NAME:?}-connect
-    depends_on:
-      consul-register:
-        condition: service_completed_successfully
-      service:
-        condition: service_started
-    environment:
-      CONSUL_HTTP_ADDR: "http://consul:8500"
-      CONSUL_GRPC_ADDR: "http://consul:8502"
-    command:
-      [
-        "connect",
-        "envoy",
-        "-sidecar-for=access-control-service",
-        "-http-addr=http://consul:8500",
-        "-grpc-addr=http://consul:8502",
-        "-admin-bind=127.0.0.1:19000",
-        "--",
-        "--log-level",
-        "warn",
-      ]
-    network_mode: "service:service"
-
-  ops:
-    build:
-      context: .
-      dockerfile: docker/ops/Dockerfile
-      args:
-        BASE_IMAGE: ${APP_BASE_IMAGE:?}
-    image: ${SERVICE_NAME:?}-ops:latest
-    profiles:
-      - ops
-    env_file:
-      - .env
-    depends_on:
-      vault-agent:
-        condition: service_healthy
-    volumes:
-      - ./src/infrastructure/database/migrations:/app/src/infrastructure/database/migrations
-      - application_secrets:/vault/secrets:ro
-      - service_tls:/tls:ro
-    networks:
-      postgres_net:
-      redis_net:
-
 volumes:
-  service_tls:
-    external: true
-    name: ${DOCKER_VOLUME_SERVICE_TLS:?}
-  vault_ca:
-    external: true
-    name: ${DOCKER_VOLUME_VAULT_CA:?}
-  vault_agent_bootstrap: {}
-  application_secrets: {}
-  vault_agent_config: {}
-  vault_agent_token: {}
-  vault_agent_proxy: {}
-  uploads_data: {}
+  vault_agent_bootstrap:
+  application_secrets:
+  vault_agent_config:
+  vault_agent_proxy:
+  vault_agent_token:
+  uploads_data:
 
 networks:
-  internal:
-    driver: bridge
-  monitoring_net:
-    external: true
-    name: ${DOCKER_NETWORK_MONITORING:?}
   postgres_net:
     external: true
     name: ${DOCKER_NETWORK_POSTGRES:?}
-  consul_net:
-    external: true
-    name: ${DOCKER_NETWORK_CONSUL:?}
-  kafka_net:
-    external: true
-    name: ${DOCKER_NETWORK_KAFKA:?}
   redis_net:
     external: true
     name: ${DOCKER_NETWORK_REDIS:?}
+  kafka_net:
+    external: true
+    name: ${DOCKER_NETWORK_KAFKA:?}
   vault_net:
     external: true
     name: ${DOCKER_NETWORK_VAULT:?}

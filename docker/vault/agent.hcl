@@ -1,8 +1,7 @@
 pid_file = "/tmp/pidfile"
 
 vault {
-    address     = "https://vault:8200"
-    tls_ca_file = "/vault/tls/ca.crt"
+    address = "http://vault:8200"
 }
 
 auto_auth {
@@ -33,13 +32,13 @@ listener "unix" {
 }
 
 template {
-    contents    = "{{ with secret \"database/creds/access-control-service-app\" }}{{ .Data.username }}{{ end }}"
+    contents    = "{{ with secret \"kv/data/access-control-service/runtime\" }}{{ .Data.data.postgresql_username }}{{ end }}"
     destination = "/secrets/application/postgresql_username"
     perms       = "0440"
 }
 
 template {
-    contents    = "{{ with secret \"database/creds/access-control-service-app\" }}{{ .Data.password }}{{ end }}"
+    contents    = "{{ with secret \"kv/data/access-control-service/runtime\" }}{{ .Data.data.postgresql_password }}{{ end }}"
     destination = "/secrets/application/postgresql_password"
     perms       = "0440"
 }
@@ -47,11 +46,5 @@ template {
 template {
     contents    = "{{ with secret \"kv/data/access-control-service/runtime\" }}{{ .Data.data.redis_password }}{{ end }}"
     destination = "/secrets/application/redis_password"
-    perms       = "0440"
-}
-
-template {
-    contents    = "{{ with secret \"kv/data/access-control-service/runtime\" }}{{ .Data.data.kafka_sasl_password }}{{ end }}"
-    destination = "/secrets/application/kafka_sasl_password"
     perms       = "0440"
 }

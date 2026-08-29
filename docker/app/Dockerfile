@@ -16,16 +16,7 @@ COPY . .
 RUN pnpm run build
 
 # --- Stage 2: Runtime ---
-FROM ${BASE_IMAGE} AS runner
+FROM builder AS runner
 
-WORKDIR /app
-
-RUN corepack enable && corepack prepare pnpm@11.22.0 --activate
-
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store pnpm install --frozen-lockfile --prod
-
-COPY --from=builder /app/dist ./dist
-
-EXPOSE 5001
+EXPOSE 4001
 CMD ["node", "dist/src/main.js"]

@@ -1,4 +1,5 @@
 import { DiagLogLevel } from "@opentelemetry/api";
+import { ValidateIf } from "class-validator";
 import { type StringValue } from "ms";
 
 import { Validator } from "~common/validator";
@@ -114,16 +115,23 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_PASSWORD: string;
 
     @Validator.IsBoolean()
-    declare public POSTGRES_SSL_REJECT_UNAUTHORIZED: boolean;
+    declare public POSTGRES_SSL_ENABLED: boolean;
+
+    @Validator.IsBoolean()
+    @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
+    declare public POSTGRES_SSL_REJECT_UNAUTHORIZED?: boolean;
 
     @Validator.IsString()
-    declare public POSTGRES_SSL_CA_FILE: string;
+    @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
+    declare public POSTGRES_SSL_CA_FILE?: string;
 
     @Validator.IsString()
-    declare public POSTGRES_SSL_CERT_FILE: string;
+    @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
+    declare public POSTGRES_SSL_CERT_FILE?: string;
 
     @Validator.IsString()
-    declare public POSTGRES_SSL_KEY_FILE: string;
+    @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
+    declare public POSTGRES_SSL_KEY_FILE?: string;
 
     @Validator.IsPositiveInt()
     declare public POSTGRES_POOL_MAX: number;
@@ -133,6 +141,10 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsBoolean()
     declare public POSTGRES_LOGGING: boolean;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
+    declare public POSTGRES_VAULT_CREDENTIALS_PATH?: string;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - write
@@ -182,17 +194,28 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public REDIS_PASSWORD: string;
 
+    @Validator.IsString()
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
+    declare public REDIS_VAULT_RUNTIME_PATH?: string;
+
     @Validator.IsBoolean()
-    declare public REDIS_TLS_REJECT_UNAUTHORIZED: boolean;
+    declare public REDIS_TLS_ENABLED: boolean;
+
+    @Validator.IsBoolean()
+    @ValidateIf((o) => o.REDIS_TLS_ENABLED)
+    declare public REDIS_TLS_REJECT_UNAUTHORIZED?: boolean;
 
     @Validator.IsString()
-    declare public REDIS_TLS_CA_FILE: string;
+    @ValidateIf((o) => o.REDIS_TLS_ENABLED)
+    declare public REDIS_TLS_CA_FILE?: string;
 
     @Validator.IsString()
-    declare public REDIS_TLS_CERT_FILE: string;
+    @ValidateIf((o) => o.REDIS_TLS_ENABLED)
+    declare public REDIS_TLS_CERT_FILE?: string;
 
     @Validator.IsString()
-    declare public REDIS_TLS_KEY_FILE: string;
+    @ValidateIf((o) => o.REDIS_TLS_ENABLED)
+    declare public REDIS_TLS_KEY_FILE?: string;
 
     @Validator.IsInt()
     @Validator.Min(0)
@@ -214,22 +237,34 @@ export class EnvironmentVariablesDTO {
     declare public KAFKA_BROKER: string;
 
     @Validator.IsBoolean()
-    declare public KAFKA_SSL_REJECT_UNAUTHORIZED: boolean;
+    declare public KAFKA_SSL_ENABLED: boolean;
+
+    @Validator.IsBoolean()
+    declare public KAFKA_SASL_ENABLED: boolean;
+
+    @Validator.IsBoolean()
+    @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
+    declare public KAFKA_SSL_REJECT_UNAUTHORIZED?: boolean;
 
     @Validator.IsString()
-    declare public KAFKA_SSL_CA_FILE: string;
+    @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
+    declare public KAFKA_SSL_CA_FILE?: string;
 
     @Validator.IsString()
-    declare public KAFKA_SSL_CERT_FILE: string;
+    @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
+    declare public KAFKA_SSL_CERT_FILE?: string;
 
     @Validator.IsString()
-    declare public KAFKA_SSL_KEY_FILE: string;
+    @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
+    declare public KAFKA_SSL_KEY_FILE?: string;
 
     @Validator.IsString()
-    declare public KAFKA_SASL_USERNAME: string;
+    @ValidateIf((o) => o.KAFKA_SASL_ENABLED)
+    declare public KAFKA_SASL_USERNAME?: string;
 
     @Validator.IsString()
-    declare public KAFKA_SASL_PASSWORD_FILE: string;
+    @ValidateIf((o) => o.KAFKA_SASL_ENABLED)
+    declare public KAFKA_SASL_PASSWORD_FILE?: string;
 
     @Validator.IsPositiveInt()
     declare public KAFKA_RETRY_ATTEMPTS: number;
@@ -276,7 +311,8 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    declare public DOCKER_NETWORK_MONITORING: string;
+    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    declare public DOCKER_NETWORK_MONITORING?: string;
 
     @Validator.IsString()
     declare public DOCKER_NETWORK_KAFKA: string;
@@ -291,10 +327,12 @@ export class EnvironmentVariablesDTO {
     declare public DOCKER_NETWORK_VAULT: string;
 
     @Validator.IsString()
-    declare public DOCKER_VOLUME_VAULT_CA: string;
+    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    declare public DOCKER_VOLUME_VAULT_CA?: string;
 
     @Validator.IsString()
-    declare public DOCKER_VOLUME_SERVICE_TLS: string;
+    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    declare public DOCKER_VOLUME_SERVICE_TLS?: string;
 
     // ---------------------------------------------------------------------------
     // Vault
@@ -308,7 +346,16 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    declare public VAULT_PORT: number;
+    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    declare public VAULT_PORT?: number;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
+    declare public VAULT_ADDR?: string;
+
+    @Validator.IsString()
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
+    declare public VAULT_TOKEN?: string;
 
     @Validator.IsString()
     declare public VAULT_APPROLE_NAME: string;
@@ -333,7 +380,8 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    declare public VAULT_PROVISIONER_TOKEN: string;
+    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    declare public VAULT_PROVISIONER_TOKEN?: string;
 
     // ---------------------------------------------------------------------------
     // Domain-specific limits

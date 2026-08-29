@@ -21,7 +21,9 @@ import {
     ATTR_SERVICE_NAME,
 } from "@opentelemetry/semantic-conventions";
 
-if (isMainThread) {
+const isLocal = process.env.NODE_ENV === "local";
+
+if (isMainThread && !isLocal) {
     const papackage = JSON.parse(readFileSync(join(cwd(), "package.json"), "utf8"));
 
     const resource = defaultResource().merge(

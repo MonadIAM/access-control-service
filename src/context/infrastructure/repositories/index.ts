@@ -12,19 +12,20 @@ import { ChangeLogRepository } from "./change-log.repository";
 import { AuditLogRepository } from "./audit-log.repository";
 import { RealmRepository } from "./realm.repository";
 import { RoleRepository } from "./role.repository";
-
-export const ROLE_PERMISSION_ASSIGNMENT_REPOSITORY = Symbol("Repositories.RolePermissionAssignment.Contract");
-export const ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY = Symbol("Repositories.AccountRoleAssignment.Contract");
-export const ROLE_DELEGATION_POLICY_REPOSITORY = Symbol("Repositories.RoleDelegationPolicy.Contract");
-export const ROLE_CONFLICT_MEMBER_REPOSITORY = Symbol("Repositories.RoleConflictMember.Contract");
-export const PERMISSION_OVERRIDE_REPOSITORY = Symbol("Repositories.PermissionOverride.Contract");
-export const ROLE_CONFLICT_GROUP_REPOSITORY = Symbol("Repositories.RoleConflictGroup.Contract");
-export const ROLE_CLOSURE_REPOSITORY = Symbol("Repositories.RoleClosure.Contract");
-export const PERMISSION_REPOSITORY = Symbol("Repositories.Permission.Contract");
-export const CHANGE_LOG_REPOSITORY = Symbol("Repositories.ChangeLog.Contract");
-export const AUDIT_LOG_REPOSITORY = Symbol("Repositories.AuditLog.Contract");
-export const REALM_REPOSITORY = Symbol("Repositories.Realm.Contract");
-export const ROLE_REPOSITORY = Symbol("Repositories.Role.Contract");
+import {
+    ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
+    ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
+    ROLE_DELEGATION_POLICY_REPOSITORY,
+    ROLE_CONFLICT_MEMBER_REPOSITORY,
+    PERMISSION_OVERRIDE_REPOSITORY,
+    ROLE_CONFLICT_GROUP_REPOSITORY,
+    ROLE_CLOSURE_REPOSITORY,
+    PERMISSION_REPOSITORY,
+    CHANGE_LOG_REPOSITORY,
+    AUDIT_LOG_REPOSITORY,
+    REALM_REPOSITORY,
+    ROLE_REPOSITORY,
+} from "./tokens";
 
 export const REPOSITORIES: ClassProvider[] = [
     {
@@ -76,3 +77,18 @@ export const REPOSITORIES: ClassProvider[] = [
         useClass: RoleRepository,
     },
 ];
+
+export {
+    ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
+    ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY,
+    ROLE_DELEGATION_POLICY_REPOSITORY,
+    ROLE_CONFLICT_MEMBER_REPOSITORY,
+    PERMISSION_OVERRIDE_REPOSITORY,
+    ROLE_CONFLICT_GROUP_REPOSITORY,
+    ROLE_CLOSURE_REPOSITORY,
+    PERMISSION_REPOSITORY,
+    CHANGE_LOG_REPOSITORY,
+    AUDIT_LOG_REPOSITORY,
+    REALM_REPOSITORY,
+    ROLE_REPOSITORY,
+};

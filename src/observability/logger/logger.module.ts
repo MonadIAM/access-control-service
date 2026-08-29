@@ -5,8 +5,6 @@ import { Module } from "@nestjs/common";
 
 import { NodeEnv } from "~common/enums";
 
-const LOG_LEVEL = "warn";
-
 @Module({
     imports: [
         PinoLoggerModule.forRootAsync({
@@ -14,13 +12,14 @@ const LOG_LEVEL = "warn";
             inject: [ConfigService],
             useFactory: (configService: ConfigService) => {
                 const nodeEnv = configService.getOrThrow<NodeEnv>("NODE_ENV");
-                const isDev = nodeEnv === NodeEnv.DEVELOPMENT;
                 const targets: TransportTargetOptions[] = [];
+                const isLocal = nodeEnv === NodeEnv.LOCAL;
+                const level = isLocal ? "info" : "warn";
 
-                if (isDev) {
+                if (isLocal) {
                     targets.push({
                         target: require.resolve("pino-pretty"),
-                        level: LOG_LEVEL,
+                        level,
                         options: {
                             translateTime: "UTC:yyyy-mm-dd HH:MM:ss",
                             singleLine: true,
@@ -32,7 +31,7 @@ const LOG_LEVEL = "warn";
                 if (configService.getOrThrow<boolean>("LOKI_ENABLED")) {
                     targets.push({
                         target: require.resolve("pino-loki"),
-                        level: LOG_LEVEL,
+                        level,
                         options: {
                             interval: configService.getOrThrow<number>("LOKI_BATCH_INTERVAL"),
                             host: configService.getOrThrow<string>("LOKI_URL"),
@@ -53,7 +52,7 @@ const LOG_LEVEL = "warn";
                         transport: targets.length > 0 ? { targets } : undefined,
                         quietReqLogger: true,
                         autoLogging: false,
-                        level: LOG_LEVEL,
+                        level,
                     },
                 };
             },

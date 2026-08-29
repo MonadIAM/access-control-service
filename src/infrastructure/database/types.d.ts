@@ -133,6 +133,17 @@ declare global {
 
                 type Signature = (props: Props) => Result;
             }
+
+            namespace BuildDriverOptions {
+                type Props = {
+                    config: ConfigService;
+                    host: string;
+                };
+
+                type Result = ORM.Options["driverOptions"];
+
+                type Signature = (props: Props) => Result;
+            }
         }
     }
 }

@@ -9,12 +9,6 @@ export class MikroOrmConfig implements ORM.Config.Contract {
     public buildOptions(props: ORM.Config.BuildOptions.Props): ORM.Config.BuildOptions.Result {
         const { config, kind = "write" } = props;
 
-        const rejectUnauthorized = config.getOrThrow<string>("POSTGRES_SSL_REJECT_UNAUTHORIZED") === "true";
-
-        const cert = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_CERT_FILE"), "utf8");
-        const key = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_KEY_FILE"), "utf8");
-        const ca = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_CA_FILE"), "utf8");
-
         const host = this.resolveHost({ config, kind });
         const port = this.resolvePort({ config, kind });
 
@@ -37,12 +31,27 @@ export class MikroOrmConfig implements ORM.Config.Contract {
             entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
             entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],
 
-            driverOptions: {
-                ssl: { rejectUnauthorized, servername: host, cert, key, ca },
-            },
+            driverOptions: this.buildDriverOptions({ config, host }),
         };
 
         return options;
+    }
+
+    private buildDriverOptions(props: ORM.Config.BuildDriverOptions.Props): ORM.Config.BuildDriverOptions.Result {
+        const { config, host } = props;
+
+        if (config.getOrThrow<string>("POSTGRES_SSL_ENABLED") === "true") {
+            const rejectUnauthorized = config.getOrThrow<string>("POSTGRES_SSL_REJECT_UNAUTHORIZED") === "true";
+            const cert = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_CERT_FILE"), "utf8");
+            const key = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_KEY_FILE"), "utf8");
+            const ca = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_CA_FILE"), "utf8");
+
+            return {
+                ssl: { rejectUnauthorized, servername: host, cert, key, ca },
+            };
+        } else {
+            return {};
+        }
     }
 
     public resolveHost(props: ORM.Config.ResolveHost.Props): ORM.Config.ResolveHost.Result {

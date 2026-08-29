@@ -7,6 +7,7 @@ import ms from "ms";
 
 dotenv.config();
 
+const sslEnabled: boolean = process.env.POSTGRES_SSL_ENABLED === "true";
 const rejectUnauthorized: boolean = process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED === "true";
 const poolIdleTimeoutMillis: Optional<number> = ms(process.env.POSTGRES_WRITE_POOL_IDLE_MS);
 const poolMax: number = Number(process.env.POSTGRES_WRITE_POOL_MAX);
@@ -62,15 +63,17 @@ const config: Options = {
         min: 1,
     },
 
-    driverOptions: {
-        ssl: {
-            cert: readFileSync(process.env.POSTGRES_SSL_CERT_FILE, "utf8"),
-            key: readFileSync(process.env.POSTGRES_SSL_KEY_FILE, "utf8"),
-            ca: readFileSync(process.env.POSTGRES_SSL_CA_FILE, "utf8"),
-            rejectUnauthorized,
-            servername: host,
-        },
-    },
+    driverOptions: sslEnabled
+        ? {
+              ssl: {
+                  cert: readFileSync(process.env.POSTGRES_SSL_CERT_FILE!, "utf8"),
+                  key: readFileSync(process.env.POSTGRES_SSL_KEY_FILE!, "utf8"),
+                  ca: readFileSync(process.env.POSTGRES_SSL_CA_FILE!, "utf8"),
+                  rejectUnauthorized,
+                  servername: host,
+              },
+          }
+        : {},
 };
 
 export default config;

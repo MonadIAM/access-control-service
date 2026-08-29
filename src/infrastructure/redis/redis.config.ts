@@ -6,15 +6,8 @@ export class RedisConfig {
     private constructor() {}
 
     private static getBaseOptions(config: ConfigService): RedisOptions {
-        const rejectUnauthorized = config.getOrThrow<string>("REDIS_TLS_REJECT_UNAUTHORIZED") === "true";
-        const servername = config.getOrThrow<string>("REDIS_HOST");
-
-        const cert = readFileSync(config.getOrThrow<string>("REDIS_TLS_CERT_FILE"), "utf8");
-        const key = readFileSync(config.getOrThrow<string>("REDIS_TLS_KEY_FILE"), "utf8");
-        const ca = readFileSync(config.getOrThrow<string>("REDIS_TLS_CA_FILE"), "utf8");
-
         return {
-            tls: { rejectUnauthorized, servername, cert, key, ca },
+            ...this.buildTlsOptions(config),
             password: config.getOrThrow<string>("REDIS_PASSWORD"),
             port: +config.getOrThrow<number>("REDIS_PORT"),
             host: config.getOrThrow<string>("REDIS_HOST"),
@@ -52,5 +45,20 @@ export class RedisConfig {
             db: config.getOrThrow<number>("REDIS_DB_QUEUE"),
             maxRetriesPerRequest: null,
         };
+    }
+
+    private static buildTlsOptions(config: ConfigService): Pick<RedisOptions, "tls"> {
+        if (config.getOrThrow<string>("REDIS_TLS_ENABLED") === "true") {
+            const rejectUnauthorized = config.getOrThrow<string>("REDIS_TLS_REJECT_UNAUTHORIZED") === "true";
+            const servername = config.getOrThrow<string>("REDIS_HOST");
+
+            const cert = readFileSync(config.getOrThrow<string>("REDIS_TLS_CERT_FILE"), "utf8");
+            const key = readFileSync(config.getOrThrow<string>("REDIS_TLS_KEY_FILE"), "utf8");
+            const ca = readFileSync(config.getOrThrow<string>("REDIS_TLS_CA_FILE"), "utf8");
+
+            return { tls: { rejectUnauthorized, servername, cert, key, ca } };
+        } else {
+            return {};
+        }
     }
 }

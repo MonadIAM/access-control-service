@@ -9,19 +9,25 @@ import datasets from "../datasets";
 
 dotenv.config();
 
+const tlsEnabled: boolean = process.env.REDIS_TLS_ENABLED === "true";
+
 class ProjectionSeed {
     private static readonly redis = new Redis({
         port: Number(process.env.REDIS_PORT),
         host: process.env.REDIS_HOST,
         db: Number(process.env.REDIS_DB_CACHE),
         password: process.env.REDIS_PASSWORD,
-        tls: {
-            rejectUnauthorized: process.env.REDIS_TLS_REJECT_UNAUTHORIZED === "true",
-            cert: readFileSync(process.env.REDIS_TLS_CERT_FILE, "utf8"),
-            key: readFileSync(process.env.REDIS_TLS_KEY_FILE, "utf8"),
-            ca: readFileSync(process.env.REDIS_TLS_CA_FILE, "utf8"),
-            servername: process.env.REDIS_HOST,
-        },
+        ...(tlsEnabled
+            ? {
+                  tls: {
+                      rejectUnauthorized: process.env.REDIS_TLS_REJECT_UNAUTHORIZED === "true",
+                      cert: readFileSync(process.env.REDIS_TLS_CERT_FILE!, "utf8"),
+                      key: readFileSync(process.env.REDIS_TLS_KEY_FILE!, "utf8"),
+                      ca: readFileSync(process.env.REDIS_TLS_CA_FILE!, "utf8"),
+                      servername: process.env.REDIS_HOST,
+                  },
+              }
+            : {}),
         enableAutoPipelining: true,
         maxRetriesPerRequest: 20,
         lazyConnect: true,
