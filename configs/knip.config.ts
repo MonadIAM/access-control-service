@@ -9,18 +9,17 @@ const config: KnipConfig = {
         // Standalone scripts - run directly, not via import
         "src/infrastructure/database/migrations/*.ts",
         "src/infrastructure/database/seeder.ts",
-        "src/infrastructure/redis/seeder.ts",
         // MikroORM entity schemas - loaded via glob in mikro-orm.config.ts, not imported
         "src/common/transaction-manager/schemas/*.ts",
         "src/context/infrastructure/schemas/*.ts",
         // Barrel files
         "src/**/index.ts",
         // Preload script
-        "src/observability/tracing/tracing.ts",
+        "src/infrastructure/schema-registry/script.ts",
+        "src/observability/tracing/script.ts",
     ],
     ignoreDependencies: [
         "@mikro-orm/entity-generator",
-        "@mikro-orm/cli",
         "@fastify/swagger-ui",
         "@fastify/swagger",
         "ts-jest",

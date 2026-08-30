@@ -285,6 +285,22 @@ export class EnvironmentVariablesDTO {
     declare public KAFKA_DLQ_RETRY_JITTER: StringValue;
 
     // ---------------------------------------------------------------------------
+    // Schema Registry
+    // ---------------------------------------------------------------------------
+
+    @Validator.IsString()
+    declare public SCHEMA_REGISTRY_URL: string;
+
+    @Validator.IsBoolean()
+    declare public SCHEMA_REGISTRY_SYNC_ENABLED: boolean;
+
+    @Validator.IsIn(["publish", "verify"])
+    declare public SCHEMA_REGISTRY_SYNC_MODE: SchemaRegistry.Mode;
+
+    @Validator.IsIn(["produced", "consumed", "all"])
+    declare public SCHEMA_REGISTRY_SYNC_SCOPE: SchemaRegistry.Scope;
+
+    // ---------------------------------------------------------------------------
     // BullMQ - cleanup
     // ---------------------------------------------------------------------------
 

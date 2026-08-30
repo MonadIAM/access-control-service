@@ -1,4 +1,3 @@
-import type { ListEffectivePrivilegesRequest, ListEffectivePrivilegesResponse } from "@monadiam/shared";
 import { Controller, Inject } from "@nestjs/common";
 import { GrpcMethod } from "@nestjs/microservices";
 
@@ -12,7 +11,9 @@ export class AccessControlController {
     ) {}
 
     @GrpcMethod("AccessControlService", "ListEffectivePrivileges")
-    public async listEffectivePrivileges(props: ListEffectivePrivilegesRequest): Promise<ListEffectivePrivilegesResponse> {
+    public async listEffectivePrivileges(
+        props: GRPC.AccessControl.ListEffectivePrivileges.Request,
+    ): Promise<GRPC.AccessControl.ListEffectivePrivileges.Response> {
         const { account, realm } = props;
         const privileges = await this.projectionCacheService.collectPermissions({ account, realm });
         return { privileges };

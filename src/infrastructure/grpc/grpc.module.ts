@@ -1,9 +1,10 @@
 import { MicroserviceOptions, Transport } from "@nestjs/microservices";
-import { ACCESS_CONTROL_PROTO_PATH } from "@monadiam/shared";
 import { Global, Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { GRPC_CONFIG } from "./tokens";
+
+const ACCESS_CONTROL_PROTO_PATH = require.resolve("@monadiam/shared/proto/grpc/access_control.proto");
 
 @Global()
 @Module({
@@ -15,8 +16,8 @@ import { GRPC_CONFIG } from "./tokens";
                 transport: Transport.GRPC,
                 options: {
                     url: `${config.getOrThrow<string>("GRPC_HOST")}:${config.getOrThrow<number>("GRPC_PORT")}`,
+                    package: "monadiam.grpc.access_control.v1",
                     protoPath: ACCESS_CONTROL_PROTO_PATH,
-                    package: "access_control",
                 },
             }),
         },
