@@ -4,7 +4,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { GRPC_CONFIG } from "./tokens";
 
-const ACCESS_CONTROL_PROTO_PATH = require.resolve("@monadiam/shared/proto/grpc/access_control.proto");
+const ACCESS_CONTROL_PROTO_PATH = require.resolve("@monadiam/shared/grpc/access_control.proto");
 
 @Global()
 @Module({

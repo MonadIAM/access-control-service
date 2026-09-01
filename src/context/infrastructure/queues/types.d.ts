@@ -5,17 +5,15 @@ import { CleanupJob } from "~context/enums";
 declare global {
     namespace Queues {
         namespace KafkaRetry {
-            type JobData = Consumers.DLQ.Message & { retryCount: number };
+            type JobData = Consumers.DLQ.Message;
 
             interface Contract {
-                readonly maxRetryCount: number;
                 schedule: Schedule.Signature;
             }
 
             namespace Schedule {
                 type Props = {
                     message: Consumers.DLQ.Message;
-                    retryCount: number;
                 };
 
                 type Result = Promise<void>;

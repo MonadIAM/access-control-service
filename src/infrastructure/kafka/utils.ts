@@ -1,4 +1,3 @@
-import { KafkaContext } from "@nestjs/microservices";
 import { ConfigService } from "@nestjs/config";
 import { KafkaConfig } from "kafkajs";
 import { readFileSync } from "fs";
@@ -48,10 +47,5 @@ export abstract class KafkaUtils {
         } else {
             return {};
         }
-    }
-
-    public static extractRetryCount(context: KafkaContext): number {
-        const raw = context.getMessage().headers?.["x-retry-count"];
-        return Number(Buffer.isBuffer(raw) ? raw.toString() : (raw ?? 0));
     }
 }

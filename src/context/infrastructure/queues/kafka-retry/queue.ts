@@ -22,26 +22,18 @@ export class KafkaRetryQueue implements Queues.KafkaRetry.Contract {
         this.maxRetries = this.configService.getOrThrow<number>("KAFKA_DLQ_MAX_RETRIES");
     }
 
-    public get maxRetryCount(): number {
-        return this.maxRetries;
-    }
-
     public async schedule(props: Queues.KafkaRetry.Schedule.Props): Queues.KafkaRetry.Schedule.Result {
-        const { message, retryCount } = props;
+        const { message } = props;
 
-        await this.queue.add(
-            BullJobName.RETRY,
-            { ...message, retryCount },
-            {
-                delay: this.baseDelay + Math.random() * this.jitter,
-                attempts: 3,
-                backoff: {
-                    type: "exponential",
-                    delay: this.baseDelay,
-                },
-                removeOnComplete: true,
-                removeOnFail: false,
+        await this.queue.add(BullJobName.RETRY, message, {
+            delay: this.baseDelay + Math.random() * this.jitter,
+            attempts: this.maxRetries,
+            removeOnComplete: true,
+            removeOnFail: false,
+            backoff: {
+                delay: this.baseDelay,
+                type: "exponential",
             },
-        );
+        });
     }
 }

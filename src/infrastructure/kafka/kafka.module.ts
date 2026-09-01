@@ -1,33 +1,40 @@
-import { ClientsModule, Transport, MicroserviceOptions } from "@nestjs/microservices";
-import { Global, Module } from "@nestjs/common";
+import { ClientKafka, MicroserviceOptions, Transport } from "@nestjs/microservices";
+import { Global, Inject, Module, OnApplicationShutdown } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { KAFKA_SERVICE, KAFKA_CONFIG } from "./tokens";
+import { KAFKA_CONFIG, KAFKA_RETRY_REGISTRY, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "./tokens";
+import { KafkaSchemaDeserializer } from "./schema.deserializer";
+import { KafkaSchemaSerializer } from "./schema.serializer";
+import { KafkaSchemaRegistry } from "./schema.registry";
+import { KafkaRetryRegistry } from "./retry.registry";
 import { KafkaUtils } from "./utils";
 
 @Global()
 @Module({
-    imports: [
-        ClientsModule.registerAsync([
-            {
-                name: KAFKA_SERVICE,
-                inject: [ConfigService],
-                useFactory: (config: ConfigService) => ({
-                    transport: Transport.KAFKA,
-                    options: {
-                        consumer: { groupId: `${config.getOrThrow("SERVICE_NAME")}-producer` },
-                        client: KafkaUtils.buildClientConfig(config, { withClientId: true }),
-                    },
-                }),
-            },
-        ]),
-    ],
     providers: [
         {
+            provide: KAFKA_SCHEMA_REGISTRY,
+            useClass: KafkaSchemaRegistry,
+        },
+        {
+            provide: KAFKA_RETRY_REGISTRY,
+            useClass: KafkaRetryRegistry,
+        },
+        {
+            inject: [ConfigService, KAFKA_SCHEMA_REGISTRY],
+            provide: KAFKA_SERVICE,
+            useFactory: (config: ConfigService, schemaRegistry: Kafka.SchemaRegistry.Contract): ClientKafka =>
+                new ClientKafka({
+                    consumer: { groupId: `${config.getOrThrow("SERVICE_NAME")}-producer` },
+                    client: KafkaUtils.buildClientConfig(config, { withClientId: true }),
+                    serializer: new KafkaSchemaSerializer(schemaRegistry),
+                }),
+        },
+        {
             provide: KAFKA_CONFIG,
-            inject: [ConfigService],
-            useFactory: (config: ConfigService): MicroserviceOptions => ({
+            inject: [ConfigService, KAFKA_SCHEMA_REGISTRY],
+            useFactory: (config: ConfigService, schemaRegistry: Kafka.SchemaRegistry.Contract): MicroserviceOptions => ({
                 transport: Transport.KAFKA,
                 options: {
                     client: {
@@ -41,10 +48,20 @@ import { KafkaUtils } from "./utils";
                         groupId: `${config.getOrThrow("SERVICE_NAME")}-consumer`,
                         allowAutoTopicCreation: false,
                     },
+                    deserializer: new KafkaSchemaDeserializer(schemaRegistry),
                 },
             }),
         },
     ],
-    exports: [ClientsModule, KAFKA_CONFIG],
+    exports: [KAFKA_SCHEMA_REGISTRY, KAFKA_RETRY_REGISTRY, KAFKA_SERVICE, KAFKA_CONFIG],
 })
-export class KafkaModule {}
+export class KafkaModule implements OnApplicationShutdown {
+    public constructor(
+        @Inject(KAFKA_SERVICE)
+        private readonly kafkaClient: ClientKafka,
+    ) {}
+
+    public async onApplicationShutdown(): Promise<void> {
+        await this.kafkaClient.close();
+    }
+}

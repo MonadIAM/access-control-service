@@ -24,4 +24,8 @@ export class Outbox {
         this.metadata = props.metadata;
         this.payload = props.payload;
     }
+
+    public envelope(): SystemEntities.Outbox.Envelope.Result {
+        return { actionType: this.actionType, payload: this.payload };
+    }
 }

@@ -54,6 +54,15 @@ declare global {
         type ChangeLog = ChangeLogEntity;
 
         namespace Outbox {
+            namespace Envelope {
+                type Result = {
+                    actionType: string;
+                    payload: UnknownObject;
+                };
+
+                type Signature = () => Result;
+            }
+
             type ConstructorProps = {
                 destinationTopic: KafkaTopic;
                 metadata?: UnknownObject;

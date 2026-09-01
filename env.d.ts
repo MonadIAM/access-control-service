@@ -123,9 +123,7 @@ declare global {
             // Schema Registry
             // ---------------------------------------------------------------------------
 
-            SCHEMA_REGISTRY_SYNC_SCOPE: SchemaRegistry.Scope;
-            SCHEMA_REGISTRY_SYNC_MODE: SchemaRegistry.Mode;
-            SCHEMA_REGISTRY_SYNC_ENABLED: "true" | "false";
+            SCHEMA_REGISTRY_ENABLED: "true" | "false";
             SCHEMA_REGISTRY_URL: string;
 
             // ---------------------------------------------------------------------------

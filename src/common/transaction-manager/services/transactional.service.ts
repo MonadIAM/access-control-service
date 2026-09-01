@@ -1,34 +1,28 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
-import { AuditLogTopicAction } from "@monadiam/shared";
-import { ConfigService } from "@nestjs/config";
 import { Injectable, Inject } from "@nestjs/common";
 
 import { ExceptionMapper } from "~common/exceptions";
-import { KafkaTopic } from "~context/enums";
 
-import { OperationContext } from "../utilities/operation-context";
-import { AuditLog, Outbox } from "../entities";
-import { LOG_MASKING_SERVICE } from "./tokens";
+import { LOG_MASKING_SERVICE, OUTBOX_SERVICE } from "./tokens";
+import { OperationContext } from "../utilities";
+import { AuditLog } from "../entities";
 
 @Injectable()
 export class TransactionalService implements TransactionManager.Service.Contract {
-    private readonly serviceName: string;
-
     public constructor(
         @InjectEntityManager("write")
         private readonly writeManager: ORM.EntityManager,
         @Inject(LOG_MASKING_SERVICE)
         private readonly logMaskingService: TransactionManager.LogMasking.Contract,
+        @Inject(OUTBOX_SERVICE)
+        private readonly outboxService: TransactionManager.Outbox.Contract,
         private readonly operationContext: OperationContext,
-        private readonly configService: ConfigService,
-    ) {
-        this.serviceName = this.configService.getOrThrow<string>("SERVICE_NAME");
-    }
+    ) {}
 
     public async emit(params: TransactionManager.Service.Emit.Props): TransactionManager.Service.Emit.Result {
         try {
             const writeManager = this.writeManager.fork();
-            const outbox = new Outbox(params);
+            const outbox = this.outboxService.build(params);
 
             if (params.audit) {
                 const entity = new AuditLog(params.audit);
@@ -42,7 +36,7 @@ export class TransactionalService implements TransactionManager.Service.Contract
                         entity.sign(hash);
 
                         transaction.persist(entity);
-                        transaction.persist(this.buildAuditLogArchiveOutbox(entity));
+                        transaction.persist(this.outboxService.buildAuditLogArchive(entity));
                         transaction.persist(outbox);
                         await transaction.flush();
                     }),
@@ -82,7 +76,7 @@ export class TransactionalService implements TransactionManager.Service.Contract
                             entity.sign(hash);
 
                             transaction.persist(entity);
-                            transaction.persist(this.buildAuditLogArchiveOutbox(entity));
+                            transaction.persist(this.outboxService.buildAuditLogArchive(entity));
 
                             return await this.executeWithEffects({ transaction, params });
                         });
@@ -124,30 +118,9 @@ export class TransactionalService implements TransactionManager.Service.Contract
                 const payloads = payloadMapper ? [payloadMapper(result)].flat() : [result].flat();
 
                 for (const payload of payloads) {
-                    transaction.persist(new Outbox({ ...outboxProps, payload }));
+                    transaction.persist(this.outboxService.build({ ...outboxProps, payload }));
                 }
             }
         }
-    }
-
-    public buildAuditLogArchiveOutbox(
-        props: TransactionManager.Service.BuildAuditLogArchiveOutbox.Props,
-    ): TransactionManager.Service.BuildAuditLogArchiveOutbox.Result {
-        return new Outbox({
-            destinationTopic: KafkaTopic.AUDIT_LOG_ARCHIVE,
-            actionType: AuditLogTopicAction.ARCHIVE,
-            payload: {
-                input: props.input ? JSON.stringify(props.input) : null,
-                created_at: props.createdAt.toISOString(),
-                user_agent: props.userAgent ?? null,
-                action_type: props.actionType,
-                entity_type: props.entityType,
-                realm: props.realm ?? null,
-                service: this.serviceName,
-                ip: props.ip ?? null,
-                actor: props.actor,
-                id: props.id,
-            },
-        });
     }
 }

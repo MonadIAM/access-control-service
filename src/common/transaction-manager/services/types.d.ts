@@ -2,6 +2,40 @@ import { KafkaTopic } from "~context/enums";
 
 declare global {
     namespace TransactionManager {
+        namespace Outbox {
+            interface Contract extends PublicContract {}
+
+            interface PublicContract {
+                buildChangeLogArchive: BuildChangeLogArchive.Signature;
+                buildAuditLogArchive: BuildAuditLogArchive.Signature;
+                build: Build.Signature;
+            }
+
+            namespace Build {
+                type Props = SystemEntities.Outbox.ConstructorProps;
+
+                type Result = SystemEntities.Outbox;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace BuildAuditLogArchive {
+                type Props = SystemEntities.AuditLog;
+
+                type Result = SystemEntities.Outbox;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace BuildChangeLogArchive {
+                type Props = SystemEntities.ChangeLog;
+
+                type Result = SystemEntities.Outbox;
+
+                type Signature = (props: Props) => Result;
+            }
+        }
+
         namespace LogMasking {
             type FieldClassification = Record<DataClassification, string[]>;
             type DataClassification = "SECRET" | "PII";
@@ -111,17 +145,8 @@ declare global {
             interface Contract extends PublicContract, InternalContract {}
 
             interface InternalContract {
-                buildAuditLogArchiveOutbox: BuildAuditLogArchiveOutbox.Signature;
                 persistOutboxEvents: PersistOutboxEvents.Signature;
                 executeWithEffects: ExecuteWithEffects.Signature;
-            }
-
-            namespace BuildAuditLogArchiveOutbox {
-                type Props = SystemEntities.AuditLog;
-
-                type Result = SystemEntities.Outbox;
-
-                type Signature = (props: Props) => Result;
             }
 
             namespace PersistOutboxEvents {
