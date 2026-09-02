@@ -4,9 +4,7 @@ import { AssignmentScope } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 export class RolePermissionAssignment implements Entities.RolePermissionAssignment.Contract {
-    private get dictionaryPath(): string {
-        return "entities.role-permission-assignment";
-    }
+    private static readonly dictionaryPath = "entities.role-permission-assignment";
 
     public id: string;
     public createdAt: Date;
@@ -37,7 +35,9 @@ export class RolePermissionAssignment implements Entities.RolePermissionAssignme
 
     public revoke(): void {
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
+            throw Exception.invariantViolation({
+                messageKey: `${RolePermissionAssignment.dictionaryPath}.ALREADY_REVOKED`,
+            });
         } else {
             const now = new Date();
             this.isRevoked = true;
@@ -51,27 +51,39 @@ export class RolePermissionAssignment implements Entities.RolePermissionAssignme
             this.isRevoked = false;
             this.updatedAt = now;
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${RolePermissionAssignment.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
     public canPurge(): void {
         if (!this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
+            throw Exception.invariantViolation({
+                messageKey: `${RolePermissionAssignment.dictionaryPath}.CANNOT_PURGE_ACTIVE`,
+            });
         } else if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
+            throw Exception.invariantViolation({
+                messageKey: `${RolePermissionAssignment.dictionaryPath}.CANNOT_PURGE_SYSTEM`,
+            });
         }
     }
 
     public canAssign(): void {
         if (this.role.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_TO_REVOKED_ROLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${RolePermissionAssignment.dictionaryPath}.CANNOT_ASSIGN_TO_REVOKED_ROLE`,
+            });
         } else if (this.permission.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_REVOKED_PERMISSION` });
+            throw Exception.invariantViolation({
+                messageKey: `${RolePermissionAssignment.dictionaryPath}.CANNOT_ASSIGN_REVOKED_PERMISSION`,
+            });
         } else if (this.role.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_TO_SYSTEM_ROLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${RolePermissionAssignment.dictionaryPath}.CANNOT_ASSIGN_TO_SYSTEM_ROLE`,
+            });
         } else if (this.permission.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_SYSTEM_PERMISSION` });
+            throw Exception.invariantViolation({
+                messageKey: `${RolePermissionAssignment.dictionaryPath}.CANNOT_ASSIGN_SYSTEM_PERMISSION`,
+            });
         }
     }
 }

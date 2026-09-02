@@ -57,7 +57,7 @@ export class PermissionRepository
 
             return await builder.getResultAndCount();
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -151,7 +151,7 @@ export class PermissionRepository
 
             return [permissions, total];
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -227,7 +227,7 @@ export class PermissionRepository
                 "all",
             );
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -277,7 +277,7 @@ export class PermissionRepository
 
             return total + (count ?? 1) > this.permissionLimit;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

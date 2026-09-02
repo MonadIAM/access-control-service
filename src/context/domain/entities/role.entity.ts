@@ -5,9 +5,7 @@ import { RoleActorType, RoleArchetype } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 export class Role implements Entities.Role.Contract {
-    private get dictionaryPath(): string {
-        return "entities.role";
-    }
+    private static readonly dictionaryPath = "entities.role";
 
     public id: string;
     public createdAt: Date;
@@ -60,15 +58,15 @@ export class Role implements Entities.Role.Contract {
         if (affected) {
             this.updatedAt = now;
         } else if (Object.keys(patch).length) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NO_CHANGES_DETECTED` });
+            throw Exception.invariantViolation({ messageKey: `${Role.dictionaryPath}.NO_CHANGES_DETECTED` });
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EMPTY_UPDATE_PATCH` });
+            throw Exception.invariantViolation({ messageKey: `${Role.dictionaryPath}.EMPTY_UPDATE_PATCH` });
         }
     }
 
     public revoke(): void {
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
+            throw Exception.invariantViolation({ messageKey: `${Role.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
             this.isRevoked = true;
@@ -82,15 +80,15 @@ export class Role implements Entities.Role.Contract {
             this.isRevoked = false;
             this.updatedAt = now;
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${Role.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
     public canPurge(): void {
         if (!this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${Role.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
         } else if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
+            throw Exception.invariantViolation({ messageKey: `${Role.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
         }
     }
 }

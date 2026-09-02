@@ -37,7 +37,7 @@ export class PermissionOverrideRepository
 
             return total + (count ?? 1) > this.overrideLimit;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

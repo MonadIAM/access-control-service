@@ -14,6 +14,8 @@ import { ErrorCode, ErrorKind } from "./enums";
 import { Exception } from "./exception";
 
 export abstract class ExceptionMapper {
+    private static readonly dictionaryPath = "db";
+
     private static readonly ormExceptions = new WeakSet<Exception>();
 
     private constructor() {}
@@ -30,7 +32,7 @@ export abstract class ExceptionMapper {
                 code: ErrorCode.NOT_FOUND,
                 kind: ErrorKind.NOT_FOUND,
                 statusCode: HttpStatus.NOT_FOUND,
-                messageKey: "db.NOT_FOUND",
+                messageKey: `${this.dictionaryPath}.NOT_FOUND`,
                 cause: error,
                 params,
             });
@@ -40,7 +42,7 @@ export abstract class ExceptionMapper {
                 code: ErrorCode.DEADLOCK,
                 kind: ErrorKind.DEADLOCK,
                 statusCode: HttpStatus.CONFLICT,
-                messageKey: "db.DEADLOCK",
+                messageKey: `${this.dictionaryPath}.DEADLOCK`,
                 cause: error,
                 params,
             });
@@ -50,7 +52,7 @@ export abstract class ExceptionMapper {
                 code: ErrorCode.CONNECTION_ERROR,
                 kind: ErrorKind.CONNECTION_ERROR,
                 statusCode: HttpStatus.SERVICE_UNAVAILABLE,
-                messageKey: "db.CONNECTION_LOST",
+                messageKey: `${this.dictionaryPath}.CONNECTION_LOST`,
                 cause: error,
                 params,
             });
@@ -60,7 +62,7 @@ export abstract class ExceptionMapper {
                 code: ErrorCode.NOT_NULL_VIOLATION,
                 kind: ErrorKind.NOT_NULL_VIOLATION,
                 statusCode: HttpStatus.BAD_REQUEST,
-                messageKey: "db.NOT_NULL_VIOLATION",
+                messageKey: `${this.dictionaryPath}.NOT_NULL_VIOLATION`,
                 cause: error,
                 params,
             });
@@ -70,7 +72,7 @@ export abstract class ExceptionMapper {
                 code: ErrorCode.UNIQUE_VIOLATION,
                 kind: ErrorKind.UNIQUE_VIOLATION,
                 statusCode: HttpStatus.CONFLICT,
-                messageKey: "db.UNIQUE_VIOLATION",
+                messageKey: `${this.dictionaryPath}.UNIQUE_VIOLATION`,
                 cause: error,
                 params,
             });
@@ -80,7 +82,7 @@ export abstract class ExceptionMapper {
                 code: ErrorCode.FOREIGN_KEY_VIOLATION,
                 kind: ErrorKind.FOREIGN_KEY_VIOLATION,
                 statusCode: HttpStatus.CONFLICT,
-                messageKey: "db.FK_VIOLATION",
+                messageKey: `${this.dictionaryPath}.FK_VIOLATION`,
                 cause: error,
                 params,
             });
@@ -90,7 +92,7 @@ export abstract class ExceptionMapper {
                 code: ErrorCode.TIMEOUT,
                 kind: ErrorKind.TIMEOUT,
                 statusCode: HttpStatus.REQUEST_TIMEOUT,
-                messageKey: "db.LOCK_TIMEOUT",
+                messageKey: `${this.dictionaryPath}.LOCK_TIMEOUT`,
                 cause: error,
                 params,
             });
@@ -100,7 +102,7 @@ export abstract class ExceptionMapper {
                 code: ErrorCode.INTERNAL,
                 kind: ErrorKind.INTERNAL,
                 statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-                messageKey: "db.INTERNAL_DRIVER_ERROR",
+                messageKey: `${this.dictionaryPath}.INTERNAL_DRIVER_ERROR`,
                 cause: error,
                 params: {
                     ...params,
@@ -113,7 +115,7 @@ export abstract class ExceptionMapper {
             code: ErrorCode.INTERNAL,
             kind: ErrorKind.INTERNAL,
             statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            messageKey: "db.INTERNAL_DRIVER_ERROR",
+            messageKey: `${this.dictionaryPath}.INTERNAL_DRIVER_ERROR`,
             cause: error,
             params,
         });

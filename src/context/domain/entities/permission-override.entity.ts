@@ -4,9 +4,7 @@ import { PermissionOverrideEffect } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 export class PermissionOverride implements Entities.PermissionOverride.Contract {
-    private get dictionaryPath(): string {
-        return "entities.permission-override";
-    }
+    private static readonly dictionaryPath = "entities.permission-override";
 
     public id: string;
     public createdAt: Date;
@@ -44,7 +42,7 @@ export class PermissionOverride implements Entities.PermissionOverride.Contract 
 
     public revoke(): void {
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
+            throw Exception.invariantViolation({ messageKey: `${PermissionOverride.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
             this.isRevoked = true;
@@ -54,9 +52,11 @@ export class PermissionOverride implements Entities.PermissionOverride.Contract 
 
     public restore(): void {
         if (!this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${PermissionOverride.dictionaryPath}.ALREADY_ACTIVE` });
         } else if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_RESTORE_EXPIRED` });
+            throw Exception.invariantViolation({
+                messageKey: `${PermissionOverride.dictionaryPath}.CANNOT_RESTORE_EXPIRED`,
+            });
         } else {
             const now = new Date();
             this.isRevoked = false;
@@ -66,13 +66,15 @@ export class PermissionOverride implements Entities.PermissionOverride.Contract 
 
     public canPurge(): void {
         if (!this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${PermissionOverride.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
         }
     }
 
     public canCreate(): void {
         if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_CREATE_EXPIRED` });
+            throw Exception.invariantViolation({
+                messageKey: `${PermissionOverride.dictionaryPath}.CANNOT_CREATE_EXPIRED`,
+            });
         }
     }
 }

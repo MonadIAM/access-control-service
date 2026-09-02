@@ -3,6 +3,10 @@ import type { KnipConfig } from "knip";
 const config: KnipConfig = {
     ignoreExportsUsedInFile: true, // reduces noise from re-exports inside index.ts
     project: ["src/**/*.ts", "cli/**/*.ts"],
+    ignore: [
+        // Generated from the dictionaries by "pnpm run intl:types"
+        "src/common/dictionaries/intl.generated.ts",
+    ],
     entry: [
         "mikro-orm.config.ts",
         "src/main.ts",

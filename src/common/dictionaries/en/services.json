@@ -40,5 +40,12 @@
     "DELEGATION_NOT_ALLOWED": "Insufficient privileges to assign this role.",
     "ACCOUNT_ROLE_LIMIT_EXCEEDED": "The allowed role limit for the account has been exceeded.",
     "HAS_SoD_VIOLATIONS": "The assignment violates one or more segregation of duties policies."
+  },
+  "jwt": {
+    "INVALID_ACCESS_TOKEN": "The access token is invalid or expired."
+  },
+  "vault": {
+    "REQUEST_FAILED": "Vault Transit request failed.",
+    "INVALID_SIGNATURE": "Vault Transit returned an invalid signature."
   }
 }

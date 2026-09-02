@@ -41,7 +41,7 @@ export class RolePermissionAssignmentRepository
 
             return total + permissions.length - overlap > this.permissionLimit;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

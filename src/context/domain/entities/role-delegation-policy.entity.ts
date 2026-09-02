@@ -3,9 +3,7 @@ import { randomUUID } from "node:crypto";
 import { Exception } from "~common/exceptions";
 
 export class RoleDelegationPolicy implements Entities.RoleDelegationPolicy.Contract {
-    private get dictionaryPath(): string {
-        return "entities.role-delegation-policy";
-    }
+    private static readonly dictionaryPath = "entities.role-delegation-policy";
 
     public id: string;
     public createdAt: Date;
@@ -57,15 +55,17 @@ export class RoleDelegationPolicy implements Entities.RoleDelegationPolicy.Contr
         if (affected) {
             this.updatedAt = now;
         } else if (Object.keys(patch).length) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NO_CHANGES_DETECTED` });
+            throw Exception.invariantViolation({
+                messageKey: `${RoleDelegationPolicy.dictionaryPath}.NO_CHANGES_DETECTED`,
+            });
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EMPTY_UPDATE_PATCH` });
+            throw Exception.invariantViolation({ messageKey: `${RoleDelegationPolicy.dictionaryPath}.EMPTY_UPDATE_PATCH` });
         }
     }
 
     public revoke(): void {
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
+            throw Exception.invariantViolation({ messageKey: `${RoleDelegationPolicy.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
             this.isRevoked = true;
@@ -75,9 +75,11 @@ export class RoleDelegationPolicy implements Entities.RoleDelegationPolicy.Contr
 
     public restore(): void {
         if (!this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${RoleDelegationPolicy.dictionaryPath}.ALREADY_ACTIVE` });
         } else if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_RESTORE_EXPIRED` });
+            throw Exception.invariantViolation({
+                messageKey: `${RoleDelegationPolicy.dictionaryPath}.CANNOT_RESTORE_EXPIRED`,
+            });
         } else {
             const now = new Date();
             this.isRevoked = false;
@@ -87,21 +89,33 @@ export class RoleDelegationPolicy implements Entities.RoleDelegationPolicy.Contr
 
     public canPurge(): void {
         if (!this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
+            throw Exception.invariantViolation({
+                messageKey: `${RoleDelegationPolicy.dictionaryPath}.CANNOT_PURGE_ACTIVE`,
+            });
         } else if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
+            throw Exception.invariantViolation({
+                messageKey: `${RoleDelegationPolicy.dictionaryPath}.CANNOT_PURGE_SYSTEM`,
+            });
         }
     }
 
     public canCreate(): void {
         if (this.target.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_DELEGATE_REVOKED_TARGET` });
+            throw Exception.invariantViolation({
+                messageKey: `${RoleDelegationPolicy.dictionaryPath}.CANNOT_DELEGATE_REVOKED_TARGET`,
+            });
         } else if (this.target.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_DELEGATE_SYSTEM_TARGET` });
+            throw Exception.invariantViolation({
+                messageKey: `${RoleDelegationPolicy.dictionaryPath}.CANNOT_DELEGATE_SYSTEM_TARGET`,
+            });
         } else if (this.delegator.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REVOKED_ROLE_CANNOT_DELEGATE_ROLES` });
+            throw Exception.invariantViolation({
+                messageKey: `${RoleDelegationPolicy.dictionaryPath}.REVOKED_ROLE_CANNOT_DELEGATE_ROLES`,
+            });
         } else if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_DELEGATE_EXPIRED` });
+            throw Exception.invariantViolation({
+                messageKey: `${RoleDelegationPolicy.dictionaryPath}.CANNOT_DELEGATE_EXPIRED`,
+            });
         }
     }
 }

@@ -3,9 +3,7 @@ import { randomUUID } from "node:crypto";
 import { Exception } from "~common/exceptions";
 
 export class RoleConflictMember implements Entities.RoleConflictMember.Contract {
-    private get dictionaryPath(): string {
-        return "entities.role-conflict-member";
-    }
+    private static readonly dictionaryPath = "entities.role-conflict-member";
 
     public id: string;
     public createdAt: Date;
@@ -33,7 +31,7 @@ export class RoleConflictMember implements Entities.RoleConflictMember.Contract 
         this.group.canModifyMembers();
 
         if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
+            throw Exception.invariantViolation({ messageKey: `${RoleConflictMember.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
         }
     }
 }

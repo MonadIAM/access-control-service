@@ -41,7 +41,7 @@ export class AccountRoleAssignmentRepository
 
             return total + roles.length - overlap > this.accountRoleLimit;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

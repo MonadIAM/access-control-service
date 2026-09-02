@@ -37,7 +37,7 @@ export class RoleConflictMemberRepository
 
             return total + count > this.membersLimit;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

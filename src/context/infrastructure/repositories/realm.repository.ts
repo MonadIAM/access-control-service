@@ -53,7 +53,7 @@ export class RealmRepository
 
             return await builder.getResultAndCount();
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -67,7 +67,7 @@ export class RealmRepository
 
             return total + (count ?? 1) > this.realmLimit;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

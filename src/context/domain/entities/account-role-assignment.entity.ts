@@ -3,9 +3,7 @@ import { randomUUID } from "node:crypto";
 import { Exception } from "~common/exceptions";
 
 export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Contract {
-    private get dictionaryPath(): string {
-        return "entities.account-role-assignment";
-    }
+    private static readonly dictionaryPath = "entities.account-role-assignment";
 
     public id: string;
     public createdAt: Date;
@@ -43,7 +41,7 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
 
     public revoke(): void {
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
+            throw Exception.invariantViolation({ messageKey: `${AccountRoleAssignment.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
             this.isRevoked = true;
@@ -53,9 +51,11 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
 
     public restore(): void {
         if (!this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${AccountRoleAssignment.dictionaryPath}.ALREADY_ACTIVE` });
         } else if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_RESTORE_EXPIRED` });
+            throw Exception.invariantViolation({
+                messageKey: `${AccountRoleAssignment.dictionaryPath}.CANNOT_RESTORE_EXPIRED`,
+            });
         } else {
             const now = new Date();
             this.isRevoked = false;
@@ -65,19 +65,29 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
 
     public canPurge(): void {
         if (!this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
+            throw Exception.invariantViolation({
+                messageKey: `${AccountRoleAssignment.dictionaryPath}.CANNOT_PURGE_ACTIVE`,
+            });
         } else if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
+            throw Exception.invariantViolation({
+                messageKey: `${AccountRoleAssignment.dictionaryPath}.CANNOT_PURGE_SYSTEM`,
+            });
         }
     }
 
     public canAssign(): void {
         if (this.role.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_REVOKED_ROLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${AccountRoleAssignment.dictionaryPath}.CANNOT_ASSIGN_REVOKED_ROLE`,
+            });
         } else if (this.role.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_SYSTEM_ROLE` });
+            throw Exception.invariantViolation({
+                messageKey: `${AccountRoleAssignment.dictionaryPath}.CANNOT_ASSIGN_SYSTEM_ROLE`,
+            });
         } else if ((this.expiresAt?.getTime() ?? Infinity) <= new Date().getTime()) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_ASSIGN_EXPIRED` });
+            throw Exception.invariantViolation({
+                messageKey: `${AccountRoleAssignment.dictionaryPath}.CANNOT_ASSIGN_EXPIRED`,
+            });
         }
     }
 }

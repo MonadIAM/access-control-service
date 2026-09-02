@@ -74,6 +74,8 @@ Shared Docker networks are created by the infra repository:
 | `make swagger`                    | Generate the OpenAPI Swagger JSON file.                             |
 | `make postman`                    | Generate and patch the Postman collection JSON file.                |
 | `make docs`                       | Generate Swagger and Postman documentation artifacts.               |
+| `make intl-types`                 | Generate TypeScript types from the translation dictionaries.        |
+| `make intl-check`                 | Check that all languages contain the same translation keys.         |
 | **Database**                      |                                                                     |
 | `make migrate`                    | Apply pending MikroORM migrations in the running service container. |
 | `make migration name="..."`       | Generate a MikroORM migration in the running service container.     |

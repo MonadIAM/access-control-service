@@ -8,7 +8,7 @@
     "INSUFFICIENT_PERMISSIONS": "Insufficient permissions to perform this operation."
   },
   "authn": {
-    "INVALID_TOKEN": "The authentication token is invalid or expired.",
+    "MALFORMED_AUTHORIZATION": "The Authorization header is malformed.",
     "TOKEN_MISSING": "An authentication token is required.",
     "SESSION_REVOKED": "The session has been revoked."
   },

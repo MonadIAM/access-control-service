@@ -15,6 +15,7 @@ export default [
             "./*.config.{mjs,ts}",
             "./configs/*.config.{mjs,ts}",
             "**/migrations/*.ts",
+            "**/*.generated.ts",
         ]
     },
     {

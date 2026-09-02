@@ -74,7 +74,7 @@ export class RoleDelegationPolicyRepository
 
             return Boolean(result);
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -119,7 +119,7 @@ export class RoleDelegationPolicyRepository
 
             return result?.result === true;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -133,7 +133,7 @@ export class RoleDelegationPolicyRepository
 
             return total + (count ?? 1) > this.policyLimit;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

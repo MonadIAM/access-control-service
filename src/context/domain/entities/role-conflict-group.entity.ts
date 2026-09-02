@@ -4,9 +4,7 @@ import { randomUUID } from "node:crypto";
 import { Exception } from "~common/exceptions";
 
 export class RoleConflictGroup implements Entities.RoleConflictGroup.Contract {
-    private get dictionaryPath(): string {
-        return "entities.role-conflict-group";
-    }
+    private static readonly dictionaryPath = "entities.role-conflict-group";
 
     public id: string;
     public createdAt: Date;
@@ -41,7 +39,7 @@ export class RoleConflictGroup implements Entities.RoleConflictGroup.Contract {
 
     public update({ patch }: Entities.RoleConflictGroup.ChangeDataProps): void {
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_UPDATE_REVOKED` });
+            throw Exception.invariantViolation({ messageKey: `${RoleConflictGroup.dictionaryPath}.CANNOT_UPDATE_REVOKED` });
         }
 
         const now = new Date();
@@ -56,21 +54,23 @@ export class RoleConflictGroup implements Entities.RoleConflictGroup.Contract {
         if (affected) {
             this.updatedAt = now;
         } else if (Object.keys(patch).length) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.NO_CHANGES_DETECTED` });
+            throw Exception.invariantViolation({ messageKey: `${RoleConflictGroup.dictionaryPath}.NO_CHANGES_DETECTED` });
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.EMPTY_UPDATE_PATCH` });
+            throw Exception.invariantViolation({ messageKey: `${RoleConflictGroup.dictionaryPath}.EMPTY_UPDATE_PATCH` });
         }
     }
 
     public canModifyMembers(): void {
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_MODIFY_MEMBERS_REVOKED` });
+            throw Exception.invariantViolation({
+                messageKey: `${RoleConflictGroup.dictionaryPath}.CANNOT_MODIFY_MEMBERS_REVOKED`,
+            });
         }
     }
 
     public revoke(): void {
         if (this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_REVOKED` });
+            throw Exception.invariantViolation({ messageKey: `${RoleConflictGroup.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
             this.isRevoked = true;
@@ -84,15 +84,15 @@ export class RoleConflictGroup implements Entities.RoleConflictGroup.Contract {
             this.isRevoked = false;
             this.updatedAt = now;
         } else {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ALREADY_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${RoleConflictGroup.dictionaryPath}.ALREADY_ACTIVE` });
         }
     }
 
     public canPurge(): void {
         if (!this.isRevoked) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
+            throw Exception.invariantViolation({ messageKey: `${RoleConflictGroup.dictionaryPath}.CANNOT_PURGE_ACTIVE` });
         } else if (this.isSystemManaged) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
+            throw Exception.invariantViolation({ messageKey: `${RoleConflictGroup.dictionaryPath}.CANNOT_PURGE_SYSTEM` });
         }
     }
 }

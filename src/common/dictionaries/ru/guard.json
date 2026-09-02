@@ -8,7 +8,7 @@
     "INSUFFICIENT_PERMISSIONS": "Недостаточно прав для выполнения операции."
   },
   "authn": {
-    "INVALID_TOKEN": "Токен аутентификации недействителен или просрочен.",
+    "MALFORMED_AUTHORIZATION": "Заголовок Authorization имеет неверный формат.",
     "TOKEN_MISSING": "Требуется токен аутентификации.",
     "SESSION_REVOKED": "Сессия была отозвана."
   },

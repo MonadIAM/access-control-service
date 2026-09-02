@@ -1,4 +1,4 @@
-.PHONY: env up down build restart lint knip swagger postman docs migrate migration empty-migration seed test coverage
+.PHONY: env up down build restart lint knip intl-types intl-check swagger postman docs migrate migration empty-migration seed test coverage
 
 SERVICE_EXEC_WITH_SECRETS := docker-compose exec service sh /usr/local/bin/with-vault-secrets.sh
 
@@ -18,6 +18,10 @@ lint:
 	pnpm run lint
 knip:
 	pnpm run knip
+intl-types:
+	pnpm run intl:types
+intl-check:
+	pnpm run intl:check
 swagger:
 	pnpm run swagger
 postman:

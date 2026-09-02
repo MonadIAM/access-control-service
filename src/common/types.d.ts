@@ -7,7 +7,7 @@ declare global {
     };
 
     type MessageResult = {
-        message: string;
+        message: Intl.Key;
         params?: Record<string, unknown>;
     };
 

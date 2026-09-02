@@ -44,7 +44,7 @@ export class RoleRepository
                 })
                 .then((relations) => relations.map(({ ancestor }) => ancestor));
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -69,7 +69,7 @@ export class RoleRepository
                     total,
                 ]);
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -90,7 +90,7 @@ export class RoleRepository
                     return relations.map(({ descendant }) => descendant);
                 });
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -115,7 +115,7 @@ export class RoleRepository
                     total,
                 ]);
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -144,7 +144,7 @@ export class RoleRepository
 
             return await builder.getResultAndCount();
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -204,7 +204,7 @@ export class RoleRepository
 
             return [mappedRoles, total];
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -247,7 +247,7 @@ export class RoleRepository
 
             return [roles, total];
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -295,7 +295,7 @@ export class RoleRepository
                 edges: result?.edges ?? [],
             };
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -330,7 +330,7 @@ export class RoleRepository
 
             return total + (count ?? 1) > this.roleLimit;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

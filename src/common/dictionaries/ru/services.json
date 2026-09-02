@@ -40,5 +40,12 @@
     "DELEGATION_NOT_ALLOWED": "Недостаточно прав для назначения данной роли.",
     "ACCOUNT_ROLE_LIMIT_EXCEEDED": "Превышен допустимый лимит ролей для учетной записи.",
     "HAS_SoD_VIOLATIONS": "Назначение нарушает одну или несколько политик разделения обязанностей."
+  },
+  "jwt": {
+    "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен."
+  },
+  "vault": {
+    "REQUEST_FAILED": "Запрос к Vault Transit завершился ошибкой.",
+    "INVALID_SIGNATURE": "Vault Transit вернул недействительную подпись."
   }
 }

@@ -76,9 +76,7 @@
     "BULK_REVOKED_COUNT": "Successfully revoked realms: {count}.",
     "BULK_RESTORED_COUNT": "Successfully restored realms: {count}.",
 
-    "REALMS_NOT_FOUND": "Some of the specified realms were not found.",
-    "ACCOUNT_NOT_MEMBER": "The specified account is not a member of this realm.",
-    "EXCLUDED": "Account successfully excluded from the realm."
+    "REALMS_NOT_FOUND": "Some of the specified realms were not found."
   },
   "permission": {
     "CREATED": "Permission successfully created.",

@@ -1,4 +1,4 @@
-import { ExceptionMapper, Exception } from "~common/exceptions";
+import { ExceptionMapper } from "~common/exceptions";
 
 export function BaseRepository<
     E extends ORM.AnyEntity,
@@ -7,7 +7,8 @@ export function BaseRepository<
 >({ Entity, Mapper }: Repositories.Base.Mixin.Props<E, A, C>): Repositories.Base.Mixin.Result<E, A, C> {
     return class Mixin extends Mapper implements Repositories.Base.Contract<E, A> {
         declare protected readonly readManager: ORM.EntityManager;
-        declare protected readonly dictionaryPath: string;
+
+        public readonly resource = Entity.name;
 
         public constructor(...args: AnyArray) {
             super(...args);
@@ -22,7 +23,7 @@ export function BaseRepository<
                 const entityManager = transaction ?? this.readManager.fork();
                 return await entityManager.findOne(Entity, where, options);
             } catch (error) {
-                throw ExceptionMapper.fromORM(error, this.constructor.name);
+                throw ExceptionMapper.fromORM(error, this.resource);
             }
         }
 
@@ -33,14 +34,9 @@ export function BaseRepository<
         }: Repositories.Base.FindUniqueOrThrow<E, P, F>): Promise<ORM.Loaded<E, P, F>> {
             try {
                 const entityManager = transaction ?? this.readManager.fork();
-                const result = await entityManager.findOne(Entity, where, options);
-                if (result) {
-                    return result;
-                } else {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.NOT_FOUND` });
-                }
+                return await entityManager.findOneOrFail(Entity, where, options);
             } catch (error) {
-                throw ExceptionMapper.fromORM(error, this.constructor.name);
+                throw ExceptionMapper.fromORM(error, this.resource);
             }
         }
 
@@ -53,7 +49,7 @@ export function BaseRepository<
                 const entityManager = transaction ?? this.readManager.fork();
                 return await entityManager.find(Entity, where, options);
             } catch (error) {
-                throw ExceptionMapper.fromORM(error, this.constructor.name);
+                throw ExceptionMapper.fromORM(error, this.resource);
             }
         }
 
@@ -73,7 +69,7 @@ export function BaseRepository<
                     return await entityManager.findAndCount(Entity, where, opts);
                 }
             } catch (error) {
-                throw ExceptionMapper.fromORM(error, this.constructor.name);
+                throw ExceptionMapper.fromORM(error, this.resource);
             }
         }
     };

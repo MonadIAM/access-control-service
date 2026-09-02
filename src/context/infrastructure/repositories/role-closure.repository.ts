@@ -6,6 +6,8 @@ import { knex } from "~infrastructure/database";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleClosureRepository implements Repositories.RoleClosure.Contract {
+    private readonly resource = RoleClosure.name;
+
     public async insertNewHierarchy(
         props: Repositories.RoleClosure.InsertNewHierarchy.Props,
     ): Repositories.RoleClosure.InsertNewHierarchy.Result {
@@ -38,7 +40,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
 
             await transaction.execute(query.sql, [...query.bindings], "run");
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -117,7 +119,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                 })),
             };
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -151,7 +153,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
 
             await transaction.execute(query.sql, [...query.bindings], "run");
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -241,7 +243,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
                 })),
             };
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -254,7 +256,7 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
 
             return total > 0;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 }

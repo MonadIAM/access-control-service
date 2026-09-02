@@ -15,6 +15,8 @@ declare namespace Repositories {
         }
 
         interface Contract<E, A extends Repositories.Mappers.Meta> {
+            readonly resource: string;
+
             find<P extends string = never, F extends string = "*">(props: Find<E, P, F>): Promise<ORM.Loaded<E, P, F>[]>;
 
             findUnique<P extends string = never, F extends string = "*">(

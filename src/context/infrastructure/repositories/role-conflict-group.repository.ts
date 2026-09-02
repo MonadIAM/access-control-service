@@ -51,7 +51,7 @@ export class RoleConflictGroupRepository
 
             return rawRows.map((row) => entityManager.map(RoleConflictGroup, row));
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -72,7 +72,7 @@ export class RoleConflictGroupRepository
 
             return existsRows.length > 0;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -93,7 +93,7 @@ export class RoleConflictGroupRepository
 
             return existsRows.length > 0;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -110,7 +110,7 @@ export class RoleConflictGroupRepository
                 "all",
             );
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -140,7 +140,7 @@ export class RoleConflictGroupRepository
 
             return existsRows.length > 0;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
@@ -154,7 +154,7 @@ export class RoleConflictGroupRepository
 
             return total + (count ?? 1) > this.groupLimit;
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, this.constructor.name);
+            throw ExceptionMapper.fromORM(error, this.resource);
         }
     }
 
