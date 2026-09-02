@@ -20,7 +20,7 @@ export class KafkaSchemaRegistry implements Kafka.SchemaRegistry.Contract, OnApp
     public constructor(private readonly configService: ConfigService) {
         this.config = {
             registryUrl: this.configService.getOrThrow<string>("SCHEMA_REGISTRY_URL"),
-            enabled: this.configService.getOrThrow<boolean>("SCHEMA_REGISTRY_ENABLED"),
+            enabled: this.configService.get<boolean>("SCHEMA_REGISTRY_ENABLED") ?? false,
         };
 
         this.registry = this.config.enabled ? new ConfluentSchemaRegistry({ host: this.config.registryUrl }) : null;

@@ -5,8 +5,8 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/../scripts/logger.sh"
 FILES_FOR_CHECK=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.ts$" | grep -v "node_modules")
 OUTPUT_FILE=""
 
-STEP_FUNCTIONS=(step_gitleaks step_intl step_tsc step_knip step_eslint)
-STEP_TITLES=("Gitleaks" "Intl" "TSC" "Knip" "ESLint")
+STEP_FUNCTIONS=(step_gitleaks step_env step_intl step_tsc step_knip step_eslint)
+STEP_TITLES=("Gitleaks" "Env" "Intl" "TSC" "Knip" "ESLint")
 
 remove_output_file() {
     if [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
@@ -21,6 +21,15 @@ step_gitleaks() {
     fi
 
     if gitleaks protect --staged --config .gitleaks.toml >"$OUTPUT_FILE" 2>&1; then
+        return 0
+    fi
+
+    log_output "$OUTPUT_FILE"
+    return 1
+}
+
+step_env() {
+    if LOG_NESTED=1 ./scripts/env.check.sh >"$OUTPUT_FILE" 2>&1; then
         return 0
     fi
 

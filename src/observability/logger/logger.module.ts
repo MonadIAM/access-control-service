@@ -28,7 +28,7 @@ import { NodeEnv } from "~common/enums";
                     });
                 }
 
-                if (configService.getOrThrow<boolean>("LOKI_ENABLED")) {
+                if (configService.get<boolean>("LOKI_ENABLED")) {
                     targets.push({
                         target: require.resolve("pino-loki"),
                         level,

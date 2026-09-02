@@ -26,7 +26,7 @@ import { KafkaUtils } from "./utils";
             provide: KAFKA_SERVICE,
             useFactory: (config: ConfigService, schemaRegistry: Kafka.SchemaRegistry.Contract): ClientKafka =>
                 new ClientKafka({
-                    consumer: { groupId: `${config.getOrThrow("SERVICE_NAME")}-producer` },
+                    consumer: { groupId: `${config.getOrThrow<string>("SERVICE_NAME")}-producer` },
                     client: KafkaUtils.buildClientConfig(config, { withClientId: true }),
                     serializer: new KafkaSchemaSerializer(schemaRegistry),
                 }),
@@ -45,7 +45,7 @@ import { KafkaUtils } from "./utils";
                         },
                     },
                     consumer: {
-                        groupId: `${config.getOrThrow("SERVICE_NAME")}-consumer`,
+                        groupId: `${config.getOrThrow<string>("SERVICE_NAME")}-consumer`,
                         allowAutoTopicCreation: false,
                     },
                     deserializer: new KafkaSchemaDeserializer(schemaRegistry),

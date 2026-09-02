@@ -93,13 +93,16 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsBoolean()
-    declare public LOKI_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public LOKI_ENABLED?: boolean;
 
     @Validator.IsString()
-    declare public LOKI_URL: string;
+    @ValidateIf((o) => o.LOKI_ENABLED)
+    declare public LOKI_URL?: string;
 
     @Validator.IsPositiveInt()
-    declare public LOKI_BATCH_INTERVAL: number;
+    @ValidateIf((o) => o.LOKI_ENABLED)
+    declare public LOKI_BATCH_INTERVAL?: number;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - common
@@ -115,7 +118,8 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_PASSWORD: string;
 
     @Validator.IsBoolean()
-    declare public POSTGRES_SSL_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public POSTGRES_SSL_ENABLED?: boolean;
 
     @Validator.IsBoolean()
     @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
@@ -141,10 +145,6 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsBoolean()
     declare public POSTGRES_LOGGING: boolean;
-
-    @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
-    declare public POSTGRES_VAULT_CREDENTIALS_PATH?: string;
 
     // ---------------------------------------------------------------------------
     // PostgreSQL - write
@@ -174,12 +174,6 @@ export class EnvironmentVariablesDTO {
     @Validator.Max(65535)
     declare public POSTGRES_READ_PORT: number;
 
-    @Validator.IsPositiveInt()
-    declare public POSTGRES_READ_POOL_MAX: number;
-
-    @Validator.IsMsString()
-    declare public POSTGRES_READ_POOL_IDLE_MS: StringValue;
-
     // ---------------------------------------------------------------------------
     // Redis
     // ---------------------------------------------------------------------------
@@ -194,12 +188,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsString()
     declare public REDIS_PASSWORD: string;
 
-    @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
-    declare public REDIS_VAULT_RUNTIME_PATH?: string;
-
     @Validator.IsBoolean()
-    declare public REDIS_TLS_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public REDIS_TLS_ENABLED?: boolean;
 
     @Validator.IsBoolean()
     @ValidateIf((o) => o.REDIS_TLS_ENABLED)
@@ -237,10 +228,12 @@ export class EnvironmentVariablesDTO {
     declare public KAFKA_BROKER: string;
 
     @Validator.IsBoolean()
-    declare public KAFKA_SSL_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public KAFKA_SSL_ENABLED?: boolean;
 
     @Validator.IsBoolean()
-    declare public KAFKA_SASL_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public KAFKA_SASL_ENABLED?: boolean;
 
     @Validator.IsBoolean()
     @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
@@ -292,7 +285,8 @@ export class EnvironmentVariablesDTO {
     declare public SCHEMA_REGISTRY_URL: string;
 
     @Validator.IsBoolean()
-    declare public SCHEMA_REGISTRY_ENABLED: boolean;
+    @Validator.IsOptional()
+    declare public SCHEMA_REGISTRY_ENABLED?: boolean;
 
     // ---------------------------------------------------------------------------
     // BullMQ - cleanup
@@ -378,12 +372,6 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     declare public VAULT_TRANSIT_AUDIT_LOG_KEY: string;
-
-    @Validator.IsString()
-    declare public VAULT_KV_MOUNT: string;
-
-    @Validator.IsString()
-    declare public VAULT_KV_RUNTIME_PATH: string;
 
     // ---------------------------------------------------------------------------
     // Vault (bootstrap)

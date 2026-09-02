@@ -14,7 +14,7 @@ export class MikroOrmConfig implements ORM.Config.Contract {
 
         const pool = {
             idleTimeoutMillis: ms(config.getOrThrow<StringValue>("POSTGRES_POOL_IDLE_MS")),
-            max: Number(config.getOrThrow<number>("POSTGRES_POOL_MAX")),
+            max: config.getOrThrow<number>("POSTGRES_POOL_MAX"),
         };
 
         const options: ORM.Options = {
@@ -40,8 +40,8 @@ export class MikroOrmConfig implements ORM.Config.Contract {
     private buildDriverOptions(props: ORM.Config.BuildDriverOptions.Props): ORM.Config.BuildDriverOptions.Result {
         const { config, host } = props;
 
-        if (config.getOrThrow<string>("POSTGRES_SSL_ENABLED") === "true") {
-            const rejectUnauthorized = config.getOrThrow<string>("POSTGRES_SSL_REJECT_UNAUTHORIZED") === "true";
+        if (config.get<boolean>("POSTGRES_SSL_ENABLED")) {
+            const rejectUnauthorized = config.getOrThrow<boolean>("POSTGRES_SSL_REJECT_UNAUTHORIZED");
             const cert = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_CERT_FILE"), "utf8");
             const key = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_KEY_FILE"), "utf8");
             const ca = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_CA_FILE"), "utf8");
@@ -66,9 +66,9 @@ export class MikroOrmConfig implements ORM.Config.Contract {
     public resolvePort(props: ORM.Config.ResolvePort.Props): ORM.Config.ResolvePort.Result {
         const { config, kind } = props;
         if (kind === "read") {
-            return Number(config.getOrThrow<number>("POSTGRES_READ_PORT"));
+            return config.getOrThrow<number>("POSTGRES_READ_PORT");
         } else {
-            return Number(config.getOrThrow<number>("POSTGRES_WRITE_PORT"));
+            return config.getOrThrow<number>("POSTGRES_WRITE_PORT");
         }
     }
 }

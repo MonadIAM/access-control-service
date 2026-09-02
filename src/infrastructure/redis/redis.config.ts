@@ -9,7 +9,7 @@ export class RedisConfig {
         return {
             ...this.buildTlsOptions(config),
             password: config.getOrThrow<string>("REDIS_PASSWORD"),
-            port: +config.getOrThrow<number>("REDIS_PORT"),
+            port: config.getOrThrow<number>("REDIS_PORT"),
             host: config.getOrThrow<string>("REDIS_HOST"),
             enableAutoPipelining: true,
             lazyConnect: true,
@@ -48,8 +48,8 @@ export class RedisConfig {
     }
 
     private static buildTlsOptions(config: ConfigService): Pick<RedisOptions, "tls"> {
-        if (config.getOrThrow<string>("REDIS_TLS_ENABLED") === "true") {
-            const rejectUnauthorized = config.getOrThrow<string>("REDIS_TLS_REJECT_UNAUTHORIZED") === "true";
+        if (config.get<boolean>("REDIS_TLS_ENABLED")) {
+            const rejectUnauthorized = config.getOrThrow<boolean>("REDIS_TLS_REJECT_UNAUTHORIZED");
             const servername = config.getOrThrow<string>("REDIS_HOST");
 
             const cert = readFileSync(config.getOrThrow<string>("REDIS_TLS_CERT_FILE"), "utf8");
