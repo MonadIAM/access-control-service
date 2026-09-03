@@ -38,9 +38,9 @@ export class OutboxService implements TransactionManager.Outbox.Contract {
                 action_type: props.actionType,
                 entity_type: props.entityType,
                 realm: props.realm ?? null,
+                actor: props.actor ?? null,
                 service: this.serviceName,
                 ip: props.ip ?? null,
-                actor: props.actor,
                 id: props.id,
             },
         });

@@ -83,17 +83,19 @@ export class VaultTransitService implements CommonServices.VaultTransit.Contract
     }
 
     public async sign(props: CommonServices.VaultTransit.Sign.Props): CommonServices.VaultTransit.Sign.Result {
-        const data = await this.request<Vault.Sign>(`sign/${encodeURIComponent(props.name)}`, {
+        const { version, input, name } = props;
+        const data = await this.request<Vault.Sign>(`sign/${encodeURIComponent(name)}`, {
             method: "POST",
             body: JSON.stringify({
-                input: Buffer.from(props.input).toString("base64"),
+                ...(version ? { key_version: version } : {}),
+                input: Buffer.from(input).toString("base64"),
                 marshaling_algorithm: "jws",
-                key_version: props.version,
             }),
         });
 
         const match = /^vault:v(\d+):(.+)$/.exec(data.signature);
-        if (!match || Number(match[1]) !== data.key_version || data.key_version !== props.version) {
+
+        if (!match || Number(match[1]) !== data.key_version || (!!version && data.key_version !== version)) {
             throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.INVALID_SIGNATURE` });
         } else {
             return {

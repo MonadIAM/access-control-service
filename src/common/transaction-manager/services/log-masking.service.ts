@@ -94,11 +94,9 @@ export class LogMaskingService implements TransactionManager.LogMasking.Contract
     }
 
     public async sign(props: TransactionManager.LogMasking.Sign.Props): TransactionManager.LogMasking.Sign.Result {
-        const version = await this.vaultTransitService.getLatestVersion({ name: this.logKey });
-        const { signature } = await this.vaultTransitService.sign({
+        const { signature, version } = await this.vaultTransitService.sign({
             input: JSON.stringify(props.entity, Object.keys(props.entity).sort()),
             name: this.logKey,
-            version,
         });
 
         return { signature, keyVersion: version };
