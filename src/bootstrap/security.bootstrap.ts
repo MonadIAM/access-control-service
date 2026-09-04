@@ -5,6 +5,7 @@ import fastifyCors from "@fastify/cors";
 import ms from "ms";
 
 import { ErrorCode, Exception } from "~common/exceptions";
+import { NodeEnv } from "~common/enums";
 
 export abstract class BootstrapSecurity {
     private constructor() {}
@@ -104,8 +105,8 @@ export abstract class BootstrapSecurity {
      */
     private static async configureSecurityHeaders(application: NestFastifyApplication, hstsMaxAge: number): Promise<void> {
         const serviceOrigins: string[] = JSON.parse(process.env.ALLOWED_SERVICE_ORIGINS);
-        const swagger = serviceOrigins.map((url) => [`${url}/docs-json`, `${url}/docs`, `${url}/api/`]).flat();
-        const isDevelopment = process.env.NODE_ENV === "development";
+        const reference = serviceOrigins.map((url) => [`${url}/docs/openapi.json`, `${url}/docs`, `${url}/api/`]).flat();
+        const isDevelopment = process.env.NODE_ENV !== NodeEnv.PRODUCTION;
 
         await application.register(fastifyHelmet, {
             crossOriginEmbedderPolicy: true,
@@ -113,10 +114,10 @@ export abstract class BootstrapSecurity {
             crossOriginResourcePolicy: { policy: "same-origin" },
             contentSecurityPolicy: {
                 directives: {
-                    imgSrc: isDevelopment ? ["'self'", "data:", "validator.swagger.io"] : ["'self'"],
-                    scriptSrc: isDevelopment ? ["'self'", "https:", "'unsafe-inline'"] : ["'self'"],
+                    imgSrc: isDevelopment ? ["'self'", "data:"] : ["'self'"],
+                    scriptSrc: isDevelopment ? ["'self'", "'unsafe-inline'"] : ["'self'"],
                     styleSrc: isDevelopment ? ["'self'", "'unsafe-inline'"] : ["'self'"],
-                    connectSrc: isDevelopment ? ["'self'", ...swagger] : ["'self'"],
+                    connectSrc: isDevelopment ? ["'self'", ...reference] : ["'self'"],
                     upgradeInsecureRequests: [],
                     defaultSrc: ["'self'"],
                 },

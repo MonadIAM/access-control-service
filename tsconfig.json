@@ -17,7 +17,6 @@
     "./mikro-orm.config.ts",
     "./env.d.ts",
     "src/**/*",
-    "cli/**/*",
   ],
   "exclude": [
     "node_modules",

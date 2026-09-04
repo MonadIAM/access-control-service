@@ -2,7 +2,7 @@ import type { KnipConfig } from "knip";
 
 const config: KnipConfig = {
     ignoreExportsUsedInFile: true, // reduces noise from re-exports inside index.ts
-    project: ["src/**/*.ts", "cli/**/*.ts"],
+    project: ["src/**/*.ts"],
     ignore: [
         // Generated from the dictionaries by "pnpm run intl:types"
         "src/common/dictionaries/intl.generated.ts",
@@ -23,9 +23,8 @@ const config: KnipConfig = {
     ],
     ignoreDependencies: [
         "@mikro-orm/entity-generator",
-        "@fastify/swagger-ui",
-        "@fastify/swagger",
-        "ts-jest",
+        "@types/har-format",
+        "ts-jest"
     ],
 };
 

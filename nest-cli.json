@@ -12,7 +12,7 @@
         "watch": true
       },
       {
-        "include": "bootstrap/swagger.md",
+        "include": "assets/**/*",
         "outDir": "dist/src",
         "watch": true
       }

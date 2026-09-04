@@ -70,6 +70,15 @@ export class EnvironmentVariablesDTO {
     declare public ACCESS_CONTROL_SERVICE_URL: string;
 
     @Validator.IsString()
+    declare public NOTIFICATION_SERVICE_URL: string;
+
+    @Validator.IsString()
+    declare public TEMPLATE_SERVICE_URL: string;
+
+    @Validator.IsUUID("4")
+    declare public DOCS_OAUTH_CLIENT_ID: string;
+
+    @Validator.IsString()
     declare public ALLOWED_SERVICE_ORIGINS: string;
 
     @Validator.IsString()

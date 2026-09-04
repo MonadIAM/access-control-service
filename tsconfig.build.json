@@ -27,6 +27,5 @@
     "node_modules",
     "configs",
     "dist",
-    "cli",
   ],
 }

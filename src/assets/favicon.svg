@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <style>
+        .brand { fill: #5B2A9E; }
+        .accent { fill: #D95E20; }
+
+        @media (prefers-color-scheme: dark) {
+            .brand { fill: #B18CF0; }
+            .accent { fill: #F0895A; }
+        }
+    </style>
+    <polygon class="brand" points="18,72 18,28 52,60 52,28" />
+    <polygon class="accent" points="52,28 52,60 86,28 86,72" />
+</svg>

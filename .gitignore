@@ -48,8 +48,6 @@ lerna-debug.log*
 .tmp
 
 # Generated API docs
-/access-control.swagger.json
-/access-control.postman.json
 
 # Runtime data
 pids
