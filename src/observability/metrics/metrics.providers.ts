@@ -30,7 +30,7 @@ const SERVER_ERRORS_PROVIDER = makeCounterProvider({
     labelNames: ["type"],
 });
 
-export const POVIDERS = [
+export const PROVIDERS = [
     SERVER_ERRORS_PROVIDER,
     EVENT_LOOP_LAG_PROVIDER,
     APP_STATUS_PROVIDER,

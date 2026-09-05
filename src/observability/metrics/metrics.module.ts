@@ -2,7 +2,7 @@ import { PrometheusModule } from "@willsoto/nestjs-prometheus";
 import { Global, Module } from "@nestjs/common";
 
 import { MetricsController } from "./metrics.controller";
-import { POVIDERS } from "./metrics.providers";
+import { PROVIDERS } from "./metrics.providers";
 
 @Global()
 @Module({
@@ -13,7 +13,7 @@ import { POVIDERS } from "./metrics.providers";
             path: "/metrics",
         }),
     ],
-    providers: POVIDERS,
-    exports: POVIDERS,
+    providers: PROVIDERS,
+    exports: PROVIDERS,
 })
 export class MetricsModule {}
