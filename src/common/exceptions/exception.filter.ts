@@ -1,11 +1,8 @@
 import { ArgumentsHost, Catch, HttpException, HttpStatus, Logger } from "@nestjs/common";
-import { InjectMetric } from "@willsoto/nestjs-prometheus";
 import { FastifyRequest, FastifyReply } from "fastify";
 import { I18nContext, I18nService } from "nestjs-i18n";
 import { ThrottlerException } from "@nestjs/throttler";
-import { Counter } from "prom-client";
 
-import { ExceptionMapper } from "./exception.mapper";
 import { ErrorCode, ErrorKind } from "./enums";
 import { Exception } from "./exception";
 
@@ -13,11 +10,7 @@ import { Exception } from "./exception";
 export class ExceptionFilter implements Exception.Filter.Contract {
     private readonly logger = new Logger(ExceptionFilter.name);
 
-    public constructor(
-        @InjectMetric("app_server_errors_total")
-        private readonly serverErrorsCounter: Counter<string>,
-        private readonly i18n: I18nService,
-    ) {}
+    public constructor(private readonly i18n: I18nService) {}
 
     public async catch(exception: unknown, host: ArgumentsHost): Promise<void> {
         const context = host.switchToHttp();
@@ -79,7 +72,6 @@ export class ExceptionFilter implements Exception.Filter.Contract {
             }
         }
 
-        this.metrics({ exception, statusCode: result.statusCode! });
         this.log({ exception, request, result });
 
         const body: Partial<Exception.ResponseBody> = {
@@ -93,14 +85,6 @@ export class ExceptionFilter implements Exception.Filter.Contract {
         }
 
         response.status(body.statusCode!).send(body);
-    }
-
-    public metrics(props: Exception.Filter.Metrics.Props): Exception.Filter.Metrics.Result {
-        if (props.statusCode >= HttpStatus.INTERNAL_SERVER_ERROR) {
-            this.serverErrorsCounter.inc({
-                type: ExceptionMapper.isORM(props.exception) ? "Database" : "Internal",
-            });
-        }
     }
 
     public log(props: Exception.Filter.Log.Props): Exception.Filter.Log.Result {

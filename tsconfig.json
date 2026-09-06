@@ -9,8 +9,10 @@
       "~observability": ["./src/observability"],
       "~observability/*": ["./src/observability/*"],
       "~bootstrap/*": ["./src/bootstrap/*"],
+      "~bootstrap": ["./src/bootstrap"],
       "~context/*": ["./src/context/*"],
       "~common/*": ["./src/common/*"],
+      "~root/*": ["./*"],
     },
   },
   "include": [

@@ -1,8 +1,7 @@
-import { Controller, Get, UseInterceptors } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Controller, Get } from "@nestjs/common";
 import { HealthCheck } from "@nestjs/terminus";
 
-import { MonitoringInterceptor } from "~common/interceptors/monitoring.interceptor";
 import { SkipInterceptors, Public } from "~common/decorators";
 
 import { HealthService } from "./health.service";
@@ -10,7 +9,6 @@ import { HealthService } from "./health.service";
 @ApiTags("Health")
 @SkipInterceptors()
 @Controller("health")
-@UseInterceptors(MonitoringInterceptor)
 export class HealthController {
     public constructor(private readonly healthService: HealthService) {}
 

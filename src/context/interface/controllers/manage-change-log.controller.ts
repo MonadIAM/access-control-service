@@ -1,9 +1,8 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
 import { CHANGE_LOG_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import { GetListBodyDTO, GetByIdQueryDTO, ChangeLogDTO, ListDTO } from "../dto/change-log";
@@ -22,7 +21,6 @@ const { CHANGE_LOG_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("ChangeLog")
 @Controller("/change-log/manage")
-@UseInterceptors(MonitoringInterceptor)
 export class ChangeLogManageController {
     public constructor(
         @Inject(CHANGE_LOG_QUERIES)

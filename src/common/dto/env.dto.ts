@@ -2,8 +2,8 @@ import { DiagLogLevel } from "@opentelemetry/api";
 import { ValidateIf } from "class-validator";
 import { type StringValue } from "ms";
 
+import { NodeEnv, OTelLogsExporter, OTelTracesSampler } from "~common/enums";
 import { Validator } from "~common/validator";
-import { NodeEnv } from "~common/enums";
 
 export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
@@ -94,8 +94,14 @@ export class EnvironmentVariablesDTO {
     @Validator.IsIn(Object.keys(DiagLogLevel))
     declare public OTEL_LOG_LEVEL: keyof typeof DiagLogLevel;
 
-    @Validator.IsIn(["none", "otlp", "console"])
-    declare public OTEL_LOGS_EXPORTER: "none" | "otlp" | "console";
+    @Validator.IsEnum(OTelLogsExporter)
+    declare public OTEL_LOGS_EXPORTER: OTelLogsExporter;
+
+    @Validator.IsEnum(OTelTracesSampler)
+    declare public OTEL_TRACES_SAMPLER: OTelTracesSampler;
+
+    @Validator.IsDecimal()
+    declare public OTEL_TRACES_SAMPLER_ARG: string;
 
     // ---------------------------------------------------------------------------
     // Loki
@@ -324,7 +330,7 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.STAND)
     declare public DOCKER_NETWORK_MONITORING?: string;
 
     @Validator.IsString()
@@ -340,11 +346,11 @@ export class EnvironmentVariablesDTO {
     declare public DOCKER_NETWORK_VAULT: string;
 
     @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.STAND)
     declare public DOCKER_VOLUME_VAULT_CA?: string;
 
     @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.STAND)
     declare public DOCKER_VOLUME_SERVICE_TLS?: string;
 
     // ---------------------------------------------------------------------------
@@ -359,7 +365,7 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.STAND)
     declare public VAULT_PORT?: number;
 
     @Validator.IsString()
@@ -387,7 +393,7 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV !== NodeEnv.LOCAL)
+    @ValidateIf((o) => o.NODE_ENV === NodeEnv.STAND)
     declare public VAULT_PROVISIONER_TOKEN?: string;
 
     // ---------------------------------------------------------------------------

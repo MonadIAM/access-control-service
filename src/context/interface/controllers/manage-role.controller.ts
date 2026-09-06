@@ -1,8 +1,7 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Inject, Query, Body, Post } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Inject, Query, Body, Post } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { ROLE_QUERIES } from "~context/application/queries";
 import { PermissionCode } from "~context/enums";
 
@@ -25,7 +24,6 @@ const { ROLE_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("Role")
 @Controller("/role/manage")
-@UseInterceptors(MonitoringInterceptor)
 export class RoleManageController {
     public constructor(
         @Inject(ROLE_QUERIES)

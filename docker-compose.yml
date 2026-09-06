@@ -78,6 +78,9 @@ services:
       postgres_net:
       redis_net:
       vault_net:
+      monitoring_net:
+        aliases:
+          - access-control-service-app
     stop_grace_period: 1s
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:${APP_PORT:?}/api/v${API_VERSION:?}/health/liveness"]
@@ -107,3 +110,6 @@ networks:
   vault_net:
     external: true
     name: ${DOCKER_NETWORK_VAULT:?}
+  monitoring_net:
+    external: true
+    name: ${DOCKER_NETWORK_MONITORING:-monitoring-net}

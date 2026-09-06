@@ -21,9 +21,10 @@ import {
     ATTR_SERVICE_NAME,
 } from "@opentelemetry/semantic-conventions";
 
-const isLocal = process.env.NODE_ENV === "local";
+const nodeEnv = process.env.NODE_ENV;
+const hasOtelEndpoint = Boolean(process.env.OTEL_EXPORTER_OTLP_ENDPOINT?.trim());
 
-if (isMainThread && !isLocal) {
+if (isMainThread && (nodeEnv === "stand" || (nodeEnv === "local" && hasOtelEndpoint))) {
     const papackage = JSON.parse(readFileSync(join(cwd(), "package.json"), "utf8"));
 
     const resource = defaultResource().merge(

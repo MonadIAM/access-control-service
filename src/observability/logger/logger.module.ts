@@ -18,20 +18,20 @@ import { NodeEnv } from "~common/enums";
 
                 if (isLocal) {
                     targets.push({
-                        target: require.resolve("pino-pretty"),
-                        level,
                         options: {
                             translateTime: "UTC:yyyy-mm-dd HH:MM:ss",
                             singleLine: true,
                             colorize: true,
                         },
+                        target: require.resolve("pino-pretty"),
+                        level,
                     });
                 }
 
                 if (configService.get<boolean>("LOKI_ENABLED")) {
                     targets.push({
                         target: require.resolve("pino-loki"),
-                        level,
+                        level: "warn",
                         options: {
                             interval: configService.getOrThrow<number>("LOKI_BATCH_INTERVAL"),
                             host: configService.getOrThrow<string>("LOKI_URL"),

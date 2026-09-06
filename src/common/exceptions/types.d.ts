@@ -7,22 +7,10 @@ declare global {
     namespace Exception {
         namespace Filter {
             interface InternalContract {
-                metrics: Metrics.Signature;
                 log: Log.Signature;
             }
 
             interface Contract extends NestExceptionFilter, InternalContract {}
-
-            namespace Metrics {
-                type Props = {
-                    exception: unknown;
-                    statusCode: number;
-                };
-
-                type Result = void;
-
-                type Signature = (props: Props) => Result;
-            }
 
             namespace Log {
                 type Props = {

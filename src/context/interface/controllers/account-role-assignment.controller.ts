@@ -1,22 +1,9 @@
+import { Controller, HttpStatus, HttpCode, Delete, Inject, Patch, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import {
-    UseInterceptors,
-    Controller,
-    HttpStatus,
-    HttpCode,
-    Delete,
-    Inject,
-    Patch,
-    Query,
-    Body,
-    Post,
-    Get,
-} from "@nestjs/common";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS } from "~context/application/commands";
 import { ACCOUNT_ROLE_ASSIGNMENT_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -60,7 +47,6 @@ const {
 
 @ApiTags("AccountRoleAssignment")
 @Controller("/account-role-assignment")
-@UseInterceptors(MonitoringInterceptor)
 export class AccountRoleAssignmentController {
     public constructor(
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_COMMANDS)

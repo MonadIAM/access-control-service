@@ -5,9 +5,7 @@ import { NestFactory } from "@nestjs/core";
 import { Logger } from "nestjs-pino";
 import cookie from "@fastify/cookie";
 
-import { BootstrapReference } from "~bootstrap/reference.bootstrap";
-import { BootstrapSecurity } from "~bootstrap/security.bootstrap";
-import { BootstrapPipes } from "~bootstrap/pipes.bootstrap";
+import { BootstrapReference, BootstrapSecurity, BootstrapPipes, BootstrapMetrics } from "~bootstrap";
 import { KAFKA_CONFIG } from "~infrastructure/kafka";
 import { GRPC_CONFIG } from "~infrastructure/grpc";
 
@@ -33,6 +31,7 @@ void (async function (): Promise<void> {
     application.setGlobalPrefix(`api/v${version}`);
 
     BootstrapPipes.applyGlobalPipes(application);
+    BootstrapMetrics.registerMetricsHooks(application);
     await BootstrapReference.registerReference(application);
     await BootstrapSecurity.registerSecurityPlugins(application);
 

@@ -23,7 +23,7 @@ const config: Options = {
     host,
     port,
 
-    debug: process.env.POSTGRES_LOGGING === "true" || process.env.NODE_ENV === "development",
+    debug: process.env.POSTGRES_LOGGING === "true" || process.env.NODE_ENV === "local",
 
     entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
     entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],

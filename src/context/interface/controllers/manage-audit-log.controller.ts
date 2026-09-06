@@ -1,9 +1,8 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequireGlobalPermission, FormatResponse, Swagger } from "~common/decorators";
 import { AUDIT_LOG_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import { GetListBodyDTO, ManageGetListQueryDTO, ManageGetByIdQueryDTO, AuditLogDTO, ListDTO } from "../dto/audit-log";
@@ -22,7 +21,6 @@ const { AUDIT_LOG_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("AuditLog")
 @Controller("/audit-log/manage")
-@UseInterceptors(MonitoringInterceptor)
 export class AuditLogManageController {
     public constructor(
         @Inject(AUDIT_LOG_QUERIES)

@@ -27,23 +27,23 @@ export abstract class BootstrapSecurity {
 
     /**
      * Sets up CORS (Cross-Origin Resource Sharing) headers with ALLOWED_ORIGINS validation.
-     * @note Allows cross-origin requests only from trusted sources. (no-origin allowed only in dev mode)
+     * @note Allows cross-origin requests only from trusted sources. (no-origin allowed only in local mode)
      *
      * @param application Nest Fastify application instance. {@link NestFastifyApplication}
      *
      * @see CORS [Cross-Origin Resource Sharing](https://developer.mozilla.org/docs/Web/HTTP/CORS)
      */
     private static enforceAllowedOrigins(application: NestFastifyApplication): void {
-        const isDevelopment: boolean = (process.env.NODE_ENV ?? "development") === "development";
         const serviceOrigins: string[] = JSON.parse(process.env.ALLOWED_SERVICE_ORIGINS);
         const uiOrigins: string[] = JSON.parse(process.env.ALLOWED_UI_ORIGINS);
         const allowedOrigins: string[] = serviceOrigins.concat(uiOrigins);
+        const isLocal = process.env.NODE_ENV === NodeEnv.LOCAL;
 
         application
             .getHttpAdapter()
             .getInstance()
             .addHook("onRequest", (request, reply, done) => {
-                const originHeader = request.headers["origin"] as string | undefined;
+                const originHeader = request.headers["origin"] as Optional<string>;
                 if (originHeader) {
                     const isAllowed: boolean = allowedOrigins.length === 0 || allowedOrigins.includes(originHeader);
                     if (isAllowed) {
@@ -58,7 +58,7 @@ export abstract class BootstrapSecurity {
                             }),
                         );
                     }
-                } else if (isDevelopment || request.method === "GET" || request.method === "HEAD") {
+                } else if (isLocal || request.method === "GET" || request.method === "HEAD") {
                     done();
                 } else {
                     this.sendException(
@@ -106,7 +106,7 @@ export abstract class BootstrapSecurity {
     private static async configureSecurityHeaders(application: NestFastifyApplication, hstsMaxAge: number): Promise<void> {
         const serviceOrigins: string[] = JSON.parse(process.env.ALLOWED_SERVICE_ORIGINS);
         const reference = serviceOrigins.map((url) => [`${url}/docs/openapi.json`, `${url}/docs`, `${url}/api/`]).flat();
-        const isDevelopment = process.env.NODE_ENV !== NodeEnv.PRODUCTION;
+        const isLocal = process.env.NODE_ENV === NodeEnv.LOCAL;
 
         await application.register(fastifyHelmet, {
             crossOriginEmbedderPolicy: true,
@@ -114,10 +114,10 @@ export abstract class BootstrapSecurity {
             crossOriginResourcePolicy: { policy: "same-origin" },
             contentSecurityPolicy: {
                 directives: {
-                    imgSrc: isDevelopment ? ["'self'", "data:"] : ["'self'"],
-                    scriptSrc: isDevelopment ? ["'self'", "'unsafe-inline'"] : ["'self'"],
-                    styleSrc: isDevelopment ? ["'self'", "'unsafe-inline'"] : ["'self'"],
-                    connectSrc: isDevelopment ? ["'self'", ...reference] : ["'self'"],
+                    scriptSrc: isLocal ? ["'self'", "'unsafe-inline'"] : ["'self'"],
+                    styleSrc: isLocal ? ["'self'", "'unsafe-inline'"] : ["'self'"],
+                    connectSrc: isLocal ? ["'self'", ...reference] : ["'self'"],
+                    imgSrc: isLocal ? ["'self'", "data:"] : ["'self'"],
                     upgradeInsecureRequests: [],
                     defaultSrc: ["'self'"],
                 },

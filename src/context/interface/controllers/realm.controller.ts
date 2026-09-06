@@ -1,22 +1,9 @@
+import { Controller, HttpStatus, HttpCode, Delete, Inject, Patch, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import {
-    UseInterceptors,
-    Controller,
-    HttpStatus,
-    HttpCode,
-    Delete,
-    Inject,
-    Patch,
-    Query,
-    Body,
-    Post,
-    Get,
-} from "@nestjs/common";
 
 import { RequirePermission, FormatResponse, Swagger, Extract, Reauthentication } from "~common/decorators";
 import { REALM_COMMANDS } from "~context/application/commands";
 import { REALM_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -54,7 +41,6 @@ const {
 
 @ApiTags("Realm")
 @Controller("/realm")
-@UseInterceptors(MonitoringInterceptor)
 export class RealmController {
     public constructor(
         @Inject(REALM_COMMANDS)

@@ -1,10 +1,9 @@
-import { UseInterceptors, Controller, HttpStatus, HttpCode, Delete, Inject, Query, Body, Post, Get } from "@nestjs/common";
+import { Controller, HttpStatus, HttpCode, Delete, Inject, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract } from "~common/decorators";
 import { ROLE_CONFLICT_MEMBER_COMMANDS } from "~context/application/commands";
 import { ROLE_CONFLICT_MEMBER_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { SuccessMessageDTO } from "~common/dto";
 import { PermissionCode } from "~context/enums";
 
@@ -37,7 +36,6 @@ const {
 
 @ApiTags("RoleConflictMember")
 @Controller("/role-conflict-member")
-@UseInterceptors(MonitoringInterceptor)
 export class RoleConflictMemberController {
     public constructor(
         @Inject(ROLE_CONFLICT_MEMBER_COMMANDS)

@@ -1,9 +1,8 @@
-import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, UseInterceptors, Inject } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, HttpCode, Get, Query, Inject } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger } from "~common/decorators";
 import { PERMISSION_OVERRIDE_QUERIES } from "~context/application/queries";
-import { MonitoringInterceptor } from "~common/interceptors";
 import { PermissionCode } from "~context/enums";
 
 import {
@@ -28,7 +27,6 @@ const { PERMISSION_OVERRIDE_READ_ABSOLUTE } = PermissionCode;
 
 @ApiTags("PermissionOverride")
 @Controller("/permission-override/manage")
-@UseInterceptors(MonitoringInterceptor)
 export class PermissionOverrideManageController {
     public constructor(
         @Inject(PERMISSION_OVERRIDE_QUERIES)
