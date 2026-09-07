@@ -2,6 +2,7 @@ import { PrometheusModule } from "@willsoto/nestjs-prometheus";
 import { Global, Module } from "@nestjs/common";
 
 import { MetricsController } from "./metrics.controller";
+import { KafkaMetricsRecorder } from "./kafka.recorder";
 import { PROVIDERS } from "./metrics.providers";
 
 @Global()
@@ -13,7 +14,7 @@ import { PROVIDERS } from "./metrics.providers";
             path: "/metrics",
         }),
     ],
-    providers: PROVIDERS,
-    exports: PROVIDERS,
+    providers: [...PROVIDERS, KafkaMetricsRecorder],
+    exports: [...PROVIDERS, KafkaMetricsRecorder],
 })
 export class MetricsModule {}

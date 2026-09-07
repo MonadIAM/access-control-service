@@ -7,6 +7,7 @@ import { defaultResource, resourceFromAttributes } from "@opentelemetry/resource
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-grpc";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
 import { PeriodicExportingMetricReader } from "@opentelemetry/sdk-metrics";
+import { normalizeSync, loadModule } from "@libpg-query/parser";
 import FastifyOtelInstrumentation from "@fastify/otel";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { isMainThread } from "worker_threads";
@@ -23,8 +24,26 @@ import {
 
 const nodeEnv = process.env.NODE_ENV;
 const hasOtelEndpoint = Boolean(process.env.OTEL_EXPORTER_OTLP_ENDPOINT?.trim());
+let isPostgresParserReady = false;
+
+function normalizePostgresQueryText(queryText: string): string {
+    try {
+        return queryText.trim() && isPostgresParserReady ? normalizeSync(queryText) : "";
+    } catch (error) {
+        diag.warn("[OTEL] failed to normalize PostgreSQL query text", error);
+        return "";
+    }
+}
 
 if (isMainThread && (nodeEnv === "stand" || (nodeEnv === "local" && hasOtelEndpoint))) {
+    void loadModule()
+        .then(() => {
+            isPostgresParserReady = true;
+        })
+        .catch((error) => {
+            diag.error("[OTEL] failed to initialize PostgreSQL query sanitizer", error);
+        });
+
     const papackage = JSON.parse(readFileSync(join(cwd(), "package.json"), "utf8"));
 
     const resource = defaultResource().merge(
@@ -49,6 +68,18 @@ if (isMainThread && (nodeEnv === "stand" || (nodeEnv === "local" && hasOtelEndpo
                 "@opentelemetry/instrumentation-net": { enabled: false },
                 "@opentelemetry/instrumentation-dns": { enabled: false },
                 "@opentelemetry/instrumentation-fs": { enabled: false },
+                "@opentelemetry/instrumentation-pg": {
+                    enhancedDatabaseReporting: false,
+                    ignoreConnectSpans: true,
+                    requestHook(span, queryInfo): void {
+                        span.setAttribute("db.query.text", normalizePostgresQueryText(queryInfo.query.text));
+                    },
+                },
+                "@opentelemetry/instrumentation-ioredis": {
+                    dbStatementSerializer(command): string {
+                        return command;
+                    },
+                },
             }),
             new FastifyOtelInstrumentation({ registerOnInitialization: true }),
         ],

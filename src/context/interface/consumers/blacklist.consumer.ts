@@ -3,6 +3,7 @@ import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 
 import { KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
+import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
 import { BLACKLIST_CACHE_SERVICE } from "~context/infrastructure/services";
 import { KafkaTopic } from "~context/enums";
 
@@ -13,6 +14,8 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModule
     public constructor(
         @Inject(BLACKLIST_CACHE_SERVICE)
         private readonly blacklistCacheService: InfrastructureServices.BlacklistCache.PublicContract,
+        @Inject(KafkaMetricsRecorder)
+        private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
         private readonly schemaRegistry: Kafka.SchemaRegistry.PublicContract,
         @Inject(KAFKA_SERVICE)
@@ -54,5 +57,6 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModule
                 },
             }),
         );
+        this.kafkaMetrics.recordDead({ topic: KafkaTopic.BLACKLIST, error });
     }
 }

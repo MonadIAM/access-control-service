@@ -1,10 +1,12 @@
-import { ClassProvider } from "@nestjs/common";
+import { Provider } from "@nestjs/common";
 
 import { KAFKA_RETRY_PROCESSOR, CLEANUP_PROCESSOR, KAFKA_RETRY_QUEUE, CLEANUP_QUEUE } from "./tokens";
 import { KafkaRetryProcessor, KafkaRetryQueue } from "./kafka-retry";
 import { CleanupProcessor, CleanupQueue } from "./cleanup";
+import { BULLMQ_JOBS_PROVIDER } from "./metrics.provider";
 
-export const QUEUES: ClassProvider[] = [
+export const QUEUES: Provider[] = [
+    BULLMQ_JOBS_PROVIDER,
     {
         provide: KAFKA_RETRY_PROCESSOR,
         useClass: KafkaRetryProcessor,

@@ -1,9 +1,18 @@
-import { Job } from "bullmq";
+import { Job, JobType } from "bullmq";
 
 import { CleanupJob } from "~context/enums";
 
 declare global {
     namespace Queues {
+        namespace Metrics {
+            type JobState = Extract<
+                JobType,
+                "waiting" | "active" | "delayed" | "prioritized" | "waiting-children" | "failed" | "completed"
+            >;
+
+            type JobCounts = Partial<Record<JobState, number>>;
+        }
+
         namespace KafkaRetry {
             type JobData = Consumers.DLQ.Message;
 

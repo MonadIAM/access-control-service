@@ -49,6 +49,7 @@
     "@fastify/otel": "0.20.1",
     "@grpc/grpc-js": "1.14.4",
     "@kafkajs/confluent-schema-registry": "4.1.0",
+    "@libpg-query/parser": "17.6.10",
     "@mikro-orm/core": "7.1.13",
     "@mikro-orm/nestjs": "7.0.2",
     "@mikro-orm/postgresql": "7.1.13",

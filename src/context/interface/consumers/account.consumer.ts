@@ -5,6 +5,7 @@ import { lastValueFrom } from "rxjs";
 
 import { KafkaTopicBuilder, KAFKA_RETRY_REGISTRY, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS, PERMISSION_OVERRIDE_COMMANDS } from "~context/application/commands";
+import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
 
@@ -17,6 +18,8 @@ export class AccountConsumer implements OnModuleInit, Consumers.Account.Contract
         private readonly accountRoleAssignmentCommands: Commands.AccountRoleAssignment.ConsumerContract,
         @Inject(PERMISSION_OVERRIDE_COMMANDS)
         private readonly permissionOverrideCommands: Commands.PermissionOverride.ConsumerContract,
+        @Inject(KafkaMetricsRecorder)
+        private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
         private readonly schemaRegistry: Kafka.SchemaRegistry.PublicContract,
         @Inject(KAFKA_RETRY_REGISTRY)
@@ -76,5 +79,11 @@ export class AccountConsumer implements OnModuleInit, Consumers.Account.Contract
                 },
             }),
         );
+
+        if (retryable) {
+            this.kafkaMetrics.recordRetry({ topic: KafkaTopic.ACCOUNT, error });
+        } else {
+            this.kafkaMetrics.recordDead({ topic: KafkaTopic.ACCOUNT, error });
+        }
     }
 }

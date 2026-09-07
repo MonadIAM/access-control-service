@@ -152,17 +152,11 @@ export class EnvironmentVariablesDTO {
     @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
     declare public POSTGRES_SSL_KEY_FILE?: string;
 
-    @Validator.IsPositiveInt()
-    declare public POSTGRES_POOL_MAX: number;
-
-    @Validator.IsMsString()
-    declare public POSTGRES_POOL_IDLE_MS: StringValue;
-
     @Validator.IsBoolean()
     declare public POSTGRES_LOGGING: boolean;
 
     // ---------------------------------------------------------------------------
-    // PostgreSQL - write
+    // PostgreSQL - write-side
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
@@ -179,7 +173,7 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_WRITE_POOL_IDLE_MS: StringValue;
 
     // ---------------------------------------------------------------------------
-    // PostgreSQL - read
+    // PostgreSQL - read-side
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
@@ -188,6 +182,12 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
     declare public POSTGRES_READ_PORT: number;
+
+    @Validator.IsPositiveInt()
+    declare public POSTGRES_READ_POOL_MAX: number;
+
+    @Validator.IsMsString()
+    declare public POSTGRES_READ_POOL_IDLE_MS: StringValue;
 
     // ---------------------------------------------------------------------------
     // Redis

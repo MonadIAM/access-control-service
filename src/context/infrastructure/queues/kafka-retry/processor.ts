@@ -6,6 +6,7 @@ import { lastValueFrom } from "rxjs";
 import { Job } from "bullmq";
 
 import { KAFKA_RETRY_REGISTRY, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
+import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
 import { Exception } from "~common/exceptions";
 
 import { BullQueue } from "../enums";
@@ -16,6 +17,8 @@ export class KafkaRetryProcessor extends WorkerHost {
     private readonly logger = new Logger(KafkaRetryProcessor.name);
 
     public constructor(
+        @Inject(KafkaMetricsRecorder)
+        private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
         private readonly schemaRegistry: Kafka.SchemaRegistry.PublicContract,
         @Inject(KAFKA_RETRY_REGISTRY)
@@ -53,6 +56,7 @@ export class KafkaRetryProcessor extends WorkerHost {
             );
 
             await lastValueFrom(this.kafkaClient.emit(`${job.data.originalTopic}-dead`, { value: job.data }));
+            this.kafkaMetrics.recordDead({ topic: job.data.originalTopic, error: job.failedReason });
         }
     }
 }

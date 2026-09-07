@@ -1,4 +1,6 @@
 import { ConfigService } from "@nestjs/config";
+import { Pool as PostgreSQLPool } from "pg";
+import { StringValue } from "ms";
 import { Knex } from "knex";
 import {
     EntityDictionary as OriginEntityDictionary,
@@ -89,6 +91,15 @@ declare global {
 
         type ConnectionKind = "write" | "read";
 
+        type PoolStats = {
+            kind: ConnectionKind;
+            waiting: number;
+            active: number;
+            total: number;
+            idle: number;
+            max: number;
+        };
+
         namespace Config {
             interface Contract extends PublicContract, InternalContract {}
 
@@ -108,8 +119,12 @@ declare global {
             }
 
             interface InternalContract {
-                resolveHost: ResolveHost.Signature;
+                buildDriverOptions: BuildDriverOptions.Signature;
+                resolvePoolIdleMS: ResolvePoolIdleMS.Signature;
+                buildPoolOptions: BuildPoolOptions.Signature;
+                resolvePoolMax: ResolvePoolMax.Signature;
                 resolvePort: ResolvePort.Signature;
+                resolveHost: ResolveHost.Signature;
             }
 
             namespace ResolveHost {
@@ -134,8 +149,42 @@ declare global {
                 type Signature = (props: Props) => Result;
             }
 
+            namespace ResolvePoolMax {
+                type Props = {
+                    kind: ORM.ConnectionKind;
+                    config: ConfigService;
+                };
+
+                type Result = number;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace ResolvePoolIdleMS {
+                type Props = {
+                    kind: ORM.ConnectionKind;
+                    config: ConfigService;
+                };
+
+                type Result = StringValue;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace BuildPoolOptions {
+                type Props = {
+                    kind: ORM.ConnectionKind;
+                    config: ConfigService;
+                };
+
+                type Result = ORM.Options["pool"];
+
+                type Signature = (props: Props) => Result;
+            }
+
             namespace BuildDriverOptions {
                 type Props = {
+                    kind: ORM.ConnectionKind;
                     config: ConfigService;
                     host: string;
                 };
@@ -143,6 +192,46 @@ declare global {
                 type Result = ORM.Options["driverOptions"];
 
                 type Signature = (props: Props) => Result;
+            }
+        }
+
+        namespace PoolRegistry {
+            interface Contract extends PublicContract, InternalContract {}
+
+            interface InternalContract {
+                register: Register.Signature;
+            }
+
+            namespace Register {
+                type Props = {
+                    kind: ORM.ConnectionKind;
+                    pool: PostgreSQLPool;
+                };
+
+                type Result = void;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            interface PublicContract {
+                snapshots: Snapshots.Signature;
+                snapshot: Snapshot.Signature;
+            }
+
+            namespace Snapshot {
+                type Props = {
+                    kind: ORM.ConnectionKind;
+                };
+
+                type Result = Nullable<ORM.PoolStats>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Snapshots {
+                type Result = ORM.PoolStats[];
+
+                type Signature = () => Result;
             }
         }
     }

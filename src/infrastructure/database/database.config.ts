@@ -4,25 +4,23 @@ import ms, { StringValue } from "ms";
 import { readFileSync } from "fs";
 import path from "path";
 
+import { PostgreSQLPoolRegistry } from "./pool.registry";
+
 @Injectable()
 export class MikroOrmConfig implements ORM.Config.Contract {
+    public constructor(protected readonly poolRegistry: PostgreSQLPoolRegistry) {}
+
     public buildOptions(props: ORM.Config.BuildOptions.Props): ORM.Config.BuildOptions.Result {
         const { config, kind = "write" } = props;
 
         const host = this.resolveHost({ config, kind });
         const port = this.resolvePort({ config, kind });
 
-        const pool = {
-            idleTimeoutMillis: ms(config.getOrThrow<StringValue>("POSTGRES_POOL_IDLE_MS")),
-            max: config.getOrThrow<number>("POSTGRES_POOL_MAX"),
-        };
-
         const options: ORM.Options = {
             driver: PostgreSqlDriver,
 
             host: host,
             port: port,
-            pool: pool,
             user: config.getOrThrow<string>("POSTGRES_USER"),
             dbName: config.getOrThrow<string>("POSTGRES_DB"),
             password: config.getOrThrow<string>("POSTGRES_PASSWORD"),
@@ -31,14 +29,22 @@ export class MikroOrmConfig implements ORM.Config.Contract {
             entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
             entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],
 
-            driverOptions: this.buildDriverOptions({ config, host }),
+            pool: this.buildPoolOptions({ config, kind }),
+
+            driverOptions: this.buildDriverOptions({ config, host, kind }),
         };
 
         return options;
     }
 
-    private buildDriverOptions(props: ORM.Config.BuildDriverOptions.Props): ORM.Config.BuildDriverOptions.Result {
-        const { config, host } = props;
+    public buildDriverOptions(props: ORM.Config.BuildDriverOptions.Props): ORM.Config.BuildDriverOptions.Result {
+        const { config, host, kind } = props;
+
+        const baseOptions = {
+            onPoolCreated: (pool: ORM.PoolRegistry.Register.Props["pool"]): void => {
+                this.poolRegistry.register({ kind, pool });
+            },
+        };
 
         if (config.get<boolean>("POSTGRES_SSL_ENABLED")) {
             const rejectUnauthorized = config.getOrThrow<boolean>("POSTGRES_SSL_REJECT_UNAUTHORIZED");
@@ -47,11 +53,21 @@ export class MikroOrmConfig implements ORM.Config.Contract {
             const ca = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_CA_FILE"), "utf8");
 
             return {
+                ...baseOptions,
                 ssl: { rejectUnauthorized, servername: host, cert, key, ca },
             };
         } else {
-            return {};
+            return baseOptions;
         }
+    }
+
+    public buildPoolOptions(props: ORM.Config.BuildPoolOptions.Props): ORM.Config.BuildPoolOptions.Result {
+        const { config, kind } = props;
+
+        return {
+            idleTimeoutMillis: Number(ms(this.resolvePoolIdleMS({ config, kind }))),
+            max: this.resolvePoolMax({ config, kind }),
+        };
     }
 
     public resolveHost(props: ORM.Config.ResolveHost.Props): ORM.Config.ResolveHost.Result {
@@ -69,6 +85,24 @@ export class MikroOrmConfig implements ORM.Config.Contract {
             return config.getOrThrow<number>("POSTGRES_READ_PORT");
         } else {
             return config.getOrThrow<number>("POSTGRES_WRITE_PORT");
+        }
+    }
+
+    public resolvePoolMax(props: ORM.Config.ResolvePoolMax.Props): ORM.Config.ResolvePoolMax.Result {
+        const { config, kind } = props;
+        if (kind === "read") {
+            return config.getOrThrow<number>("POSTGRES_READ_POOL_MAX");
+        } else {
+            return config.getOrThrow<number>("POSTGRES_WRITE_POOL_MAX");
+        }
+    }
+
+    public resolvePoolIdleMS(props: ORM.Config.ResolvePoolIdleMS.Props): ORM.Config.ResolvePoolIdleMS.Result {
+        const { config, kind } = props;
+        if (kind === "read") {
+            return config.getOrThrow<StringValue>("POSTGRES_READ_POOL_IDLE_MS");
+        } else {
+            return config.getOrThrow<StringValue>("POSTGRES_WRITE_POOL_IDLE_MS");
         }
     }
 }

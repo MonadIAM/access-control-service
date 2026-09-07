@@ -7,6 +7,7 @@ loglevel: info
 savePrefix: ""
 allowBuilds:
   "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/cc29b6976820b409490bfd655262e4e687272c5f": true
+  "@launchql/protobufjs": true
   "msgpackr-extract": true
   "unrs-resolver": true
   "@scarf/scarf": false

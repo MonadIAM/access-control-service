@@ -4,6 +4,7 @@ import { lastValueFrom } from "rxjs";
 
 import { KafkaTopicBuilder, KAFKA_RETRY_REGISTRY, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { REAUTHENTICATION_CACHE_SERVICE } from "~context/infrastructure/services";
+import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
 import { KafkaTopic } from "~context/enums";
 
 @Controller()
@@ -11,6 +12,8 @@ export class ReauthenticationConsumer implements Consumers.Reauthentication.Cont
     public constructor(
         @Inject(REAUTHENTICATION_CACHE_SERVICE)
         private readonly reauthenticationCacheService: InfrastructureServices.ReauthenticationCache.PublicContract,
+        @Inject(KafkaMetricsRecorder)
+        private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
         private readonly schemaRegistry: Kafka.SchemaRegistry.PublicContract,
         @Inject(KAFKA_RETRY_REGISTRY)
@@ -57,5 +60,6 @@ export class ReauthenticationConsumer implements Consumers.Reauthentication.Cont
                 },
             }),
         );
+        this.kafkaMetrics.recordRetry({ topic: KafkaTopic.REAUTHENTICATION, error });
     }
 }

@@ -3,6 +3,7 @@ import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 
 import { KafkaTopicBuilder, KAFKA_RETRY_REGISTRY, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
+import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
 import { SCRIPT_EXECUTOR_SERVICE } from "~context/infrastructure/services";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
@@ -14,6 +15,8 @@ export class ProjectionConsumer implements Consumers.Projection.Contract, OnModu
     public constructor(
         @Inject(SCRIPT_EXECUTOR_SERVICE)
         private readonly scriptExecutorService: InfrastructureServices.ScriptExecutor.PublicContract,
+        @Inject(KafkaMetricsRecorder)
+        private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
         private readonly schemaRegistry: Kafka.SchemaRegistry.PublicContract,
         @Inject(KAFKA_RETRY_REGISTRY)
@@ -69,5 +72,11 @@ export class ProjectionConsumer implements Consumers.Projection.Contract, OnModu
                 },
             ),
         );
+
+        if (retryable) {
+            this.kafkaMetrics.recordRetry({ topic: KafkaTopic.PROJECTION_JOURNAL, error });
+        } else {
+            this.kafkaMetrics.recordDead({ topic: KafkaTopic.PROJECTION_JOURNAL, error });
+        }
     }
 }
