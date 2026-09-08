@@ -33,7 +33,12 @@ export class PermissionOverrideRepository
         try {
             const { transaction, account, realm, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const total = await entityManager.count(PermissionOverride, { account, realm, isRevoked: false });
+            const total = await entityManager.count(PermissionOverride, {
+                $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+                isRevoked: false,
+                account,
+                realm,
+            });
 
             return total + (count ?? 1) > this.overrideLimit;
         } catch (error) {

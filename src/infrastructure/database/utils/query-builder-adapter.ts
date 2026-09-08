@@ -101,6 +101,16 @@ export class QueryBuilderAdapter {
             const defaultColumn = `${tableAlias}.${this.toSnakeCase(basicSort[0])}`;
             query.orderBy(defaultColumn, basicSort[1]);
         }
+
+        let hasIDOrder = false;
+
+        for (const key in sort) {
+            hasIDOrder = sort[key] ? key === "id" || key === `${tableAlias}.id` : false;
+        }
+
+        if (!hasIDOrder) {
+            query.orderBy(`${tableAlias}.id`, QueryOrder.ASC);
+        }
     }
 
     private static toSnakeCase(value: string): string {

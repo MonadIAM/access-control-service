@@ -133,6 +133,8 @@ export class RoleClosureRepository implements Repositories.RoleClosure.Contract 
             // NOTE[SQL-03]: see NOTES.md#SQL-03
             const query = knex("access_control.role_closure")
                 .where("realm_id", realm)
+                .whereNot("ancestor_id", role)
+                .whereNot("descendant_id", role)
                 .whereExists((builder) => {
                     builder
                         .select(knex.raw("1"))

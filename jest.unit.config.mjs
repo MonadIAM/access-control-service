@@ -3,7 +3,8 @@ import common from "./configs/jest.base.config.mjs";
 const config = {
     ...common,
 
-    testMatch: ["**/?*.spec.ts"],
+    testMatch: ["**/*.uspec.ts", "**/?*.spec.ts"],
+    testPathIgnorePatterns: ["\\.ispec\\.ts$"],
 
     collectCoverageFrom: [
         "<rootDir>/src/common/transaction-manager/entities/**/*.ts",

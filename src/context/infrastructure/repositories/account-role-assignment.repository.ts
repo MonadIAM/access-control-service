@@ -33,10 +33,15 @@ export class AccountRoleAssignmentRepository
         try {
             const { transaction, account, roles } = props;
             const entityManager = transaction ?? this.readManager.fork();
+            const activeFilters = {
+                $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+                isRevoked: false,
+                account,
+            };
 
             const [total, overlap] = await Promise.all([
-                entityManager.count(AccountRoleAssignment, { account, isRevoked: false }),
-                entityManager.count(AccountRoleAssignment, { account, isRevoked: false, role: { $in: roles } }),
+                entityManager.count(AccountRoleAssignment, activeFilters),
+                entityManager.count(AccountRoleAssignment, { ...activeFilters, role: { $in: roles } }),
             ]);
 
             return total + roles.length - overlap > this.accountRoleLimit;

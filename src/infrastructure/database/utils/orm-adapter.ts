@@ -37,12 +37,19 @@ export class ORMAdapter {
         basicSort: ORM.QueryOrderMap<T>,
     ): ORM.QueryOrderMap<T> {
         const entries = Object.entries(sort) as [ORM.EntityKey<T>, QueryOrder][];
-        const orderBy: ORM.QueryOrderMap<T> = basicSort;
+        const customOrderBy: Partial<Record<ORM.EntityKey<T>, QueryOrder>> = {};
         for (const [key, value] of entries) {
             if (value) {
-                orderBy[key] = value;
+                customOrderBy[key] = value;
             }
         }
+
+        const orderBy: ORM.QueryOrderMap<T> & { id?: QueryOrder } = { ...basicSort, ...customOrderBy };
+
+        if (!("id" in orderBy)) {
+            orderBy.id = QueryOrder.ASC;
+        }
+
         return orderBy;
     }
 }

@@ -135,11 +135,11 @@ export class RoleRepository
             }
 
             if (term) {
-                builder.andWhere("r.name % ?", [term]).orderBy({
-                    [raw("similarity(r.name, ?)", [term])]: "DESC",
-                });
+                builder
+                    .andWhere("r.name % ?", [term])
+                    .orderBy([{ [raw("similarity(r.name, ?)", [term])]: "DESC" }, { "r.name": "ASC" }, { "r.id": "ASC" }]);
             } else {
-                builder.orderBy({ "r.name": "ASC" });
+                builder.orderBy({ "r.name": "ASC", "r.id": "ASC" });
             }
 
             return await builder.getResultAndCount();
@@ -160,13 +160,31 @@ export class RoleRepository
                     join.andOn("closure.depth", "<=", "policy.depth_limit");
                 })
                 .where("policy.is_revoked", false)
+                .andWhereRaw("(policy.expires_at is null or policy.expires_at > now())")
+                .andWhereRaw("closure.realm_id = policy.realm_id")
                 .modify((builder) => {
+                    if (where.realm) {
+                        builder.andWhere("policy.realm_id", where.realm);
+                        builder.andWhere("closure.realm_id", where.realm);
+                    }
+
                     builder.andWhere((sub) => {
                         if (where.type === "ACCOUNT") {
-                            const rolesByAccountSubquery = knex("access_control.account_role_assignment")
-                                .select("role_id")
-                                .where("account", where.id);
-                            sub.whereIn("policy.delegator_id", rolesByAccountSubquery);
+                            sub.whereExists((accountRoleBuilder) => {
+                                accountRoleBuilder
+                                    .select(knex.raw("1"))
+                                    .from("access_control.account_role_assignment as assignment")
+                                    .where("assignment.account", where.id)
+                                    .andWhere("assignment.is_revoked", false)
+                                    .andWhereRaw("(assignment.expires_at is null or assignment.expires_at > now())")
+                                    .andWhereRaw("assignment.role_id = policy.delegator_id")
+                                    .andWhereRaw("assignment.realm_id = policy.realm_id")
+                                    .modify((assignmentBuilder) => {
+                                        if (where.realm) {
+                                            assignmentBuilder.andWhere("assignment.realm_id", where.realm);
+                                        }
+                                    });
+                            });
                         } else {
                             sub.where("policy.delegator_id", where.id);
                         }
@@ -220,12 +238,15 @@ export class RoleRepository
                     .join({ RC: "access_control.role_closure" }, "R.id", "RC.ancestor_id")
                     .join({ ARM: "access_control.account_role_assignment" }, "RC.descendant_id", "ARM.role_id")
                     .where("ARM.account", where.account)
+                    .andWhereRaw('"RC"."realm_id" = "ARM"."realm_id"')
+                    .andWhereRaw('"R"."realm_id" = "ARM"."realm_id"')
                     .modify((qb) => {
                         if (where.realm) {
                             qb.andWhere("ARM.realm_id", where.realm);
                         }
                     })
-                    .andWhere("ARM.is_revoked", false);
+                    .andWhere("ARM.is_revoked", false)
+                    .andWhereRaw('("ARM"."expires_at" is null or "ARM"."expires_at" > now())');
 
             const dataQuery = baseQuery().distinct("R.id").select("R.*");
             super.buildWhereKnex!(dataQuery, filters, "R");
@@ -310,9 +331,13 @@ export class RoleRepository
             .select("ara.account")
             .distinct()
             .from({ rc: "access_control.role_closure" })
+            .join({ role: "access_control.role" }, "role.id", "rc.ancestor_id")
             .join({ ara: "access_control.account_role_assignment" }, "ara.role_id", "rc.descendant_id")
             .whereIn("rc.ancestor_id", roles)
             .andWhere("ara.is_revoked", false)
+            .andWhereRaw("(ara.expires_at is null or ara.expires_at > now())")
+            .andWhereRaw("ara.realm_id = rc.realm_id")
+            .andWhereRaw("role.realm_id = rc.realm_id")
             .toSQL();
 
         const rows = await entityManager.execute<Repositories.Role.AccountRow[]>(query.sql, [...query.bindings], "all");

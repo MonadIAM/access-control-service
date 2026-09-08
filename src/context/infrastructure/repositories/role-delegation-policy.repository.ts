@@ -39,10 +39,11 @@ export class RoleDelegationPolicyRepository
             // NOTE[SQL-02]: see NOTES.md#SQL-02
             const query = knex
                 .withRecursive("transitive_power", (cte: ORM.QueryBuilder) => {
-                    cte.select("rc.descendant_id as reachable_role_id")
+                    cte.select("rdp.realm_id", "rc.descendant_id as reachable_role_id")
                         .from("access_control.role_delegation_policy as rdp")
                         .join("access_control.role_closure as rc", "rc.ancestor_id", "rdp.target_id")
                         .whereRaw("rc.depth <= rdp.depth_limit")
+                        .andWhereRaw("rc.realm_id = rdp.realm_id")
                         .andWhere("rdp.delegator_id", from)
                         .andWhere("rdp.is_revoked", false)
                         .andWhereRaw("(rdp.expires_at is null or rdp.expires_at > now())")
@@ -50,11 +51,15 @@ export class RoleDelegationPolicyRepository
 
                     cte.union((union: ORM.QueryBuilder) => {
                         union
-                            .select("rc.descendant_id as reachable_role_id")
+                            .select("rdp.realm_id", "rc.descendant_id as reachable_role_id")
                             .from("access_control.role_delegation_policy as rdp")
-                            .join("transitive_power as tp", "rdp.delegator_id", "tp.reachable_role_id")
+                            .join("transitive_power as tp", (join) => {
+                                join.on("rdp.delegator_id", "=", "tp.reachable_role_id");
+                                join.andOn("rdp.realm_id", "=", "tp.realm_id");
+                            })
                             .join("access_control.role_closure as rc", "rc.ancestor_id", "rdp.target_id")
                             .whereRaw("rc.depth <= rdp.depth_limit")
+                            .andWhereRaw("rc.realm_id = rdp.realm_id")
                             .andWhere("rdp.is_revoked", false)
                             .andWhereRaw("(rdp.expires_at is null or rdp.expires_at > now())")
                             .distinct();
@@ -90,7 +95,8 @@ export class RoleDelegationPolicyRepository
                 .from("access_control.account_role_assignment as ara")
                 .where("ara.realm_id", realm)
                 .andWhere("ara.account", actor)
-                .andWhere("ara.is_revoked", false);
+                .andWhere("ara.is_revoked", false)
+                .andWhereRaw("(ara.expires_at is null or ara.expires_at > now())");
 
             // NOTE[SQL-02]: see NOTES.md#SQL-02
             const allowedTargetsCte = knex
@@ -99,6 +105,7 @@ export class RoleDelegationPolicyRepository
                 .join("actor_roles as ar", "ar.role_id", "rdp.delegator_id")
                 .join("access_control.role_closure as rc", "rc.ancestor_id", "rdp.target_id")
                 .where("rdp.realm_id", realm)
+                .andWhere("rc.realm_id", realm)
                 .andWhere("rdp.is_revoked", false)
                 .andWhereRaw("(rdp.expires_at is null or rdp.expires_at > now())")
                 .andWhereRaw("rc.depth <= rdp.depth_limit");
@@ -106,7 +113,7 @@ export class RoleDelegationPolicyRepository
             const query = knex
                 .with("actor_roles", actorRolesCte)
                 .with("allowed_targets", allowedTargetsCte)
-                .select(knex.raw("count(*)::int = ? as result", [roles.length]))
+                .select(knex.raw("count(distinct at.role_id)::int = ? as result", [roles.length]))
                 .from("allowed_targets as at")
                 .whereIn("at.role_id", roles)
                 .toSQL();
@@ -129,7 +136,11 @@ export class RoleDelegationPolicyRepository
         try {
             const { transaction, delegator, count } = props;
             const entityManager = transaction ?? this.readManager.fork();
-            const total = await entityManager.count(RoleDelegationPolicy, { delegator, isRevoked: false });
+            const total = await entityManager.count(RoleDelegationPolicy, {
+                $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+                isRevoked: false,
+                delegator,
+            });
 
             return total + (count ?? 1) > this.policyLimit;
         } catch (error) {

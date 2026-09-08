@@ -11,6 +11,7 @@
       "~bootstrap/*": ["./src/bootstrap/*"],
       "~bootstrap": ["./src/bootstrap"],
       "~context/*": ["./src/context/*"],
+      "~testing/*": ["./src/testing/*"],
       "~common/*": ["./src/common/*"],
       "~root/*": ["./*"],
     },

@@ -44,11 +44,11 @@ export class RealmRepository
             }
 
             if (term) {
-                builder.andWhere("r.name % ?", [term]).orderBy({
-                    [raw("similarity(r.name, ?)", [term])]: "DESC",
-                });
+                builder
+                    .andWhere("r.name % ?", [term])
+                    .orderBy([{ [raw("similarity(r.name, ?)", [term])]: "DESC" }, { "r.name": "ASC" }, { "r.id": "ASC" }]);
             } else {
-                builder.orderBy({ "r.name": "ASC" });
+                builder.orderBy({ "r.name": "ASC", "r.id": "ASC" });
             }
 
             return await builder.getResultAndCount();

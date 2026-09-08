@@ -24,7 +24,6 @@ const config: KnipConfig = {
     ignoreDependencies: [
         "@mikro-orm/entity-generator",
         "@types/har-format",
-        "ts-jest"
     ],
 };
 

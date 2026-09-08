@@ -1,0 +1,14 @@
+import common from "./configs/jest.base.config.mjs";
+
+const config = {
+    ...common,
+
+    testMatch: ["**/*.ispec.ts"],
+    testTimeout: 120_000,
+    globalSetup: "<rootDir>/src/testing/integration/postgres.setup.ts",
+    globalTeardown: "<rootDir>/src/testing/integration/postgres.teardown.ts",
+    detectOpenHandles: false,
+    maxWorkers: 1,
+};
+
+export default config;

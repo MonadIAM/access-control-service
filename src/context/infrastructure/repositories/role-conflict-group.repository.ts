@@ -122,11 +122,17 @@ export class RoleConflictGroupRepository
             const baseQuery = knex
                 .select("mem.group_id as group_id")
                 .from({ mem: "access_control.role_conflict_member" })
+                .join({ role: "access_control.role" }, "role.id", "mem.role_id")
                 .join({ arm: "access_control.account_role_assignment" }, "arm.role_id", "mem.role_id")
                 .join({ grp: "access_control.role_conflict_group" }, "grp.id", "mem.group_id")
                 .whereIn("mem.group_id", props.groups)
                 .where("grp.realm_id", props.realm)
+                .where("role.realm_id", props.realm)
                 .where("arm.realm_id", props.realm)
+                .where("grp.is_revoked", false)
+                .where("mem.is_revoked", false)
+                .where("arm.is_revoked", false)
+                .whereRaw("(arm.expires_at is null or arm.expires_at > now())")
                 .groupBy("mem.group_id", "arm.account", "grp.max_allowed")
                 .havingRaw("count(distinct arm.role_id) > grp.max_allowed");
 
@@ -168,6 +174,8 @@ export class RoleConflictGroupRepository
                 .select(knex.raw('"arm"."role_id"::uuid as "role_id"'))
                 .from({ arm: "access_control.account_role_assignment" })
                 .where({ "arm.realm_id": props.realm, "arm.account": props.account })
+                .andWhere("arm.is_revoked", false)
+                .andWhereRaw("(arm.expires_at is null or arm.expires_at > now())")
                 .union(
                     props.roles.map((role) => knex.select(knex.raw('?::uuid as "role_id"', [role]))),
                     true,
@@ -181,9 +189,12 @@ export class RoleConflictGroupRepository
             .select(knex.raw("count(distinct mem.role_id)::int as matched_count"))
             .from({ grp: "access_control.role_conflict_group" })
             .join({ mem: "access_control.role_conflict_member" }, "mem.group_id", "grp.id")
+            .join({ role: "access_control.role" }, "role.id", "mem.role_id")
             .join({ da: "direct_after" }, "da.role_id", "mem.role_id")
             .where("grp.realm_id", props.realm)
+            .where("role.realm_id", props.realm)
             .where("grp.is_revoked", false)
+            .where("mem.is_revoked", false)
             .groupBy("grp.id", "grp.max_allowed")
             .havingRaw("count(distinct mem.role_id) > grp.max_allowed");
     }
@@ -195,8 +206,12 @@ export class RoleConflictGroupRepository
             .select("arm.account as account")
             .select(knex.raw("count(distinct arm.role_id)::int as matched_count"))
             .from({ arm: "access_control.account_role_assignment" })
+            .join({ role: "access_control.role" }, "role.id", "arm.role_id")
             .where("arm.realm_id", props.realm)
+            .where("role.realm_id", props.realm)
             .whereIn("arm.role_id", props.identifiers)
+            .where("arm.is_revoked", false)
+            .whereRaw("(arm.expires_at is null or arm.expires_at > now())")
             .groupBy("arm.account")
             .havingRaw("count(distinct arm.role_id) > ?", [props.maxAllowed]);
     }

@@ -48,11 +48,11 @@ export class PermissionRepository
             }
 
             if (term) {
-                builder.andWhere("p.name % ?", [term]).orderBy({
-                    [raw("similarity(p.name, ?)", [term])]: "DESC",
-                });
+                builder
+                    .andWhere("p.name % ?", [term])
+                    .orderBy([{ [raw("similarity(p.name, ?)", [term])]: "DESC" }, { "p.name": "ASC" }, { "p.id": "ASC" }]);
             } else {
-                builder.orderBy({ "p.name": "ASC" });
+                builder.orderBy({ "p.name": "ASC", "p.id": "ASC" });
             }
 
             return await builder.getResultAndCount();
@@ -78,14 +78,17 @@ export class PermissionRepository
                     .join({ rc: "access_control.role_closure" }, "arm.role_id", "rc.descendant_id")
                     .where("arm.account", where.account)
                     .andWhere("arm.realm_id", where.realm)
-                    .andWhere("arm.is_revoked", false);
+                    .andWhere("arm.is_revoked", false)
+                    .andWhereRaw("(arm.expires_at is null or arm.expires_at > now())")
+                    .andWhereRaw("rc.realm_id = arm.realm_id");
 
                 const rolePermissions = knex
                     .select("rpm.permission_id")
                     .distinct()
                     .from({ rpm: "access_control.role_permission_assignment" })
                     .whereIn("rpm.role_id", accountRolesSubquery)
-                    .andWhere("rpm.is_revoked", false);
+                    .andWhere("rpm.is_revoked", false)
+                    .andWhere("rpm.realm_id", where.realm);
 
                 const deniedPermissions = knex
                     .select("po.permission_id")
@@ -93,7 +96,8 @@ export class PermissionRepository
                     .where("po.account", where.account)
                     .andWhere("po.realm_id", where.realm)
                     .andWhere("po.effect", PermissionOverrideEffect.DENY)
-                    .andWhere("po.is_revoked", false);
+                    .andWhere("po.is_revoked", false)
+                    .andWhereRaw("(po.expires_at is null or po.expires_at > now())");
 
                 const allowedOverrides = knex
                     .select("po.permission_id")
@@ -101,7 +105,8 @@ export class PermissionRepository
                     .where("po.account", where.account)
                     .andWhere("po.realm_id", where.realm)
                     .andWhere("po.effect", PermissionOverrideEffect.ALLOW)
-                    .andWhere("po.is_revoked", false);
+                    .andWhere("po.is_revoked", false)
+                    .andWhereRaw("(po.expires_at is null or po.expires_at > now())");
 
                 const basePermissions = knex
                     .select("rp.permission_id")
@@ -123,7 +128,8 @@ export class PermissionRepository
             const dataQuery = knex
                 .select("p.*")
                 .from(knex.raw("? as effective", [buildEffectivePermissionIDs()]))
-                .innerJoin({ p: "access_control.permission" }, "p.id", "effective.permission_id");
+                .innerJoin({ p: "access_control.permission" }, "p.id", "effective.permission_id")
+                .where("p.realm_id", where.realm);
 
             super.buildWhereKnex?.(dataQuery, filters, "p");
             super.buildOptionsKnex?.(dataQuery, sort, pagination, "p");
@@ -131,7 +137,8 @@ export class PermissionRepository
             const countQuery = knex
                 .count("* as total")
                 .from(knex.raw("? as effective", [buildEffectivePermissionIDs()]))
-                .innerJoin({ p: "access_control.permission" }, "p.id", "effective.permission_id");
+                .innerJoin({ p: "access_control.permission" }, "p.id", "effective.permission_id")
+                .where("p.realm_id", where.realm);
 
             super.buildWhereKnex?.(countQuery, filters, "p");
 
@@ -169,28 +176,37 @@ export class PermissionRepository
                 .from({ arm: "access_control.account_role_assignment" })
                 .join({ rc: "access_control.role_closure" }, "arm.role_id", "rc.descendant_id")
                 .where("arm.account", props.account)
-                .andWhere("arm.is_revoked", false);
+                .andWhere("arm.is_revoked", false)
+                .andWhereRaw("(arm.expires_at is null or arm.expires_at > now())")
+                .andWhereRaw("rc.realm_id = arm.realm_id");
 
             const rolePermissions = knex
                 .select("er.realm_id", "rpa.permission_id", "rpa.scope")
                 .distinct()
                 .from(knex.raw("? as er", [expandedRoles]))
                 .join({ rpa: "access_control.role_permission_assignment" }, "rpa.role_id", "er.role_id")
-                .andWhere("rpa.is_revoked", false);
+                .andWhere("rpa.is_revoked", false)
+                .andWhereRaw("rpa.realm_id = er.realm_id");
 
             const deniedPermissions = knex
                 .select("po.realm_id", "po.permission_id")
                 .from({ po: "access_control.permission_override" })
                 .where("po.account", props.account)
                 .andWhere("po.effect", PermissionOverrideEffect.DENY)
-                .andWhere("po.is_revoked", false);
+                .andWhere("po.is_revoked", false)
+                .andWhereRaw("(po.expires_at is null or po.expires_at > now())");
 
             const allowedOverrides = knex
-                .select("po.realm_id", "po.permission_id", knex.raw("'REALM' as scope"))
+                .select(
+                    "po.realm_id",
+                    "po.permission_id",
+                    knex.raw("'REALM'::access_control.role_permission_assignment_scope as scope"),
+                )
                 .from({ po: "access_control.permission_override" })
                 .where("po.account", props.account)
                 .andWhere("po.effect", PermissionOverrideEffect.ALLOW)
-                .andWhere("po.is_revoked", false);
+                .andWhere("po.is_revoked", false)
+                .andWhereRaw("(po.expires_at is null or po.expires_at > now())");
 
             const basePermissions = knex
                 .select("rp.realm_id", "rp.permission_id", "rp.scope")
@@ -218,6 +234,7 @@ export class PermissionRepository
                 .select("eff.realm_id as realm", "p.code as permission", "eff.scope")
                 .from(knex.raw("? as eff", [combined]))
                 .join({ p: "access_control.permission" }, "p.id", "eff.permission_id")
+                .whereRaw("p.realm_id = eff.realm_id")
                 .distinct()
                 .toSQL();
 
@@ -243,18 +260,26 @@ export class PermissionRepository
             .select("ara.account")
             .distinct()
             .from({ rpa: "access_control.role_permission_assignment" })
+            .join({ p: "access_control.permission" }, "p.id", "rpa.permission_id")
             .join({ rc: "access_control.role_closure" }, "rpa.role_id", "rc.ancestor_id")
             .join({ ara: "access_control.account_role_assignment" }, "ara.role_id", "rc.descendant_id")
-            .whereIn("rpa.permission_id", permissions)
+            .whereIn("p.id", permissions)
             .andWhere("rpa.is_revoked", false)
-            .andWhere("ara.is_revoked", false);
+            .andWhere("ara.is_revoked", false)
+            .andWhereRaw("(ara.expires_at is null or ara.expires_at > now())")
+            .andWhereRaw("rpa.realm_id = p.realm_id")
+            .andWhereRaw("rc.realm_id = rpa.realm_id")
+            .andWhereRaw("ara.realm_id = rpa.realm_id");
 
         const viaOverrides = knex
             .select("po.account")
             .distinct()
             .from({ po: "access_control.permission_override" })
-            .whereIn("po.permission_id", permissions)
-            .andWhere("po.is_revoked", false);
+            .join({ p: "access_control.permission" }, "p.id", "po.permission_id")
+            .whereIn("p.id", permissions)
+            .andWhere("po.is_revoked", false)
+            .andWhereRaw("(po.expires_at is null or po.expires_at > now())")
+            .andWhereRaw("po.realm_id = p.realm_id");
 
         const query = viaRoles.union([viaOverrides]).toSQL();
 

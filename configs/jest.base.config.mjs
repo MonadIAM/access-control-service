@@ -35,6 +35,8 @@ const config = {
         "^~bootstrap/(.*)$": "<rootDir>/src/bootstrap/$1",
         "^~context/(.*)$": "<rootDir>/src/context/$1",
         "^~common/(.*)$": "<rootDir>/src/common/$1",
+        "^~testing/(.*)$": "<rootDir>/src/testing/$1",
+        "^~root/(.*)$": "<rootDir>/$1",
     },
 
     setupFiles: ["reflect-metadata", "<rootDir>/src/extensions.ts"],

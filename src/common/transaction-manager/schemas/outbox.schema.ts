@@ -1,4 +1,4 @@
-import { EntitySchema } from "@mikro-orm/core";
+import { BigIntType, EntitySchema } from "@mikro-orm/core";
 
 import { Outbox } from "~common/transaction-manager/entities";
 
@@ -17,7 +17,7 @@ export const OutboxSchema = new EntitySchema<Outbox>({
     properties: {
         id: { primary: true, type: "uuid" },
 
-        sequenceNumber: { type: "bigint", serializedPrimaryKey: false, autoincrement: true },
+        sequenceNumber: { type: new BigIntType("number"), serializedPrimaryKey: false, autoincrement: true },
 
         actionType: { type: "string", length: 64 },
         destinationTopic: { type: "string", length: 128 },
