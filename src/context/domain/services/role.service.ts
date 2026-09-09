@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { ROLE_CLOSURE_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
+import { ROLE_CLOSURE_REPOSITORY, ROLE_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { RoleArchetype, MoveMode } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
@@ -15,6 +15,8 @@ export class RoleService implements Services.Role.Contract {
     public constructor(
         @Inject(ROLE_CLOSURE_REPOSITORY)
         private readonly roleClosureRepository: Repositories.RoleClosure.PublicContract,
+        @Inject(REALM_REPOSITORY)
+        private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(ROLE_REPOSITORY)
         private readonly roleRepository: Repositories.Role.PublicContract,
         private readonly configService: ConfigService,
@@ -24,12 +26,23 @@ export class RoleService implements Services.Role.Contract {
 
     public async create(props: Services.Role.Create.Props): Services.Role.Create.Result {
         const { transaction, input, realm } = props;
-        if (input.parent.archetype === RoleArchetype.ATOMIC) {
+        const [parent, realmEntity] = await Promise.all([
+            this.roleRepository.findUniqueOrThrow({
+                where: { id: input.parent, realm },
+                transaction,
+            }),
+            this.realmRepository.findUniqueOrThrow({
+                where: { id: realm },
+                transaction,
+            }),
+        ]);
+
+        if (parent.archetype === RoleArchetype.ATOMIC) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.CREATE_PARENT_NO_INHERITANCE` });
         } else {
             const limitExceeded = await this.roleRepository.wouldExceedRoleLimit({
-                realm: realm.id,
                 transaction,
+                realm,
             });
 
             if (limitExceeded) {
@@ -39,9 +52,9 @@ export class RoleService implements Services.Role.Contract {
                     description: input.description,
                     actorType: input.actorType,
                     archetype: input.archetype,
+                    realm: realmEntity,
                     code: input.code,
                     name: input.name,
-                    realm,
                 });
 
                 transaction.persist(entity);
@@ -51,76 +64,79 @@ export class RoleService implements Services.Role.Contract {
                     transaction,
                     input: {
                         children: input.children,
-                        parent: input.parent,
-                        realm: realm.id,
                         entity,
+                        parent,
+                        realm,
                     },
                 });
 
-                return entity;
+                return { entity, parent };
             }
         }
     }
 
-    public update(props: Services.Role.Update.Props): Services.Role.Update.Result {
-        const { entity, patch } = props;
+    public async buildHierarchy(props: Services.Role.BuildHierarchy.Props): Services.Role.BuildHierarchy.Result {
+        const {
+            input: { children, parent, entity, realm },
+            transaction,
+        } = props;
+        await this.roleClosureRepository.insertNewHierarchy({
+            descendant: entity.id,
+            ancestor: parent.id,
+            realm: realm,
+            transaction,
+        });
+
+        if (children?.length) {
+            const descendants = await this.roleRepository.getDescendants({
+                ancestor: parent.id,
+                transaction,
+                depth: 1,
+            });
+
+            const descendantsSet = new Set(descendants.map(({ id }) => id));
+
+            for (const child of children) {
+                if (!descendantsSet.has(child)) {
+                    throw Exception.invariantViolation({
+                        messageKey: `${this.dictionaryPath}.CREATE_CHILD_NOT_DIRECT_DESCENDANT`,
+                    });
+                }
+            }
+
+            await this.roleClosureRepository.moveSubtrees({
+                newParent: entity.id,
+                oldParent: parent.id,
+                children: children,
+                realm: realm,
+                transaction,
+            });
+        }
+    }
+
+    public async update(props: Services.Role.Update.Props): Services.Role.Update.Result {
+        const { transaction, realm, patch, id } = props;
+        const entity = await this.roleRepository.findUniqueOrThrow({
+            where: { id, realm },
+            transaction,
+        });
+
         entity.update({ patch });
     }
 
-    public async purge(props: Services.Role.Purge.Props): Services.Role.Purge.Result {
-        const { transaction, entity, realm } = props;
-        entity.canPurge();
-        transaction.clear();
-
-        await this.roleClosureRepository.decreaseTransitiveDepth({
-            role: entity.id,
-            transaction,
-            realm,
-        });
-
-        transaction.remove(entity);
-    }
-
-    public async purgeSubtree(props: Services.Role.PurgeSubtree.Props): Services.Role.PurgeSubtree.Result {
-        const { transaction, entity, realm } = props;
-        const descendants = await this.roleRepository.getDescendants({
-            ancestor: entity.id,
-            where: { realm },
-            transaction,
-        });
-
-        transaction.clear();
-
-        if (descendants.length > this.purgeSubtreeSizeLimit) {
-            throw Exception.invariantViolation({
-                messageKey: `${this.dictionaryPath}.SUBTREE_SIZE_LIMIT_EXCEEDED`,
-                params: { limit: this.purgeSubtreeSizeLimit },
-            });
-        } else {
-            for (const descendant of descendants) {
-                descendant.canPurge();
-                transaction.remove(descendant);
-            }
-            return descendants;
-        }
-    }
-
-    public revoke(props: Services.Role.Revoke.Props): Services.Role.Revoke.Result {
-        const { entities } = props;
-        for (const entity of entities) {
-            entity.revoke();
-        }
-    }
-
-    public restore(props: Services.Role.Restore.Props): Services.Role.Restore.Result {
-        const { entities } = props;
-        for (const entity of entities) {
-            entity.restore();
-        }
-    }
-
     public async move(props: Services.Role.Move.Props): Services.Role.Move.Result {
-        const { targetParent, transaction, target, realm, mode } = props;
+        const { transaction, realm, mode } = props;
+        const [target, targetParent] = await Promise.all([
+            this.roleRepository.findUniqueOrThrow({
+                where: { id: props.target, realm, isSystemManaged: false },
+                transaction,
+            }),
+            this.roleRepository.findUniqueOrThrow({
+                where: { id: props.targetParent, realm },
+                transaction,
+            }),
+        ]);
+
         if (targetParent.archetype === RoleArchetype.ATOMIC) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REPARENT_TARGET_NO_INHERITANCE` });
         }
@@ -155,7 +171,7 @@ export class RoleService implements Services.Role.Contract {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.REPARENT_TARGET_IN_SUBTREE` });
         }
 
-        const steps: Awaited<Services.Role.Move.Result> = [];
+        const steps: Services.Role.Move.Steps = [];
 
         if (mode !== MoveMode.SUBTREE) {
             const directChildren = await this.roleRepository.getDescendants({
@@ -206,45 +222,93 @@ export class RoleService implements Services.Role.Contract {
 
         steps.push(result);
 
-        return steps;
+        return { steps, target };
     }
 
-    public async buildHierarchy(props: Services.Role.BuildHierarchy.Props): Services.Role.BuildHierarchy.Result {
-        const {
-            input: { children, parent, entity, realm },
-            transaction,
-        } = props;
-        await this.roleClosureRepository.insertNewHierarchy({
-            descendant: entity.id,
-            ancestor: parent.id,
-            realm: realm,
+    public async revoke(props: Services.Role.Revoke.Props): Services.Role.Revoke.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.roleRepository.find({
+            where: { id: { $in: identifiers }, realm },
             transaction,
         });
 
-        if (children?.length) {
-            const descendants = await this.roleRepository.getDescendants({
-                ancestor: parent.id,
-                transaction,
-                depth: 1,
-            });
-
-            const descendantsSet = new Set(descendants.map(({ id }) => id));
-
-            for (const child of children) {
-                if (!descendantsSet.has(child)) {
-                    throw Exception.invariantViolation({
-                        messageKey: `${this.dictionaryPath}.CREATE_CHILD_NOT_DIRECT_DESCENDANT`,
-                    });
-                }
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.revoke();
             }
 
-            await this.roleClosureRepository.moveSubtrees({
-                newParent: entity.id,
-                oldParent: parent.id,
-                children: children,
-                realm: realm,
-                transaction,
+            return entities;
+        }
+    }
+
+    public async restore(props: Services.Role.Restore.Props): Services.Role.Restore.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.roleRepository.find({
+            where: { id: { $in: identifiers }, realm },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.restore();
+            }
+
+            return entities;
+        }
+    }
+
+    public async purge(props: Services.Role.Purge.Props): Services.Role.Purge.Result {
+        const { transaction, realm, id } = props;
+        const entity = await this.roleRepository.findUniqueOrThrow({
+            where: { id, realm },
+            transaction,
+        });
+
+        entity.canPurge();
+        transaction.clear();
+
+        await this.roleClosureRepository.decreaseTransitiveDepth({
+            role: entity.id,
+            transaction,
+            realm,
+        });
+
+        transaction.remove(entity);
+
+        return entity;
+    }
+
+    public async purgeSubtree(props: Services.Role.PurgeSubtree.Props): Services.Role.PurgeSubtree.Result {
+        const { transaction, realm, id } = props;
+        const root = await this.roleRepository.findUniqueOrThrow({
+            where: { id, realm },
+            transaction,
+        });
+
+        const descendants = await this.roleRepository.getDescendants({
+            ancestor: root.id,
+            where: { realm },
+            transaction,
+        });
+
+        transaction.clear();
+
+        if (descendants.length > this.purgeSubtreeSizeLimit) {
+            throw Exception.invariantViolation({
+                messageKey: `${this.dictionaryPath}.SUBTREE_SIZE_LIMIT_EXCEEDED`,
+                params: { limit: this.purgeSubtreeSizeLimit },
             });
+        } else {
+            for (const descendant of descendants) {
+                descendant.canPurge();
+                transaction.remove(descendant);
+            }
+
+            return { entities: descendants, root };
         }
     }
 }

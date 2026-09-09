@@ -16,7 +16,6 @@ export type I18nTranslations = {
             "SUBTREE_PURGED_COUNT": string;
             "BULK_REVOKED_COUNT": string;
             "BULK_RESTORED_COUNT": string;
-            "ROLES_NOT_FOUND": string;
         };
         "role-permission-assignment": {
             "CREATED": string;
@@ -26,8 +25,6 @@ export type I18nTranslations = {
             "BULK_PURGED_COUNT": string;
             "BULK_REVOKED_COUNT": string;
             "BULK_RESTORED_COUNT": string;
-            "PERMISSIONS_NOT_FOUND": string;
-            "ASSIGNMENTS_NOT_FOUND": string;
         };
         "role-delegation-policy": {
             "CREATED": string;
@@ -38,17 +35,11 @@ export type I18nTranslations = {
             "BULK_PURGED_COUNT": string;
             "BULK_REVOKED_COUNT": string;
             "BULK_RESTORED_COUNT": string;
-            "DELEGATOR_ROLE_NOT_FOUND": string;
-            "TARGET_ROLE_NOT_FOUND": string;
-            "BOTH_ROLES_NOT_FOUND": string;
-            "POLICIES_NOT_FOUND": string;
         };
         "role-conflict-member": {
             "CREATED": string;
             "PURGED": string;
             "BULK_PURGED_COUNT": string;
-            "ROLES_NOT_FOUND": string;
-            "MEMBERS_NOT_FOUND": string;
         };
         "role-conflict-group": {
             "CREATED": string;
@@ -59,8 +50,6 @@ export type I18nTranslations = {
             "BULK_PURGED_COUNT": string;
             "BULK_REVOKED_COUNT": string;
             "BULK_RESTORED_COUNT": string;
-            "ROLES_NOT_FOUND": string;
-            "GROUPS_NOT_FOUND": string;
         };
         "realm": {
             "CREATED": string;
@@ -71,7 +60,6 @@ export type I18nTranslations = {
             "BULK_PURGED_COUNT": string;
             "BULK_REVOKED_COUNT": string;
             "BULK_RESTORED_COUNT": string;
-            "REALMS_NOT_FOUND": string;
         };
         "permission": {
             "CREATED": string;
@@ -82,7 +70,6 @@ export type I18nTranslations = {
             "BULK_PURGED_COUNT": string;
             "BULK_REVOKED_COUNT": string;
             "BULK_RESTORED_COUNT": string;
-            "PERMISSIONS_NOT_FOUND": string;
         };
         "permission-override": {
             "CREATED": string;
@@ -92,7 +79,6 @@ export type I18nTranslations = {
             "BULK_PURGED_COUNT": string;
             "BULK_REVOKED_COUNT": string;
             "BULK_RESTORED_COUNT": string;
-            "OVERRIDES_NOT_FOUND": string;
             "ACCOUNT_NOT_MEMBER": string;
         };
         "account-role-assignment": {
@@ -103,7 +89,6 @@ export type I18nTranslations = {
             "BULK_PURGED_COUNT": string;
             "BULK_REVOKED_COUNT": string;
             "BULK_RESTORED_COUNT": string;
-            "ROLES_NOT_FOUND": string;
             "ASSIGNMENTS_NOT_FOUND": string;
             "ACCOUNT_NOT_MEMBER": string;
             "CANNOT_PURGE_LAST_ASSIGNMENT": string;
@@ -236,37 +221,65 @@ export type I18nTranslations = {
             "REPARENT_ROOT_NOT_ALLOWED": string;
             "REPARENT_TARGET_ALREADY_PARENT": string;
             "REPARENT_TARGET_IN_SUBTREE": string;
+            "ROLES_NOT_FOUND": string;
         };
         "role-permission-assignment": {
             "ROLE_PERMISSION_LIMIT_EXCEEDED": string;
+            "PERMISSIONS_NOT_FOUND": string;
+            "ASSIGNMENTS_NOT_FOUND": string;
         };
         "role-delegation-policy": {
             "LIMIT_EXCEEDED": string;
             "EXISTS_TRANSITIVE_PATH": string;
+            "DELEGATOR_ROLE_NOT_FOUND": string;
+            "TARGET_ROLE_NOT_FOUND": string;
+            "BOTH_ROLES_NOT_FOUND": string;
+            "POLICIES_NOT_FOUND": string;
         };
         "role-conflict-member": {
             "MEMBER_LIMIT_EXCEEDED": string;
             "HAS_ACCOUNTS_VIOLATING_RULE": string;
+            "ROLES_NOT_FOUND": string;
+            "MEMBERS_NOT_FOUND": string;
         };
         "role-conflict-group": {
             "LIMIT_EXCEEDED": string;
             "MEMBER_LIMIT_EXCEEDED": string;
             "HAS_ACCOUNTS_VIOLATING_RULE": string;
+            "ROLES_NOT_FOUND": string;
+            "GROUPS_NOT_FOUND": string;
         };
         "permission": {
             "LIMIT_EXCEEDED": string;
+            "PERMISSIONS_NOT_FOUND": string;
         };
         "permission-override": {
             "LIMIT_EXCEEDED": string;
+            "OVERRIDES_NOT_FOUND": string;
         };
         "realm": {
             "LIMIT_EXCEEDED": string;
             "MISSING_SYSTEM_PERMISSIONS": string;
+            "REALMS_NOT_FOUND": string;
         };
         "account-role-assignment": {
             "DELEGATION_NOT_ALLOWED": string;
             "ACCOUNT_ROLE_LIMIT_EXCEEDED": string;
             "HAS_SoD_VIOLATIONS": string;
+            "ROLES_NOT_FOUND": string;
+            "ASSIGNMENTS_NOT_FOUND": string;
+        };
+        "kafka-retry": {
+            "HANDLER_NOT_REGISTERED": string;
+        };
+        "schema-registry": {
+            "ENCODE_FAILED": string;
+            "DECODE_FAILED": string;
+            "MESSAGE_INVALID": string;
+        };
+        "script-loader": {
+            "INVALID_SCRIPT_HASH": string;
+            "SCRIPT_NOT_LOADED": string;
         };
         "jwt": {
             "INVALID_ACCESS_TOKEN": string;

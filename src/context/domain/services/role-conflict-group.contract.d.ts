@@ -13,11 +13,11 @@ declare namespace Services {
         namespace Restore {
             type Props = {
                 transaction: ORM.EntityManager;
-                entities: Entities.RoleConflictGroup[];
+                identifiers: string[];
                 realm: string;
             };
 
-            type Result = Promise<void>;
+            type Result = Promise<Entities.RoleConflictGroup[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -25,11 +25,11 @@ declare namespace Services {
         namespace Create {
             type Props = {
                 transaction: ORM.EntityManager;
-                realm: Entities.Realm;
+                realm: string;
                 input: {
-                    members: Entities.Role[];
                     description: string;
                     maxAllowed: number;
+                    members: string[];
                     code: string;
                     name: string;
                 };
@@ -42,9 +42,10 @@ declare namespace Services {
 
         namespace Update {
             type Props = {
-                transaction: ORM.EntityManager;
                 patch: Partial<Entities.RoleConflictGroup.MutableFields>;
-                entity: Entities.RoleConflictGroup;
+                transaction: ORM.EntityManager;
+                realm: string;
+                id: string;
             };
 
             type Result = Promise<void>;
@@ -54,10 +55,12 @@ declare namespace Services {
 
         namespace Revoke {
             type Props = {
-                entities: Entities.RoleConflictGroup[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.RoleConflictGroup[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -65,10 +68,11 @@ declare namespace Services {
         namespace Purge {
             type Props = {
                 transaction: ORM.EntityManager;
-                entities: Entities.RoleConflictGroup[];
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.RoleConflictGroup[]>;
 
             type Signature = (props: Props) => Result;
         }

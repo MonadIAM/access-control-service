@@ -7,15 +7,18 @@ declare namespace Services {
             create: Create.Signature;
             update: Update.Signature;
             revoke: Revoke.Signature;
+            expire: Expire.Signature;
             purge: Purge.Signature;
         }
 
         namespace Restore {
             type Props = {
-                entities: Entities.RoleDelegationPolicy[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.RoleDelegationPolicy[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -23,13 +26,13 @@ declare namespace Services {
         namespace Create {
             type Props = {
                 transaction: ORM.EntityManager;
-                realm: Entities.Realm;
+                realm: string;
                 input: {
-                    delegator: Entities.Role;
-                    target: Entities.Role;
                     justification: string;
                     depthLimit?: number;
+                    delegator: string;
                     expiresAt?: Date;
+                    target: string;
                 };
             };
 
@@ -41,16 +44,31 @@ declare namespace Services {
         namespace Update {
             type Props = {
                 patch: Partial<Entities.RoleDelegationPolicy.MutableFields>;
-                entity: Entities.RoleDelegationPolicy;
+                transaction: ORM.EntityManager;
+                realm: string;
+                id: string;
             };
 
-            type Result = void;
+            type Result = Promise<void>;
 
             type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
             type Props = {
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
+            };
+
+            type Result = Promise<Entities.RoleDelegationPolicy[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Expire {
+            type Props = {
+                transaction: ORM.EntityManager;
                 entities: Entities.RoleDelegationPolicy[];
             };
 
@@ -62,10 +80,11 @@ declare namespace Services {
         namespace Purge {
             type Props = {
                 transaction: ORM.EntityManager;
-                entities: Entities.RoleDelegationPolicy[];
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.RoleDelegationPolicy[]>;
 
             type Signature = (props: Props) => Result;
         }

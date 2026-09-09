@@ -49,34 +49,6 @@ export class RealmService implements Services.Realm.Contract {
         }
     }
 
-    public update(props: Services.Realm.Update.Props): Services.Realm.Update.Result {
-        const { entity, patch } = props;
-        entity.update({ patch });
-    }
-
-    public purge(props: Services.Realm.Purge.Props): Services.Realm.Purge.Result {
-        const { transaction, entities } = props;
-        transaction.clear();
-        for (const entity of entities) {
-            entity.canPurge();
-            transaction.remove(entity);
-        }
-    }
-
-    public revoke(props: Services.Realm.Revoke.Props): Services.Realm.Revoke.Result {
-        const { entities } = props;
-        for (const entity of entities) {
-            entity.revoke();
-        }
-    }
-
-    public restore(props: Services.Realm.Restore.Props): Services.Realm.Restore.Result {
-        const { entities } = props;
-        for (const entity of entities) {
-            entity.restore();
-        }
-    }
-
     public createBaseRoles(props: Services.Realm.CreateBaseRoles.Props): Services.Realm.CreateBaseRoles.Result {
         const { transaction, input, realm } = props;
         const root = new Role({
@@ -148,23 +120,90 @@ export class RealmService implements Services.Realm.Contract {
             transaction,
         });
 
-        if (permissions.length !== ADMIN_PERMISSION_CODES.length) {
+        if (permissions.length === ADMIN_PERMISSION_CODES.length) {
+            const assignments: Entities.RolePermissionAssignment[] = [];
+
+            for (const permission of permissions) {
+                const adminAssignment = new RolePermissionAssignment({ role: roles.admin, permission, realm });
+                transaction.persist(adminAssignment);
+                assignments.push(adminAssignment);
+                if (USER_PERMISSION_CODES.includes(permission.code)) {
+                    const userAssignment = new RolePermissionAssignment({ role: roles.user, permission, realm });
+                    transaction.persist(userAssignment);
+                    assignments.push(userAssignment);
+                }
+            }
+
+            return assignments;
+        } else {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.MISSING_SYSTEM_PERMISSIONS` });
         }
+    }
 
-        const assignments: Entities.RolePermissionAssignment[] = [];
+    public async update(props: Services.Realm.Update.Props): Services.Realm.Update.Result {
+        const { transaction, patch, id } = props;
+        const entity = await this.realmRepository.findUniqueOrThrow({
+            where: { id },
+            transaction,
+        });
 
-        for (const permission of permissions) {
-            const adminAssignment = new RolePermissionAssignment({ role: roles.admin, permission, realm });
-            transaction.persist(adminAssignment);
-            assignments.push(adminAssignment);
-            if (USER_PERMISSION_CODES.includes(permission.code)) {
-                const userAssignment = new RolePermissionAssignment({ role: roles.user, permission, realm });
-                transaction.persist(userAssignment);
-                assignments.push(userAssignment);
+        entity.update({ patch });
+    }
+
+    public async revoke(props: Services.Realm.Revoke.Props): Services.Realm.Revoke.Result {
+        const { transaction, identifiers } = props;
+        const entities = await this.realmRepository.find({
+            where: { id: { $in: identifiers } },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.revoke();
             }
-        }
 
-        return assignments;
+            return entities;
+        }
+    }
+
+    public async restore(props: Services.Realm.Restore.Props): Services.Realm.Restore.Result {
+        const { transaction, identifiers } = props;
+        const entities = await this.realmRepository.find({
+            where: { id: { $in: identifiers } },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.restore();
+            }
+
+            return entities;
+        }
+    }
+
+    public async purge(props: Services.Realm.Purge.Props): Services.Realm.Purge.Result {
+        const { transaction, identifiers } = props;
+        const entities = await this.realmRepository.find({
+            where: { id: { $in: identifiers } },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
+        } else {
+            transaction.clear();
+
+            for (const entity of entities) {
+                entity.canPurge();
+                transaction.remove(entity);
+            }
+
+            return entities;
+        }
     }
 }

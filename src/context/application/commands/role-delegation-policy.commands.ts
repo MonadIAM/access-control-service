@@ -1,11 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { ROLE_DELEGATION_POLICY_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
+import { ROLE_DELEGATION_POLICY_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_DELEGATION_POLICY_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ActionType, EntityType } from "~context/enums";
 import { SYSTEM_ACCOUNT_ID } from "~context/constants";
-import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPolicy.Contract {
@@ -17,10 +16,6 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
         private readonly transactionalService: TransactionManager.Service.PublicContract,
         @Inject(ROLE_DELEGATION_POLICY_REPOSITORY)
         private readonly roleDelegationPolicyRepository: Repositories.RoleDelegationPolicy.PublicContract,
-        @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.PublicContract,
-        @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ROLE_DELEGATION_POLICY_SERVICE)
         private readonly roleDelegationPolicyService: Services.RoleDelegationPolicy.CommandContract,
     ) {}
@@ -37,41 +32,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             },
             changeLog: true,
             execute: async (transaction) => {
-                const [roleEntities, realmEntity] = await Promise.all([
-                    this.roleRepository.find({
-                        where: { id: { $in: [input.delegator, input.target] }, realm },
-                        transaction,
-                    }),
-                    this.realmRepository.findUniqueOrThrow({
-                        where: { id: realm },
-                        transaction,
-                    }),
-                ]);
-
-                if (roleEntities.length < 2) {
-                    if (roleEntities[0].id === input.delegator) {
-                        throw Exception.notFound({ messageKey: `${this.dictionaryPath}.TARGET_ROLE_NOT_FOUND` });
-                    } else if (roleEntities[0].id === input.target) {
-                        throw Exception.notFound({ messageKey: `${this.dictionaryPath}.DELEGATOR_ROLE_NOT_FOUND` });
-                    } else {
-                        throw Exception.notFound({ messageKey: `${this.dictionaryPath}.BOTH_ROLES_NOT_FOUND` });
-                    }
-                } else {
-                    const [delegatorEntity, targetEntity] =
-                        roleEntities[0].id === input.delegator ? roleEntities : roleEntities.reverse();
-
-                    await this.roleDelegationPolicyService.create({
-                        input: {
-                            justification: input.justification,
-                            depthLimit: input.depthLimit,
-                            expiresAt: input.expiresAt,
-                            delegator: delegatorEntity,
-                            target: targetEntity,
-                        },
-                        realm: realmEntity,
-                        transaction,
-                    });
-                }
+                await this.roleDelegationPolicyService.create({ transaction, realm, input });
             },
         });
 
@@ -90,49 +51,11 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entity = await this.roleDelegationPolicyRepository.findUniqueOrThrow({
-                    where: { id, realm },
-                    transaction,
-                });
-
-                this.roleDelegationPolicyService.update({ entity, patch: input.patch });
+                await this.roleDelegationPolicyService.update({ patch: input.patch, transaction, realm, id });
             },
         });
 
         return { message: `${this.dictionaryPath}.UPDATED` };
-    }
-
-    public async purge(props: Commands.RoleDelegationPolicy.Purge.Props): Commands.RoleDelegationPolicy.Purge.Result {
-        const { input, realm } = props;
-
-        const { count } = await this.transactionalService.run({
-            resource: this.resource,
-            audit: {
-                entityType: EntityType.DELEGATION_POLICY,
-                actionType: ActionType.DELETE,
-                ...props,
-            },
-            changeLog: true,
-            execute: async (transaction) => {
-                const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: input.identifiers }, realm },
-                    transaction,
-                });
-
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.POLICIES_NOT_FOUND` });
-                } else {
-                    this.roleDelegationPolicyService.purge({ transaction, entities });
-                    return { count: entities.length };
-                }
-            },
-        });
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
-        } else {
-            return { message: `${this.dictionaryPath}.PURGED` };
-        }
     }
 
     public async revoke(props: Commands.RoleDelegationPolicy.Revoke.Props): Commands.RoleDelegationPolicy.Revoke.Result {
@@ -147,17 +70,11 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: input.identifiers }, realm },
+                return await this.roleDelegationPolicyService.revoke({
+                    identifiers: input.identifiers,
                     transaction,
+                    realm,
                 });
-
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.POLICIES_NOT_FOUND` });
-                } else {
-                    this.roleDelegationPolicyService.revoke({ entities });
-                    return entities;
-                }
             },
         });
 
@@ -180,17 +97,11 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.roleDelegationPolicyRepository.find({
-                    where: { id: { $in: input.identifiers }, realm },
+                return await this.roleDelegationPolicyService.restore({
+                    identifiers: input.identifiers,
                     transaction,
+                    realm,
                 });
-
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.POLICIES_NOT_FOUND` });
-                } else {
-                    this.roleDelegationPolicyService.restore({ entities });
-                    return entities;
-                }
             },
         });
 
@@ -228,10 +139,7 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
                 },
                 changeLog: true,
                 execute: (transaction) => {
-                    for (const policy of policies) {
-                        transaction.merge(policy);
-                    }
-                    this.roleDelegationPolicyService.revoke({ entities: policies });
+                    this.roleDelegationPolicyService.expire({ transaction, entities: policies });
                     expired = policies.length;
                     return policies;
                 },
@@ -240,6 +148,35 @@ export class RoleDelegationPolicyCommands implements Commands.RoleDelegationPoli
             return expired;
         } else {
             return 0;
+        }
+    }
+
+    public async purge(props: Commands.RoleDelegationPolicy.Purge.Props): Commands.RoleDelegationPolicy.Purge.Result {
+        const { input, realm } = props;
+
+        const { count } = await this.transactionalService.run({
+            resource: this.resource,
+            audit: {
+                entityType: EntityType.DELEGATION_POLICY,
+                actionType: ActionType.DELETE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const entities = await this.roleDelegationPolicyService.purge({
+                    identifiers: input.identifiers,
+                    transaction,
+                    realm,
+                });
+
+                return { count: entities.length };
+            },
+        });
+
+        if (count > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
         }
     }
 }

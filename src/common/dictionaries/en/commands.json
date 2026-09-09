@@ -9,9 +9,7 @@
 
     "SUBTREE_PURGED_COUNT": "Successfully deleted roles: {count}.",
     "BULK_REVOKED_COUNT": "Successfully revoked roles: {count}.",
-    "BULK_RESTORED_COUNT": "Successfully restored roles: {count}.",
-
-    "ROLES_NOT_FOUND": "Some of the specified roles were not found."
+    "BULK_RESTORED_COUNT": "Successfully restored roles: {count}."
   },
   "role-permission-assignment": {
     "CREATED": "Permissions successfully assigned.",
@@ -21,10 +19,7 @@
 
     "BULK_PURGED_COUNT": "Successfully deleted assignments: {count}.",
     "BULK_REVOKED_COUNT": "Successfully revoked assignments: {count}.",
-    "BULK_RESTORED_COUNT": "Successfully restored assignments: {count}.",
-
-    "PERMISSIONS_NOT_FOUND": "Some of the specified permissions were not found.",
-    "ASSIGNMENTS_NOT_FOUND": "Some of the specified assignments were not found."
+    "BULK_RESTORED_COUNT": "Successfully restored assignments: {count}."
   },
   "role-delegation-policy": {
     "CREATED": "Delegation policy successfully created.",
@@ -35,21 +30,13 @@
 
     "BULK_PURGED_COUNT": "Successfully deleted policies: {count}.",
     "BULK_REVOKED_COUNT": "Successfully revoked policies: {count}.",
-    "BULK_RESTORED_COUNT": "Successfully restored policies: {count}.",
-
-    "DELEGATOR_ROLE_NOT_FOUND": "Delegator role not found.",
-    "TARGET_ROLE_NOT_FOUND": "Target role not found.",
-    "BOTH_ROLES_NOT_FOUND": "Delegator role and target role were not found.",
-    "POLICIES_NOT_FOUND": "Some of the specified policies were not found."
+    "BULK_RESTORED_COUNT": "Successfully restored policies: {count}."
   },
   "role-conflict-member": {
     "CREATED": "Members successfully added to the conflict group.",
     "PURGED": "Member successfully removed from the conflict group.",
 
-    "BULK_PURGED_COUNT": "Successfully removed members: {count}.",
-
-    "ROLES_NOT_FOUND": "Some of the specified roles were not found.",
-    "MEMBERS_NOT_FOUND": "Some of the specified members were not found."
+    "BULK_PURGED_COUNT": "Successfully removed members: {count}."
   },
   "role-conflict-group": {
     "CREATED": "Conflict group successfully created.",
@@ -60,10 +47,7 @@
 
     "BULK_PURGED_COUNT": "Successfully deleted groups: {count}.",
     "BULK_REVOKED_COUNT": "Successfully revoked groups: {count}.",
-    "BULK_RESTORED_COUNT": "Successfully restored groups: {count}.",
-
-    "ROLES_NOT_FOUND": "Some of the specified roles were not found.",
-    "GROUPS_NOT_FOUND": "Some of the specified conflict groups were not found."
+    "BULK_RESTORED_COUNT": "Successfully restored groups: {count}."
   },
   "realm": {
     "CREATED": "Realm successfully created.",
@@ -74,9 +58,7 @@
 
     "BULK_PURGED_COUNT": "Successfully deleted realms: {count}.",
     "BULK_REVOKED_COUNT": "Successfully revoked realms: {count}.",
-    "BULK_RESTORED_COUNT": "Successfully restored realms: {count}.",
-
-    "REALMS_NOT_FOUND": "Some of the specified realms were not found."
+    "BULK_RESTORED_COUNT": "Successfully restored realms: {count}."
   },
   "permission": {
     "CREATED": "Permission successfully created.",
@@ -87,9 +69,7 @@
 
     "BULK_PURGED_COUNT": "Successfully deleted permissions: {count}.",
     "BULK_REVOKED_COUNT": "Successfully revoked permissions: {count}.",
-    "BULK_RESTORED_COUNT": "Successfully restored permissions: {count}.",
-
-    "PERMISSIONS_NOT_FOUND": "Some of the specified permissions were not found."
+    "BULK_RESTORED_COUNT": "Successfully restored permissions: {count}."
   },
   "permission-override": {
     "CREATED": "Permission override successfully created.",
@@ -101,7 +81,6 @@
     "BULK_REVOKED_COUNT": "Successfully revoked overrides: {count}.",
     "BULK_RESTORED_COUNT": "Successfully restored overrides: {count}.",
 
-    "OVERRIDES_NOT_FOUND": "Some of the specified overrides were not found.",
     "ACCOUNT_NOT_MEMBER": "The specified account is not a member of this realm."
   },
   "account-role-assignment": {
@@ -114,7 +93,6 @@
     "BULK_REVOKED_COUNT": "Successfully revoked assignments: {count}.",
     "BULK_RESTORED_COUNT": "Successfully restored assignments: {count}.",
 
-    "ROLES_NOT_FOUND": "Some of the specified roles were not found.",
     "ASSIGNMENTS_NOT_FOUND": "Some of the specified assignments were not found.",
     "ACCOUNT_NOT_MEMBER": "The specified account is not a member of this realm.",
     "CANNOT_PURGE_LAST_ASSIGNMENT": "Cannot delete the last role assignment. Use the exclude operation to remove a member from the realm."

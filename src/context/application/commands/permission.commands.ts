@@ -1,11 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { PERMISSION_SERVICE } from "~context/domain/services";
-import { Exception } from "~common/exceptions";
 
 import { PermissionMapper } from "../mappers";
 
@@ -18,10 +16,6 @@ export class PermissionCommands implements Commands.Permission.Contract {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.PublicContract,
-        @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(PERMISSION_SERVICE)
         private readonly permissionService: Services.Permission.CommandContract,
     ) {
@@ -45,14 +39,9 @@ export class PermissionCommands implements Commands.Permission.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const realmEntity = await this.realmRepository.findUniqueOrThrow({
-                    where: { id: realm },
-                    transaction,
-                });
-
                 const permission = await this.permissionService.create({
-                    realm: realmEntity,
                     transaction,
+                    realm,
                     input,
                 });
 
@@ -75,61 +64,16 @@ export class PermissionCommands implements Commands.Permission.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entity = await this.permissionRepository.findUniqueOrThrow({
-                    where: { id, realm },
+                await this.permissionService.update({
+                    patch: input.patch,
                     transaction,
+                    realm,
+                    id,
                 });
-
-                this.permissionService.update({ entity, patch: input.patch });
             },
         });
 
         return { message: `${this.dictionaryPath}.UPDATED` };
-    }
-
-    public async purge(props: Commands.Permission.Purge.Props): Commands.Permission.Purge.Result {
-        const { input, realm } = props;
-
-        const { permissions } = await this.transactionalService.run({
-            resource: this.resource,
-            outbox: [
-                {
-                    payloadMapper: this.mapper.projectionPurgePayload,
-                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
-                    actionType: ProjectionScript.PERMISSION_PURGE,
-                },
-                {
-                    payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
-                },
-            ],
-            audit: {
-                entityType: EntityType.PERMISSION,
-                actionType: ActionType.DELETE,
-                ...props,
-            },
-            changeLog: true,
-            execute: async (transaction) => {
-                const entities = await this.permissionRepository.find({
-                    where: { id: { $in: input.identifiers }, realm },
-                    transaction,
-                });
-
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
-                } else {
-                    this.permissionService.purge({ transaction, entities });
-                    return { permissions: entities };
-                }
-            },
-        });
-
-        if (permissions.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: permissions.length } };
-        } else {
-            return { message: `${this.dictionaryPath}.PURGED` };
-        }
     }
 
     public async revoke(props: Commands.Permission.Revoke.Props): Commands.Permission.Revoke.Result {
@@ -156,18 +100,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.permissionRepository.find({
-                    where: { id: { $in: input.identifiers }, realm },
+                const permissions = await this.permissionService.revoke({
+                    identifiers: input.identifiers,
                     transaction,
+                    realm,
                 });
 
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
-                } else {
-                    this.permissionService.revoke({ entities });
-
-                    return { permissions: entities };
-                }
+                return { permissions };
             },
         });
 
@@ -202,18 +141,13 @@ export class PermissionCommands implements Commands.Permission.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.permissionRepository.find({
-                    where: { id: { $in: input.identifiers }, realm },
+                const permissions = await this.permissionService.restore({
+                    identifiers: input.identifiers,
                     transaction,
+                    realm,
                 });
 
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
-                } else {
-                    this.permissionService.restore({ entities });
-
-                    return { permissions: entities };
-                }
+                return { permissions };
             },
         });
 
@@ -221,6 +155,47 @@ export class PermissionCommands implements Commands.Permission.Contract {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: permissions.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
+        }
+    }
+
+    public async purge(props: Commands.Permission.Purge.Props): Commands.Permission.Purge.Result {
+        const { input, realm } = props;
+
+        const { permissions } = await this.transactionalService.run({
+            resource: this.resource,
+            outbox: [
+                {
+                    payloadMapper: this.mapper.projectionPurgePayload,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.PERMISSION_PURGE,
+                },
+                {
+                    payloadMapper: this.mapper.accessCachePayload,
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
+            audit: {
+                entityType: EntityType.PERMISSION,
+                actionType: ActionType.DELETE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const permissions = await this.permissionService.purge({
+                    identifiers: input.identifiers,
+                    transaction,
+                    realm,
+                });
+
+                return { permissions };
+            },
+        });
+
+        if (permissions.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: permissions.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
         }
     }
 }

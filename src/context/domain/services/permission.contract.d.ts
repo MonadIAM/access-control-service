@@ -12,10 +12,12 @@ declare namespace Services {
 
         namespace Restore {
             type Props = {
-                entities: Entities.Permission[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.Permission[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -23,7 +25,7 @@ declare namespace Services {
         namespace Create {
             type Props = {
                 transaction: ORM.EntityManager;
-                realm: Entities.Realm;
+                realm: string;
                 input: {
                     code: string;
                     name: string;
@@ -39,20 +41,24 @@ declare namespace Services {
         namespace Update {
             type Props = {
                 patch: Partial<Entities.Permission.MutableFields>;
-                entity: Entities.Permission;
+                transaction: ORM.EntityManager;
+                realm: string;
+                id: string;
             };
 
-            type Result = void;
+            type Result = Promise<void>;
 
             type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
             type Props = {
-                entities: Entities.Permission[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.Permission[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -60,10 +66,11 @@ declare namespace Services {
         namespace Purge {
             type Props = {
                 transaction: ORM.EntityManager;
-                entities: Entities.Permission[];
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.Permission[]>;
 
             type Signature = (props: Props) => Result;
         }

@@ -8,38 +8,75 @@
     "REPARENT_TARGET_IS_SELF": "Роль нельзя переместить под саму себя.",
     "REPARENT_ROOT_NOT_ALLOWED": "Корневую роль нельзя переместить.",
     "REPARENT_TARGET_ALREADY_PARENT": "Указанная целевая родительская роль уже является текущим родителем роли.",
-    "REPARENT_TARGET_IN_SUBTREE": "Роль нельзя переместить под одного из ее собственных потомков."
+    "REPARENT_TARGET_IN_SUBTREE": "Роль нельзя переместить под одного из ее собственных потомков.",
+
+    "ROLES_NOT_FOUND": "Часть указанных ролей не найдена."
   },
   "role-permission-assignment": {
-    "ROLE_PERMISSION_LIMIT_EXCEEDED": "Превышен допустимый лимит разрешений для роли."
+    "ROLE_PERMISSION_LIMIT_EXCEEDED": "Превышен допустимый лимит разрешений для роли.",
+
+    "PERMISSIONS_NOT_FOUND": "Часть указанных разрешений не найдена.",
+    "ASSIGNMENTS_NOT_FOUND": "Часть указанных назначений не найдена."
   },
   "role-delegation-policy": {
     "LIMIT_EXCEEDED": "Превышен допустимый лимит политик делегирования для роли.",
-    "EXISTS_TRANSITIVE_PATH": "Создание политики приведет к транзитивному циклу делегирования."
+    "EXISTS_TRANSITIVE_PATH": "Создание политики приведет к транзитивному циклу делегирования.",
+
+    "DELEGATOR_ROLE_NOT_FOUND": "Роль-делегатор не найдена.",
+    "TARGET_ROLE_NOT_FOUND": "Целевая роль не найдена.",
+    "BOTH_ROLES_NOT_FOUND": "Роль-делегатор и целевая роль не найдены.",
+    "POLICIES_NOT_FOUND": "Часть указанных политик не найдена."
   },
   "role-conflict-member": {
     "MEMBER_LIMIT_EXCEEDED": "Превышен допустимый лимит участников конфликтной группы.",
-    "HAS_ACCOUNTS_VIOLATING_RULE": "Правило уже нарушается существующими назначениями ролей."
+    "HAS_ACCOUNTS_VIOLATING_RULE": "Правило уже нарушается существующими назначениями ролей.",
+
+    "ROLES_NOT_FOUND": "Часть указанных ролей не найдена.",
+    "MEMBERS_NOT_FOUND": "Часть указанных участников не найдена."
   },
   "role-conflict-group": {
     "LIMIT_EXCEEDED": "Превышен допустимый лимит конфликтных групп в домене.",
     "MEMBER_LIMIT_EXCEEDED": "Превышен допустимый лимит участников конфликтной группы.",
-    "HAS_ACCOUNTS_VIOLATING_RULE": "Правило уже нарушается существующими назначениями ролей."
+    "HAS_ACCOUNTS_VIOLATING_RULE": "Правило уже нарушается существующими назначениями ролей.",
+
+    "ROLES_NOT_FOUND": "Часть указанных ролей не найдена.",
+    "GROUPS_NOT_FOUND": "Часть указанных групп конфликтов не найдена."
   },
   "permission": {
-    "LIMIT_EXCEEDED": "Превышен допустимый лимит разрешений в домене."
+    "LIMIT_EXCEEDED": "Превышен допустимый лимит разрешений в домене.",
+
+    "PERMISSIONS_NOT_FOUND": "Часть указанных разрешений не найдена."
   },
   "permission-override": {
-    "LIMIT_EXCEEDED": "Превышен допустимый лимит переопределений разрешений для учетной записи."
+    "LIMIT_EXCEEDED": "Превышен допустимый лимит переопределений разрешений для учетной записи.",
+
+    "OVERRIDES_NOT_FOUND": "Часть указанных переопределений не найдена."
   },
   "realm": {
     "LIMIT_EXCEEDED": "Превышен допустимый лимит доменов для учетной записи.",
-    "MISSING_SYSTEM_PERMISSIONS": "Одно или несколько обязательных системных разрешений не найдены."
+    "MISSING_SYSTEM_PERMISSIONS": "Одно или несколько обязательных системных разрешений не найдены.",
+
+    "REALMS_NOT_FOUND": "Часть указанных realm не найдена."
   },
   "account-role-assignment": {
     "DELEGATION_NOT_ALLOWED": "Недостаточно прав для назначения данной роли.",
     "ACCOUNT_ROLE_LIMIT_EXCEEDED": "Превышен допустимый лимит ролей для учетной записи.",
-    "HAS_SoD_VIOLATIONS": "Назначение нарушает одну или несколько политик разделения обязанностей."
+    "HAS_SoD_VIOLATIONS": "Назначение нарушает одну или несколько политик разделения обязанностей.",
+
+    "ROLES_NOT_FOUND": "Часть указанных ролей не найдена.",
+    "ASSIGNMENTS_NOT_FOUND": "Часть указанных назначений не найдена."
+  },
+  "kafka-retry": {
+    "HANDLER_NOT_REGISTERED": "Для топика {topic} не зарегистрирован обработчик повторов."
+  },
+  "schema-registry": {
+    "ENCODE_FAILED": "Не удалось закодировать сообщение для subject {subject}: {reason}.",
+    "DECODE_FAILED": "Не удалось декодировать сообщение для subject {subject}: {reason}.",
+    "MESSAGE_INVALID": "Сообщение для subject {subject} не соответствует схеме. Некорректные поля: {fields}."
+  },
+  "script-loader": {
+    "INVALID_SCRIPT_HASH": "Redis вернул недействительный hash Lua-скрипта.",
+    "SCRIPT_NOT_LOADED": "Lua-скрипт не загружен: {script}."
   },
   "jwt": {
     "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен."

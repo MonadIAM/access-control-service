@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
+import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { Exception } from "~common/exceptions";
 
 import { Permission } from "../entities";
@@ -12,51 +12,96 @@ export class PermissionService implements Services.Permission.Contract {
     public constructor(
         @Inject(PERMISSION_REPOSITORY)
         private readonly permissionRepository: Repositories.Permission.PublicContract,
+        @Inject(REALM_REPOSITORY)
+        private readonly realmRepository: Repositories.Realm.PublicContract,
     ) {}
 
     public async create(props: Services.Permission.Create.Props): Services.Permission.Create.Result {
         const { transaction, input, realm } = props;
-        const limitExceeded = await this.permissionRepository.wouldExceedPermissionLimit({
-            realm: realm.id,
-            transaction,
-        });
+        const [realmEntity, limitExceeded] = await Promise.all([
+            this.realmRepository.findUniqueOrThrow({
+                where: { id: realm },
+                transaction,
+            }),
+            this.permissionRepository.wouldExceedPermissionLimit({
+                realm,
+                transaction,
+            }),
+        ]);
 
         if (limitExceeded) {
             throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.LIMIT_EXCEEDED` });
         } else {
-            const entity = new Permission({ ...input, realm });
-
+            const entity = new Permission({ ...input, realm: realmEntity });
             transaction.persist(entity);
-
             return entity;
         }
     }
 
-    public update(props: Services.Permission.Update.Props): Services.Permission.Update.Result {
-        const { entity, patch } = props;
+    public async update(props: Services.Permission.Update.Props): Services.Permission.Update.Result {
+        const { transaction, realm, patch, id } = props;
+        const entity = await this.permissionRepository.findUniqueOrThrow({
+            where: { id, realm },
+            transaction,
+        });
+
         entity.update({ patch });
     }
 
-    public purge(props: Services.Permission.Purge.Props): Services.Permission.Purge.Result {
-        const { transaction, entities } = props;
-        transaction.clear();
-        for (const entity of entities) {
-            entity.canPurge();
-            transaction.remove(entity);
+    public async revoke(props: Services.Permission.Revoke.Props): Services.Permission.Revoke.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.permissionRepository.find({
+            where: { id: { $in: identifiers }, realm },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.revoke();
+            }
+
+            return entities;
         }
     }
 
-    public revoke(props: Services.Permission.Revoke.Props): Services.Permission.Revoke.Result {
-        const { entities } = props;
-        for (const entity of entities) {
-            entity.revoke();
+    public async restore(props: Services.Permission.Restore.Props): Services.Permission.Restore.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.permissionRepository.find({
+            where: { id: { $in: identifiers }, realm },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.restore();
+            }
+
+            return entities;
         }
     }
 
-    public restore(props: Services.Permission.Restore.Props): Services.Permission.Restore.Result {
-        const { entities } = props;
-        for (const entity of entities) {
-            entity.restore();
+    public async purge(props: Services.Permission.Purge.Props): Services.Permission.Purge.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.permissionRepository.find({
+            where: { id: { $in: identifiers }, realm },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
+        } else {
+            transaction.clear();
+
+            for (const entity of entities) {
+                entity.canPurge();
+                transaction.remove(entity);
+            }
+
+            return entities;
         }
     }
 }

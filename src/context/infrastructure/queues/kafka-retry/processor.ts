@@ -15,6 +15,7 @@ import { BullQueue } from "../enums";
 @Processor(BullQueue.KAFKA_RETRY)
 export class KafkaRetryProcessor extends WorkerHost {
     private readonly logger = new Logger(KafkaRetryProcessor.name);
+    private readonly dictionaryPath = "services.kafka-retry";
 
     public constructor(
         @Inject(KafkaMetricsRecorder)
@@ -41,7 +42,7 @@ export class KafkaRetryProcessor extends WorkerHost {
             await handler.process(payload);
         } else {
             throw Exception.invariantViolation({
-                messageKey: "kafka-retry.HANDLER_NOT_REGISTERED",
+                messageKey: `${this.dictionaryPath}.HANDLER_NOT_REGISTERED`,
                 params: { topic: originalTopic },
             });
         }

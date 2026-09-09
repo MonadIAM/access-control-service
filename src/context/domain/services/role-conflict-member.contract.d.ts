@@ -10,9 +10,10 @@ declare namespace Services {
         namespace Create {
             type Props = {
                 transaction: ORM.EntityManager;
+                realm: string;
                 input: {
-                    group: Entities.RoleConflictGroup;
-                    roles: Entities.Role[];
+                    roles: string[];
+                    group: string;
                 };
             };
 
@@ -24,10 +25,11 @@ declare namespace Services {
         namespace Purge {
             type Props = {
                 transaction: ORM.EntityManager;
-                entities: Entities.RoleConflictMember[];
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.RoleConflictMember[]>;
 
             type Signature = (props: Props) => Result;
         }

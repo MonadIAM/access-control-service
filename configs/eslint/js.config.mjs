@@ -37,8 +37,6 @@ const enabledRules = {
     "operator-assignment": ["error", "always"],
     // Always use double quotes, but allow escaping avoidance
     "quotes": ["error", "double", { avoidEscape: true }],
-    // Prefer object destructuring for single variable access where possible
-    "prefer-destructuring": ["error", { object: true, array: false }],
     "max-len": [
         "error",
         {

@@ -8,38 +8,75 @@
     "REPARENT_TARGET_IS_SELF": "A role cannot be moved under itself.",
     "REPARENT_ROOT_NOT_ALLOWED": "The root role cannot be moved.",
     "REPARENT_TARGET_ALREADY_PARENT": "The specified target parent is already the current parent of the role.",
-    "REPARENT_TARGET_IN_SUBTREE": "A role cannot be moved under one of its own descendants."
+    "REPARENT_TARGET_IN_SUBTREE": "A role cannot be moved under one of its own descendants.",
+
+    "ROLES_NOT_FOUND": "Some of the specified roles were not found."
   },
   "role-permission-assignment": {
-    "ROLE_PERMISSION_LIMIT_EXCEEDED": "The allowed permission limit for the role has been exceeded."
+    "ROLE_PERMISSION_LIMIT_EXCEEDED": "The allowed permission limit for the role has been exceeded.",
+
+    "PERMISSIONS_NOT_FOUND": "Some of the specified permissions were not found.",
+    "ASSIGNMENTS_NOT_FOUND": "Some of the specified assignments were not found."
   },
   "role-delegation-policy": {
     "LIMIT_EXCEEDED": "The allowed delegation policy limit for the role has been exceeded.",
-    "EXISTS_TRANSITIVE_PATH": "Creating this policy would introduce a transitive delegation cycle."
+    "EXISTS_TRANSITIVE_PATH": "Creating this policy would introduce a transitive delegation cycle.",
+
+    "DELEGATOR_ROLE_NOT_FOUND": "Delegator role not found.",
+    "TARGET_ROLE_NOT_FOUND": "Target role not found.",
+    "BOTH_ROLES_NOT_FOUND": "Delegator role and target role were not found.",
+    "POLICIES_NOT_FOUND": "Some of the specified policies were not found."
   },
   "role-conflict-member": {
     "MEMBER_LIMIT_EXCEEDED": "The allowed member limit for the conflict group has been exceeded.",
-    "HAS_ACCOUNTS_VIOLATING_RULE": "This rule is already violated by existing account role assignments."
+    "HAS_ACCOUNTS_VIOLATING_RULE": "This rule is already violated by existing account role assignments.",
+
+    "ROLES_NOT_FOUND": "Some of the specified roles were not found.",
+    "MEMBERS_NOT_FOUND": "Some of the specified members were not found."
   },
   "role-conflict-group": {
     "LIMIT_EXCEEDED": "The allowed conflict group limit for the realm has been exceeded.",
     "MEMBER_LIMIT_EXCEEDED": "The allowed member limit for the conflict group has been exceeded.",
-    "HAS_ACCOUNTS_VIOLATING_RULE": "This rule is already violated by existing account role assignments."
+    "HAS_ACCOUNTS_VIOLATING_RULE": "This rule is already violated by existing account role assignments.",
+
+    "ROLES_NOT_FOUND": "Some of the specified roles were not found.",
+    "GROUPS_NOT_FOUND": "Some of the specified conflict groups were not found."
   },
   "permission": {
-    "LIMIT_EXCEEDED": "The allowed permission limit for the realm has been exceeded."
+    "LIMIT_EXCEEDED": "The allowed permission limit for the realm has been exceeded.",
+
+    "PERMISSIONS_NOT_FOUND": "Some of the specified permissions were not found."
   },
   "permission-override": {
-    "LIMIT_EXCEEDED": "The allowed permission override limit for the account has been exceeded."
+    "LIMIT_EXCEEDED": "The allowed permission override limit for the account has been exceeded.",
+
+    "OVERRIDES_NOT_FOUND": "Some of the specified overrides were not found."
   },
   "realm": {
     "LIMIT_EXCEEDED": "The allowed realm limit for the account has been exceeded.",
-    "MISSING_SYSTEM_PERMISSIONS": "One or more required system permissions were not found."
+    "MISSING_SYSTEM_PERMISSIONS": "One or more required system permissions were not found.",
+
+    "REALMS_NOT_FOUND": "Some of the specified realms were not found."
   },
   "account-role-assignment": {
     "DELEGATION_NOT_ALLOWED": "Insufficient privileges to assign this role.",
     "ACCOUNT_ROLE_LIMIT_EXCEEDED": "The allowed role limit for the account has been exceeded.",
-    "HAS_SoD_VIOLATIONS": "The assignment violates one or more segregation of duties policies."
+    "HAS_SoD_VIOLATIONS": "The assignment violates one or more segregation of duties policies.",
+
+    "ROLES_NOT_FOUND": "Some of the specified roles were not found.",
+    "ASSIGNMENTS_NOT_FOUND": "Some of the specified assignments were not found."
+  },
+  "kafka-retry": {
+    "HANDLER_NOT_REGISTERED": "No retry handler is registered for topic {topic}."
+  },
+  "schema-registry": {
+    "ENCODE_FAILED": "Failed to encode a message for subject {subject}: {reason}.",
+    "DECODE_FAILED": "Failed to decode a message for subject {subject}: {reason}.",
+    "MESSAGE_INVALID": "The message for subject {subject} does not match the schema. Invalid fields: {fields}."
+  },
+  "script-loader": {
+    "INVALID_SCRIPT_HASH": "Redis returned an invalid Lua script hash.",
+    "SCRIPT_NOT_LOADED": "Lua script is not loaded: {script}."
   },
   "jwt": {
     "INVALID_ACCESS_TOKEN": "The access token is invalid or expired."

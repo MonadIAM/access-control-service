@@ -1,11 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { AccessCacheTopicAction, RealmTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
-import { REALM_REPOSITORY } from "~context/infrastructure/repositories";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { REALM_SERVICE } from "~context/domain/services";
-import { Exception } from "~common/exceptions";
 
 import { RealmMapper } from "../mappers";
 
@@ -18,8 +16,6 @@ export class RealmCommands implements Commands.Realm.Contract {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.PublicContract,
         @Inject(REALM_SERVICE)
         private readonly realmService: Services.Realm.CommandContract,
     ) {
@@ -66,66 +62,11 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entity = await this.realmRepository.findUniqueOrThrow({
-                    where: { id },
-                    transaction,
-                });
-
-                this.realmService.update({ entity, patch: input.patch });
+                await this.realmService.update({ patch: input.patch, transaction, id });
             },
         });
 
         return { message: `${this.dictionaryPath}.UPDATED` };
-    }
-
-    public async purge(props: Commands.Realm.Purge.Props): Commands.Realm.Purge.Result {
-        const { input, actor } = props;
-
-        const { realms } = await this.transactionalService.run({
-            resource: this.resource,
-            outbox: [
-                {
-                    payloadMapper: this.mapper.projectionPurgePayload,
-                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
-                    actionType: ProjectionScript.REALM_PURGE,
-                },
-                {
-                    payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
-                },
-                {
-                    payloadMapper: this.mapper.realmLifecyclePayload,
-                    actionType: RealmTopicAction.PURGE,
-                    destinationTopic: KafkaTopic.REALM,
-                },
-            ],
-            audit: {
-                actionType: ActionType.DELETE,
-                entityType: EntityType.REALM,
-                ...props,
-            },
-            changeLog: true,
-            execute: async (transaction) => {
-                const entities = await this.realmRepository.find({
-                    where: { id: { $in: input.identifiers } },
-                    transaction,
-                });
-
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
-                } else {
-                    this.realmService.purge({ transaction, entities });
-                    return { realms: entities, actor };
-                }
-            },
-        });
-
-        if (realms.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: realms.length } };
-        } else {
-            return { message: `${this.dictionaryPath}.PURGED` };
-        }
     }
 
     public async revoke(props: Commands.Realm.Revoke.Props): Commands.Realm.Revoke.Result {
@@ -157,17 +98,12 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.realmRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                const realms = await this.realmService.revoke({
+                    identifiers: input.identifiers,
                     transaction,
                 });
 
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
-                } else {
-                    this.realmService.revoke({ entities });
-                    return { realms: entities, actor };
-                }
+                return { realms, actor };
             },
         });
 
@@ -207,17 +143,12 @@ export class RealmCommands implements Commands.Realm.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.realmRepository.find({
-                    where: { id: { $in: input.identifiers } },
+                const realms = await this.realmService.restore({
+                    identifiers: input.identifiers,
                     transaction,
                 });
 
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
-                } else {
-                    this.realmService.restore({ entities });
-                    return { realms: entities, actor };
-                }
+                return { realms, actor };
             },
         });
 
@@ -225,6 +156,51 @@ export class RealmCommands implements Commands.Realm.Contract {
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: realms.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
+        }
+    }
+
+    public async purge(props: Commands.Realm.Purge.Props): Commands.Realm.Purge.Result {
+        const { input, actor } = props;
+
+        const { realms } = await this.transactionalService.run({
+            resource: this.resource,
+            outbox: [
+                {
+                    payloadMapper: this.mapper.projectionPurgePayload,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.REALM_PURGE,
+                },
+                {
+                    payloadMapper: this.mapper.accessCachePayload,
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+                {
+                    payloadMapper: this.mapper.realmLifecyclePayload,
+                    actionType: RealmTopicAction.PURGE,
+                    destinationTopic: KafkaTopic.REALM,
+                },
+            ],
+            audit: {
+                actionType: ActionType.DELETE,
+                entityType: EntityType.REALM,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const realms = await this.realmService.purge({
+                    identifiers: input.identifiers,
+                    transaction,
+                });
+
+                return { realms, actor };
+            },
+        });
+
+        if (realms.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: realms.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
         }
     }
 }

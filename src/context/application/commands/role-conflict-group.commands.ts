@@ -1,10 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { ROLE_CONFLICT_GROUP_REPOSITORY, REALM_REPOSITORY, ROLE_REPOSITORY } from "~context/infrastructure/repositories";
 import { ROLE_CONFLICT_GROUP_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ActionType, EntityType } from "~context/enums";
-import { Exception } from "~common/exceptions";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Contract {
@@ -14,12 +12,6 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.PublicContract,
-        @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.PublicContract,
-        @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ROLE_CONFLICT_GROUP_SERVICE)
         private readonly roleConflictGroupService: Services.RoleConflictGroup.CommandContract,
     ) {}
@@ -36,26 +28,7 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             },
             changeLog: true,
             execute: async (transaction) => {
-                const [realmEntity, roleEntities] = await Promise.all([
-                    this.realmRepository.findUniqueOrThrow({
-                        where: { id: realm },
-                        transaction,
-                    }),
-                    this.roleRepository.find({
-                        where: { id: { $in: input.members }, realm },
-                        transaction,
-                    }),
-                ]);
-
-                if (roleEntities.length < input.members.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
-                } else {
-                    await this.roleConflictGroupService.create({
-                        input: { ...input, members: roleEntities },
-                        realm: realmEntity,
-                        transaction,
-                    });
-                }
+                await this.roleConflictGroupService.create({ transaction, realm, input });
             },
         });
 
@@ -74,50 +47,11 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entity = await this.roleConflictGroupRepository.findUniqueOrThrow({
-                    options: { populate: ["members", "members.role"] },
-                    where: { id, realm },
-                    transaction,
-                });
-
-                await this.roleConflictGroupService.update({ entity, patch: input.patch, transaction });
+                await this.roleConflictGroupService.update({ patch: input.patch, transaction, realm, id });
             },
         });
 
         return { message: `${this.dictionaryPath}.UPDATED` };
-    }
-
-    public async purge(props: Commands.RoleConflictGroup.Purge.Props): Commands.RoleConflictGroup.Purge.Result {
-        const { input, realm } = props;
-
-        const { count } = await this.transactionalService.run({
-            resource: this.resource,
-            audit: {
-                entityType: EntityType.CONFLICT_GROUP,
-                actionType: ActionType.DELETE,
-                ...props,
-            },
-            changeLog: true,
-            execute: async (transaction) => {
-                const entities = await this.roleConflictGroupRepository.find({
-                    where: { id: { $in: input.identifiers }, realm },
-                    transaction,
-                });
-
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.GROUPS_NOT_FOUND` });
-                } else {
-                    this.roleConflictGroupService.purge({ transaction, entities });
-                    return { count: entities.length };
-                }
-            },
-        });
-
-        if (count > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
-        } else {
-            return { message: `${this.dictionaryPath}.PURGED` };
-        }
     }
 
     public async revoke(props: Commands.RoleConflictGroup.Revoke.Props): Commands.RoleConflictGroup.Revoke.Result {
@@ -132,17 +66,11 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.roleConflictGroupRepository.find({
-                    where: { id: { $in: input.identifiers }, realm },
+                return await this.roleConflictGroupService.revoke({
+                    identifiers: input.identifiers,
                     transaction,
+                    realm,
                 });
-
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.GROUPS_NOT_FOUND` });
-                } else {
-                    this.roleConflictGroupService.revoke({ entities });
-                    return entities;
-                }
             },
         });
 
@@ -165,17 +93,11 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.roleConflictGroupRepository.find({
-                    where: { id: { $in: input.identifiers }, realm },
+                return await this.roleConflictGroupService.restore({
+                    identifiers: input.identifiers,
                     transaction,
+                    realm,
                 });
-
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.GROUPS_NOT_FOUND` });
-                } else {
-                    await this.roleConflictGroupService.restore({ entities, transaction, realm });
-                    return entities;
-                }
             },
         });
 
@@ -183,6 +105,35 @@ export class RoleConflictGroupCommands implements Commands.RoleConflictGroup.Con
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: entities.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
+        }
+    }
+
+    public async purge(props: Commands.RoleConflictGroup.Purge.Props): Commands.RoleConflictGroup.Purge.Result {
+        const { input, realm } = props;
+
+        const { count } = await this.transactionalService.run({
+            resource: this.resource,
+            audit: {
+                entityType: EntityType.CONFLICT_GROUP,
+                actionType: ActionType.DELETE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const entities = await this.roleConflictGroupService.purge({
+                    identifiers: input.identifiers,
+                    transaction,
+                    realm,
+                });
+
+                return { count: entities.length };
+            },
+        });
+
+        if (count > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
         }
     }
 }

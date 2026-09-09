@@ -3,12 +3,6 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 import { ROLE_CONFLICT_MEMBER_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ActionType, EntityType } from "~context/enums";
-import { Exception } from "~common/exceptions";
-import {
-    ROLE_CONFLICT_MEMBER_REPOSITORY,
-    ROLE_CONFLICT_GROUP_REPOSITORY,
-    ROLE_REPOSITORY,
-} from "~context/infrastructure/repositories";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleConflictMemberCommands implements Commands.RoleConflictMember.Contract {
@@ -18,12 +12,6 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(ROLE_CONFLICT_MEMBER_REPOSITORY)
-        private readonly roleConflictMemberRepository: Repositories.RoleConflictMember.PublicContract,
-        @Inject(ROLE_CONFLICT_GROUP_REPOSITORY)
-        private readonly roleConflictGroupRepository: Repositories.RoleConflictGroup.PublicContract,
-        @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ROLE_CONFLICT_MEMBER_SERVICE)
         private readonly roleConflictMemberService: Services.RoleConflictMember.CommandContract,
     ) {}
@@ -40,26 +28,7 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
             },
             changeLog: true,
             execute: async (transaction) => {
-                const [roles, group] = await Promise.all([
-                    this.roleRepository.find({
-                        where: { id: { $in: input.roles }, realm },
-                        transaction,
-                    }),
-                    this.roleConflictGroupRepository.findUniqueOrThrow({
-                        options: { populate: ["members", "members.role"] },
-                        where: { id: input.group, realm },
-                        transaction,
-                    }),
-                ]);
-
-                if (roles.length < input.roles.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
-                } else {
-                    await this.roleConflictMemberService.create({
-                        input: { roles, group },
-                        transaction,
-                    });
-                }
+                await this.roleConflictMemberService.create({ transaction, realm, input });
             },
         });
 
@@ -78,18 +47,13 @@ export class RoleConflictMemberCommands implements Commands.RoleConflictMember.C
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.roleConflictMemberRepository.find({
-                    where: { id: { $in: input.identifiers }, group: { realm } },
-                    options: { populate: ["group"] },
+                const entities = await this.roleConflictMemberService.purge({
+                    identifiers: input.identifiers,
                     transaction,
+                    realm,
                 });
 
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.MEMBERS_NOT_FOUND` });
-                } else {
-                    this.roleConflictMemberService.purge({ transaction, entities });
-                    return { count: entities.length };
-                }
+                return { count: entities.length };
             },
         });
 

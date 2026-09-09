@@ -38,21 +38,26 @@ declare global {
             namespace PurgeSubtree {
                 type Props = {
                     transaction: ORM.EntityManager;
-                    entity: Entities.Role;
                     realm: string;
+                    id: string;
                 };
 
-                type Result = Promise<Entities.Role[]>;
+                type Result = Promise<{
+                    entities: Entities.Role[];
+                    root: Entities.Role;
+                }>;
 
                 type Signature = (props: Props) => Result;
             }
 
             namespace Restore {
                 type Props = {
-                    entities: Entities.Role[];
+                    transaction: ORM.EntityManager;
+                    identifiers: string[];
+                    realm: string;
                 };
 
-                type Result = void;
+                type Result = Promise<Entities.Role[]>;
 
                 type Signature = (props: Props) => Result;
             }
@@ -63,16 +68,19 @@ declare global {
                     input: {
                         actorType: RoleActorType;
                         archetype: RoleArchetype;
-                        parent: Entities.Role;
                         description?: string;
                         children?: string[];
+                        parent: string;
                         code: string;
                         name: string;
                     };
-                    realm: Entities.Realm;
+                    realm: string;
                 };
 
-                type Result = Promise<Entities.Role>;
+                type Result = Promise<{
+                    parent: Entities.Role;
+                    entity: Entities.Role;
+                }>;
 
                 type Signature = (props: Props) => Result;
             }
@@ -80,29 +88,9 @@ declare global {
             namespace Update {
                 type Props = {
                     patch: Partial<Entities.Role.MutableFields>;
-                    entity: Entities.Role;
-                };
-
-                type Result = void;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace Revoke {
-                type Props = {
-                    entities: Entities.Role[];
-                };
-
-                type Result = void;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace Purge {
-                type Props = {
                     transaction: ORM.EntityManager;
-                    entity: Entities.Role;
                     realm: string;
+                    id: string;
                 };
 
                 type Result = Promise<void>;
@@ -110,21 +98,48 @@ declare global {
                 type Signature = (props: Props) => Result;
             }
 
-            namespace Move {
+            namespace Revoke {
                 type Props = {
-                    targetParent: Entities.Role;
                     transaction: ORM.EntityManager;
-                    target: Entities.Role;
-                    mode: MoveMode;
+                    identifiers: string[];
                     realm: string;
                 };
 
-                type Result = Promise<
-                    {
-                        removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
-                        upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
-                    }[]
-                >;
+                type Result = Promise<Entities.Role[]>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Purge {
+                type Props = {
+                    transaction: ORM.EntityManager;
+                    realm: string;
+                    id: string;
+                };
+
+                type Result = Promise<Entities.Role>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Move {
+                type Steps = {
+                    removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
+                    upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
+                }[];
+
+                type Props = {
+                    transaction: ORM.EntityManager;
+                    targetParent: string;
+                    mode: MoveMode;
+                    target: string;
+                    realm: string;
+                };
+
+                type Result = Promise<{
+                    target: Entities.Role;
+                    steps: Steps;
+                }>;
 
                 type Signature = (props: Props) => Result;
             }

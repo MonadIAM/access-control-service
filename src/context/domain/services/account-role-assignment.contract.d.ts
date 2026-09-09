@@ -5,32 +5,40 @@ declare namespace Services {
         interface CommandContract {
             restore: Restore.Signature;
             create: Create.Signature;
+            ensure: Ensure.Signature;
             assign: Assign.Signature;
             revoke: Revoke.Signature;
+            expire: Expire.Signature;
             purge: Purge.Signature;
             clean: Clean.Signature;
-        }
-
-        namespace Restore {
-            type Props = {
-                entities: Entities.AccountRoleAssignment[];
-            };
-
-            type Result = void;
-
-            type Signature = (props: Props) => Result;
         }
 
         namespace Create {
             type Props = {
                 transaction: ORM.EntityManager;
-                realm: Entities.Realm;
+                realm: string;
                 actor: string;
                 input: {
                     justification?: string;
-                    roles: Entities.Role[];
                     expiresAt?: Date;
                     account: string;
+                    roles: string[];
+                };
+            };
+
+            type Result = Promise<Entities.AccountRoleAssignment[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Ensure {
+            type Props = {
+                transaction: ORM.EntityManager;
+                realm: string;
+                actor: string;
+                input: {
+                    account: string;
+                    role: string;
                 };
             };
 
@@ -43,20 +51,45 @@ declare namespace Services {
             type Props = {
                 transaction: ORM.EntityManager;
                 input: {
-                    realm: Entities.Realm;
-                    role: Entities.Role;
                     expiresAt?: Date;
                     account: string;
+                    realm: string;
+                    role: string;
                 };
             };
 
-            type Result = Entities.AccountRoleAssignment;
+            type Result = Promise<Entities.AccountRoleAssignment>;
 
             type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
             type Props = {
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
+            };
+
+            type Result = Promise<Entities.AccountRoleAssignment[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Restore {
+            type Props = {
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
+            };
+
+            type Result = Promise<Entities.AccountRoleAssignment[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Expire {
+            type Props = {
+                transaction: ORM.EntityManager;
                 entities: Entities.AccountRoleAssignment[];
             };
 
@@ -79,10 +112,13 @@ declare namespace Services {
         namespace Clean {
             type Props = {
                 transaction: ORM.EntityManager;
-                entities: Entities.AccountRoleAssignment[];
+                input: {
+                    account: string;
+                    realm?: string;
+                };
             };
 
-            type Result = void;
+            type Result = Promise<Entities.AccountRoleAssignment[]>;
 
             type Signature = (props: Props) => Result;
         }

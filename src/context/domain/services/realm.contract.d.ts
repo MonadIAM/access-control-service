@@ -58,10 +58,11 @@ declare namespace Services {
 
         namespace Restore {
             type Props = {
-                entities: Entities.Realm[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
             };
 
-            type Result = void;
+            type Result = Promise<Entities.Realm[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -93,20 +94,22 @@ declare namespace Services {
         namespace Update {
             type Props = {
                 patch: Partial<Entities.Realm.MutableFields>;
-                entity: Entities.Realm;
+                transaction: ORM.EntityManager;
+                id: string;
             };
 
-            type Result = void;
+            type Result = Promise<void>;
 
             type Signature = (props: Props) => Result;
         }
 
         namespace Revoke {
             type Props = {
-                entities: Entities.Realm[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
             };
 
-            type Result = void;
+            type Result = Promise<Entities.Realm[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -114,10 +117,10 @@ declare namespace Services {
         namespace Purge {
             type Props = {
                 transaction: ORM.EntityManager;
-                entities: Entities.Realm[];
+                identifiers: string[];
             };
 
-            type Result = void;
+            type Result = Promise<Entities.Realm[]>;
 
             type Signature = (props: Props) => Result;
         }

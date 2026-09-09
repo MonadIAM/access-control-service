@@ -1,7 +1,13 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { SYSTEM_REALM_ID } from "@monadiam/shared";
 
-import { ROLE_PERMISSION_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { Exception } from "~common/exceptions";
+import {
+    ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
+    PERMISSION_REPOSITORY,
+    REALM_REPOSITORY,
+    ROLE_REPOSITORY,
+} from "~context/infrastructure/repositories";
 
 import { RolePermissionAssignment } from "../entities";
 
@@ -12,60 +18,125 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
     public constructor(
         @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
         private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.PublicContract,
+        @Inject(PERMISSION_REPOSITORY)
+        private readonly permissionRepository: Repositories.Permission.PublicContract,
+        @Inject(REALM_REPOSITORY)
+        private readonly realmRepository: Repositories.Realm.PublicContract,
+        @Inject(ROLE_REPOSITORY)
+        private readonly roleRepository: Repositories.Role.PublicContract,
     ) {}
 
     public async create(
         props: Services.RolePermissionAssignment.Create.Props,
     ): Services.RolePermissionAssignment.Create.Result {
         const { transaction, realm, input } = props;
-        const limitExceeded = await this.rolePermissionAssignmentRepository.wouldExceedPermissionLimit({
-            permissions: input.permissions.map(({ id }) => id!),
-            role: input.role.id,
+        const [realmEntity, role, permissions] = await Promise.all([
+            this.realmRepository.findUniqueOrThrow({
+                where: { id: realm },
+                transaction,
+            }),
+            this.roleRepository.findUniqueOrThrow({
+                where: { id: input.role, realm },
+                transaction,
+            }),
+            this.permissionRepository.find({
+                where: { id: { $in: input.permissions }, realm: { $in: [realm, SYSTEM_REALM_ID] } },
+                transaction,
+            }),
+        ]);
+
+        if (permissions.length < input.permissions.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
+        } else {
+            const limitExceeded = await this.rolePermissionAssignmentRepository.wouldExceedPermissionLimit({
+                permissions: permissions.map(({ id }) => id),
+                role: role.id,
+                transaction,
+            });
+
+            if (limitExceeded) {
+                throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ROLE_PERMISSION_LIMIT_EXCEEDED` });
+            } else {
+                const entities: Entities.RolePermissionAssignment[] = [];
+
+                for (const permission of permissions) {
+                    const entity = new RolePermissionAssignment({
+                        realm: realmEntity,
+                        permission,
+                        role,
+                    });
+
+                    entity.canAssign();
+                    entities.push(entity);
+                    transaction.persist(entity);
+                }
+
+                return entities;
+            }
+        }
+    }
+
+    public async revoke(
+        props: Services.RolePermissionAssignment.Revoke.Props,
+    ): Services.RolePermissionAssignment.Revoke.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.rolePermissionAssignmentRepository.find({
+            where: { id: { $in: identifiers }, realm },
+            options: { populate: ["permission.realm"] },
             transaction,
         });
 
-        if (limitExceeded) {
-            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.ROLE_PERMISSION_LIMIT_EXCEEDED` });
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
         } else {
-            const entities: Entities.RolePermissionAssignment[] = [];
-
-            for (const permission of input.permissions) {
-                const entity = new RolePermissionAssignment({
-                    role: input.role,
-                    permission,
-                    realm,
-                });
-
-                entity.canAssign();
-                entities.push(entity);
-                transaction.persist(entity);
+            for (const entity of entities) {
+                entity.revoke();
             }
 
             return entities;
         }
     }
 
-    public purge(props: Services.RolePermissionAssignment.Purge.Props): Services.RolePermissionAssignment.Purge.Result {
-        const { transaction, entities } = props;
-        for (const entity of entities) {
-            entity.canPurge();
-            transaction.remove(entity);
-        }
-    }
-
-    public revoke(props: Services.RolePermissionAssignment.Revoke.Props): Services.RolePermissionAssignment.Revoke.Result {
-        const { entities } = props;
-        for (const entity of entities) {
-            entity.revoke();
-        }
-    }
-
-    public restore(
+    public async restore(
         props: Services.RolePermissionAssignment.Restore.Props,
     ): Services.RolePermissionAssignment.Restore.Result {
-        const { entities } = props;
-        for (const entity of entities) {
-            entity.restore();
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.rolePermissionAssignmentRepository.find({
+            where: { id: { $in: identifiers }, realm },
+            options: { populate: ["permission.realm"] },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.restore();
+            }
+
+            return entities;
+        }
+    }
+
+    public async purge(
+        props: Services.RolePermissionAssignment.Purge.Props,
+    ): Services.RolePermissionAssignment.Purge.Result {
+        const { transaction, identifiers, realm } = props;
+        const entities = await this.rolePermissionAssignmentRepository.find({
+            where: { id: { $in: identifiers }, realm },
+            options: { populate: ["permission.realm"] },
+            transaction,
+        });
+
+        if (entities.length < identifiers.length) {
+            throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
+        } else {
+            for (const entity of entities) {
+                entity.canPurge();
+                transaction.remove(entity);
+            }
+
+            return entities;
         }
     }
 }

@@ -69,7 +69,7 @@ declare namespace Commands {
 
             namespace MoveAccessCachePayload {
                 type Props = {
-                    steps: Awaited<Services.Role.Move.Result>;
+                    steps: Services.Role.Move.Steps;
                     target: Entities.Role;
                 };
 
@@ -80,7 +80,7 @@ declare namespace Commands {
 
             namespace ProjectionMovePayload {
                 type Props = {
-                    steps: Awaited<Services.Role.Move.Result>;
+                    steps: Services.Role.Move.Steps;
                     target: Entities.Role;
                 };
 

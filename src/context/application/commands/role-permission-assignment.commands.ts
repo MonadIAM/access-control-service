@@ -1,17 +1,9 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
-import { SYSTEM_REALM_ID } from "@monadiam/shared";
 
 import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import { Exception } from "~common/exceptions";
-import {
-    ROLE_PERMISSION_ASSIGNMENT_REPOSITORY,
-    PERMISSION_REPOSITORY,
-    REALM_REPOSITORY,
-    ROLE_REPOSITORY,
-} from "~context/infrastructure/repositories";
 
 import { RolePermissionAssignmentMapper } from "../mappers";
 
@@ -24,14 +16,6 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
-        @Inject(ROLE_PERMISSION_ASSIGNMENT_REPOSITORY)
-        private readonly rolePermissionAssignmentRepository: Repositories.RolePermissionAssignment.PublicContract,
-        @Inject(PERMISSION_REPOSITORY)
-        private readonly permissionRepository: Repositories.Permission.PublicContract,
-        @Inject(REALM_REPOSITORY)
-        private readonly realmRepository: Repositories.Realm.PublicContract,
-        @Inject(ROLE_REPOSITORY)
-        private readonly roleRepository: Repositories.Role.PublicContract,
         @Inject(ROLE_PERMISSION_ASSIGNMENT_SERVICE)
         private readonly rolePermissionAssignmentService: Services.RolePermissionAssignment.CommandContract,
     ) {
@@ -64,87 +48,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             },
             changeLog: true,
             execute: async (transaction) => {
-                const [realmEntity, roleEntity, permissionEntities] = await Promise.all([
-                    this.realmRepository.findUniqueOrThrow({
-                        where: { id: realm },
-                        transaction,
-                    }),
-                    this.roleRepository.findUniqueOrThrow({
-                        where: { id: input.role, realm },
-                        transaction,
-                    }),
-                    this.permissionRepository.find({
-                        where: { id: { $in: input.permissions }, realm: { $in: [realm, SYSTEM_REALM_ID] } },
-                        transaction,
-                    }),
-                ]);
+                const assignments = await this.rolePermissionAssignmentService.create({ transaction, realm, input });
 
-                if (permissionEntities.length < input.permissions.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
-                } else {
-                    const assignments = await this.rolePermissionAssignmentService.create({
-                        input: {
-                            permissions: permissionEntities,
-                            role: roleEntity,
-                        },
-                        realm: realmEntity,
-                        transaction,
-                    });
-
-                    return { assignments };
-                }
+                return { assignments };
             },
         });
 
         return { message: `${this.dictionaryPath}.CREATED` };
-    }
-
-    public async purge(
-        props: Commands.RolePermissionAssignment.Purge.Props,
-    ): Commands.RolePermissionAssignment.Purge.Result {
-        const { input, realm } = props;
-
-        const { assignments } = await this.transactionalService.run({
-            resource: this.resource,
-            outbox: [
-                {
-                    payloadMapper: this.mapper.projectionPurgePayload,
-                    actionType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_PURGE,
-                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
-                },
-                {
-                    payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
-                },
-            ],
-            audit: {
-                entityType: EntityType.PERMISSION_ASSIGNMENT,
-                actionType: ActionType.DELETE,
-                ...props,
-            },
-            changeLog: true,
-            execute: async (transaction) => {
-                const entities = await this.rolePermissionAssignmentRepository.find({
-                    options: { populate: ["permission.realm"] },
-                    where: { id: { $in: input.identifiers }, realm },
-                    transaction,
-                });
-
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
-                } else {
-                    this.rolePermissionAssignmentService.purge({ transaction, entities });
-                    return { assignments: entities };
-                }
-            },
-        });
-
-        if (assignments.length > 1) {
-            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: assignments.length } };
-        } else {
-            return { message: `${this.dictionaryPath}.PURGED` };
-        }
     }
 
     public async revoke(
@@ -173,18 +83,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.rolePermissionAssignmentRepository.find({
-                    options: { populate: ["permission.realm"] },
-                    where: { id: { $in: input.identifiers }, realm },
+                const assignments = await this.rolePermissionAssignmentService.revoke({
+                    identifiers: input.identifiers,
                     transaction,
+                    realm,
                 });
 
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
-                } else {
-                    this.rolePermissionAssignmentService.revoke({ entities });
-                    return { assignments: entities };
-                }
+                return { assignments };
             },
         });
 
@@ -221,18 +126,13 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entities = await this.rolePermissionAssignmentRepository.find({
-                    options: { populate: ["permission.realm"] },
-                    where: { id: { $in: input.identifiers }, realm },
+                const assignments = await this.rolePermissionAssignmentService.restore({
+                    identifiers: input.identifiers,
                     transaction,
+                    realm,
                 });
 
-                if (entities.length < input.identifiers.length) {
-                    throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
-                } else {
-                    this.rolePermissionAssignmentService.restore({ entities });
-                    return { assignments: entities };
-                }
+                return { assignments };
             },
         });
 
@@ -240,6 +140,49 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
             return { message: `${this.dictionaryPath}.BULK_RESTORED_COUNT`, params: { count: assignments.length } };
         } else {
             return { message: `${this.dictionaryPath}.RESTORED` };
+        }
+    }
+
+    public async purge(
+        props: Commands.RolePermissionAssignment.Purge.Props,
+    ): Commands.RolePermissionAssignment.Purge.Result {
+        const { input, realm } = props;
+
+        const { assignments } = await this.transactionalService.run({
+            resource: this.resource,
+            outbox: [
+                {
+                    payloadMapper: this.mapper.projectionPurgePayload,
+                    actionType: ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_PURGE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.mapper.accessCachePayload,
+                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                },
+            ],
+            audit: {
+                entityType: EntityType.PERMISSION_ASSIGNMENT,
+                actionType: ActionType.DELETE,
+                ...props,
+            },
+            changeLog: true,
+            execute: async (transaction) => {
+                const assignments = await this.rolePermissionAssignmentService.purge({
+                    identifiers: input.identifiers,
+                    transaction,
+                    realm,
+                });
+
+                return { assignments };
+            },
+        });
+
+        if (assignments.length > 1) {
+            return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: assignments.length } };
+        } else {
+            return { message: `${this.dictionaryPath}.PURGED` };
         }
     }
 }

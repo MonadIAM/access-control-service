@@ -11,10 +11,12 @@ declare namespace Services {
 
         namespace Restore {
             type Props = {
-                entities: Entities.RolePermissionAssignment[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.RolePermissionAssignment[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -22,10 +24,10 @@ declare namespace Services {
         namespace Create {
             type Props = {
                 transaction: ORM.EntityManager;
-                realm: Entities.Realm;
+                realm: string;
                 input: {
-                    permissions: Entities.Permission[];
-                    role: Entities.Role;
+                    permissions: string[];
+                    role: string;
                 };
             };
 
@@ -36,10 +38,12 @@ declare namespace Services {
 
         namespace Revoke {
             type Props = {
-                entities: Entities.RolePermissionAssignment[];
+                transaction: ORM.EntityManager;
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.RolePermissionAssignment[]>;
 
             type Signature = (props: Props) => Result;
         }
@@ -47,10 +51,11 @@ declare namespace Services {
         namespace Purge {
             type Props = {
                 transaction: ORM.EntityManager;
-                entities: Entities.RolePermissionAssignment[];
+                identifiers: string[];
+                realm: string;
             };
 
-            type Result = void;
+            type Result = Promise<Entities.RolePermissionAssignment[]>;
 
             type Signature = (props: Props) => Result;
         }
