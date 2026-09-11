@@ -80,13 +80,14 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
         props: Services.RolePermissionAssignment.Revoke.Props,
     ): Services.RolePermissionAssignment.Revoke.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.rolePermissionAssignmentRepository.find({
-            where: { id: { $in: identifiers }, realm },
             options: { populate: ["permission.realm"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -101,13 +102,14 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
         props: Services.RolePermissionAssignment.Restore.Props,
     ): Services.RolePermissionAssignment.Restore.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.rolePermissionAssignmentRepository.find({
-            where: { id: { $in: identifiers }, realm },
             options: { populate: ["permission.realm"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -122,13 +124,14 @@ export class RolePermissionAssignmentService implements Services.RolePermissionA
         props: Services.RolePermissionAssignment.Purge.Props,
     ): Services.RolePermissionAssignment.Purge.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.rolePermissionAssignmentRepository.find({
-            where: { id: { $in: identifiers }, realm },
             options: { populate: ["permission.realm"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
         } else {
             for (const entity of entities) {

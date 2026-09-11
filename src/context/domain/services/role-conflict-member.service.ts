@@ -41,8 +41,11 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
         } else {
             group.canModifyMembers();
 
+            const existingIdentifiers = group.members.getItems().map((member) => member.role.id);
+            const newRoles = roles.filter((role) => !existingIdentifiers.includes(role.id));
+
             const limitExceeded = await this.roleConflictMemberRepository.wouldExceedMemberLimit({
-                count: roles.length,
+                count: newRoles.length,
                 group: group.id,
                 transaction,
             });
@@ -50,10 +53,7 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
             if (limitExceeded) {
                 throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.MEMBER_LIMIT_EXCEEDED` });
             } else {
-                const identifiers = [
-                    ...group.members.getItems().map((member) => member.role.id),
-                    ...roles.map((role) => role.id),
-                ];
+                const identifiers = [...existingIdentifiers, ...newRoles.map((role) => role.id)];
 
                 const hasViolators = await this.roleConflictGroupRepository.hasAccountsViolatingRule({
                     maxAllowed: group.maxAllowed,
@@ -67,7 +67,7 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
                         messageKey: `${this.dictionaryPath}.HAS_ACCOUNTS_VIOLATING_RULE`,
                     });
                 } else {
-                    for (const role of roles) {
+                    for (const role of newRoles) {
                         transaction.persist(new RoleConflictMember({ group, role }));
                     }
                 }
@@ -77,17 +77,16 @@ export class RoleConflictMemberService implements Services.RoleConflictMember.Co
 
     public async purge(props: Services.RoleConflictMember.Purge.Props): Services.RoleConflictMember.Purge.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.roleConflictMemberRepository.find({
-            where: { id: { $in: identifiers }, group: { realm } },
+            where: { id: { $in: unique }, group: { realm } },
             options: { populate: ["group"] },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.MEMBERS_NOT_FOUND` });
         } else {
-            transaction.clear();
-
             for (const entity of entities) {
                 entity.canPurge();
 

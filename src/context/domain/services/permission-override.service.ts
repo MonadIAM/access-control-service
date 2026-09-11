@@ -1,4 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { SYSTEM_REALM_ID } from "@monadiam/shared";
 
 import { Exception } from "~common/exceptions";
 import {
@@ -30,7 +31,7 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
                 transaction,
             }),
             this.permissionRepository.findUniqueOrThrow({
-                where: { id: input.permission },
+                where: { id: input.permission, realm: { $in: [realm, SYSTEM_REALM_ID] } },
                 transaction,
             }),
         ]);
@@ -61,13 +62,14 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
 
     public async revoke(props: Services.PermissionOverride.Revoke.Props): Services.PermissionOverride.Revoke.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.permissionOverrideRepository.find({
-            where: { id: { $in: identifiers }, realm },
             options: { populate: ["permission.realm"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.OVERRIDES_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -80,13 +82,14 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
 
     public async restore(props: Services.PermissionOverride.Restore.Props): Services.PermissionOverride.Restore.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.permissionOverrideRepository.find({
-            where: { id: { $in: identifiers }, realm },
             options: { populate: ["permission.realm"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.OVERRIDES_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -107,17 +110,16 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
 
     public async purge(props: Services.PermissionOverride.Purge.Props): Services.PermissionOverride.Purge.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.permissionOverrideRepository.find({
-            where: { id: { $in: identifiers }, realm },
             options: { populate: ["permission.realm"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.OVERRIDES_NOT_FOUND` });
         } else {
-            transaction.clear();
-
             for (const entity of entities) {
                 entity.canPurge();
                 transaction.remove(entity);
@@ -130,12 +132,10 @@ export class PermissionOverrideService implements Services.PermissionOverride.Co
     public async clean(props: Services.PermissionOverride.Clean.Props): Services.PermissionOverride.Clean.Result {
         const { transaction, input } = props;
         const entities = await this.permissionOverrideRepository.find({
-            options: { populate: ["permission.realm", "realm"] },
             where: { account: input.account, ...(input.realm ? { realm: input.realm } : {}) },
+            options: { populate: ["permission.realm", "realm"] },
             transaction,
         });
-
-        transaction.clear();
 
         for (const entity of entities) {
             transaction.remove(entity);

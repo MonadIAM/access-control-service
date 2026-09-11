@@ -1,4 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
+import { SYSTEM_REALM_ID } from "@monadiam/shared";
 
 import { ADMIN_PERMISSION_CODES, USER_PERMISSION_CODES } from "~infrastructure/datasets/bootstrap";
 import { PERMISSION_REPOSITORY, REALM_REPOSITORY } from "~context/infrastructure/repositories";
@@ -39,12 +40,12 @@ export class RealmService implements Services.Realm.Contract {
 
             return {
                 roles: Object.values(roles),
+                realm,
+                paths,
                 assignments: {
                     permission: permissionAssignments,
                     role: roleAssignments,
                 },
-                realm,
-                paths,
             };
         }
     }
@@ -116,7 +117,7 @@ export class RealmService implements Services.Realm.Contract {
     ): Services.Realm.AssignBasePermissions.Result {
         const { transaction, roles, realm } = props;
         const permissions = await this.permissionRepository.find({
-            where: { code: { $in: ADMIN_PERMISSION_CODES } },
+            where: { code: { $in: ADMIN_PERMISSION_CODES }, realm: SYSTEM_REALM_ID },
             transaction,
         });
 
@@ -152,12 +153,13 @@ export class RealmService implements Services.Realm.Contract {
 
     public async revoke(props: Services.Realm.Revoke.Props): Services.Realm.Revoke.Result {
         const { transaction, identifiers } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.realmRepository.find({
-            where: { id: { $in: identifiers } },
+            where: { id: { $in: unique } },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -170,12 +172,13 @@ export class RealmService implements Services.Realm.Contract {
 
     public async restore(props: Services.Realm.Restore.Props): Services.Realm.Restore.Result {
         const { transaction, identifiers } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.realmRepository.find({
-            where: { id: { $in: identifiers } },
+            where: { id: { $in: unique } },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -188,16 +191,15 @@ export class RealmService implements Services.Realm.Contract {
 
     public async purge(props: Services.Realm.Purge.Props): Services.Realm.Purge.Result {
         const { transaction, identifiers } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.realmRepository.find({
-            where: { id: { $in: identifiers } },
+            where: { id: { $in: unique } },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.REALMS_NOT_FOUND` });
         } else {
-            transaction.clear();
-
             for (const entity of entities) {
                 entity.canPurge();
                 transaction.remove(entity);

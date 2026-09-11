@@ -89,7 +89,7 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
             transaction,
         });
 
-        if (patch.maxAllowed && patch.maxAllowed < entity.maxAllowed) {
+        if (patch.maxAllowed !== undefined && patch.maxAllowed < entity.maxAllowed) {
             const hasViolators = await this.roleConflictGroupRepository.hasAccountsViolatingRule({
                 identifiers: entity.members.getItems().map((member) => member.role.id),
                 maxAllowed: patch.maxAllowed,
@@ -107,12 +107,13 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
 
     public async revoke(props: Services.RoleConflictGroup.Revoke.Props): Services.RoleConflictGroup.Revoke.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.roleConflictGroupRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.GROUPS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -125,12 +126,13 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
 
     public async restore(props: Services.RoleConflictGroup.Restore.Props): Services.RoleConflictGroup.Restore.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.roleConflictGroupRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.GROUPS_NOT_FOUND` });
         } else {
             const hasViolators = await this.roleConflictGroupRepository.hasGroupsWithViolatingAccounts({
@@ -153,16 +155,15 @@ export class RoleConflictGroupService implements Services.RoleConflictGroup.Cont
 
     public async purge(props: Services.RoleConflictGroup.Purge.Props): Services.RoleConflictGroup.Purge.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.roleConflictGroupRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.GROUPS_NOT_FOUND` });
         } else {
-            transaction.clear();
-
             for (const entity of entities) {
                 entity.canPurge();
                 transaction.remove(entity);

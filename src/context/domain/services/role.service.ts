@@ -227,12 +227,13 @@ export class RoleService implements Services.Role.Contract {
 
     public async revoke(props: Services.Role.Revoke.Props): Services.Role.Revoke.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.roleRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -245,12 +246,13 @@ export class RoleService implements Services.Role.Contract {
 
     public async restore(props: Services.Role.Restore.Props): Services.Role.Restore.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.roleRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ROLES_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -269,7 +271,6 @@ export class RoleService implements Services.Role.Contract {
         });
 
         entity.canPurge();
-        transaction.clear();
 
         await this.roleClosureRepository.decreaseTransitiveDepth({
             role: entity.id,
@@ -294,8 +295,6 @@ export class RoleService implements Services.Role.Contract {
             where: { realm },
             transaction,
         });
-
-        transaction.clear();
 
         if (descendants.length > this.purgeSubtreeSizeLimit) {
             throw Exception.invariantViolation({

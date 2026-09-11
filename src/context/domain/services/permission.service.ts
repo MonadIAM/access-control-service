@@ -50,12 +50,13 @@ export class PermissionService implements Services.Permission.Contract {
 
     public async revoke(props: Services.Permission.Revoke.Props): Services.Permission.Revoke.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.permissionRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -68,12 +69,13 @@ export class PermissionService implements Services.Permission.Contract {
 
     public async restore(props: Services.Permission.Restore.Props): Services.Permission.Restore.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.permissionRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -86,16 +88,15 @@ export class PermissionService implements Services.Permission.Contract {
 
     public async purge(props: Services.Permission.Purge.Props): Services.Permission.Purge.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.permissionRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.PERMISSIONS_NOT_FOUND` });
         } else {
-            transaction.clear();
-
             for (const entity of entities) {
                 entity.canPurge();
                 transaction.remove(entity);

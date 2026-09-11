@@ -28,6 +28,7 @@
     "jest.e2e.config.ts",
     "src/**/*.ispec.ts",
     "src/**/*.uspec.ts",
+    "src/**/*.spec.ts",
     "src/testing/**/*",
     "node_modules",
     "configs",

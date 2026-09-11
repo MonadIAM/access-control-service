@@ -231,6 +231,7 @@ export type I18nTranslations = {
         "role-delegation-policy": {
             "LIMIT_EXCEEDED": string;
             "EXISTS_TRANSITIVE_PATH": string;
+            "SELF_DELEGATION_NOT_ALLOWED": string;
             "DELEGATOR_ROLE_NOT_FOUND": string;
             "TARGET_ROLE_NOT_FOUND": string;
             "BOTH_ROLES_NOT_FOUND": string;

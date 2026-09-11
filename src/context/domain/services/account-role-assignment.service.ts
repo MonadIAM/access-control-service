@@ -119,7 +119,7 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
                 transaction,
             }),
             this.roleRepository.findUniqueOrThrow({
-                where: { id: input.role },
+                where: { id: input.role, realm: input.realm },
                 transaction,
             }),
         ]);
@@ -138,13 +138,14 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
 
     public async revoke(props: Services.AccountRoleAssignment.Revoke.Props): Services.AccountRoleAssignment.Revoke.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.accountRoleAssignmentRepository.find({
-            where: { id: { $in: identifiers }, realm },
             options: { populate: ["realm", "role"] },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -158,12 +159,13 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
         props: Services.AccountRoleAssignment.Restore.Props,
     ): Services.AccountRoleAssignment.Restore.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.accountRoleAssignmentRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
         } else {
             for (const entity of entities) {

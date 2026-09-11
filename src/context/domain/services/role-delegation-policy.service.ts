@@ -20,6 +20,10 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
 
     public async create(props: Services.RoleDelegationPolicy.Create.Props): Services.RoleDelegationPolicy.Create.Result {
         const { transaction, realm, input } = props;
+        if (input.delegator === input.target) {
+            throw Exception.invariantViolation({ messageKey: `${this.dictionaryPath}.SELF_DELEGATION_NOT_ALLOWED` });
+        }
+
         const [roleEntities, realmEntity] = await Promise.all([
             this.roleRepository.find({
                 where: { id: { $in: [input.delegator, input.target] }, realm },
@@ -88,12 +92,13 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
 
     public async revoke(props: Services.RoleDelegationPolicy.Revoke.Props): Services.RoleDelegationPolicy.Revoke.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.roleDelegationPolicyRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.POLICIES_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -106,12 +111,13 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
 
     public async restore(props: Services.RoleDelegationPolicy.Restore.Props): Services.RoleDelegationPolicy.Restore.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.roleDelegationPolicyRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.POLICIES_NOT_FOUND` });
         } else {
             for (const entity of entities) {
@@ -132,16 +138,15 @@ export class RoleDelegationPolicyService implements Services.RoleDelegationPolic
 
     public async purge(props: Services.RoleDelegationPolicy.Purge.Props): Services.RoleDelegationPolicy.Purge.Result {
         const { transaction, identifiers, realm } = props;
+        const unique = [...new Set(identifiers)];
         const entities = await this.roleDelegationPolicyRepository.find({
-            where: { id: { $in: identifiers }, realm },
+            where: { id: { $in: unique }, realm },
             transaction,
         });
 
-        if (entities.length < identifiers.length) {
+        if (entities.length < unique.length) {
             throw Exception.notFound({ messageKey: `${this.dictionaryPath}.POLICIES_NOT_FOUND` });
         } else {
-            transaction.clear();
-
             for (const entity of entities) {
                 entity.canPurge();
                 transaction.remove(entity);

@@ -21,6 +21,7 @@
   "role-delegation-policy": {
     "LIMIT_EXCEEDED": "The allowed delegation policy limit for the role has been exceeded.",
     "EXISTS_TRANSITIVE_PATH": "Creating this policy would introduce a transitive delegation cycle.",
+    "SELF_DELEGATION_NOT_ALLOWED": "A role cannot be both the delegator and the target of the same policy.",
 
     "DELEGATOR_ROLE_NOT_FOUND": "Delegator role not found.",
     "TARGET_ROLE_NOT_FOUND": "Target role not found.",
