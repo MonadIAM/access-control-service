@@ -3,7 +3,7 @@ import common from "./configs/jest.base.config.mjs";
 const config = {
     ...common,
 
-    testMatch: ["**/*.ispec.ts"],
+    testMatch: ["**/*.integration.spec.ts"],
     testTimeout: 120_000,
     globalSetup: "<rootDir>/src/testing/integration/postgres.setup.ts",
     globalTeardown: "<rootDir>/src/testing/integration/postgres.teardown.ts",
