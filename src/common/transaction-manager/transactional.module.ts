@@ -8,4 +8,4 @@ import { OperationContext } from "./utilities";
     providers: [...TRANSACTION_MANAGER_SERVICES, ChangeLogSubscriber, OperationContext],
     exports: [...TRANSACTION_MANAGER_SERVICES, ChangeLogSubscriber],
 })
-export class TransactionManagerModule {}
+export class TransactionModule {}

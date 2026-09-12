@@ -1,4 +1,4 @@
-export * from "./tracking.module";
+export * from "./transactional.module";
 export * from "./subscribers";
 export * from "./utilities";
 export * from "./services";

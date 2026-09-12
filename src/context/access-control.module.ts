@@ -3,8 +3,8 @@ import { ThrottlerGuard } from "@nestjs/throttler";
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
 
-import { TransactionManagerModule } from "~common/transaction-manager";
 import { FormatResponseInterceptor } from "~common/interceptors";
+import { TransactionModule } from "~common/transaction-manager";
 
 import { ReauthenticationGuard, PermissionGuard, AuthnGuard } from "./infrastructure/guards";
 import { INFRASTRUCTURE_SERVICES } from "./infrastructure/services";
@@ -19,10 +19,7 @@ import { COMMANDS } from "./application/commands";
 import { QUERIES } from "./application/queries";
 
 @Module({
-    imports: [
-        TransactionManagerModule,
-        BullModule.registerQueue({ name: BullQueue.KAFKA_RETRY }, { name: BullQueue.CLEANUP }),
-    ],
+    imports: [TransactionModule, BullModule.registerQueue({ name: BullQueue.KAFKA_RETRY }, { name: BullQueue.CLEANUP })],
     providers: [
         ...INFRASTRUCTURE_SERVICES,
         ...DOMAIN_SERVICES,

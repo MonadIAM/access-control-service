@@ -2,7 +2,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MikroOrmModule } from "@mikro-orm/nestjs";
 import { Global, Module } from "@nestjs/common";
 
-import { ChangeLogSubscriber, TransactionManagerModule } from "~common/transaction-manager";
+import { ChangeLogSubscriber, TransactionModule } from "~common/transaction-manager";
 
 import { CredentialsWatcher } from "./utils/credentials-watcher";
 import { PostgreSQLPoolRegistry } from "./pool.registry";
@@ -14,7 +14,7 @@ import { MikroOrmConfig } from "./database.config";
         ConfigModule,
         MikroOrmModule.forRootAsync({
             contextName: "write",
-            imports: [TransactionManagerModule, ConfigModule],
+            imports: [TransactionModule, ConfigModule],
             inject: [ChangeLogSubscriber, MikroOrmConfig, ConfigService],
             useFactory: (changeLogSubscriber: ChangeLogSubscriber, orm: MikroOrmConfig, config: ConfigService) => ({
                 ...orm.buildOptions({ kind: "write", config }),

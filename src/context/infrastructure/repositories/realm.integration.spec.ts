@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { RealmRepository } from "~context/infrastructure/repositories/realm.repository";
 import { postgresSuite } from "~testing/integration/postgres.suite";
-import { RealmFixture } from "~testing/fixtures/realm.fixture";
+import { RealmFixture } from "~testing/integration/repositories/realm.fixture";
 
 function createRepositoryConfig(): ConfigService {
     return new ConfigService({

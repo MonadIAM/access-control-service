@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { ConfigService } from "@nestjs/config";
 
 import { RoleDelegationPolicyRepository } from "~context/infrastructure/repositories/role-delegation-policy.repository";
-import { RoleDelegationPolicyFixture } from "~testing/fixtures/role-delegation-policy.fixture";
+import { RoleDelegationPolicyFixture } from "~testing/integration/repositories/role-delegation-policy.fixture";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 
 function createRepositoryConfig(): ConfigService {

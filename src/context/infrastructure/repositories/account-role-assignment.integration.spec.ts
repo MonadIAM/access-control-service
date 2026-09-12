@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { ConfigService } from "@nestjs/config";
 
 import { AccountRoleAssignmentRepository } from "~context/infrastructure/repositories/account-role-assignment.repository";
-import { AccountRoleAssignmentFixture } from "~testing/fixtures/account-role-assignment.fixture";
+import { AccountRoleAssignmentFixture } from "~testing/integration/repositories/account-role-assignment.fixture";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 
 function createRepositoryConfig(): ConfigService {

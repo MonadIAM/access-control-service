@@ -23,30 +23,23 @@ export class TransactionalService implements TransactionManager.Service.Contract
         try {
             const writeManager = this.writeManager.fork();
             const outbox = this.outboxService.build(params);
+            const entity = new AuditLog(params.audit);
 
-            if (params.audit) {
-                const entity = new AuditLog(params.audit);
-                return await this.operationContext.run({ changeLogEnabled: false, auditEntry: entity.id }, () =>
-                    writeManager.transactional(async (transaction) => {
-                        if (entity.input) {
-                            entity.input = await this.logMaskingService.maskAuditLog({ input: entity.input });
-                        }
+            return await this.operationContext.run({ changeLogEnabled: false, auditEntry: entity.id }, () =>
+                writeManager.transactional(async (transaction) => {
+                    if (entity.input) {
+                        entity.input = await this.logMaskingService.maskAuditLog({ input: entity.input });
+                    }
 
-                        const hash = await this.logMaskingService.sign({ entity });
-                        entity.sign(hash);
+                    const hash = await this.logMaskingService.sign({ entity });
+                    entity.sign(hash);
 
-                        transaction.persist(entity);
-                        transaction.persist(this.outboxService.buildAuditLogArchive(entity));
-                        transaction.persist(outbox);
-                        await transaction.flush();
-                    }),
-                );
-            } else {
-                return writeManager.transactional(async (transaction) => {
+                    transaction.persist(entity);
+                    transaction.persist(this.outboxService.buildAuditLogArchive(entity));
                     transaction.persist(outbox);
                     await transaction.flush();
-                });
-            }
+                }),
+            );
         } catch (error) {
             if (error instanceof Exception) {
                 throw error;

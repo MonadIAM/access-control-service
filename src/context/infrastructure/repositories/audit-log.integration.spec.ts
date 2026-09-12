@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { randomUUID } from "node:crypto";
 
 import { postgresSuite } from "~testing/integration/postgres.suite";
-import { CoreFixture } from "~testing/fixtures/core.fixture";
+import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 import { ActionType, EntityType } from "~context/enums";
 
 import { AuditLogRepository } from "./audit-log.repository";

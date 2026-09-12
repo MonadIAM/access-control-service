@@ -1,10 +1,10 @@
 import { describe, expect, it } from "@jest/globals";
 import { QueryOrder } from "@mikro-orm/postgresql";
 
+import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 import { PublicStringOperator } from "~infrastructure/database/enums";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 import { RealmMapper } from "~context/infrastructure/mappers";
-import { CoreFixture } from "~testing/fixtures/core.fixture";
 import { Realm } from "~context/domain/entities";
 
 import { BaseRepository } from "./mixin";

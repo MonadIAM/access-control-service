@@ -5,7 +5,7 @@ import { ConfigService } from "@nestjs/config";
 import { RoleRepository } from "~context/infrastructure/repositories/role.repository";
 import { DelegatorType, RoleActorType, RoleArchetype } from "~context/enums";
 import { postgresSuite } from "~testing/integration/postgres.suite";
-import { RoleFixture } from "~testing/fixtures/role.fixture";
+import { RoleFixture } from "~testing/integration/repositories/role.fixture";
 
 function createRepositoryConfig(): ConfigService {
     return new ConfigService({

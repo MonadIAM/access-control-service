@@ -203,7 +203,7 @@ declare global {
             namespace Emit {
                 type Props = {
                     [D in keyof OutboxPayloadMap]: {
-                        audit?: SystemEntities.AuditLog.ConstructorProps;
+                        audit: SystemEntities.AuditLog.ConstructorProps;
                         payload: OutboxPayloadMap[D];
                         metadata?: UnknownObject;
                         destinationTopic: D;

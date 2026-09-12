@@ -3,7 +3,7 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 import { ConfigService } from "@nestjs/config";
 
 import { PermissionRepository } from "~context/infrastructure/repositories/permission.repository";
-import { PermissionFixture } from "~testing/fixtures/permission.fixture";
+import { PermissionFixture } from "~testing/integration/repositories/permission.fixture";
 import { PublicStringOperator } from "~infrastructure/database/enums";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 

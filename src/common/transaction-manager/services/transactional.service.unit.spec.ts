@@ -399,19 +399,6 @@ describe("TransactionalService", () => {
     });
 
     describe("emit", () => {
-        it("persists only outbox without audit", async () => {
-            const { service, transactional } = helpers.service();
-
-            await service.emit({
-                payload: { items: [{ scope: InvalidationScope.GLOBAL }] },
-                actionType: AccessCacheTopicAction.INVALIDATE,
-                destinationTopic: KafkaTopic.ACCESS_CACHE,
-            });
-
-            expect(transactional.persist).toHaveBeenCalledTimes(1);
-            expect(transactional.flush).toHaveBeenCalledTimes(1);
-        });
-
         it("persists audit, archive and outbox with change log disabled", async () => {
             const operationContext = helpers.operationContext();
             const runSpy = jest.spyOn(operationContext, "run");
@@ -443,6 +430,7 @@ describe("TransactionalService", () => {
                     payload: { items: [{ scope: InvalidationScope.GLOBAL }] },
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    audit: AUDIT_PROPS,
                 }),
             ).rejects.toBe(error);
         });
