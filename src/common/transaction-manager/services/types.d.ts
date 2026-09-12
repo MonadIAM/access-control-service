@@ -180,7 +180,7 @@ declare global {
 
             namespace Run {
                 type ResultProps<T extends ORM.AnyEntity | ORM.AnyEntity[]> = {
-                    execute(transaction: ORM.EntityManager): Promise<T> | T;
+                    execute(transaction: ORM.EntityManager): Thenable<T>;
                     outbox?: OutboxConfig<T> | OutboxConfig<T>[];
                     audit?: SystemEntities.AuditLog.ConstructorProps;
                     changeLog?: boolean;
@@ -188,7 +188,7 @@ declare global {
                 };
 
                 type VoidProps = {
-                    execute(transaction: ORM.EntityManager): Promise<void> | void;
+                    execute(transaction: ORM.EntityManager): Thenable<void>;
                     audit?: SystemEntities.AuditLog.ConstructorProps;
                     changeLog?: boolean;
                     resource?: string;

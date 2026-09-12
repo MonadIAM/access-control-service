@@ -1,5 +1,5 @@
+import { ChangeSetType } from "@mikro-orm/postgresql";
 import { Injectable, Inject } from "@nestjs/common";
-import { ChangeSetType } from "@mikro-orm/core";
 
 import { LOG_MASKING_SERVICE, OUTBOX_SERVICE } from "~common/transaction-manager/services";
 import { ChangeLog, AuditLog, Outbox } from "~common/transaction-manager/entities";
@@ -26,11 +26,12 @@ export class ChangeLogSubscriber implements ORM.EventSubscriber {
             if (changeSets.length) {
                 for await (const changeSet of changeSets) {
                     const delta = this.buildDelta(changeSet);
-                    if (Object.keys(delta).length) {
+                    const primaryKey = changeSet.getPrimaryKey();
+                    if (!Array.isArray(primaryKey) && Object.keys(delta).length) {
                         const maskedDelta = await this.logMaskingService.maskChangeLog({ delta });
 
                         const entity = new ChangeLog({
-                            entity: String(changeSet.getPrimaryKey()),
+                            entity: String(primaryKey),
                             entityType: changeSet.meta.className,
                             auditEntry: context.auditEntry,
                             changeType: changeSet.type,

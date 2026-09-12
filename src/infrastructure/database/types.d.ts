@@ -15,7 +15,9 @@ import {
     ObjectQuery as OriginObjectQuery,
     EntityClass as OriginEntityClass,
     UnknownType as OriginUnknownType,
+    UnitOfWork as OriginUnitOfWork,
     Collection as OriginCollection,
+    ChangeSet as OriginChangeSet,
     EntityKey as OriginEntityKey,
     AnyEntity as OriginAnyEntity,
     Options as OriginOptions,
@@ -31,6 +33,8 @@ declare global {
         type FindOptions<E, P extends string = never, F extends string = "*"> = OriginFindOptions<E, P, F>;
 
         type Loaded<E, P extends string = never, F extends string = "*"> = OriginLoaded<E, P, F>;
+
+        type ChangeSet<E extends OriginAnyEntity> = OriginChangeSet<E>;
 
         type Collection<E extends object> = OriginCollection<E>;
 
@@ -59,6 +63,8 @@ declare global {
         type QueryBuilder = Knex.QueryBuilder;
 
         type UnknownType = OriginUnknownType;
+
+        type UnitOfWork = OriginUnitOfWork;
 
         type JoinClause = Knex.JoinClause;
 

@@ -5,9 +5,9 @@ declare global {
     namespace ValueObjects {
         namespace DeltaChanges {
             interface Contract {
-                [field: string]: {
-                    old: unknown;
-                    new: unknown;
+                readonly [field: string]: {
+                    readonly old: unknown;
+                    readonly new: unknown;
                 };
             }
 
@@ -24,8 +24,8 @@ declare global {
 
         namespace MaskedValue {
             interface Contract {
-                value: string;
-                hash: string;
+                readonly value: string;
+                readonly hash: string;
             }
 
             type ConstructorProps = {

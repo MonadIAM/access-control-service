@@ -1,7 +1,7 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Inject } from "@nestjs/common";
 
-import { ExceptionMapper } from "~common/exceptions";
+import { Exception, ExceptionMapper } from "~common/exceptions";
 
 import { LOG_MASKING_SERVICE, OUTBOX_SERVICE } from "./tokens";
 import { OperationContext } from "../utilities";
@@ -48,7 +48,12 @@ export class TransactionalService implements TransactionManager.Service.Contract
                 });
             }
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, params.resource);
+            if (error instanceof Exception) {
+                throw error;
+            } else {
+                const mapped = ExceptionMapper.fromORM(error, params.resource);
+                throw ExceptionMapper.isORM(mapped) ? mapped : error;
+            }
         }
     }
 
@@ -88,7 +93,12 @@ export class TransactionalService implements TransactionManager.Service.Contract
                 });
             }
         } catch (error) {
-            throw ExceptionMapper.fromORM(error, params.resource);
+            if (error instanceof Exception) {
+                throw error;
+            } else {
+                const mapped = ExceptionMapper.fromORM(error, params.resource);
+                throw ExceptionMapper.isORM(mapped) ? mapped : error;
+            }
         }
     }
 

@@ -13,12 +13,31 @@ export class LogMaskingService implements TransactionManager.LogMasking.Contract
     private readonly logKey: string;
 
     private readonly FIELD_CLASSIFICATION: TransactionManager.LogMasking.FieldClassification = {
-        SECRET: ["recoveryCode", "masterCode", "password", "secret", "token", "hash", "totp", "otp"],
-        PII: ["identity", "email", "phone"],
+        PII: ["identity", "identities", "email", "emails", "phone", "phones"],
+        SECRET: [
+            "recoveryCodes",
+            "recoveryCode",
+            "masterCodes",
+            "masterCode",
+            "passwords",
+            "password",
+            "secrets",
+            "secret",
+            "hashes",
+            "tokens",
+            "token",
+            "hash",
+            "totp",
+            "otp",
+        ],
     };
 
-    private readonly SENSITIVE_PATTERN = new RegExp(
-        this.FIELD_CLASSIFICATION.SECRET.concat(this.FIELD_CLASSIFICATION.PII).map(this.normalize).join("|"),
+    private readonly SENSITIVE_FIELDS = new Set(
+        this.FIELD_CLASSIFICATION.SECRET.concat(this.FIELD_CLASSIFICATION.PII).map((field) => this.normalize(field)),
+    );
+
+    private readonly SENSITIVE_FIELD_SUFFIXES = this.FIELD_CLASSIFICATION.SECRET.concat(this.FIELD_CLASSIFICATION.PII).map(
+        (field) => this.normalize(field),
     );
 
     public constructor(
@@ -42,16 +61,20 @@ export class LogMaskingService implements TransactionManager.LogMasking.Contract
                 name: this.maskKey,
             });
 
-            const result: UnknownObject = JSON.parse(JSON.stringify(props.input));
-            targets.forEach((target, index) => {
-                this.unflatten({
-                    value: new MaskedValue({ value: this.mask(target.value), hash: hashes[index] }),
-                    path: target.path,
-                    node: result,
+            if (hashes.length === targets.length) {
+                const result: UnknownObject = JSON.parse(JSON.stringify(props.input));
+                targets.forEach((target, index) => {
+                    this.unflatten({
+                        value: new MaskedValue({ value: this.mask(target.value), hash: hashes[index] }),
+                        path: target.path,
+                        node: result,
+                    });
                 });
-            });
 
-            return result;
+                return result;
+            } else {
+                throw new Error("Vault HMAC response does not match sensitive target count");
+            }
         } else {
             return props.input;
         }
@@ -63,7 +86,7 @@ export class LogMaskingService implements TransactionManager.LogMasking.Contract
         const targets: TransactionManager.LogMasking.ChangeTarget[] = [];
 
         for (const [field, change] of Object.entries(props.delta)) {
-            if (this.SENSITIVE_PATTERN.test(this.normalize(field))) {
+            if (this.isSensitiveField(field)) {
                 if (isString(change.old)) {
                     targets.push({ field, kind: "old", value: change.old });
                 }
@@ -79,15 +102,19 @@ export class LogMaskingService implements TransactionManager.LogMasking.Contract
                 name: this.maskKey,
             });
 
-            const record: ValueObjects.DeltaChanges.ConstructorProps = { ...props.delta };
-            targets.forEach((target, index) => {
-                record[target.field] = {
-                    ...record[target.field],
-                    [target.kind]: new MaskedValue({ value: this.mask(target.value), hash: hashes[index] }),
-                };
-            });
+            if (hashes.length === targets.length) {
+                const record: ValueObjects.DeltaChanges.ConstructorProps = { ...props.delta };
+                targets.forEach((target, index) => {
+                    record[target.field] = {
+                        ...record[target.field],
+                        [target.kind]: new MaskedValue({ value: this.mask(target.value), hash: hashes[index] }),
+                    };
+                });
 
-            return new DeltaChanges(record);
+                return new DeltaChanges(record);
+            } else {
+                throw new Error("Vault HMAC response does not match sensitive target count");
+            }
         } else {
             return props.delta;
         }
@@ -95,7 +122,7 @@ export class LogMaskingService implements TransactionManager.LogMasking.Contract
 
     public async sign(props: TransactionManager.LogMasking.Sign.Props): TransactionManager.LogMasking.Sign.Result {
         const { signature, version } = await this.vaultTransitService.sign({
-            input: JSON.stringify(props.entity, Object.keys(props.entity).sort()),
+            input: JSON.stringify(this.serializeForSigning(props.entity)),
             name: this.logKey,
         });
 
@@ -122,23 +149,22 @@ export class LogMaskingService implements TransactionManager.LogMasking.Contract
     }
 
     public flatten(props: TransactionManager.LogMasking.Flatten.Props): TransactionManager.LogMasking.Flatten.Result {
-        const { node, targets, path = [] } = props;
+        const { node, targets, path = [], sensitive = false } = props;
 
-        if (isArray(node)) {
-            node.forEach((item, index) => this.flatten({ node: item, targets, path: [...path, index] }));
+        if (isString(node)) {
+            if (sensitive) {
+                targets.push({ path, value: node });
+            }
+        } else if (isArray(node)) {
+            node.forEach((item, index) => this.flatten({ node: item, targets, path: [...path, index], sensitive }));
         } else if (isObject(node)) {
             for (const [field, value] of Object.entries(node)) {
-                if (!this.SENSITIVE_PATTERN.test(this.normalize(field))) {
-                    this.flatten({ node: value, targets, path: [...path, field] });
-                } else if (isString(value)) {
-                    targets.push({ path: [...path, field], value });
-                } else if (isArray(value)) {
-                    value.forEach((item, index) => {
-                        if (isString(item)) {
-                            targets.push({ path: [...path, field, index], value: item });
-                        }
-                    });
-                }
+                this.flatten({
+                    sensitive: sensitive || this.isSensitiveField(field),
+                    path: [...path, field],
+                    targets,
+                    node: value,
+                });
             }
         }
     }
@@ -146,11 +172,39 @@ export class LogMaskingService implements TransactionManager.LogMasking.Contract
     public mask(props: TransactionManager.LogMasking.Mask.Props): TransactionManager.LogMasking.Mask.Result {
         if (isPhoneNumber(props)) {
             const phone = parsePhoneNumber(props);
-            return `+${phone.countryCallingCode}${"*".repeat(phone.nationalNumber.length - 2)}${phone.nationalNumber.slice(-2)}`;
+            return `+${phone.countryCallingCode}${"*".repeat(Math.max(phone.nationalNumber.length - 2, 0))}${phone.nationalNumber.slice(-2)}`;
         } else if (isEmail(props)) {
-            return props.replace(/^(.{2}).*@(.+)$/, `$1${"*".repeat(8)}@$2`);
+            const [localPart, domain] = props.split("@");
+            return `${localPart.slice(0, 2)}${"*".repeat(8)}@${domain}`;
         } else {
             return "*".repeat(16);
+        }
+    }
+
+    private isSensitiveField(field: string): boolean {
+        const normalized = this.normalize(field);
+        return (
+            this.SENSITIVE_FIELDS.has(normalized) ||
+            this.SENSITIVE_FIELD_SUFFIXES.some((suffix) => normalized.endsWith(suffix))
+        );
+    }
+
+    private serializeForSigning(value: unknown): unknown {
+        if (value instanceof Date) {
+            return value.toISOString();
+        } else if (isArray(value)) {
+            return value.map((item) => this.serializeForSigning(item));
+        } else if (isObject(value)) {
+            const source = value as UnknownObject;
+            const record: UnknownObject = {};
+            for (const key of Object.keys(source).sort()) {
+                if (key !== "signature" && key !== "keyVersion" && source[key] !== undefined) {
+                    record[key] = this.serializeForSigning(source[key]);
+                }
+            }
+            return record;
+        } else {
+            return value;
         }
     }
 }

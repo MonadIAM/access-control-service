@@ -1,5 +1,5 @@
+import { ChangeSetType } from "@mikro-orm/postgresql";
 import { describe, it, expect } from "@jest/globals";
-import { ChangeSetType } from "@mikro-orm/core";
 import { isUUID } from "class-validator";
 
 import { ChangeLog } from "./change-log.entity";
@@ -27,8 +27,8 @@ describe("ChangeLog Entity", () => {
         it("should assign required fields", () => {
             const log = createChangeLog();
 
-            expect(log.auditEntry).toBe(AUDIT_ENTRY_ID);
             expect(log.changeType).toBe(ChangeSetType.UPDATE);
+            expect(log.auditEntry).toBe(AUDIT_ENTRY_ID);
             expect(log.entityType).toBe("REALM");
             expect(log.entity).toBe(ENTITY_ID);
             expect(log.delta).toBe(BASE_DELTA);

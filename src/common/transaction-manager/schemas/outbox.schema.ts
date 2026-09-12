@@ -1,4 +1,4 @@
-import { BigIntType, EntitySchema } from "@mikro-orm/core";
+import { BigIntType, EntitySchema } from "@mikro-orm/postgresql";
 
 import { Outbox } from "~common/transaction-manager/entities";
 

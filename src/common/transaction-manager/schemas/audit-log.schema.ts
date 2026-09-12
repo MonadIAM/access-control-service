@@ -1,4 +1,4 @@
-import { EntitySchema } from "@mikro-orm/core";
+import { EntitySchema } from "@mikro-orm/postgresql";
 
 import { AuditLog } from "~common/transaction-manager/entities";
 
