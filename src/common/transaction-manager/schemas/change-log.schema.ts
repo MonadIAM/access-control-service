@@ -25,7 +25,7 @@ export const ChangeLogSchema = new EntitySchema<ChangeLog>({
 
         changeType: { type: "string", length: 16 },
         entityType: { type: "string", length: 64 },
-        entity: { type: "uuid" },
+        entity: { type: "text" },
 
         delta: { type: "jsonb" },
 

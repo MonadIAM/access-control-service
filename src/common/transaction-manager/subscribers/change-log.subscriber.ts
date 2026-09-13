@@ -1,10 +1,11 @@
-import { ChangeSetType } from "@mikro-orm/postgresql";
+import { ChangeSetType, Utils } from "@mikro-orm/postgresql";
 import { Injectable, Inject } from "@nestjs/common";
 
 import { LOG_MASKING_SERVICE, OUTBOX_SERVICE } from "~common/transaction-manager/services";
 import { ChangeLog, AuditLog, Outbox } from "~common/transaction-manager/entities";
 import { OperationContext } from "~common/transaction-manager/utilities";
 import { DeltaChanges } from "~common/transaction-manager/value-objects";
+import { ExternalChanges } from "~infrastructure/database/utils/external-changes";
 
 const EXCLUDED_ENTITIES = new Set([AuditLog.name, ChangeLog.name, Outbox.name]);
 
@@ -21,35 +22,45 @@ export class ChangeLogSubscriber implements ORM.EventSubscriber {
     public async onFlush({ uow, em }: ORM.FlushEventArgs): Promise<void> {
         const context = this.operationContext.get();
         if (context?.changeLogEnabled) {
-            const changeSets = uow.getChangeSets().filter((set) => !EXCLUDED_ENTITIES.has(set.meta.className));
+            const changeSets = [...uow.getChangeSets(), ...ExternalChanges.drain({ entityManager: em })].filter(
+                (set) => !EXCLUDED_ENTITIES.has(set.meta.className),
+            );
 
-            if (changeSets.length) {
-                for await (const changeSet of changeSets) {
-                    const delta = this.buildDelta(changeSet);
-                    const primaryKey = changeSet.getPrimaryKey();
-                    if (!Array.isArray(primaryKey) && Object.keys(delta).length) {
-                        const maskedDelta = await this.logMaskingService.maskChangeLog({ delta });
+            for await (const changeSet of changeSets) {
+                const delta = this.buildDelta(changeSet);
 
-                        const entity = new ChangeLog({
-                            entity: String(primaryKey),
-                            entityType: changeSet.meta.className,
-                            auditEntry: context.auditEntry,
-                            changeType: changeSet.type,
-                            delta: maskedDelta,
-                        });
+                if (Object.keys(delta).length) {
+                    const maskedDelta = await this.logMaskingService.maskChangeLog({ delta });
 
-                        const hash = await this.logMaskingService.sign({ entity });
-                        entity.sign(hash);
+                    const entity = new ChangeLog({
+                        entity: this.stringifyPrimaryKey(changeSet.getPrimaryKey()),
+                        entityType: changeSet.meta.className,
+                        auditEntry: context.auditEntry,
+                        changeType: changeSet.type,
+                        delta: maskedDelta,
+                    });
 
-                        em.persist(entity);
-                        uow.computeChangeSet(entity);
+                    const hash = await this.logMaskingService.sign({ entity });
+                    entity.sign(hash);
 
-                        const outbox = this.outboxService.buildChangeLogArchive(entity);
-                        em.persist(outbox);
-                        uow.computeChangeSet(outbox);
-                    }
+                    em.persist(entity);
+                    uow.computeChangeSet(entity);
+
+                    const outbox = this.outboxService.buildChangeLogArchive(entity);
+                    em.persist(outbox);
+                    uow.computeChangeSet(outbox);
                 }
             }
+        }
+    }
+
+    private stringifyPrimaryKey(primaryKey: unknown): string {
+        if (Array.isArray(primaryKey)) {
+            return primaryKey.map(String).join(":");
+        } else if (Utils.isPlainObject(primaryKey)) {
+            return Object.values(primaryKey).map(String).join(":");
+        } else {
+            return String(primaryKey);
         }
     }
 

@@ -11,7 +11,7 @@ Marker in code: `// NOTE[TAG-ID]: see NOTES.md#TAG-ID`.
 <details>
 <summary><strong>SQL</strong></summary>
 
-Deviations from building queries through mikro-orm (ORM / Entity QB) in favor of knex as a plain SQL compiler. knex is used exclusively to build `{sql, bindings}` via `.toSQL()` - no connection of its own, no integration into mikro-orm. Execution always goes through `EntityManager.execute()`; the transaction context is owned by mikro-orm.
+Deviations from building queries through mikro-orm (ORM / Entity QB) in favor of kysely as a plain SQL compiler. kysely is used exclusively to build `{sql, parameters}` via `.compile()` - no connection of its own, no integration into mikro-orm. Execution always goes through `EntityManager.execute()`; the transaction context is owned by mikro-orm.
 
 #### SQL-01
 

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, jest } from "@jest/globals";
 import { ChangeSetType } from "@mikro-orm/postgresql";
 
 import { ChangeLogSubscriberUnitHelpers } from "~testing/unit/transaction-manager/change-log-subscriber.helpers";
+import { ExternalChanges } from "~infrastructure/database/utils/external-changes";
 import { ChangeLog, Outbox } from "~common/transaction-manager/entities";
 import { DeltaChanges } from "~common/transaction-manager/value-objects";
 import { KafkaTopic } from "~context/enums";
@@ -108,6 +109,60 @@ describe("ChangeLogSubscriber", () => {
         expect(outboxEntry).toBeInstanceOf(Outbox);
         expect(uow.computeChangeSet).toHaveBeenNthCalledWith(1, changeLog);
         expect(uow.computeChangeSet).toHaveBeenNthCalledWith(2, outboxEntry);
+    });
+
+    it("writes a change log entry for an externally recorded change set", async () => {
+        const operationContext = helpers.operationContext();
+        const { subscriber, logMasking } = helpers.subscriber({ operationContext });
+        const transaction = helpers.transaction();
+        const uow = helpers.uow({ changeSets: [] });
+
+        ExternalChanges.record({
+            entityManager: transaction.entityManager,
+            changes: [
+                helpers.changeSet({
+                    primaryKey: "realm:ancestor:descendant",
+                    type: ChangeSetType.CREATE,
+                    className: "RoleClosure",
+                    payload: { depth: 2 },
+                }),
+            ],
+        });
+
+        await operationContext.run({ changeLogEnabled: true, auditEntry: "audit-entry" }, () =>
+            subscriber.onFlush(helpers.flushEventArgs({ uow: uow.uow, em: transaction.entityManager })),
+        );
+
+        const changeLog = transaction.persist.mock.calls[0][0];
+
+        expect(logMasking.maskChangeLog).toHaveBeenCalledWith({ delta: { depth: { old: null, new: 2 } } });
+        expect(changeLog).toEqual(
+            expect.objectContaining({
+                entity: "realm:ancestor:descendant",
+                changeType: ChangeSetType.CREATE,
+                entityType: "RoleClosure",
+                auditEntry: "audit-entry",
+            }),
+        );
+    });
+
+    it("drains an externally recorded change set exactly once", async () => {
+        const operationContext = helpers.operationContext();
+        const { subscriber } = helpers.subscriber({ operationContext });
+        const transaction = helpers.transaction();
+        const uow = helpers.uow({ changeSets: [] });
+
+        ExternalChanges.record({
+            entityManager: transaction.entityManager,
+            changes: [helpers.changeSet({ primaryKey: "realm:ancestor:descendant", className: "RoleClosure" })],
+        });
+
+        await operationContext.run({ changeLogEnabled: true, auditEntry: "audit-entry" }, async () => {
+            await subscriber.onFlush(helpers.flushEventArgs({ uow: uow.uow, em: transaction.entityManager }));
+            await subscriber.onFlush(helpers.flushEventArgs({ uow: uow.uow, em: transaction.entityManager }));
+        });
+
+        expect(transaction.persist).toHaveBeenCalledTimes(2);
     });
 
     it("uses masked delta in the persisted change log", async () => {
@@ -282,7 +337,41 @@ describe("ChangeLogSubscriber", () => {
         expect(uow.computeChangeSet).not.toHaveBeenCalled();
     });
 
-    it("does not persist composite primary keys into the uuid entity field", async () => {
+    it("joins a composite primary key returned as an object into the entity field", async () => {
+        const operationContext = helpers.operationContext();
+        const { subscriber } = helpers.subscriber({ operationContext });
+        const transaction = helpers.transaction();
+        const uow = helpers.uow({
+            changeSets: [
+                helpers.changeSet({
+                    primaryKey: {
+                        realm: "00000000-0000-4000-8000-000000000001",
+                        ancestor: "00000000-0000-4000-8000-000000000002",
+                        descendant: "00000000-0000-4000-8000-000000000003",
+                    },
+                    type: ChangeSetType.CREATE,
+                    className: "RoleClosure",
+                    payload: { depth: 1 },
+                }),
+            ],
+        });
+
+        await operationContext.run({ changeLogEnabled: true, auditEntry: "audit-entry" }, () =>
+            subscriber.onFlush(helpers.flushEventArgs({ uow: uow.uow, em: transaction.entityManager })),
+        );
+
+        expect(transaction.persist.mock.calls[0][0]).toEqual(
+            expect.objectContaining({
+                entity: [
+                    "00000000-0000-4000-8000-000000000001",
+                    "00000000-0000-4000-8000-000000000002",
+                    "00000000-0000-4000-8000-000000000003",
+                ].join(":"),
+            }),
+        );
+    });
+
+    it("joins a composite primary key into the entity field", async () => {
         const operationContext = helpers.operationContext();
         const { subscriber } = helpers.subscriber({ operationContext });
         const transaction = helpers.transaction();
@@ -301,8 +390,12 @@ describe("ChangeLogSubscriber", () => {
             subscriber.onFlush(helpers.flushEventArgs({ uow: uow.uow, em: transaction.entityManager })),
         );
 
-        expect(transaction.persist).not.toHaveBeenCalled();
-        expect(uow.computeChangeSet).not.toHaveBeenCalled();
+        expect(transaction.persist.mock.calls[0][0]).toEqual(
+            expect.objectContaining({
+                entity: "00000000-0000-4000-8000-000000000001:00000000-0000-4000-8000-000000000002:1",
+                entityType: "RoleClosure",
+            }),
+        );
     });
 
     it("does not process change sets added while persisting archive entities", async () => {

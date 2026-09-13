@@ -1,7 +1,7 @@
 declare namespace Repositories {
     namespace RoleDelegationPolicy {
         type ExistsRow = {
-            exists_flag: number;
+            existsFlag: number;
         };
 
         type AllowedRow = {

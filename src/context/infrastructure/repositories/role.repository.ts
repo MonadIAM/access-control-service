@@ -2,8 +2,9 @@ import { QueryOrder, raw } from "@mikro-orm/postgresql";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { sql } from "kysely";
 
-import { ORMAdapter, knex } from "~infrastructure/database";
+import { ORMAdapter, kysely } from "~infrastructure/database";
 import { RoleClosure, Role } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
 import { BaseRepository } from "~common/mixins";
@@ -12,7 +13,7 @@ import { RoleMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class RoleRepository
-    extends BaseRepository<Entities.Role, Repositories.Mappers.Role.Types>({
+    extends BaseRepository<Entities.Role, Repositories.Mappers.Role.Types, typeof RoleMapper>({
         Mapper: RoleMapper,
         Entity: Role,
     })
@@ -154,67 +155,61 @@ export class RoleRepository
             const entityManager = this.readManager.fork();
 
             // NOTE[SQL-02]: see NOTES.md#SQL-02
-            const allowedIdsSubquery = knex("access_control.role_delegation_policy as policy")
-                .join("access_control.role_closure as closure", (join) => {
-                    join.on("policy.target_id", "=", "closure.ancestor_id");
-                    join.andOn("closure.depth", "<=", "policy.depth_limit");
-                })
-                .where("policy.is_revoked", false)
-                .andWhereRaw("(policy.expires_at is null or policy.expires_at > now())")
-                .andWhereRaw("closure.realm_id = policy.realm_id")
-                .modify((builder) => {
-                    if (where.realm) {
-                        builder.andWhere("policy.realm_id", where.realm);
-                        builder.andWhere("closure.realm_id", where.realm);
-                    }
+            const allowedIdsSubquery = kysely
+                .selectFrom("access_control.role_delegation_policy as policy")
+                .innerJoin("access_control.role_closure as closure", (join) =>
+                    join
+                        .onRef("policy.target_id", "=", "closure.ancestor_id")
+                        .onRef("closure.depth", "<=", "policy.depth_limit"),
+                )
+                .select("closure.descendant_id")
+                .where("policy.is_revoked", "=", false)
+                .where(sql<boolean>`(policy.expires_at is null or policy.expires_at > now())`)
+                .whereRef("closure.realm_id", "=", "policy.realm_id")
+                .$call((query) =>
+                    where.realm
+                        ? query.where("policy.realm_id", "=", where.realm).where("closure.realm_id", "=", where.realm)
+                        : query,
+                )
+                .where((eb) =>
+                    where.type === "ACCOUNT"
+                        ? eb.exists(
+                              eb
+                                  .selectFrom("access_control.account_role_assignment as assignment")
+                                  .select(sql`1`.as("matched"))
+                                  .where("assignment.account", "=", where.id)
+                                  .where("assignment.is_revoked", "=", false)
+                                  .where(sql<boolean>`(assignment.expires_at is null or assignment.expires_at > now())`)
+                                  .whereRef("assignment.role_id", "=", "policy.delegator_id")
+                                  .whereRef("assignment.realm_id", "=", "policy.realm_id")
+                                  .$call((query) =>
+                                      where.realm ? query.where("assignment.realm_id", "=", where.realm) : query,
+                                  ),
+                          )
+                        : eb("policy.delegator_id", "=", where.id),
+                );
 
-                    builder.andWhere((sub) => {
-                        if (where.type === "ACCOUNT") {
-                            sub.whereExists((accountRoleBuilder) => {
-                                accountRoleBuilder
-                                    .select(knex.raw("1"))
-                                    .from("access_control.account_role_assignment as assignment")
-                                    .where("assignment.account", where.id)
-                                    .andWhere("assignment.is_revoked", false)
-                                    .andWhereRaw("(assignment.expires_at is null or assignment.expires_at > now())")
-                                    .andWhereRaw("assignment.role_id = policy.delegator_id")
-                                    .andWhereRaw("assignment.realm_id = policy.realm_id")
-                                    .modify((assignmentBuilder) => {
-                                        if (where.realm) {
-                                            assignmentBuilder.andWhere("assignment.realm_id", where.realm);
-                                        }
-                                    });
-                            });
-                        } else {
-                            sub.where("policy.delegator_id", where.id);
-                        }
-                    });
-                })
-                .select("closure.descendant_id");
+            const baseQuery = kysely
+                .selectFrom("access_control.role as R")
+                .$call((query) => (where.realm ? query.where("R.realm_id", "=", where.realm) : query))
+                .where("R.id", "in", allowedIdsSubquery);
 
-            const baseQuery = (): ORM.QueryBuilder =>
-                knex
-                    .from({ R: "access_control.role" })
-                    .modify((qb) => {
-                        if (where.realm) {
-                            qb.where("R.realm_id", where.realm);
-                        }
-                    })
-                    .whereIn("R.id", allowedIdsSubquery);
+            const dataQuery = baseQuery
+                .distinct()
+                .select("R.id")
+                .selectAll("R")
+                .$call((query) => super.buildWhereKysely(query, filters, "R"))
+                .$call((query) => super.buildOptionsKysely(query, sort, pagination, "R"))
+                .compile();
 
-            const dataQuery = baseQuery().distinct("R.id").select("R.*");
-            super.buildWhereKnex?.(dataQuery, filters, "R");
-            super.buildOptionsKnex?.(dataQuery, sort, pagination, "R");
-
-            const countQuery = baseQuery().countDistinct("R.id as total");
-            super.buildWhereKnex?.(countQuery, filters, "R");
-
-            const dataSQL = dataQuery.toSQL();
-            const countSQL = countQuery.toSQL();
+            const countQuery = baseQuery
+                .select((eb) => eb.fn.count("R.id").distinct().as("total"))
+                .$call((query) => super.buildWhereKysely(query, filters, "R"))
+                .compile();
 
             const [rawRows, countRow] = await Promise.all([
-                entityManager.execute<Repositories.Role.Row[]>(dataSQL.sql, [...dataSQL.bindings], "all"),
-                entityManager.execute<Repositories.Role.CountRow>(countSQL.sql, [...countSQL.bindings], "get"),
+                entityManager.execute<Repositories.Role.Row[]>(dataQuery.sql, [...dataQuery.parameters], "all"),
+                entityManager.execute<Repositories.Role.CountRow>(countQuery.sql, [...countQuery.parameters], "get"),
             ]);
 
             const total = Number(countRow?.total ?? 0);
@@ -232,35 +227,33 @@ export class RoleRepository
             const entityManager = this.readManager.fork();
 
             // NOTE[SQL-02]: see NOTES.md#SQL-02
-            const baseQuery = (): ORM.QueryBuilder =>
-                knex
-                    .from({ R: "access_control.role" })
-                    .join({ RC: "access_control.role_closure" }, "R.id", "RC.ancestor_id")
-                    .join({ ARM: "access_control.account_role_assignment" }, "RC.descendant_id", "ARM.role_id")
-                    .where("ARM.account", where.account)
-                    .andWhereRaw('"RC"."realm_id" = "ARM"."realm_id"')
-                    .andWhereRaw('"R"."realm_id" = "ARM"."realm_id"')
-                    .modify((qb) => {
-                        if (where.realm) {
-                            qb.andWhere("ARM.realm_id", where.realm);
-                        }
-                    })
-                    .andWhere("ARM.is_revoked", false)
-                    .andWhereRaw('("ARM"."expires_at" is null or "ARM"."expires_at" > now())');
+            const baseQuery = kysely
+                .selectFrom("access_control.role as R")
+                .innerJoin("access_control.role_closure as RC", "R.id", "RC.ancestor_id")
+                .innerJoin("access_control.account_role_assignment as ARM", "RC.descendant_id", "ARM.role_id")
+                .where("ARM.account", "=", where.account)
+                .whereRef("RC.realm_id", "=", "ARM.realm_id")
+                .whereRef("R.realm_id", "=", "ARM.realm_id")
+                .$call((query) => (where.realm ? query.where("ARM.realm_id", "=", where.realm) : query))
+                .where("ARM.is_revoked", "=", false)
+                .where(sql<boolean>`("ARM"."expires_at" is null or "ARM"."expires_at" > now())`);
 
-            const dataQuery = baseQuery().distinct("R.id").select("R.*");
-            super.buildWhereKnex!(dataQuery, filters, "R");
-            super.buildOptionsKnex!(dataQuery, sort, pagination, "R");
+            const dataQuery = baseQuery
+                .distinct()
+                .select("R.id")
+                .selectAll("R")
+                .$call((query) => super.buildWhereKysely(query, filters, "R"))
+                .$call((query) => super.buildOptionsKysely(query, sort, pagination, "R"))
+                .compile();
 
-            const countQuery = baseQuery().countDistinct("R.id as total");
-            super.buildWhereKnex!(countQuery, filters, "R");
-
-            const dataSQL = dataQuery.toSQL();
-            const countSQL = countQuery.toSQL();
+            const countQuery = baseQuery
+                .select((eb) => eb.fn.count("R.id").distinct().as("total"))
+                .$call((query) => super.buildWhereKysely(query, filters, "R"))
+                .compile();
 
             const [rawRows, countRow] = await Promise.all([
-                entityManager.execute<Repositories.Role.Row[]>(dataSQL.sql, [...dataSQL.bindings], "all"),
-                entityManager.execute<Repositories.Role.CountRow>(countSQL.sql, [...countSQL.bindings], "get"),
+                entityManager.execute<Repositories.Role.Row[]>(dataQuery.sql, [...dataQuery.parameters], "all"),
+                entityManager.execute<Repositories.Role.CountRow>(countQuery.sql, [...countQuery.parameters], "get"),
             ]);
 
             const total = Number(countRow?.total ?? 0);
@@ -279,37 +272,43 @@ export class RoleRepository
             const { transaction, realm } = props;
             const entityManager = transaction ?? this.readManager;
 
-            const nodesCTE = knex("access_control.role as role")
-                .select(
+            const nodesCTE = kysely
+                .selectFrom("access_control.role as role")
+                .select([
                     "role.id",
                     "role.name as label",
-                    knex.raw(
-                        "jsonb_build_object('code', role.code, 'archetype', role.archetype, 'isRevoked', role.is_revoked) AS attributes",
+                    sql`jsonb_build_object('code', role.code, 'archetype', role.archetype, 'isRevoked', role.is_revoked)`.as(
+                        "attributes",
                     ),
-                )
-                .where("role.realm_id", realm);
+                ])
+                .where("role.realm_id", "=", realm);
 
-            const edgesCTE = knex("access_control.role_closure as closure")
-                .select(
-                    knex.raw("'edge_' || closure.ancestor_id || '_' || closure.descendant_id AS id"),
+            const edgesCTE = kysely
+                .selectFrom("access_control.role_closure as closure")
+                .select([
+                    sql`'edge_' || closure.ancestor_id || '_' || closure.descendant_id`.as("id"),
                     "closure.ancestor_id as source",
                     "closure.descendant_id as target",
-                    knex.raw("'arrow' AS type"),
-                )
-                .where("closure.realm_id", realm)
-                .andWhere("closure.depth", 1);
+                    sql`'arrow'`.as("type"),
+                ])
+                .where("closure.realm_id", "=", realm)
+                .where("closure.depth", "=", 1);
 
             // NOTE[SQL-05]: see NOTES.md#SQL-05
-            const query = knex
-                .with("formatted_nodes", nodesCTE)
-                .with("formatted_edges", edgesCTE)
-                .select({
-                    nodes: knex.raw("COALESCE((SELECT json_agg(formatted_nodes) FROM formatted_nodes), '[]'::json)"),
-                    edges: knex.raw("COALESCE((SELECT json_agg(formatted_edges) FROM formatted_edges), '[]'::json)"),
-                })
-                .toSQL();
+            const query = kysely
+                .with("formatted_nodes", () => nodesCTE)
+                .with("formatted_edges", () => edgesCTE)
+                .selectNoFrom([
+                    sql`COALESCE((SELECT json_agg(formatted_nodes) FROM formatted_nodes), '[]'::json)`.as("nodes"),
+                    sql`COALESCE((SELECT json_agg(formatted_edges) FROM formatted_edges), '[]'::json)`.as("edges"),
+                ])
+                .compile();
 
-            const result = await entityManager.execute<Repositories.Role.Graph.Data>(query.sql, [...query.bindings], "get");
+            const result = await entityManager.execute<Repositories.Role.Graph.Data>(
+                query.sql,
+                [...query.parameters],
+                "get",
+            );
 
             return {
                 nodes: result?.nodes ?? [],
@@ -327,20 +326,20 @@ export class RoleRepository
         const entityManager = transaction ?? this.readManager.fork();
 
         // NOTE[SQL-02]: see NOTES.md#SQL-02
-        const query = knex
+        const query = kysely
+            .selectFrom("access_control.role_closure as rc")
+            .innerJoin("access_control.role as role", "role.id", "rc.ancestor_id")
+            .innerJoin("access_control.account_role_assignment as ara", "ara.role_id", "rc.descendant_id")
             .select("ara.account")
             .distinct()
-            .from({ rc: "access_control.role_closure" })
-            .join({ role: "access_control.role" }, "role.id", "rc.ancestor_id")
-            .join({ ara: "access_control.account_role_assignment" }, "ara.role_id", "rc.descendant_id")
-            .whereIn("rc.ancestor_id", roles)
-            .andWhere("ara.is_revoked", false)
-            .andWhereRaw("(ara.expires_at is null or ara.expires_at > now())")
-            .andWhereRaw("ara.realm_id = rc.realm_id")
-            .andWhereRaw("role.realm_id = rc.realm_id")
-            .toSQL();
+            .where("rc.ancestor_id", "in", roles)
+            .where("ara.is_revoked", "=", false)
+            .where(sql<boolean>`(ara.expires_at is null or ara.expires_at > now())`)
+            .whereRef("ara.realm_id", "=", "rc.realm_id")
+            .whereRef("role.realm_id", "=", "rc.realm_id")
+            .compile();
 
-        const rows = await entityManager.execute<Repositories.Role.AccountRow[]>(query.sql, [...query.bindings], "all");
+        const rows = await entityManager.execute<Repositories.Role.AccountRow[]>(query.sql, [...query.parameters], "all");
 
         return rows.map(({ account }) => account);
     }

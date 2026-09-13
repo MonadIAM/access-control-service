@@ -29,7 +29,10 @@ declare namespace Repositories {
                 realm: string;
             };
 
-            type Result = ORM.QueryBuilder;
+            type Result = ORM.Query<{
+                matchedCount: number;
+                group: string;
+            }>;
 
             type Signature = (props: Props) => Result;
         }
@@ -41,7 +44,7 @@ declare namespace Repositories {
                 realm: string;
             };
 
-            type Result = ORM.QueryBuilder;
+            type Result = ORM.Query<AccountViolationRow>;
 
             type Signature = (props: Props) => Result;
         }

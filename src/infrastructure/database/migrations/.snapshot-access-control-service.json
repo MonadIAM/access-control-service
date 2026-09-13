@@ -2750,7 +2750,7 @@
         },
         "entity": {
           "name": "entity",
-          "type": "uuid",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -2763,7 +2763,7 @@
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "uuid"
+          "mappedType": "text"
         },
         "entity_type": {
           "name": "entity_type",

@@ -87,6 +87,7 @@ export class RoleCommands implements Commands.Role.Contract {
                 entityType: EntityType.ROLE,
                 ...props,
             },
+            changeLog: true,
             execute: async (transaction) => {
                 return await this.roleService.move({ ...input, transaction, realm });
             },

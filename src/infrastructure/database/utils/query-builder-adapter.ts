@@ -1,105 +1,109 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
+import { OrderByModifiers } from "kysely";
 
 import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 
 import { PublicOrdinalOperator, PublicStringOperator } from "../enums";
+import { kysely } from "./kysely-builder";
+
+const { ref } = kysely.dynamic;
 
 export class QueryBuilderAdapter {
-    public static pagination(query: ORM.QueryBuilder, pagination: Pagination): ORM.QueryBuilder {
+    public static pagination<DB, Table extends keyof DB, Output>(
+        query: ORM.QueryBuilder<DB, Table, Output>,
+        pagination: Pagination,
+    ): ORM.QueryBuilder<DB, Table, Output> {
         if (pagination) {
-            query.limit(pagination.elementsPerPage);
-            query.offset((pagination.currentPage - 1) * pagination.elementsPerPage);
+            return query
+                .limit(pagination.elementsPerPage)
+                .offset((pagination.currentPage - 1) * pagination.elementsPerPage);
         }
         return query;
     }
 
-    public static applyStringFilter(
-        query: ORM.QueryBuilder,
+    public static applyStringFilter<DB, Table extends keyof DB, Output>(
+        query: ORM.QueryBuilder<DB, Table, Output>,
         filter: StringFilterDTO | LinkFilterDTO,
         column: string,
-    ): void {
+    ): ORM.QueryBuilder<DB, Table, Output> {
         if (Array.isArray(filter.value)) {
             switch (filter.operator) {
                 case PublicStringOperator.IN:
-                    query.whereIn(column, filter.value);
-                    break;
+                    return query.where(ref(column), "in", filter.value);
                 case PublicStringOperator.NOT_IN:
-                    query.whereNotIn(column, filter.value);
-                    break;
+                    return query.where(ref(column), "not in", filter.value);
+                default:
+                    return query;
             }
         } else {
             switch (filter.operator) {
                 case PublicStringOperator.EQUAL:
-                    query.where(column, filter.value);
-                    break;
+                    return query.where(ref(column), "=", filter.value);
                 case PublicStringOperator.NOT_EQUAL:
-                    query.whereNot(column, filter.value);
-                    break;
+                    return query.where(ref(column), "!=", filter.value);
                 case PublicStringOperator.LIKE:
-                    query.where(column, "like", `%${filter.value}%`);
-                    break;
+                    return query.where(ref(column), "like", `%${filter.value}%`);
                 case PublicStringOperator.ILIKE:
-                    query.where(column, "ilike", `%${filter.value}%`);
-                    break;
+                    return query.where(ref(column), "ilike", `%${filter.value}%`);
+                default:
+                    return query;
             }
         }
     }
 
-    public static applyOrdinalFilter<T extends Ordinal>(
-        query: ORM.QueryBuilder,
-        filter: OrdinalFilterDTO<T>,
+    public static applyOrdinalFilter<DB, Table extends keyof DB, Output, Value extends Ordinal>(
+        query: ORM.QueryBuilder<DB, Table, Output>,
+        filter: OrdinalFilterDTO<Value>,
         column: string,
-    ): void {
+    ): ORM.QueryBuilder<DB, Table, Output> {
         if (Array.isArray(filter.value)) {
             switch (filter.operator) {
                 case PublicOrdinalOperator.IN:
-                    query.whereIn(column, filter.value);
-                    break;
+                    return query.where(ref(column), "in", filter.value);
                 case PublicOrdinalOperator.NOT_IN:
-                    query.whereNotIn(column, filter.value);
-                    break;
+                    return query.where(ref(column), "not in", filter.value);
+                default:
+                    return query;
             }
         } else {
             switch (filter.operator) {
                 case PublicOrdinalOperator.EQUAL:
-                    query.where(column, filter.value);
-                    break;
+                    return query.where(ref(column), "=", filter.value);
                 case PublicOrdinalOperator.NOT_EQUAL:
-                    query.whereNot(column, filter.value);
-                    break;
+                    return query.where(ref(column), "!=", filter.value);
                 case PublicOrdinalOperator.GREATER_THAN:
-                    query.where(column, ">", filter.value);
-                    break;
+                    return query.where(ref(column), ">", filter.value);
                 case PublicOrdinalOperator.GREATER_OR_EQUAL:
-                    query.where(column, ">=", filter.value);
-                    break;
+                    return query.where(ref(column), ">=", filter.value);
                 case PublicOrdinalOperator.LESS_THAN:
-                    query.where(column, "<", filter.value);
-                    break;
+                    return query.where(ref(column), "<", filter.value);
                 case PublicOrdinalOperator.LESS_OR_EQUAL:
-                    query.where(column, "<=", filter.value);
-                    break;
+                    return query.where(ref(column), "<=", filter.value);
+                default:
+                    return query;
             }
         }
     }
 
-    public static orderBy<T extends ORM.AnyEntity>(
-        query: ORM.QueryBuilder,
+    public static orderBy<DB, Table extends keyof DB, Output, Entity extends ORM.AnyEntity>(
+        query: ORM.QueryBuilder<DB, Table, Output>,
         sort: Record<string, QueryOrder>,
         tableAlias: string,
-        basicSort: [ORM.EntityKey<T>, QueryOrder],
-    ): void {
+        basicSort: [ORM.EntityKey<Entity>, QueryOrder],
+    ): ORM.QueryBuilder<DB, Table, Output> {
         const entries = Object.typedEntries(sort);
+        let ordered = query;
+
         if (entries.length > 0) {
             for (const [key, value] of entries) {
                 if (value) {
                     const column = key.includes(".") ? key : `${tableAlias}.${this.toSnakeCase(key)}`;
-                    query.orderBy(column, value);
+                    ordered = ordered.orderBy(ref(column), this.direction(value));
                 }
             }
         } else {
             const defaultColumn = `${tableAlias}.${this.toSnakeCase(basicSort[0])}`;
-            query.orderBy(defaultColumn, basicSort[1]);
+            ordered = ordered.orderBy(ref(defaultColumn), this.direction(basicSort[1]));
         }
 
         let hasIDOrder = false;
@@ -109,8 +113,27 @@ export class QueryBuilderAdapter {
         }
 
         if (!hasIDOrder) {
-            query.orderBy(`${tableAlias}.id`, QueryOrder.ASC);
+            ordered = ordered.orderBy(ref(`${tableAlias}.id`), this.direction(QueryOrder.ASC));
         }
+
+        return ordered;
+    }
+
+    private static direction(order: QueryOrder): OrderByModifiers {
+        const [direction, nulls] = order.toLowerCase().split(" nulls ");
+
+        return (builder) => {
+            const directed = direction === "desc" ? builder.desc() : builder.asc();
+
+            switch (nulls) {
+                case "first":
+                    return directed.nullsFirst();
+                case "last":
+                    return directed.nullsLast();
+                default:
+                    return directed;
+            }
+        };
     }
 
     private static toSnakeCase(value: string): string {

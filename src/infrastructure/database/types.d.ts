@@ -1,10 +1,11 @@
+import { AliasableExpression, SelectQueryBuilder, Compilable } from "kysely";
 import { ConfigService } from "@nestjs/config";
 import { Pool as PostgreSQLPool } from "pg";
 import { StringValue } from "ms";
-import { Knex } from "knex";
 import {
     EntityDictionary as OriginEntityDictionary,
     EventSubscriber as OriginEventSubscriber,
+    EntityMetadata as OriginEntityMetadata,
     FlushEventArgs as OriginFlushEventArgs,
     FindAllOptions as OriginFindAllOptions,
     QueryOrderMap as OriginQueryOrderMap,
@@ -17,6 +18,7 @@ import {
     UnknownType as OriginUnknownType,
     UnitOfWork as OriginUnitOfWork,
     Collection as OriginCollection,
+    EntityData as OriginEntityData,
     ChangeSet as OriginChangeSet,
     EntityKey as OriginEntityKey,
     AnyEntity as OriginAnyEntity,
@@ -34,11 +36,17 @@ declare global {
 
         type Loaded<E, P extends string = never, F extends string = "*"> = OriginLoaded<E, P, F>;
 
+        type QueryBuilder<D, T extends keyof D, O> = SelectQueryBuilder<D, T, O>;
+
         type ChangeSet<E extends OriginAnyEntity> = OriginChangeSet<E>;
 
         type Collection<E extends object> = OriginCollection<E>;
 
+        type Query<O> = AliasableExpression<O> & Compilable<O>;
+
         type EntityDictionary<E> = OriginEntityDictionary<E>;
+
+        type EntityMetadata<E> = OriginEntityMetadata<E>;
 
         type FindAllOptions<E> = OriginFindAllOptions<E>;
 
@@ -54,19 +62,17 @@ declare global {
 
         type FilterQuery<E> = OriginFilterQuery<E>;
 
+        type EntityData<E> = OriginEntityData<E>;
+
         type ChangeSetType = OriginChangeSetType;
 
         type EntityManager = OriginEntityManager;
 
         type EntityKey<E> = OriginEntityKey<E>;
 
-        type QueryBuilder = Knex.QueryBuilder;
-
         type UnknownType = OriginUnknownType;
 
         type UnitOfWork = OriginUnitOfWork;
-
-        type JoinClause = Knex.JoinClause;
 
         type AnyEntity = OriginAnyEntity;
 
@@ -82,6 +88,41 @@ declare global {
             [K in keyof E as E[K] extends RawColumnValue ? CamelToSnakeCase<K & string> : never]: E[K];
         };
 
+        namespace ExternalChanges {
+            namespace Record {
+                type Props<Entity extends ORM.AnyEntity> = {
+                    entityManager: ORM.FlushEventArgs["em"];
+                    changes: ORM.ChangeSet<Entity>[];
+                };
+
+                type Result = void;
+
+                type Signature = <Entity extends ORM.AnyEntity>(props: Props<Entity>) => Result;
+            }
+
+            namespace Drain {
+                type Props = {
+                    entityManager: ORM.FlushEventArgs["em"];
+                };
+
+                type Result = ORM.ChangeSet<ORM.AnyEntity>[];
+
+                type Signature = (props: Props) => Result;
+            }
+        }
+
+        type ForeignKeys<Entity> = {
+            [
+                Key in keyof Entity as Entity[Key] extends RawColumnValue
+                    ? never
+                    : Entity[Key] extends ORM.Collection<ORM.AnyEntity>
+                      ? never
+                      : Entity[Key] extends (...args: never[]) => unknown
+                        ? never
+                        : `${CamelToSnakeCase<Key & string>}_id`
+            ]: string;
+        };
+
         type OperatorMap<T> = {
             $nin?: readonly T[];
             $in?: readonly T[];
@@ -93,6 +134,21 @@ declare global {
             $lt?: T;
             $eq?: T;
             $ne?: T;
+        };
+
+        type Columns<Entity> = Raw<Entity> & ForeignKeys<Entity>;
+
+        type Database = {
+            "access_control.role_permission_assignment": Columns<Entities.RolePermissionAssignment>;
+            "access_control.account_role_assignment": Columns<Entities.AccountRoleAssignment>;
+            "access_control.role_delegation_policy": Columns<Entities.RoleDelegationPolicy>;
+            "access_control.role_conflict_group": Columns<Entities.RoleConflictGroup>;
+            "access_control.role_conflict_member": Columns<Entities.RoleConflictMember>;
+            "access_control.permission_override": Columns<Entities.PermissionOverride>;
+            "access_control.role_closure": Columns<Entities.RoleClosure>;
+            "access_control.permission": Columns<Entities.Permission>;
+            "access_control.realm": Columns<Entities.Realm>;
+            "access_control.role": Columns<Entities.Role>;
         };
 
         type ConnectionKind = "write" | "read";

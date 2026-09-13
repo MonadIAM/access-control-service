@@ -1,7 +1,9 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
-import { ORMAdapter, QueryBuilderAdapter } from "~infrastructure/database/utils";
+import { ORMAdapter, QueryBuilderAdapter, kysely } from "~infrastructure/database/utils";
 import { RoleActorType, RoleArchetype } from "~context/enums";
+
+const { ref } = kysely.dynamic;
 
 export class RoleMapper implements Repositories.Mappers.Contract<Entities.Role, Repositories.Mappers.Role.Types> {
     public buildWhereORM(
@@ -59,48 +61,57 @@ export class RoleMapper implements Repositories.Mappers.Contract<Entities.Role, 
         };
     }
 
-    public buildWhereKnex(query: ORM.QueryBuilder, filters: Repositories.Mappers.Role.Filters, tableAlias: string): void {
+    public buildWhereKysely<DB, Table extends keyof DB, Output>(
+        query: ORM.QueryBuilder<DB, Table, Output>,
+        filters: Repositories.Mappers.Role.Filters,
+        tableAlias: string,
+    ): ORM.QueryBuilder<DB, Table, Output> {
+        let filtered = query;
+
         if (filters.realm) {
-            QueryBuilderAdapter.applyStringFilter(query, filters.realm, `${tableAlias}.realm_id`);
+            filtered = QueryBuilderAdapter.applyStringFilter(filtered, filters.realm, `${tableAlias}.realm_id`);
         }
         if (filters.actorType) {
-            QueryBuilderAdapter.applyStringFilter(query, filters.actorType, `${tableAlias}.actor_type`);
+            filtered = QueryBuilderAdapter.applyStringFilter(filtered, filters.actorType, `${tableAlias}.actor_type`);
         }
         if (filters.archetype) {
-            QueryBuilderAdapter.applyStringFilter(query, filters.archetype, `${tableAlias}.archetype`);
+            filtered = QueryBuilderAdapter.applyStringFilter(filtered, filters.archetype, `${tableAlias}.archetype`);
         }
         if (filters.code) {
-            QueryBuilderAdapter.applyStringFilter(query, filters.code, `${tableAlias}.code`);
+            filtered = QueryBuilderAdapter.applyStringFilter(filtered, filters.code, `${tableAlias}.code`);
         }
         if (filters.name) {
-            QueryBuilderAdapter.applyStringFilter(query, filters.name, `${tableAlias}.name`);
+            filtered = QueryBuilderAdapter.applyStringFilter(filtered, filters.name, `${tableAlias}.name`);
         }
         if (filters.id) {
-            QueryBuilderAdapter.applyStringFilter(query, filters.id, `${tableAlias}.id`);
+            filtered = QueryBuilderAdapter.applyStringFilter(filtered, filters.id, `${tableAlias}.id`);
         }
 
         if (filters.updatedAt) {
-            QueryBuilderAdapter.applyOrdinalFilter(query, filters.updatedAt, `${tableAlias}.updated_at`);
+            filtered = QueryBuilderAdapter.applyOrdinalFilter(filtered, filters.updatedAt, `${tableAlias}.updated_at`);
         }
         if (filters.createdAt) {
-            QueryBuilderAdapter.applyOrdinalFilter(query, filters.createdAt, `${tableAlias}.created_at`);
+            filtered = QueryBuilderAdapter.applyOrdinalFilter(filtered, filters.createdAt, `${tableAlias}.created_at`);
         }
 
         if (filters.isSystemManaged !== undefined) {
-            query.where(`${tableAlias}.is_system_managed`, filters.isSystemManaged);
+            filtered = filtered.where(ref(`${tableAlias}.is_system_managed`), "=", filters.isSystemManaged);
         }
         if (filters.isRevoked !== undefined) {
-            query.where(`${tableAlias}.is_revoked`, filters.isRevoked);
+            filtered = filtered.where(ref(`${tableAlias}.is_revoked`), "=", filters.isRevoked);
         }
+
+        return filtered;
     }
 
-    public buildOptionsKnex(
-        query: ORM.QueryBuilder,
+    public buildOptionsKysely<DB, Table extends keyof DB, Output>(
+        query: ORM.QueryBuilder<DB, Table, Output>,
         sort: Repositories.Mappers.Role.Sort,
         pagination: Pagination,
         tableAlias: string,
-    ): void {
-        QueryBuilderAdapter.orderBy(query, sort, tableAlias, ["created_at", QueryOrder.ASC]);
-        QueryBuilderAdapter.pagination(query, pagination);
+    ): ORM.QueryBuilder<DB, Table, Output> {
+        const ordered = QueryBuilderAdapter.orderBy(query, sort, tableAlias, ["created_at", QueryOrder.ASC]);
+
+        return QueryBuilderAdapter.pagination(ordered, pagination);
     }
 }

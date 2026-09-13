@@ -1,10 +1,11 @@
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { sql } from "kysely";
 
 import { RoleConflictGroup } from "~context/domain/entities";
 import { ExceptionMapper } from "~common/exceptions";
-import { knex } from "~infrastructure/database";
+import { kysely } from "~infrastructure/database";
 import { BaseRepository } from "~common/mixins";
 
 import { RoleConflictGroupMapper } from "../mappers";
@@ -35,17 +36,17 @@ export class RoleConflictGroupRepository
             const entityManager = this.readManager.fork();
             const violationsBaseQuery = this.getGroupsViolatedByAccountQuery(props);
 
-            const query = knex
-                .with("violations", violationsBaseQuery)
-                .select("grp.*")
-                .select(knex.raw('v.matched_count as "matchedCount"'))
-                .from({ v: "violations" })
-                .join({ grp: "access_control.role_conflict_group" }, "grp.id", "v.group_id")
-                .toSQL();
+            const query = kysely
+                .with("violations", () => violationsBaseQuery)
+                .selectFrom("violations as v")
+                .innerJoin("access_control.role_conflict_group as grp", "grp.id", "v.group")
+                .selectAll("grp")
+                .select("v.matchedCount")
+                .compile();
 
             const rawRows = await entityManager.execute<Repositories.RoleConflictGroup.Row[]>(
                 query.sql,
-                [...query.bindings],
+                [...query.parameters],
                 "all",
             );
 
@@ -62,11 +63,15 @@ export class RoleConflictGroupRepository
             const entityManager = props.transaction ?? this.readManager.fork();
             const violationsBaseQuery = this.getGroupsViolatedByAccountQuery(props);
 
-            const query = knex.select(knex.raw("1 as exists")).from(violationsBaseQuery.as("v")).limit(1).toSQL();
+            const query = kysely
+                .selectFrom(violationsBaseQuery.as("v"))
+                .select(sql<number>`1`.as("exists"))
+                .limit(1)
+                .compile();
 
             const existsRows = await entityManager.execute<Repositories.RoleConflictGroup.ExistsRow[]>(
                 query.sql,
-                [...query.bindings],
+                [...query.parameters],
                 "all",
             );
 
@@ -83,11 +88,15 @@ export class RoleConflictGroupRepository
             const entityManager = props.transaction ?? this.readManager.fork();
             const accountViolationsBaseQuery = this.getAccountsViolatingRuleQuery(props);
 
-            const query = knex.select(knex.raw("1 as exists")).from(accountViolationsBaseQuery.as("v")).limit(1).toSQL();
+            const query = kysely
+                .selectFrom(accountViolationsBaseQuery.as("v"))
+                .select(sql<number>`1`.as("exists"))
+                .limit(1)
+                .compile();
 
             const existsRows = await entityManager.execute<Repositories.RoleConflictGroup.ExistsRow[]>(
                 query.sql,
-                [...query.bindings],
+                [...query.parameters],
                 "all",
             );
 
@@ -102,11 +111,11 @@ export class RoleConflictGroupRepository
     ): Repositories.RoleConflictGroup.FindAccountsViolatingRule.Result {
         try {
             const entityManager = props.transaction ?? this.readManager.fork();
-            const query = this.getAccountsViolatingRuleQuery(props).toSQL();
+            const query = this.getAccountsViolatingRuleQuery(props).compile();
 
             return await entityManager.execute<Repositories.RoleConflictGroup.AccountViolationRow[]>(
                 query.sql,
-                [...query.bindings],
+                [...query.parameters],
                 "all",
             );
         } catch (error) {
@@ -119,28 +128,32 @@ export class RoleConflictGroupRepository
     ): Repositories.RoleConflictGroup.HasGroupsWithViolatingAccounts.Result {
         try {
             const entityManager = props.transaction ?? this.readManager.fork();
-            const baseQuery = knex
+            const baseQuery = kysely
+                .selectFrom("access_control.role_conflict_member as mem")
+                .innerJoin("access_control.role as role", "role.id", "mem.role_id")
+                .innerJoin("access_control.account_role_assignment as arm", "arm.role_id", "mem.role_id")
+                .innerJoin("access_control.role_conflict_group as grp", "grp.id", "mem.group_id")
                 .select("mem.group_id as group_id")
-                .from({ mem: "access_control.role_conflict_member" })
-                .join({ role: "access_control.role" }, "role.id", "mem.role_id")
-                .join({ arm: "access_control.account_role_assignment" }, "arm.role_id", "mem.role_id")
-                .join({ grp: "access_control.role_conflict_group" }, "grp.id", "mem.group_id")
-                .whereIn("mem.group_id", props.groups)
-                .where("grp.realm_id", props.realm)
-                .where("role.realm_id", props.realm)
-                .where("arm.realm_id", props.realm)
-                .where("grp.is_revoked", false)
-                .where("mem.is_revoked", false)
-                .where("arm.is_revoked", false)
-                .whereRaw("(arm.expires_at is null or arm.expires_at > now())")
-                .groupBy("mem.group_id", "arm.account", "grp.max_allowed")
-                .havingRaw("count(distinct arm.role_id) > grp.max_allowed");
+                .where("mem.group_id", "in", props.groups)
+                .where("grp.realm_id", "=", props.realm)
+                .where("role.realm_id", "=", props.realm)
+                .where("arm.realm_id", "=", props.realm)
+                .where("grp.is_revoked", "=", false)
+                .where("mem.is_revoked", "=", false)
+                .where("arm.is_revoked", "=", false)
+                .where(sql<boolean>`(arm.expires_at is null or arm.expires_at > now())`)
+                .groupBy(["mem.group_id", "arm.account", "grp.max_allowed"])
+                .having(sql<boolean>`count(distinct arm.role_id) > grp.max_allowed`);
 
-            const query = knex.select(knex.raw("1 as exists")).from(baseQuery.as("v")).limit(1).toSQL();
+            const query = kysely
+                .selectFrom(baseQuery.as("v"))
+                .select(sql<number>`1`.as("exists"))
+                .limit(1)
+                .compile();
 
             const existsRows = await entityManager.execute<Repositories.RoleConflictGroup.ExistsRow[]>(
                 query.sql,
-                [...query.bindings],
+                [...query.parameters],
                 "all",
             );
 
@@ -169,50 +182,55 @@ export class RoleConflictGroupRepository
     ): Repositories.RoleConflictGroup.GetGroupsViolatedByAccountQuery.Result {
         // NOTE[SQL-02]: see NOTES.md#SQL-02
         // NOTE[SQL-06]: see NOTES.md#SQL-06
-        const directAfterCte = knex.select(knex.raw("role_id::uuid")).from(
-            knex
-                .select(knex.raw('"arm"."role_id"::uuid as "role_id"'))
-                .from({ arm: "access_control.account_role_assignment" })
-                .where({ "arm.realm_id": props.realm, "arm.account": props.account })
-                .andWhere("arm.is_revoked", false)
-                .andWhereRaw("(arm.expires_at is null or arm.expires_at > now())")
-                .union(
-                    props.roles.map((role) => knex.select(knex.raw('?::uuid as "role_id"', [role]))),
-                    true,
-                )
-                .as("combined"),
-        );
+        const assignedRoles = kysely
+            .selectFrom("access_control.account_role_assignment as arm")
+            .select(sql<string>`"arm"."role_id"::uuid`.as("role_id"))
+            .where("arm.realm_id", "=", props.realm)
+            .where("arm.account", "=", props.account)
+            .where("arm.is_revoked", "=", false)
+            .where(sql<boolean>`(arm.expires_at is null or arm.expires_at > now())`);
 
-        return knex
-            .with("direct_after", directAfterCte)
-            .select("grp.id as group_id")
-            .select(knex.raw("count(distinct mem.role_id)::int as matched_count"))
-            .from({ grp: "access_control.role_conflict_group" })
-            .join({ mem: "access_control.role_conflict_member" }, "mem.group_id", "grp.id")
-            .join({ role: "access_control.role" }, "role.id", "mem.role_id")
-            .join({ da: "direct_after" }, "da.role_id", "mem.role_id")
-            .where("grp.realm_id", props.realm)
-            .where("role.realm_id", props.realm)
-            .where("grp.is_revoked", false)
-            .where("mem.is_revoked", false)
-            .groupBy("grp.id", "grp.max_allowed")
-            .havingRaw("count(distinct mem.role_id) > grp.max_allowed");
+        const directAfterCte = kysely
+            .selectFrom(
+                props.roles
+                    .reduce(
+                        (combined, role) => combined.union(kysely.selectNoFrom(sql<string>`${role}::uuid`.as("role_id"))),
+                        assignedRoles,
+                    )
+                    .as("combined"),
+            )
+            .select(sql<string>`role_id::uuid`.as("role_id"));
+
+        return kysely
+            .with("direct_after", () => directAfterCte)
+            .selectFrom("access_control.role_conflict_group as grp")
+            .innerJoin("access_control.role_conflict_member as mem", "mem.group_id", "grp.id")
+            .innerJoin("access_control.role as role", "role.id", "mem.role_id")
+            .innerJoin("direct_after as da", "da.role_id", "mem.role_id")
+            .select("grp.id as group")
+            .select(sql<number>`count(distinct mem.role_id)::int`.as("matchedCount"))
+            .where("grp.realm_id", "=", props.realm)
+            .where("role.realm_id", "=", props.realm)
+            .where("grp.is_revoked", "=", false)
+            .where("mem.is_revoked", "=", false)
+            .groupBy(["grp.id", "grp.max_allowed"])
+            .having(sql<boolean>`count(distinct mem.role_id) > grp.max_allowed`);
     }
 
     public getAccountsViolatingRuleQuery(
         props: Repositories.RoleConflictGroup.GetAccountsViolatingRuleQuery.Props,
     ): Repositories.RoleConflictGroup.GetAccountsViolatingRuleQuery.Result {
-        return knex
+        return kysely
+            .selectFrom("access_control.account_role_assignment as arm")
+            .innerJoin("access_control.role as role", "role.id", "arm.role_id")
             .select("arm.account as account")
-            .select(knex.raw("count(distinct arm.role_id)::int as matched_count"))
-            .from({ arm: "access_control.account_role_assignment" })
-            .join({ role: "access_control.role" }, "role.id", "arm.role_id")
-            .where("arm.realm_id", props.realm)
-            .where("role.realm_id", props.realm)
-            .whereIn("arm.role_id", props.identifiers)
-            .where("arm.is_revoked", false)
-            .whereRaw("(arm.expires_at is null or arm.expires_at > now())")
+            .select(sql<number>`count(distinct arm.role_id)::int`.as("matchedCount"))
+            .where("arm.realm_id", "=", props.realm)
+            .where("role.realm_id", "=", props.realm)
+            .where("arm.role_id", "in", props.identifiers)
+            .where("arm.is_revoked", "=", false)
+            .where(sql<boolean>`(arm.expires_at is null or arm.expires_at > now())`)
             .groupBy("arm.account")
-            .havingRaw("count(distinct arm.role_id) > ?", [props.maxAllowed]);
+            .having(sql<boolean>`count(distinct arm.role_id) > ${props.maxAllowed}`);
     }
 }

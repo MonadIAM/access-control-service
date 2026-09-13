@@ -7,6 +7,7 @@ import { TransactionalHelper } from "~testing/integration/transaction-manager/tr
 import { ActionType, EntityType, KafkaTopic, RoleActorType, RoleArchetype } from "~context/enums";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 import { RoleClosure, Realm, Role } from "~context/domain/entities";
+import { RoleClosureRepository } from "~context/infrastructure/repositories/role-closure.repository";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 
 import { AuditLog, ChangeLog, Outbox } from "../entities";
@@ -279,7 +280,7 @@ describe("TransactionalService integration", () => {
         );
     });
 
-    it("commits a composite primary key change without writing an invalid change-log entity id", async () => {
+    it("commits a composite primary key change with a joined change-log entity id", async () => {
         const realm = await suite.fixtures().createRealm({ code: "closure.realm" });
         const ancestor = await suite.fixtures().createDetachedRole({ realm, code: "closure.ancestor" });
         const descendant = await suite.fixtures().createDetachedRole({ realm, code: "closure.descendant" });
@@ -312,9 +313,43 @@ describe("TransactionalService integration", () => {
             [realm.id, ancestor.id, descendant.id],
         );
 
+        const [changeLog] = await readManager.find(ChangeLog, {});
+
         expect(rows).toEqual([{ depth: 2 }]);
-        await expect(readManager.count(ChangeLog, {})).resolves.toBe(0);
-        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.CHANGE_LOG_ARCHIVE })).resolves.toBe(0);
+        expect(changeLog?.entity).toBe(`${realm.id}:${ancestor.id}:${descendant.id}`);
+        expect(changeLog?.entityType).toBe(RoleClosure.name);
+        expect(changeLog?.delta).toMatchObject({ depth: { old: 1, new: 2 } });
+        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.CHANGE_LOG_ARCHIVE })).resolves.toBe(1);
+    });
+
+    it("commits change log entries for a set-based statement executed by a repository", async () => {
+        const realm = await suite.fixtures().createRealm({ code: "closure.tracked" });
+        const ancestor = await suite.fixtures().createRole({ realm, code: "closure.tracked.ancestor" });
+        const descendant = await suite.fixtures().createDetachedRole({ realm, code: "closure.tracked.descendant" });
+        const repository = new RoleClosureRepository();
+
+        await suite.repository().service.run({
+            audit: { ...AUDIT_PROPS, actionType: ActionType.CREATE },
+            changeLog: true,
+            execute: async (transaction) => {
+                await repository.insertNewHierarchy({
+                    descendant: descendant.id,
+                    ancestor: ancestor.id,
+                    realm: realm.id,
+                    transaction,
+                });
+            },
+        });
+
+        const readManager = suite.repository().readManager;
+        readManager.clear();
+        const changeLogs = await readManager.find(ChangeLog, { entityType: RoleClosure.name });
+
+        expect(changeLogs.map(({ entity }) => entity).sort()).toEqual(
+            [`${realm.id}:${ancestor.id}:${descendant.id}`, `${realm.id}:${descendant.id}:${descendant.id}`].sort(),
+        );
+        expect(changeLogs.every(({ changeType }) => changeType === ChangeSetType.CREATE)).toBe(true);
+        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.CHANGE_LOG_ARCHIVE })).resolves.toBe(2);
     });
 
     it("rolls back and preserves external dependency errors raised during flush", async () => {

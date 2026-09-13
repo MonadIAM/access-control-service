@@ -11,19 +11,12 @@ declare global {
             };
 
             interface Contract<E, A extends Meta> {
-                buildWhereKnex?(query: ORM.QueryBuilder, filters: A["Filters"], tableAlias: string): void;
                 buildWhereORM(filters: A["Filters"], basic?: ORM.ObjectQuery<E>): ORM.FilterQuery<E>;
                 buildOptionsORM<P extends string, F extends string>(
                     sort: A["Sort"],
                     pagination: Pagination,
                     options?: ORM.FindOptions<E, P, F>,
                 ): ORM.FindOptions<E, P, F>;
-                buildOptionsKnex?(
-                    query: ORM.QueryBuilder,
-                    sort: A["Sort"],
-                    pagination: Pagination,
-                    tableAlias: string,
-                ): void;
             }
 
             namespace AccountRoleAssignment {
