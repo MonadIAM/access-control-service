@@ -3,6 +3,7 @@ import { KafkaTopic } from "~context/enums";
 import { ChangeLog as ChangeLogEntity } from "./change-log.entity";
 import { AuditLog as AuditLogEntity } from "./audit-log.entity";
 import { Outbox as OutboxEntity } from "./outbox.entity";
+import { Inbox as InboxEntity } from "./inbox.entity";
 
 declare global {
     namespace SystemEntities {
@@ -72,5 +73,19 @@ declare global {
         }
 
         type Outbox = OutboxEntity;
+
+        namespace Inbox {
+            type ConstructorProps = {
+                consumerKey: string;
+                event: string;
+                source?: {
+                    partition: number;
+                    offset: string;
+                    topic: string;
+                };
+            };
+        }
+
+        type Inbox = InboxEntity;
     }
 }

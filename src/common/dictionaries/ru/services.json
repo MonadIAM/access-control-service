@@ -70,6 +70,9 @@
   "kafka-retry": {
     "HANDLER_NOT_REGISTERED": "Для топика {topic} не зарегистрирован обработчик повторов."
   },
+  "kafka-incoming": {
+    "EVENT_MISSING": "Отсутствует Kafka key, необходимый для идемпотентной обработки сообщения."
+  },
   "schema-registry": {
     "ENCODE_FAILED": "Не удалось закодировать сообщение для subject {subject}: {reason}.",
     "DECODE_FAILED": "Не удалось декодировать сообщение для subject {subject}: {reason}.",

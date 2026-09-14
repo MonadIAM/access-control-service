@@ -4,9 +4,9 @@ import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~con
 import { PERMISSION_OVERRIDE_REPOSITORY } from "~context/infrastructure/repositories";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
-import { CONSUMER_META, SYSTEM_ACCOUNT_ID } from "~context/constants";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
+import { SYSTEM_ACCOUNT_ID } from "~context/constants";
 import { Exception } from "~common/exceptions";
 
 import { PermissionOverrideMapper } from "../mappers";
@@ -244,41 +244,5 @@ export class PermissionOverrideCommands implements Commands.PermissionOverride.C
         } else {
             return { message: `${this.dictionaryPath}.PURGED` };
         }
-    }
-
-    public async clean(props: Commands.PermissionOverride.Clean.Props): Commands.PermissionOverride.Clean.Result {
-        await this.transactionalService.run({
-            resource: this.resource,
-            outbox: [
-                {
-                    payloadMapper: this.mapper.projectionPurgePayload,
-                    actionType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
-                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
-                },
-                {
-                    payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
-                },
-            ],
-            audit: {
-                actor: SYSTEM_ACCOUNT_ID,
-                entityType: EntityType.PERMISSION_OVERRIDE,
-                actionType: ActionType.DELETE,
-                input: {
-                    account: props.account,
-                },
-                context: CONSUMER_META,
-            },
-            changeLog: true,
-            execute: async (transaction) => {
-                const overrides = await this.permissionOverrideService.clean({
-                    input: { account: props.account },
-                    transaction,
-                });
-
-                return { overrides };
-            },
-        });
     }
 }

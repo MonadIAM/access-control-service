@@ -58,6 +58,16 @@ export class TransactionalUnitHelpers
         });
     }
 
+    public inboxContract(
+        props: Unit.TransactionManager.Service.InboxContractFactory.Props = {},
+    ): Unit.TransactionManager.Service.InboxContractFactory.Result {
+        return this.contract<Unit.TransactionManager.Service.InboxContractFactory.Result>({
+            claim: jest.fn(() => Promise.resolve(true)),
+            clean: jest.fn(() => Promise.resolve(0)),
+            ...props,
+        });
+    }
+
     public transactional(): Unit.TransactionManager.Service.TransactionalFactory.Result {
         const flush = jest.fn(() => Promise.resolve());
         const persist = jest.fn();
@@ -81,14 +91,16 @@ export class TransactionalUnitHelpers
         const operationContext = props.operationContext ?? this.operationContext();
         const logMasking = props.logMasking ?? this.logMaskingContract();
         const outbox = props.outbox ?? this.outboxContract();
+        const inbox = props.inbox ?? this.inboxContract();
         const service = new TransactionalService(
             props.manager ?? transactional.entityManager,
+            inbox,
             logMasking,
             outbox,
             operationContext,
         );
 
-        return { service, operationContext, transactional, logMasking, outbox };
+        return { service, operationContext, transactional, logMasking, outbox, inbox };
     }
 
     public accessCacheOutboxConfig<

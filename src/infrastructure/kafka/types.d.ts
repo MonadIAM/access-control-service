@@ -1,11 +1,42 @@
 import { SchemaRegistry as ConfluentSchemaRegistry } from "@kafkajs/confluent-schema-registry";
 import { KafkaRequest } from "@nestjs/microservices/serializers";
+import { KafkaContext } from "@nestjs/microservices";
 
 declare global {
     namespace Kafka {
         type Message = Pick<Request, "value"> & Partial<Omit<Request, "value">>;
 
         type Request = KafkaRequest;
+
+        namespace IncomingMapper {
+            type Context = Pick<KafkaContext, "getMessage" | "getPartition" | "getTopic">;
+
+            interface Contract {
+                event: Event.Signature;
+                map: Map.Signature;
+            }
+
+            namespace Event {
+                type Props = {
+                    context: IncomingMapper.Context;
+                };
+
+                type Result = string;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Map {
+                type Props = {
+                    context: IncomingMapper.Context;
+                    consumerKey: string;
+                };
+
+                type Result = TransactionManager.Service.IncomingMessage;
+
+                type Signature = (props: Props) => Result;
+            }
+        }
 
         namespace SchemaRegistry {
             type Config = {
@@ -58,8 +89,24 @@ declare global {
         }
 
         namespace RetryRegistry {
+            type Entry = {
+                consumerKey: string;
+                handler: Handler;
+            };
+
             interface Handler {
-                process(message: unknown): Promise<void>;
+                process(props: HandlerProcess.Props): HandlerProcess.Result;
+            }
+
+            namespace HandlerProcess {
+                type Props = {
+                    incoming: TransactionManager.Service.IncomingMessage;
+                    message: unknown;
+                };
+
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
             }
 
             interface Contract {
@@ -68,8 +115,7 @@ declare global {
             }
 
             namespace Register {
-                type Props = {
-                    handler: Handler;
+                type Props = Entry & {
                     topic: string;
                 };
 
@@ -83,7 +129,7 @@ declare global {
                     topic: string;
                 };
 
-                type Result = Optional<Handler>;
+                type Result = Optional<Entry>;
 
                 type Signature = (props: Props) => Result;
             }

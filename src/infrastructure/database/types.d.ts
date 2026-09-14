@@ -139,6 +139,7 @@ declare global {
         type Columns<Entity> = Raw<Entity> & ForeignKeys<Entity>;
 
         type Database = {
+            "system.inbox": Columns<SystemEntities.Inbox>;
             "access_control.role_permission_assignment": Columns<Entities.RolePermissionAssignment>;
             "access_control.account_role_assignment": Columns<Entities.AccountRoleAssignment>;
             "access_control.role_delegation_policy": Columns<Entities.RoleDelegationPolicy>;

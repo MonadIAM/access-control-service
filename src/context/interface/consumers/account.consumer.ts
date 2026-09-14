@@ -1,23 +1,29 @@
-import { EventPattern, Payload, ClientKafka } from "@nestjs/microservices";
+import { EventPattern, KafkaContext, Payload, ClientKafka, Ctx } from "@nestjs/microservices";
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { AccountTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
-import { KafkaTopicBuilder, KAFKA_RETRY_REGISTRY, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
-import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS, PERMISSION_OVERRIDE_COMMANDS } from "~context/application/commands";
+import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS } from "~context/application/commands";
 import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
+import {
+    KAFKA_SCHEMA_REGISTRY,
+    KAFKA_RETRY_REGISTRY,
+    KafkaIncomingMapper,
+    KafkaTopicBuilder,
+    KAFKA_SERVICE,
+} from "~infrastructure/kafka";
 
 @Controller()
 export class AccountConsumer implements OnModuleInit, Consumers.Account.Contract {
+    private readonly incomingMapper = new KafkaIncomingMapper();
     private readonly logger = new Logger(AccountConsumer.name);
+    private readonly consumerKey = "access-control.account.v1";
 
     public constructor(
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_COMMANDS)
         private readonly accountRoleAssignmentCommands: Commands.AccountRoleAssignment.ConsumerContract,
-        @Inject(PERMISSION_OVERRIDE_COMMANDS)
-        private readonly permissionOverrideCommands: Commands.PermissionOverride.ConsumerContract,
         @Inject(KafkaMetricsRecorder)
         private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
@@ -32,30 +38,34 @@ export class AccountConsumer implements OnModuleInit, Consumers.Account.Contract
         await this.kafkaClient.connect();
 
         this.retryRegistry.register({
+            consumerKey: this.consumerKey,
             topic: KafkaTopic.ACCOUNT,
             handler: this,
         });
     }
 
     @EventPattern(KafkaTopic.ACCOUNT)
-    public async handle(@Payload() message: Consumers.Account.Message): Consumers.Account.Handle.Result {
+    public async handle(
+        @Payload() message: Consumers.Account.Message,
+        @Ctx() context: KafkaContext,
+    ): Consumers.Account.Handle.Result {
+        const incoming = this.incomingMapper.map({ consumerKey: this.consumerKey, context });
         try {
-            await this.process({ message });
+            await this.process({ incoming, message });
         } catch (error) {
-            await this.reject({ message, error });
+            await this.reject({ incoming, message, error });
         }
     }
 
     public async process(props: Consumers.Account.Process.Props): Consumers.Account.Process.Result {
-        const { message } = props;
+        const { incoming, message } = props;
         this.schemaRegistry.validate({ topic: KafkaTopic.ACCOUNT, value: message });
         switch (message.actionType) {
             case AccountTopicAction.CREATE:
-                await this.accountRoleAssignmentCommands.assign({ account: message.payload.account });
+                await this.accountRoleAssignmentCommands.assign({ incoming, account: message.payload.account });
                 break;
             case AccountTopicAction.PURGE:
-                await this.accountRoleAssignmentCommands.clean({ account: message.payload.account });
-                await this.permissionOverrideCommands.clean({ account: message.payload.account });
+                await this.accountRoleAssignmentCommands.clean({ incoming, account: message.payload.account });
                 break;
             default:
                 this.logger.warn(`Unknown membership action type: ${message.actionType}`);
@@ -63,7 +73,7 @@ export class AccountConsumer implements OnModuleInit, Consumers.Account.Contract
     }
 
     public async reject(props: Consumers.Account.Reject.Props): Consumers.Account.Reject.Result {
-        const { message, error } = props;
+        const { incoming, message, error } = props;
         const retryable = Exception.isRetryable(error);
 
         if (!retryable) {
@@ -72,6 +82,7 @@ export class AccountConsumer implements OnModuleInit, Consumers.Account.Contract
 
         await lastValueFrom(
             this.kafkaClient.emit(retryable ? KafkaTopicBuilder.retry(KafkaTopic.ACCOUNT) : KafkaTopic.ACCOUNT_DEAD, {
+                key: incoming.event,
                 value: {
                     originalTopic: KafkaTopic.ACCOUNT,
                     error: String(error),

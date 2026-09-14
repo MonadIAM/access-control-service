@@ -89,5 +89,6 @@ export enum CleanupJob {
     EXPIRED_ACCESS_RECORDS = "expire-access-records",
     CHANGE_LOG             = "cleanup-change-log",
     AUDIT_LOG              = "cleanup-audit-log",
+    INBOX                  = "cleanup-inbox",
     /* eslint-enable prettier/prettier */
 }

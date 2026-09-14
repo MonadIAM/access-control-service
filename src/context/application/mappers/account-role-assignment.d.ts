@@ -9,6 +9,7 @@ declare namespace Commands {
                 projectionCreatePayload: ProjectionCreatePayload.Signature;
                 projectionAssignPayload: ProjectionAssignPayload.Signature;
                 projectionUpdatePayload: ProjectionUpdatePayload.Signature;
+                cleanAccessCachePayload: CleanAccessCachePayload.Signature;
                 projectionPurgePayload: ProjectionPurgePayload.Signature;
                 accessCachePayload: AccessCachePayload.Signature;
             }
@@ -79,6 +80,14 @@ declare namespace Commands {
                 type Props = {
                     assignments: Entities.AccountRoleAssignment[];
                 };
+
+                type Result = Topics.AccessCache.Message["payload"];
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace CleanAccessCachePayload {
+                type Props = Commands.AccountRoleAssignment.Clean.ExecuteResult;
 
                 type Result = Topics.AccessCache.Message["payload"];
 

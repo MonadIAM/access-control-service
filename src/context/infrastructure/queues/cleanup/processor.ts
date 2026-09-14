@@ -2,8 +2,8 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { Job } from "bullmq";
 
+import { INBOX_SERVICE, TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { AUDIT_LOG_SERVICE, CHANGE_LOG_SERVICE } from "~context/domain/services";
-import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { CleanupJob } from "~context/enums";
 import {
     ACCOUNT_ROLE_ASSIGNMENT_COMMANDS,
@@ -22,6 +22,8 @@ export class CleanupProcessor extends WorkerHost {
     public constructor(
         @Inject(TRANSACTIONAL_SERVICE)
         private readonly transactionalService: TransactionManager.Service.PublicContract,
+        @Inject(INBOX_SERVICE)
+        private readonly inboxService: TransactionManager.Inbox.ProcessorContract,
         @Inject(CHANGE_LOG_SERVICE)
         private readonly changeLogService: Services.ChangeLog.ProcessorContract,
         @Inject(AUDIT_LOG_SERVICE)
@@ -42,6 +44,7 @@ export class CleanupProcessor extends WorkerHost {
         [CleanupJob.EXPIRED_ACCESS_RECORDS]: (job: Job) => this.expireAccessRecords(job),
         [CleanupJob.CHANGE_LOG]: (job: Job) => this.cleanupChangeLog(job),
         [CleanupJob.AUDIT_LOG]: (job: Job) => this.cleanupAuditLog(job),
+        [CleanupJob.INBOX]: (job: Job) => this.cleanupInbox(job),
     };
 
     public process(job: Job): Promise<Queues.Cleanup.Result> {
@@ -49,9 +52,8 @@ export class CleanupProcessor extends WorkerHost {
     }
 
     private async cleanupAuditLog(job: Job<Queues.Cleanup.RetentionJobData>): Promise<Queues.Cleanup.Result> {
-        const { olderThanMs, batchSize } = job.data;
-
-        const expirationDate = new Date(Date.now() - olderThanMs);
+        const { expirationDate: expirationTimestamp, batchSize } = job.data;
+        const expirationDate = new Date(expirationTimestamp);
         this.logger.log(`Cleaning up audit log entries older than ${expirationDate.toISOString()}`);
 
         try {
@@ -74,9 +76,8 @@ export class CleanupProcessor extends WorkerHost {
     }
 
     private async cleanupChangeLog(job: Job<Queues.Cleanup.RetentionJobData>): Promise<Queues.Cleanup.Result> {
-        const { olderThanMs, batchSize } = job.data;
-
-        const expirationDate = new Date(Date.now() - olderThanMs);
+        const { expirationDate: expirationTimestamp, batchSize } = job.data;
+        const expirationDate = new Date(expirationTimestamp);
         this.logger.log(`Cleaning up change log entries older than ${expirationDate.toISOString()}`);
 
         try {
@@ -98,15 +99,43 @@ export class CleanupProcessor extends WorkerHost {
         }
     }
 
+    private async cleanupInbox(job: Job<Queues.Cleanup.RetentionJobData>): Promise<Queues.Cleanup.Result> {
+        const { expirationDate: expirationTimestamp, batchSize } = job.data;
+        const expirationDate = new Date(expirationTimestamp);
+        this.logger.log(`Cleaning up inbox entries older than ${expirationDate.toISOString()}`);
+
+        try {
+            let cleaned = 0;
+            await this.transactionalService.run({
+                resource: "Inbox",
+                execute: async (transaction) => {
+                    cleaned = await this.inboxService.clean({ transaction, expirationDate, batchSize });
+                },
+            });
+
+            if (cleaned) {
+                this.logger.log(`Deleted ${cleaned} inbox entries.`);
+                return this.scheduleNextBatch(job, cleaned === batchSize);
+            } else {
+                this.logger.log("No inbox entries to clean up.");
+                return { deleted: 0, nextBatch: false };
+            }
+        } catch (error) {
+            this.logger.error("Failed to clean up inbox entries", error);
+            throw error;
+        }
+    }
+
     private async expireAccessRecords(job: Job<Queues.Cleanup.ExpirationJobData>): Promise<Queues.Cleanup.Result> {
-        const { batchSize } = job.data;
+        const { expirationDate, batchSize } = job.data;
+        const now = new Date(expirationDate);
         this.logger.log("Expiring access records");
 
         try {
             const [expiredAssignments, expiredOverrides, expiredPolicies] = await Promise.all([
-                this.accountRoleAssignmentCommands.expire({ batchSize }),
-                this.roleDelegationPolicyCommands.expire({ batchSize }),
-                this.permissionOverrideCommands.expire({ batchSize }),
+                this.accountRoleAssignmentCommands.expire({ batchSize, now }),
+                this.roleDelegationPolicyCommands.expire({ batchSize, now }),
+                this.permissionOverrideCommands.expire({ batchSize, now }),
             ]);
 
             if (!expiredAssignments && !expiredOverrides && !expiredPolicies) {

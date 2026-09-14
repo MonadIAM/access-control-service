@@ -24,6 +24,7 @@ declare namespace Commands {
 
         namespace Assign {
             type Props = {
+                incoming: TransactionManager.Service.IncomingMessage;
                 account: string;
             };
 
@@ -34,7 +35,13 @@ declare namespace Commands {
 
         namespace Clean {
             type Props = {
+                incoming: TransactionManager.Service.IncomingMessage;
                 account: string;
+            };
+
+            type ExecuteResult = {
+                assignments: Entities.AccountRoleAssignment[];
+                overrides: Entities.PermissionOverride[];
             };
 
             type Result = Promise<void>;

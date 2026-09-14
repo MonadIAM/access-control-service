@@ -12,6 +12,7 @@ declare global {
                     readonly operationContext: OperationContextFactory.Signature;
                     readonly outboxContract: OutboxContractFactory.Signature;
                     readonly service: TransactionalServiceFactory.Signature;
+                    readonly inboxContract: InboxContractFactory.Signature;
                     readonly transactional: TransactionalFactory.Signature;
                 }
 
@@ -25,6 +26,14 @@ declare global {
                     type Props = Partial<Result>;
 
                     type Result = globalThis.TransactionManager.LogMasking.Contract;
+
+                    type Signature = (props?: Props) => Result;
+                }
+
+                namespace InboxContractFactory {
+                    type Props = Partial<Result>;
+
+                    type Result = globalThis.TransactionManager.Inbox.Contract;
 
                     type Signature = (props?: Props) => Result;
                 }
@@ -71,6 +80,7 @@ declare global {
                     type Props = {
                         readonly logMasking?: LogMaskingContractFactory.Result;
                         readonly outbox?: OutboxContractFactory.Result;
+                        readonly inbox?: InboxContractFactory.Result;
                         readonly operationContext?: OperationContext;
                         readonly manager?: ORM.EntityManager;
                     };
@@ -79,6 +89,7 @@ declare global {
                         readonly logMasking: LogMaskingContractFactory.Result;
                         readonly transactional: TransactionalFactory.Result;
                         readonly outbox: OutboxContractFactory.Result;
+                        readonly inbox: InboxContractFactory.Result;
                         readonly operationContext: OperationContext;
                         readonly service: TransactionalService;
                     };

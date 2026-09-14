@@ -23,10 +23,12 @@ export class KafkaRetryQueue implements Queues.KafkaRetry.Contract {
     }
 
     public async schedule(props: Queues.KafkaRetry.Schedule.Props): Queues.KafkaRetry.Schedule.Result {
-        const { message } = props;
+        const { event, message } = props;
+        const data = { ...message, event };
 
-        await this.queue.add(BullJobName.RETRY, message, {
+        await this.queue.add(BullJobName.RETRY, data, {
             delay: this.baseDelay + Math.random() * this.jitter,
+            jobId: `${message.originalTopic}-${event}`,
             attempts: this.maxRetries,
             removeOnComplete: true,
             removeOnFail: false,

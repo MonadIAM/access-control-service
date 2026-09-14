@@ -1,16 +1,24 @@
-import { EventPattern, Payload, ClientKafka } from "@nestjs/microservices";
+import { EventPattern, KafkaContext, Payload, ClientKafka, Ctx } from "@nestjs/microservices";
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 
-import { KafkaTopicBuilder, KAFKA_RETRY_REGISTRY, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
 import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
 import { SCRIPT_EXECUTOR_SERVICE } from "~context/infrastructure/services";
 import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
+import {
+    KAFKA_SCHEMA_REGISTRY,
+    KAFKA_RETRY_REGISTRY,
+    KafkaIncomingMapper,
+    KafkaTopicBuilder,
+    KAFKA_SERVICE,
+} from "~infrastructure/kafka";
 
 @Controller()
 export class ProjectionConsumer implements Consumers.Projection.Contract, OnModuleInit {
     private readonly logger = new Logger(ProjectionConsumer.name);
+    private readonly incomingMapper = new KafkaIncomingMapper();
+    private readonly consumerKey = "access-control.projection.v1";
 
     public constructor(
         @Inject(SCRIPT_EXECUTOR_SERVICE)
@@ -29,17 +37,22 @@ export class ProjectionConsumer implements Consumers.Projection.Contract, OnModu
         await this.kafkaClient.connect();
 
         this.retryRegistry.register({
+            consumerKey: this.consumerKey,
             topic: KafkaTopic.PROJECTION_JOURNAL,
             handler: this,
         });
     }
 
     @EventPattern(KafkaTopic.PROJECTION_JOURNAL)
-    public async handle(@Payload() message: Consumers.Projection.Message): Consumers.Projection.Handle.Result {
+    public async handle(
+        @Payload() message: Consumers.Projection.Message,
+        @Ctx() context: KafkaContext,
+    ): Consumers.Projection.Handle.Result {
+        const incoming = this.incomingMapper.map({ consumerKey: this.consumerKey, context });
         try {
-            await this.process({ message });
+            await this.process({ incoming, message });
         } catch (error) {
-            await this.reject({ message, error });
+            await this.reject({ incoming, message, error });
         }
     }
 
@@ -53,7 +66,7 @@ export class ProjectionConsumer implements Consumers.Projection.Contract, OnModu
     }
 
     public async reject(props: Consumers.Projection.Reject.Props): Consumers.Projection.Reject.Result {
-        const { message, error } = props;
+        const { incoming, message, error } = props;
         const retryable = Exception.isRetryable(error);
 
         if (!retryable) {
@@ -64,6 +77,7 @@ export class ProjectionConsumer implements Consumers.Projection.Contract, OnModu
             this.kafkaClient.emit(
                 retryable ? KafkaTopicBuilder.retry(KafkaTopic.PROJECTION_JOURNAL) : KafkaTopic.PROJECTION_JOURNAL_DEAD,
                 {
+                    key: incoming.event,
                     value: {
                         originalTopic: KafkaTopic.PROJECTION_JOURNAL,
                         error: String(error),

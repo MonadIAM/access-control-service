@@ -3,7 +3,7 @@ import { PermissionOverrideEffect } from "~context/enums";
 declare global {
     namespace Commands {
         namespace PermissionOverride {
-            interface Contract extends ControllerContract, ConsumerContract, ProcessorContract {}
+            interface Contract extends ControllerContract, ProcessorContract {}
 
             interface ProcessorContract {
                 expire: Expire.Signature;
@@ -16,20 +16,6 @@ declare global {
                 };
 
                 type Result = Promise<number>;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            interface ConsumerContract {
-                clean: Clean.Signature;
-            }
-
-            namespace Clean {
-                type Props = {
-                    account: string;
-                };
-
-                type Result = Promise<void>;
 
                 type Signature = (props: Props) => Result;
             }

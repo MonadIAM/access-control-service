@@ -2,6 +2,45 @@ import { KafkaTopic } from "~context/enums";
 
 declare global {
     namespace TransactionManager {
+        namespace Inbox {
+            interface Contract extends TransactionalContract, ProcessorContract {}
+
+            interface TransactionalContract {
+                claim: Claim.Signature;
+            }
+
+            interface ProcessorContract {
+                clean: Clean.Signature;
+            }
+
+            namespace Claim {
+                type Props = {
+                    transaction: ORM.EntityManager;
+                    incoming: Service.IncomingMessage;
+                };
+
+                type Row = Pick<ORM.Raw<SystemEntities.Inbox>, "event">;
+
+                type Result = Promise<boolean>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Clean {
+                type Props = {
+                    transaction: ORM.EntityManager;
+                    expirationDate: Date;
+                    batchSize: number;
+                };
+
+                type Row = Pick<ORM.Raw<SystemEntities.Inbox>, "consumer_key" | "event">;
+
+                type Result = Promise<number>;
+
+                type Signature = (props: Props) => Result;
+            }
+        }
+
         namespace Outbox {
             interface Contract extends PublicContract {}
 
@@ -142,15 +181,28 @@ declare global {
         }
 
         namespace Service {
+            type ResultValue = ORM.AnyEntity | ORM.AnyEntity[] | void;
+
+            type IncomingMessage = {
+                consumerKey: string;
+                event: string;
+                source?: {
+                    partition: number;
+                    offset: string;
+                    topic: string;
+                };
+            };
+
             interface Contract extends PublicContract, InternalContract {}
 
             interface InternalContract {
+                executeTransaction: ExecuteTransaction.Signature;
                 persistOutboxEvents: PersistOutboxEvents.Signature;
                 executeWithEffects: ExecuteWithEffects.Signature;
             }
 
             namespace PersistOutboxEvents {
-                type Props<T extends ORM.AnyEntity | ORM.AnyEntity[]> = {
+                type Props<T extends Service.ResultValue> = {
                     params: TransactionManager.Service.Run.Props<T>;
                     transaction: ORM.EntityManager;
                     result: T;
@@ -158,28 +210,58 @@ declare global {
 
                 type Result = void;
 
-                type Signature = <T extends ORM.AnyEntity | ORM.AnyEntity[]>(props: Props<T>) => Result;
+                type Signature = <T extends Service.ResultValue>(props: Props<T>) => Result;
             }
 
             namespace ExecuteWithEffects {
-                type Props<T extends ORM.AnyEntity | ORM.AnyEntity[]> = {
+                type Props<T extends Service.ResultValue> = {
                     params: TransactionManager.Service.Run.Props<T>;
                     transaction: ORM.EntityManager;
                 };
 
-                type Result<T> = Promise<T | void>;
+                type Result<T extends Service.ResultValue> = Promise<T>;
 
-                type Signature = <T extends ORM.AnyEntity | ORM.AnyEntity[]>(props: Props<T>) => Result<T>;
+                type Signature = <T extends Service.ResultValue>(props: Props<T>) => Result<T>;
+            }
+
+            namespace ExecuteTransaction {
+                type Props<T extends Service.ResultValue> = {
+                    params: TransactionManager.Service.Run.Props<T>;
+                    transaction: ORM.EntityManager;
+                };
+
+                type Result<T extends Service.ResultValue> = Promise<T>;
+
+                type Signature = <T extends Service.ResultValue>(props: Props<T>) => Result<T>;
             }
 
             interface PublicContract {
-                run<T extends ORM.AnyEntity | ORM.AnyEntity[]>(props: Run.ResultProps<T>): Promise<T>;
-                run(props: Run.VoidProps): Promise<void>;
-                emit(props: Emit.Props): Emit.Result;
+                consume: Consume.Signature;
+                emit: Emit.Signature;
+                run: Run.Signature;
+            }
+
+            namespace Consume {
+                type Props<T extends Service.ResultValue> = Run.Props<T> & {
+                    incoming: IncomingMessage;
+                };
+
+                type Outcome<T> =
+                    | {
+                          status: "processed";
+                          value: T;
+                      }
+                    | {
+                          status: "duplicate";
+                      };
+
+                type Result<T> = Promise<Outcome<T>>;
+
+                type Signature = <T extends Service.ResultValue>(props: Props<T>) => Result<T>;
             }
 
             namespace Run {
-                type ResultProps<T extends ORM.AnyEntity | ORM.AnyEntity[]> = {
+                type Props<T extends Service.ResultValue> = {
                     execute(transaction: ORM.EntityManager): Thenable<T>;
                     outbox?: OutboxConfig<T> | OutboxConfig<T>[];
                     audit?: SystemEntities.AuditLog.ConstructorProps;
@@ -187,17 +269,9 @@ declare global {
                     resource?: string;
                 };
 
-                type VoidProps = {
-                    execute(transaction: ORM.EntityManager): Thenable<void>;
-                    audit?: SystemEntities.AuditLog.ConstructorProps;
-                    changeLog?: boolean;
-                    resource?: string;
-                    outbox?: never;
-                };
+                type Result<T extends Service.ResultValue> = Promise<T>;
 
-                type Props<T extends ORM.AnyEntity | ORM.AnyEntity[]> = ResultProps<T> | VoidProps;
-
-                type Result<T> = Promise<T | void>;
+                type Signature = <T extends Service.ResultValue>(props: Props<T>) => Result<T>;
             }
 
             namespace Emit {
@@ -213,6 +287,8 @@ declare global {
                 }[keyof OutboxPayloadMap];
 
                 type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
             }
 
             type OutboxPayloadMap = {
@@ -223,7 +299,7 @@ declare global {
                 [KafkaTopic.PROJECTION_JOURNAL]: UnknownObject;
             };
 
-            type OutboxConfig<T> = {
+            type OutboxConfig<T extends Service.ResultValue> = {
                 [D in keyof OutboxPayloadMap]: {
                     payloadMapper?(result: T): OutboxPayloadMap[D] | OutboxPayloadMap[D][];
                     metadata?: UnknownObject;

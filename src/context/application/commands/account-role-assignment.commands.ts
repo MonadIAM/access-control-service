@@ -2,18 +2,19 @@ import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { NotificationTopicAction, AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { CONSUMER_META, SYSTEM_ACCOUNT_ID, SYSTEM_USER_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
+import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
 import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
-import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE } from "~context/domain/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
 
-import { AccountRoleAssignmentMapper } from "../mappers";
+import { AccountRoleAssignmentMapper, PermissionOverrideMapper } from "../mappers";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssignment.Contract {
     private readonly mapper: Commands.Mappers.AccountRoleAssignment.Contract;
+    private readonly permissionOverrideMapper: Commands.Mappers.PermissionOverride.Contract;
     private readonly dictionaryPath = "commands.account-role-assignment";
     private readonly resource = "AccountRoleAssignment";
 
@@ -24,10 +25,13 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
         private readonly accountRoleAssignmentRepository: Repositories.AccountRoleAssignment.PublicContract,
         @Inject(ACCOUNT_ROLE_ASSIGNMENT_SERVICE)
         private readonly accountRoleAssignmentService: Services.AccountRoleAssignment.CommandContract,
+        @Inject(PERMISSION_OVERRIDE_SERVICE)
+        private readonly permissionOverrideService: Services.PermissionOverride.CommandContract,
         @Inject(PROJECTION_CACHE_SERVICE)
         private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
     ) {
         this.mapper = new AccountRoleAssignmentMapper();
+        this.permissionOverrideMapper = new PermissionOverrideMapper();
     }
 
     public async create(props: Commands.AccountRoleAssignment.Create.Props): Commands.AccountRoleAssignment.Create.Result {
@@ -88,7 +92,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     }
 
     public async assign(props: Commands.AccountRoleAssignment.Assign.Props): Commands.AccountRoleAssignment.Assign.Result {
-        await this.transactionalService.run({
+        const { incoming, account } = props;
+
+        await this.transactionalService.consume({
             resource: this.resource,
             outbox: [
                 {
@@ -106,22 +112,23 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: ActionType.CREATE,
                 actor: SYSTEM_ACCOUNT_ID,
+                context: CONSUMER_META,
                 realm: SYSTEM_REALM_ID,
                 input: {
-                    account: props.account,
-                    realm: SYSTEM_REALM_ID,
                     role: SYSTEM_USER_ROLE_ID,
+                    realm: SYSTEM_REALM_ID,
+                    account,
                 },
-                context: CONSUMER_META,
             },
             changeLog: true,
+            incoming,
             execute: async (transaction) => {
                 const assignment = await this.accountRoleAssignmentService.assign({
                     transaction,
                     input: {
                         role: SYSTEM_USER_ROLE_ID,
                         realm: SYSTEM_REALM_ID,
-                        account: props.account,
+                        account,
                     },
                 });
 
@@ -331,7 +338,9 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     }
 
     public async clean(props: Commands.AccountRoleAssignment.Clean.Props): Commands.AccountRoleAssignment.Clean.Result {
-        await this.transactionalService.run({
+        const { incoming, account } = props;
+
+        await this.transactionalService.consume<Commands.AccountRoleAssignment.Clean.ExecuteResult>({
             resource: this.resource,
             outbox: [
                 {
@@ -340,28 +349,36 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                 },
                 {
-                    payloadMapper: this.mapper.accessCachePayload,
+                    payloadMapper: this.permissionOverrideMapper.projectionPurgePayload,
+                    actionType: ProjectionScript.PERMISSION_OVERRIDE_PURGE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                },
+                {
+                    payloadMapper: this.mapper.cleanAccessCachePayload,
                     actionType: AccessCacheTopicAction.INVALIDATE,
                     destinationTopic: KafkaTopic.ACCESS_CACHE,
                 },
             ],
             audit: {
-                actor: SYSTEM_ACCOUNT_ID,
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: ActionType.DELETE,
-                input: {
-                    account: props.account,
-                },
+                actor: SYSTEM_ACCOUNT_ID,
                 context: CONSUMER_META,
+                input: { account },
             },
             changeLog: true,
+            incoming,
             execute: async (transaction) => {
                 const assignments = await this.accountRoleAssignmentService.clean({
-                    input: { account: props.account },
+                    input: { account },
+                    transaction,
+                });
+                const overrides = await this.permissionOverrideService.clean({
+                    input: { account },
                     transaction,
                 });
 
-                return { assignments };
+                return { assignments, overrides };
             },
         });
     }

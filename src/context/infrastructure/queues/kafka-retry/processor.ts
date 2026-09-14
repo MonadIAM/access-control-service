@@ -31,15 +31,18 @@ export class KafkaRetryProcessor extends WorkerHost {
     }
 
     public async process(job: Job<Queues.KafkaRetry.JobData>): Promise<void> {
-        const { originalTopic, payload } = job.data;
-        const handler = this.retryRegistry.resolve({ topic: originalTopic });
+        const { originalTopic, payload, event } = job.data;
+        const entry = this.retryRegistry.resolve({ topic: originalTopic });
 
-        if (handler) {
+        if (entry) {
             if (isObject(payload)) {
                 this.schemaRegistry.validate({ topic: originalTopic, value: payload });
             }
 
-            await handler.process(payload);
+            await entry.handler.process({
+                incoming: { consumerKey: entry.consumerKey, event },
+                message: payload,
+            });
         } else {
             throw Exception.invariantViolation({
                 messageKey: `${this.dictionaryPath}.HANDLER_NOT_REGISTERED`,
@@ -51,12 +54,18 @@ export class KafkaRetryProcessor extends WorkerHost {
     @OnWorkerEvent("failed")
     public async onFailed(job: Job<Queues.KafkaRetry.JobData>): Promise<void> {
         if (job.attemptsMade >= (job.opts.attempts ?? 1)) {
+            const { event, ...message } = job.data;
             this.logger.error(
                 `Retry exhausted after ${job.attemptsMade} attempts for topic "${job.data.originalTopic}": ${job.data.error}`,
                 job.failedReason,
             );
 
-            await lastValueFrom(this.kafkaClient.emit(`${job.data.originalTopic}-dead`, { value: job.data }));
+            await lastValueFrom(
+                this.kafkaClient.emit(`${job.data.originalTopic}-dead`, {
+                    value: message,
+                    key: event,
+                }),
+            );
             this.kafkaMetrics.recordDead({ topic: job.data.originalTopic, error: job.failedReason });
         }
     }

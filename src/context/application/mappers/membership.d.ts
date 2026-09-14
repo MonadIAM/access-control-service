@@ -41,7 +41,7 @@ declare namespace Commands {
             }
 
             namespace JoinRejectedPayload {
-                type Props = Commands.Membership.RejectJoin.Props;
+                type Props = Commands.Membership.RejectJoin.ExecuteResult;
 
                 type Result = Topics.Membership.JoinRejectedMessage["payload"];
 
@@ -81,7 +81,7 @@ declare namespace Commands {
             }
 
             namespace LeaveRejectedPayload {
-                type Props = Commands.Membership.RejectLeave.Props;
+                type Props = Commands.Membership.RejectLeave.ExecuteResult;
 
                 type Result = Topics.Membership.LeaveRejectedMessage["payload"];
 

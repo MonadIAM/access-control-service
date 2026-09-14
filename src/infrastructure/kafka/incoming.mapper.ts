@@ -1,0 +1,30 @@
+import { Exception } from "~common/exceptions";
+
+export class KafkaIncomingMapper implements Kafka.IncomingMapper.Contract {
+    private readonly dictionaryPath = "services.kafka-incoming";
+
+    public map(props: Kafka.IncomingMapper.Map.Props): Kafka.IncomingMapper.Map.Result {
+        const { context, consumerKey } = props;
+        const event = this.event({ context });
+
+        return {
+            source: {
+                offset: context.getMessage().offset,
+                partition: context.getPartition(),
+                topic: context.getTopic(),
+            },
+            consumerKey,
+            event,
+        };
+    }
+
+    public event(props: Kafka.IncomingMapper.Event.Props): Kafka.IncomingMapper.Event.Result {
+        const event = props.context.getMessage().key?.toString();
+
+        if (event) {
+            return event;
+        } else {
+            throw Exception.internal({ messageKey: `${this.dictionaryPath}.EVENT_MISSING` });
+        }
+    }
+}

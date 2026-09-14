@@ -15,8 +15,11 @@ declare namespace Commands {
         namespace RejectJoin {
             type Props = {
                 request: Topics.Membership.JoinRequestedMessage["payload"];
+                incoming: TransactionManager.Service.IncomingMessage;
                 reason: string;
             };
+
+            type ExecuteResult = Omit<Props, "incoming">;
 
             type Result = Promise<void>;
 
@@ -26,8 +29,11 @@ declare namespace Commands {
         namespace RejectLeave {
             type Props = {
                 request: Topics.Membership.LeaveRequestedMessage["payload"];
+                incoming: TransactionManager.Service.IncomingMessage;
                 reason: string;
             };
+
+            type ExecuteResult = Omit<Props, "incoming">;
 
             type Result = Promise<void>;
 
@@ -37,6 +43,7 @@ declare namespace Commands {
         namespace Join {
             type Props = {
                 input: Topics.Membership.JoinRequestedMessage["payload"]["input"];
+                incoming: TransactionManager.Service.IncomingMessage;
                 actor: string;
                 realm: string;
             };
@@ -56,6 +63,7 @@ declare namespace Commands {
         namespace Leave {
             type Props = {
                 input: Topics.Membership.LeaveRequestedMessage["payload"]["input"];
+                incoming: TransactionManager.Service.IncomingMessage;
                 actor: string;
                 realm: string;
             };

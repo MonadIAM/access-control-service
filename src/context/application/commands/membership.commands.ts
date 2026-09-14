@@ -36,10 +36,11 @@ export class MembershipCommands implements Commands.Membership.Contract {
     }
 
     public async join(props: Commands.Membership.Join.Props): Commands.Membership.Join.Result {
-        const { input, actor, realm } = props;
+        const { incoming, input, actor, realm } = props;
 
         try {
-            await this.transactionalService.run<Commands.Membership.Join.ExecuteResult>({
+            await this.transactionalService.consume<Commands.Membership.Join.ExecuteResult>({
+                incoming,
                 resource: this.resource,
                 outbox: [
                     {
@@ -62,7 +63,9 @@ export class MembershipCommands implements Commands.Membership.Contract {
                     entityType: EntityType.ROLE_ASSIGNMENT,
                     actionType: ActionType.CREATE,
                     context: CONSUMER_META,
-                    ...props,
+                    input,
+                    actor,
+                    realm,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
@@ -81,6 +84,7 @@ export class MembershipCommands implements Commands.Membership.Contract {
                 throw error;
             } else {
                 await this.rejectJoin({
+                    incoming,
                     request: { actor, realm, input },
                     reason: error instanceof Error ? error.message : String(error),
                 });
@@ -89,27 +93,34 @@ export class MembershipCommands implements Commands.Membership.Contract {
     }
 
     public async rejectJoin(props: Commands.Membership.RejectJoin.Props): Commands.Membership.RejectJoin.Result {
-        await this.transactionalService.emit({
-            payload: this.mapper.joinRejectedPayload(props),
-            actionType: MembershipTopicAction.JOIN_REJECTED,
-            destinationTopic: KafkaTopic.MEMBERSHIP,
+        const { incoming, ...result } = props;
+
+        await this.transactionalService.consume<Commands.Membership.RejectJoin.ExecuteResult>({
+            incoming,
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.joinRejectedPayload,
+                actionType: MembershipTopicAction.JOIN_REJECTED,
+                destinationTopic: KafkaTopic.MEMBERSHIP,
+            },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: ActionType.CREATE,
-                actor: props.request.actor,
-                realm: props.request.realm,
+                actor: result.request.actor,
+                realm: result.request.realm,
                 context: CONSUMER_META,
-                input: props,
+                input: result,
             },
+            execute: () => result,
         });
     }
 
     public async leave(props: Commands.Membership.Leave.Props): Commands.Membership.Leave.Result {
-        const { input, actor, realm } = props;
+        const { incoming, input, actor, realm } = props;
 
         try {
-            await this.transactionalService.run<Commands.Membership.Leave.ExecuteResult>({
+            await this.transactionalService.consume<Commands.Membership.Leave.ExecuteResult>({
+                incoming,
                 resource: this.resource,
                 outbox: [
                     {
@@ -142,7 +153,9 @@ export class MembershipCommands implements Commands.Membership.Contract {
                     entityType: EntityType.ROLE_ASSIGNMENT,
                     actionType: ActionType.DELETE,
                     context: CONSUMER_META,
-                    ...props,
+                    input,
+                    actor,
+                    realm,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
@@ -169,6 +182,7 @@ export class MembershipCommands implements Commands.Membership.Contract {
                 throw error;
             } else {
                 await this.rejectLeave({
+                    incoming,
                     request: { actor, realm, input },
                     reason: error instanceof Error ? error.message : String(error),
                 });
@@ -177,19 +191,25 @@ export class MembershipCommands implements Commands.Membership.Contract {
     }
 
     public async rejectLeave(props: Commands.Membership.RejectLeave.Props): Commands.Membership.RejectLeave.Result {
-        await this.transactionalService.emit({
-            payload: this.mapper.leaveRejectedPayload(props),
-            actionType: MembershipTopicAction.LEAVE_REJECTED,
-            destinationTopic: KafkaTopic.MEMBERSHIP,
+        const { incoming, ...result } = props;
+
+        await this.transactionalService.consume<Commands.Membership.RejectLeave.ExecuteResult>({
+            incoming,
             resource: this.resource,
+            outbox: {
+                payloadMapper: this.mapper.leaveRejectedPayload,
+                actionType: MembershipTopicAction.LEAVE_REJECTED,
+                destinationTopic: KafkaTopic.MEMBERSHIP,
+            },
             audit: {
                 entityType: EntityType.ROLE_ASSIGNMENT,
                 actionType: ActionType.DELETE,
-                actor: props.request.actor,
-                realm: props.request.realm,
+                actor: result.request.actor,
+                realm: result.request.realm,
                 context: CONSUMER_META,
-                input: props,
+                input: result,
             },
+            execute: () => result,
         });
     }
 }

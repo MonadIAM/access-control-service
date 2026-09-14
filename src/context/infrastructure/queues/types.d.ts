@@ -14,7 +14,9 @@ declare global {
         }
 
         namespace KafkaRetry {
-            type JobData = Consumers.DLQ.Message;
+            type JobData = Consumers.Retry.Message & {
+                event: string;
+            };
 
             interface Contract {
                 schedule: Schedule.Signature;
@@ -22,7 +24,8 @@ declare global {
 
             namespace Schedule {
                 type Props = {
-                    message: Consumers.DLQ.Message;
+                    message: Consumers.Retry.Message;
+                    event: string;
                 };
 
                 type Result = Promise<void>;
@@ -39,16 +42,15 @@ declare global {
 
             type Handler = (job: Job) => Promise<Result>;
 
-            type RetentionJobData = {
-                olderThanMs: number;
+            type JobData = {
+                expirationDate: number;
                 batchSize: number;
+                event: string;
+                batch: number;
             };
 
-            type ExpirationJobData = {
-                batchSize: number;
-            };
-
-            type JobData = RetentionJobData | ExpirationJobData;
+            type RetentionJobData = JobData;
+            type ExpirationJobData = JobData;
 
             interface Contract {
                 scheduleNextBatch: ScheduleNextBatch.Signature;

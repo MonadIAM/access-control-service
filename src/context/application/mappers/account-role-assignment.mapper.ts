@@ -118,4 +118,20 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
             })),
         };
     }
+
+    public cleanAccessCachePayload(
+        props: Commands.Mappers.AccountRoleAssignment.CleanAccessCachePayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.CleanAccessCachePayload.Result {
+        const invalidations = new Map<string, Topics.AccessCache.Message["payload"]["items"][number]>();
+
+        for (const { account, realm } of [...props.assignments, ...props.overrides]) {
+            invalidations.set(`${account}:${realm.id}`, {
+                scope: InvalidationScope.ACCOUNT_REALM,
+                realm: realm.id,
+                account,
+            });
+        }
+
+        return { items: [...invalidations.values()] };
+    }
 }

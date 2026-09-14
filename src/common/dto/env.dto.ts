@@ -313,6 +313,9 @@ export class EnvironmentVariablesDTO {
     @Validator.IsMsString()
     declare public CHANGE_LOG_RETENTION_TTL: StringValue;
 
+    @Validator.IsMsString()
+    declare public INBOX_RETENTION_TTL: StringValue;
+
     @Validator.IsPositiveInt()
     declare public CLEANUP_BATCH_SIZE: number;
 

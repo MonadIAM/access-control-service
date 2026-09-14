@@ -3,14 +3,14 @@ import { describe, expect, it, jest } from "@jest/globals";
 import { ChangeSetType } from "@mikro-orm/core";
 import { randomUUID } from "node:crypto";
 
+import { RoleClosureRepository } from "~context/infrastructure/repositories/role-closure.repository";
 import { TransactionalHelper } from "~testing/integration/transaction-manager/transactional.helpers";
 import { ActionType, EntityType, KafkaTopic, RoleActorType, RoleArchetype } from "~context/enums";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 import { RoleClosure, Realm, Role } from "~context/domain/entities";
-import { RoleClosureRepository } from "~context/infrastructure/repositories/role-closure.repository";
 import { postgresSuite } from "~testing/integration/postgres.suite";
 
-import { AuditLog, ChangeLog, Outbox } from "../entities";
+import { AuditLog, ChangeLog, Inbox, Outbox } from "../entities";
 
 describe("TransactionalService integration", () => {
     const helper = new TransactionalHelper();
@@ -32,6 +32,123 @@ describe("TransactionalService integration", () => {
         actor: randomUUID(),
         realm: randomUUID(),
     };
+
+    const INCOMING_MESSAGE = {
+        source: { topic: "account", partition: 0, offset: "42" },
+        event: "00000000-0000-4000-8000-000000000001",
+        consumerKey: "access-control.account.v1",
+    };
+
+    it("commits inbox, domain, audit, change log and outbox exactly once", async () => {
+        const owner = randomUUID();
+        const executeDuplicate = jest.fn(() => Promise.reject(new Error("duplicate callback must not execute")));
+
+        const first = await suite.repository().service.consume({
+            incoming: INCOMING_MESSAGE,
+            audit: AUDIT_PROPS,
+            changeLog: true,
+            outbox: ACCESS_CACHE_OUTBOX_CONFIG,
+            execute: (transaction) => {
+                const realm = new Realm({ code: "inbox.realm", name: "Inbox Realm", owner });
+                const role = new Role({
+                    archetype: RoleArchetype.ATOMIC,
+                    actorType: RoleActorType.HUMAN,
+                    name: "Inbox Role",
+                    code: "inbox.role",
+                    realm,
+                });
+
+                transaction.persist(realm);
+                transaction.persist(role);
+                return role;
+            },
+        });
+        const duplicate = await suite.repository().service.consume({
+            incoming: INCOMING_MESSAGE,
+            execute: executeDuplicate,
+            audit: AUDIT_PROPS,
+            changeLog: true,
+        });
+
+        const readManager = suite.repository().readManager;
+        readManager.clear();
+
+        expect(first).toEqual({ status: "processed", value: expect.objectContaining({ code: "inbox.role" }) });
+        expect(duplicate).toEqual({ status: "duplicate" });
+        expect(executeDuplicate).not.toHaveBeenCalled();
+        await expect(readManager.count(Inbox, {})).resolves.toBe(1);
+        await expect(readManager.count(Realm, { owner })).resolves.toBe(1);
+        await expect(readManager.count(Role, { code: "inbox.role" })).resolves.toBe(1);
+        await expect(readManager.count(AuditLog, {})).resolves.toBe(1);
+        await expect(readManager.count(ChangeLog, {})).resolves.toBe(2);
+        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.AUDIT_LOG_ARCHIVE })).resolves.toBe(1);
+        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.CHANGE_LOG_ARCHIVE })).resolves.toBe(2);
+        await expect(readManager.count(Outbox, { destinationTopic: KafkaTopic.ACCESS_CACHE })).resolves.toBe(1);
+    });
+
+    it("rolls back the inbox claim with failed domain effects and allows redelivery", async () => {
+        const incoming = { ...INCOMING_MESSAGE, event: "00000000-0000-4000-8000-000000000002" };
+        const owner = randomUUID();
+        const failure = new Error("domain failed");
+
+        await expect(
+            suite.repository().service.consume({
+                incoming,
+                execute: (transaction) => {
+                    transaction.persist(new Realm({ code: "rollback.realm", name: "Rollback Realm", owner }));
+                    throw failure;
+                },
+            }),
+        ).rejects.toBe(failure);
+
+        const readManager = suite.repository().readManager;
+        readManager.clear();
+        await expect(readManager.count(Inbox, {})).resolves.toBe(0);
+        await expect(readManager.count(Realm, { owner })).resolves.toBe(0);
+
+        const redelivery = await suite.repository().service.consume({
+            incoming,
+            execute: (transaction) => {
+                const realm = new Realm({ code: "redelivery.realm", name: "Redelivery Realm", owner });
+                transaction.persist(realm);
+                return realm;
+            },
+        });
+
+        expect(redelivery).toEqual({ status: "processed", value: expect.objectContaining({ code: "redelivery.realm" }) });
+        readManager.clear();
+        await expect(readManager.count(Inbox, {})).resolves.toBe(1);
+        await expect(readManager.count(Realm, { owner })).resolves.toBe(1);
+    });
+
+    it("allows only one concurrent transaction to process the same event", async () => {
+        const incoming = { ...INCOMING_MESSAGE, event: "00000000-0000-4000-8000-000000000003" };
+        const executed: string[] = [];
+        const consume = (suffix: string): TransactionManager.Service.Consume.Result<Entities.Realm> =>
+            suite.repository().service.consume({
+                incoming,
+                execute: async (transaction) => {
+                    const realm = new Realm({
+                        code: `concurrent.${suffix}`,
+                        name: `Concurrent ${suffix}`,
+                        owner: randomUUID(),
+                    });
+                    transaction.persist(realm);
+                    executed.push(suffix);
+                    await Promise.resolve();
+                    return realm;
+                },
+            });
+
+        const outcomes = await Promise.all([consume("first"), consume("second")]);
+        const readManager = suite.repository().readManager;
+        readManager.clear();
+
+        expect(outcomes.map(({ status }) => status).sort()).toEqual(["duplicate", "processed"]);
+        expect(executed).toHaveLength(1);
+        await expect(readManager.count(Inbox, {})).resolves.toBe(1);
+        await expect(readManager.count(Realm, {})).resolves.toBe(1);
+    });
 
     it("commits audit log, change log, archive outbox and domain outbox in one trace", async () => {
         const realmOwner = randomUUID();
