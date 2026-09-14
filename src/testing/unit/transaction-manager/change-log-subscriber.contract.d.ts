@@ -64,6 +64,7 @@ declare global {
                         readonly originalEntity?: UnknownObject;
                         readonly type?: ORM.ChangeSetType;
                         readonly payload?: UnknownObject;
+                        readonly entity?: UnknownObject;
                         readonly primaryKey?: unknown;
                         readonly className?: string;
                     };

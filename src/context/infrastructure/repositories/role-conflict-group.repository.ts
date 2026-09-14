@@ -138,7 +138,6 @@ export class RoleConflictGroupRepository
                 .where("grp.realm_id", "=", props.realm)
                 .where("role.realm_id", "=", props.realm)
                 .where("arm.realm_id", "=", props.realm)
-                .where("grp.is_revoked", "=", false)
                 .where("mem.is_revoked", "=", false)
                 .where("arm.is_revoked", "=", false)
                 .where(sql<boolean>`(arm.expires_at is null or arm.expires_at > now())`)

@@ -1,4 +1,4 @@
-import { ChangeSetType, Utils } from "@mikro-orm/postgresql";
+import { Utils, wrap, ChangeSetType } from "@mikro-orm/postgresql";
 import { Injectable, Inject } from "@nestjs/common";
 
 import { LOG_MASKING_SERVICE, OUTBOX_SERVICE } from "~common/transaction-manager/services";
@@ -70,23 +70,23 @@ export class ChangeLogSubscriber implements ORM.EventSubscriber {
         switch (changeSet.type) {
             case ChangeSetType.CREATE: {
                 for (const [field, newValue] of Object.entries(changeSet.payload)) {
-                    delta[field] = { old: null, new: newValue };
+                    delta[field] = this.buildDeltaChange(null, newValue);
                 }
                 break;
             }
             case ChangeSetType.UPDATE: {
                 for (const [field, newValue] of Object.entries(changeSet.payload)) {
-                    delta[field] = {
-                        old: changeSet.originalEntity?.[field] ?? null,
-                        new: newValue,
-                    };
+                    delta[field] = this.buildDeltaChange(changeSet.originalEntity?.[field] ?? null, newValue);
                 }
                 break;
             }
             case ChangeSetType.DELETE: {
-                if (changeSet.originalEntity) {
-                    for (const [field, oldValue] of Object.entries(changeSet.originalEntity)) {
-                        delta[field] = { old: oldValue, new: null };
+                const deletedEntity = changeSet.originalEntity ?? changeSet.entity;
+                if (deletedEntity) {
+                    for (const [field, oldValue] of Object.entries(deletedEntity)) {
+                        if (!(Utils.isCollection(oldValue) && !oldValue.isInitialized())) {
+                            delta[field] = this.buildDeltaChange(oldValue, null);
+                        }
                     }
                 }
                 break;
@@ -94,5 +94,34 @@ export class ChangeLogSubscriber implements ORM.EventSubscriber {
         }
 
         return new DeltaChanges(delta);
+    }
+
+    private buildDeltaChange(oldValue: unknown, newValue: unknown): ValueObjects.DeltaChanges.ConstructorProps[string] {
+        return {
+            old: this.normalizeDeltaValue(oldValue),
+            new: this.normalizeDeltaValue(newValue),
+        };
+    }
+
+    private normalizeDeltaValue(value: unknown): unknown {
+        if (value instanceof Date) {
+            return value;
+        } else if (Array.isArray(value)) {
+            return value.map((item) => this.normalizeDeltaValue(item));
+        } else if (Utils.isCollection(value)) {
+            if (value.isInitialized()) {
+                return value.getIdentifiers();
+            } else {
+                return [];
+            }
+        } else if (Utils.isEntity(value, true)) {
+            return wrap(value, true).getPrimaryKey();
+        } else if (Utils.isPlainObject(value)) {
+            return Object.fromEntries(
+                Object.entries(value).map(([field, fieldValue]) => [field, this.normalizeDeltaValue(fieldValue)]),
+            );
+        } else {
+            return value;
+        }
     }
 }

@@ -78,6 +78,7 @@ export class ChangeLogSubscriberUnitHelpers
             meta: { className: props.className ?? "Role" },
             type: props.type ?? ChangeSetType.UPDATE,
             originalEntity: props.originalEntity,
+            entity: props.entity,
         });
     }
 
