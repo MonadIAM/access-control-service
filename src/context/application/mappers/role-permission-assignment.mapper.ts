@@ -20,6 +20,7 @@ export class RolePermissionAssignmentMapper implements Commands.Mappers.RolePerm
         props: Commands.Mappers.RolePermissionAssignment.ProjectionPurgePayload.Props,
     ): Commands.Mappers.RolePermissionAssignment.ProjectionPurgePayload.Result {
         return {
+            realm: props.assignments[0].realm.id,
             items: props.assignments.map(({ realm, role, permission }) => ({
                 permissionRealm: permission.realm.id,
                 permission: permission.id,
@@ -33,6 +34,7 @@ export class RolePermissionAssignmentMapper implements Commands.Mappers.RolePerm
         props: Commands.Mappers.RolePermissionAssignment.ProjectionUpdatePayload.Props,
     ): Commands.Mappers.RolePermissionAssignment.ProjectionUpdatePayload.Result {
         return {
+            realm: props.assignments[0].realm.id,
             isRevoked: props.assignments[0].isRevoked,
             items: props.assignments.map(({ id, realm, role, permission }) => ({
                 permissionRealm: permission.realm.id,

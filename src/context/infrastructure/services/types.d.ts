@@ -157,7 +157,16 @@ declare global {
             interface Contract extends InternalContract, PublicContract {}
 
             interface InternalContract {
+                executeScript: ExecuteScript.Signature;
                 evalsha: Evalsha.Signature;
+            }
+
+            namespace ExecuteScript {
+                type Props = Evalsha.Props;
+
+                type Result<T> = Promise<T>;
+
+                type Signature = <T>(props: Props) => Result<T>;
             }
 
             namespace Evalsha {
@@ -165,6 +174,7 @@ declare global {
                     script: ProjectionScript;
                     args: string[];
                     keys: string[];
+                    mode: ScriptLoader.Mode;
                 };
 
                 type Result<T> = Promise<T>;
@@ -173,7 +183,32 @@ declare global {
             }
 
             interface PublicContract {
+                consume: Consume.Signature;
                 execute: Execute.Signature;
+            }
+
+            namespace Consume {
+                type Props = {
+                    script: ProjectionScript;
+                    args: string[];
+                    keys?: string[];
+                    event: string;
+                };
+
+                type Outcome<T> =
+                    | {
+                          status: "processed";
+                          value: T;
+                      }
+                    | {
+                          status: "duplicate";
+                      };
+
+                type ScriptResult<T> = [processed: 0] | [processed: 1, value: T];
+
+                type Result<T> = Promise<Outcome<T>>;
+
+                type Signature = <T>(props: Props) => Result<T>;
             }
 
             namespace Execute {
@@ -190,6 +225,8 @@ declare global {
         }
 
         namespace ScriptLoader {
+            type Mode = "consume" | "execute";
+
             interface Contract extends PublicContract {}
 
             interface PublicContract {
@@ -198,7 +235,10 @@ declare global {
             }
 
             namespace GetHash {
-                type Props = ProjectionScript;
+                type Props = {
+                    script: ProjectionScript;
+                    mode: Mode;
+                };
 
                 type Result = string;
 
@@ -206,7 +246,10 @@ declare global {
             }
 
             namespace Reload {
-                type Props = ProjectionScript;
+                type Props = {
+                    script: ProjectionScript;
+                    mode: Mode;
+                };
 
                 type Result = Promise<string>;
 

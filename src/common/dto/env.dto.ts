@@ -277,8 +277,17 @@ export class EnvironmentVariablesDTO {
     @Validator.IsPositiveInt()
     declare public KAFKA_RETRY_ATTEMPTS: number;
 
+    @Validator.IsPositiveInt()
+    declare public KAFKA_PARTITIONS_CONSUMED_CONCURRENTLY: number;
+
     @Validator.IsMsString()
     declare public KAFKA_RETRY_INITIAL_TIME: StringValue;
+
+    @Validator.IsMsString()
+    declare public KAFKA_PROJECTION_RETRY_INITIAL_DELAY: StringValue;
+
+    @Validator.IsMsString()
+    declare public KAFKA_PROJECTION_RETRY_MAX_DELAY: StringValue;
 
     @Validator.IsInt()
     declare public KAFKAJS_NO_PARTITIONER_WARNING: number;

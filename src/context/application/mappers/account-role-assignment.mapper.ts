@@ -7,6 +7,25 @@ import {
 } from "~context/enums";
 
 export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRoleAssignment.Contract {
+    public groupByRealm(
+        props: Commands.Mappers.AccountRoleAssignment.GroupByRealm.Props,
+    ): Commands.Mappers.AccountRoleAssignment.GroupByRealm.Result {
+        const groups = new Map<string, Entities.AccountRoleAssignment[]>();
+
+        for (const assignment of props.assignments) {
+            const realm = assignment.realm.id;
+            const group = groups.get(realm);
+
+            if (group) {
+                group.push(assignment);
+            } else {
+                groups.set(realm, [assignment]);
+            }
+        }
+
+        return groups;
+    }
+
     public projectionCreatePayload(
         props: Commands.Mappers.AccountRoleAssignment.ProjectionCreatePayload.Props,
     ): Commands.Mappers.AccountRoleAssignment.ProjectionCreatePayload.Result {
@@ -40,27 +59,29 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
     public projectionPurgePayload(
         props: Commands.Mappers.AccountRoleAssignment.ProjectionPurgePayload.Props,
     ): Commands.Mappers.AccountRoleAssignment.ProjectionPurgePayload.Result {
-        return {
-            items: props.assignments.map(({ realm, account, role }) => ({
-                realm: realm.id,
+        return Array.from(this.groupByRealm({ assignments: props.assignments }), ([realm, assignments]) => ({
+            items: assignments.map(({ account, role }) => ({
                 role: role.id,
                 account,
+                realm,
             })),
-        };
+            realm,
+        }));
     }
 
     public projectionUpdatePayload(
         props: Commands.Mappers.AccountRoleAssignment.ProjectionUpdatePayload.Props,
     ): Commands.Mappers.AccountRoleAssignment.ProjectionUpdatePayload.Result {
-        return {
-            isRevoked: props.assignments[0].isRevoked,
-            items: props.assignments.map(({ id, realm, account, role }) => ({
-                realm: realm.id,
+        return Array.from(this.groupByRealm({ assignments: props.assignments }), ([realm, assignments]) => ({
+            isRevoked: assignments[0].isRevoked,
+            items: assignments.map(({ id, account, role }) => ({
                 assignment: id,
                 role: role.id,
                 account,
+                realm,
             })),
-        };
+            realm,
+        }));
     }
 
     public notificationGrantPayload(

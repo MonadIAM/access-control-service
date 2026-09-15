@@ -31,6 +31,28 @@ export enum ProjectionScript {
     ROLE_PURGE = "role/purge",
 }
 
+export const PROJECTION_MUTATION_SCRIPTS: ProjectionScript[] = [
+    ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_CREATE,
+    ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE,
+    ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_PURGE,
+    ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
+    ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
+    ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
+    ProjectionScript.PERMISSION_OVERRIDE_CREATE,
+    ProjectionScript.PERMISSION_OVERRIDE_UPDATE,
+    ProjectionScript.PERMISSION_OVERRIDE_PURGE,
+    ProjectionScript.ROLE_CLOSURE_UPDATE,
+    ProjectionScript.PERMISSION_CREATE,
+    ProjectionScript.PERMISSION_UPDATE,
+    ProjectionScript.PERMISSION_PURGE,
+    ProjectionScript.REALM_CREATE,
+    ProjectionScript.REALM_UPDATE,
+    ProjectionScript.REALM_PURGE,
+    ProjectionScript.ROLE_CREATE,
+    ProjectionScript.ROLE_UPDATE,
+    ProjectionScript.ROLE_PURGE,
+];
+
 export const PROJECTION_SCRIPT_FILES: Record<ProjectionScript, string> = {
     [ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_CREATE]: "role-permission-assignment/create.lua",
     [ProjectionScript.ROLE_PERMISSION_ASSIGNMENT_UPDATE]: "role-permission-assignment/update.lua",

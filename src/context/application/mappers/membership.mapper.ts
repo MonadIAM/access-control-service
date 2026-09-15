@@ -73,6 +73,7 @@ export class MembershipMapper implements Commands.Mappers.Membership.Contract {
         props: Commands.Mappers.Membership.LeaveAssignmentProjectionPayload.Props,
     ): Commands.Mappers.Membership.LeaveAssignmentProjectionPayload.Result {
         return {
+            realm: props.realm,
             items: props.assignments.map(({ realm, account, role }) => ({
                 realm: realm.id,
                 role: role.id,
@@ -85,6 +86,7 @@ export class MembershipMapper implements Commands.Mappers.Membership.Contract {
         props: Commands.Mappers.Membership.LeaveOverrideProjectionPayload.Props,
     ): Commands.Mappers.Membership.LeaveOverrideProjectionPayload.Result {
         return {
+            realm: props.realm,
             items: props.overrides.map(({ permission, account, realm }) => ({
                 permissionRealm: permission.realm.id,
                 permission: permission.id,

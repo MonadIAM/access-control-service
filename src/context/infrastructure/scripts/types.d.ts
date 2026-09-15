@@ -17,6 +17,7 @@ declare namespace Scripts {
 
         namespace Purge {
             type Props = {
+                realm: string;
                 items: {
                     permissionRealm: string;
                     permission: string;
@@ -31,6 +32,7 @@ declare namespace Scripts {
         namespace Update {
             type Props = {
                 isRevoked: boolean;
+                realm: string;
                 items: {
                     permissionRealm: string;
                     permission: string;
@@ -60,6 +62,7 @@ declare namespace Scripts {
 
         namespace Purge {
             type Props = {
+                realm: string;
                 items: {
                     account: string;
                     realm: string;
@@ -73,6 +76,7 @@ declare namespace Scripts {
         namespace Update {
             type Props = {
                 isRevoked: boolean;
+                realm: string;
                 items: {
                     assignment: string;
                     account: string;
@@ -120,6 +124,7 @@ declare namespace Scripts {
 
         namespace Purge {
             type Props = {
+                realm: string;
                 items: {
                     permissionRealm: string;
                     permission: string;
@@ -134,6 +139,7 @@ declare namespace Scripts {
         namespace Update {
             type Props = {
                 isRevoked: boolean;
+                realm: string;
                 items: {
                     permissionRealm: string;
                     permission: string;
@@ -232,7 +238,7 @@ declare namespace Scripts {
 
         namespace Purge {
             type Props = {
-                realms: string[];
+                realm: string;
             };
 
             type Result = "OK";
@@ -241,7 +247,7 @@ declare namespace Scripts {
         namespace Update {
             type Props = {
                 isRevoked: boolean;
-                realms: string[];
+                realm: string;
             };
 
             type Result = "OK";

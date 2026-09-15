@@ -8,7 +8,6 @@ import { KAFKA_RETRY_QUEUE } from "~context/infrastructure/queues";
 import { KafkaTopic } from "~context/enums";
 
 const RETRY_TOPICS = [
-    KafkaTopicBuilder.retry(KafkaTopic.PROJECTION_JOURNAL),
     KafkaTopicBuilder.retry(KafkaTopic.REAUTHENTICATION),
     KafkaTopicBuilder.retry(KafkaTopic.MEMBERSHIP),
     KafkaTopicBuilder.retry(KafkaTopic.ACCOUNT),

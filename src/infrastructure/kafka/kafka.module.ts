@@ -48,6 +48,9 @@ import { KafkaUtils } from "./utils";
                         groupId: `${config.getOrThrow<string>("SERVICE_NAME")}-consumer`,
                         allowAutoTopicCreation: false,
                     },
+                    run: {
+                        partitionsConsumedConcurrently: config.getOrThrow<number>("KAFKA_PARTITIONS_CONSUMED_CONCURRENTLY"),
+                    },
                     deserializer: new KafkaSchemaDeserializer(schemaRegistry),
                 },
             }),

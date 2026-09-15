@@ -16,7 +16,7 @@ declare namespace Commands {
                     realms: Entities.Realm[];
                 };
 
-                type Result = Scripts.Realm.Update.Props;
+                type Result = Scripts.Realm.Update.Props[];
 
                 type Signature = (props: Props) => Result;
             }
@@ -34,7 +34,7 @@ declare namespace Commands {
                     realms: Entities.Realm[];
                 };
 
-                type Result = Scripts.Realm.Purge.Props;
+                type Result = Scripts.Realm.Purge.Props[];
 
                 type Signature = (props: Props) => Result;
             }

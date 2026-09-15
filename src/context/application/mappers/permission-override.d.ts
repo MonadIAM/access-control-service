@@ -1,7 +1,21 @@
 declare namespace Commands {
     namespace Mappers {
         namespace PermissionOverride {
-            interface Contract extends PublicContract {}
+            interface Contract extends PublicContract, InternalContract {}
+
+            interface InternalContract {
+                groupByRealm: GroupByRealm.Signature;
+            }
+
+            namespace GroupByRealm {
+                type Props = {
+                    overrides: Entities.PermissionOverride[];
+                };
+
+                type Result = Map<string, Entities.PermissionOverride[]>;
+
+                type Signature = (props: Props) => Result;
+            }
 
             interface PublicContract {
                 projectionCreatePayload: ProjectionCreatePayload.Signature;
@@ -25,7 +39,7 @@ declare namespace Commands {
                     overrides: Entities.PermissionOverride[];
                 };
 
-                type Result = Scripts.PermissionOverride.Update.Props;
+                type Result = Scripts.PermissionOverride.Update.Props[];
 
                 type Signature = (props: Props) => Result;
             }
@@ -35,7 +49,7 @@ declare namespace Commands {
                     overrides: Entities.PermissionOverride[];
                 };
 
-                type Result = Scripts.PermissionOverride.Purge.Props;
+                type Result = Scripts.PermissionOverride.Purge.Props[];
 
                 type Signature = (props: Props) => Result;
             }

@@ -34,16 +34,13 @@ export class RealmMapper implements Commands.Mappers.Realm.Contract {
     public projectionPurgePayload(
         props: Commands.Mappers.Realm.ProjectionPurgePayload.Props,
     ): Commands.Mappers.Realm.ProjectionPurgePayload.Result {
-        return { realms: props.realms.map(({ id }) => id) };
+        return props.realms.map(({ id: realm }) => ({ realm }));
     }
 
     public projectionUpdatePayload(
         props: Commands.Mappers.Realm.ProjectionUpdatePayload.Props,
     ): Commands.Mappers.Realm.ProjectionUpdatePayload.Result {
-        return {
-            realms: props.realms.map(({ id }) => id),
-            isRevoked: props.realms[0].isRevoked,
-        };
+        return props.realms.map(({ id: realm, isRevoked }) => ({ isRevoked, realm }));
     }
 
     public accessCachePayload(

@@ -39,8 +39,8 @@ importers:
         specifier: 7.1.13
         version: 7.1.13(@mikro-orm/core@7.1.13)
       '@monadiam/shared':
-        specifier: github:MonadIAM/shared#v2.0.3
-        version: https://codeload.github.com/MonadIAM/shared/tar.gz/dc775906478d6e6c95b644837113ebce98f9f3d5
+        specifier: github:MonadIAM/shared#v2.0.4
+        version: https://codeload.github.com/MonadIAM/shared/tar.gz/42a83dcc119887769a96ab510c96f9764a4e4fd5
       '@nest-lab/throttler-storage-redis':
         specifier: 1.2.0
         version: 1.2.0(@nestjs/common@11.2.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.1)(@nestjs/throttler@6.5.0(@nestjs/common@11.2.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.1)(reflect-metadata@0.2.2))(ioredis@6.0.0(supports-color@8.1.1))(reflect-metadata@0.2.2)
@@ -1092,9 +1092,9 @@ packages:
     peerDependencies:
       '@mikro-orm/core': 7.1.13
 
-  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/dc775906478d6e6c95b644837113ebce98f9f3d5':
-    resolution: {gitHosted: true, integrity: sha512-dst1b50nrj8Iv3tb0jTlzjGad0fEeSRMTUNbttJDgQgDRDddotV9GdBGI0F4r9q03JqFeFNAnHLetvH8vwuhVw==, tarball: https://codeload.github.com/MonadIAM/shared/tar.gz/dc775906478d6e6c95b644837113ebce98f9f3d5}
-    version: 2.0.3
+  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/42a83dcc119887769a96ab510c96f9764a4e4fd5':
+    resolution: {gitHosted: true, integrity: sha512-7GiUntlqswsAUH4zBl6Wir+2VukLqwnWWhM7o5HwYFZB/b7octaO0ToappbX9HttrTXPfjJYPrWoGIJ9Fpb0qQ==, tarball: https://codeload.github.com/MonadIAM/shared/tar.gz/42a83dcc119887769a96ab510c96f9764a4e4fd5}
+    version: 2.0.4
     engines: {node: 24.18.0}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
@@ -4048,8 +4048,8 @@ packages:
     resolution: {integrity: sha512-WWdIxpyjEn+FhQJQQv9aQAYlHoNVdzIzUySNV1gHUPDSdZJ3yZn7pAAbQcV7B56Mvu881q9FZV+0Vx2xC44VWA==}
     engines: {node: ^18.17.0 || >=20.5.0}
 
-  nan@2.28.0:
-    resolution: {integrity: sha512-fTsDz99OTq2sVePhGdp4qQhggZFtKr64ZNVyVajRKtMOkJxYekplBh577PiJB12v/D3s2E5cGtOI45LWp6rnLQ==}
+  nan@2.29.0:
+    resolution: {integrity: sha512-GlGk3HIvitbvs+LT3g6XUP1kpirKNvmDFwF/bmo6XNWSb/eYEs/O4bfgIEIXCZ+lIOTS5xNwDvSGMw6FJdAhtA==}
 
   nanoid@5.1.16:
     resolution: {integrity: sha512-kVrnsrJqMR8+oLJnGEmSWw9BivK5mt7H3FZatVRjrc5wGqFYuBxX1yG7+A7Gi5AefkX6t/oCkizcQgpu0cY1dQ==}
@@ -5057,8 +5057,8 @@ packages:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
     engines: {node: '>= 14'}
 
-  zod@4.6.4:
-    resolution: {integrity: sha512-AXSD6hvGdvRjajG/l1cC+d6IrhH+sjmPKtYeQdJIK8MFJl3LyClzS+o/YsVC+zQZPupAaeH5skwwm8YqYH7BqA==}
+  zod@4.6.5:
+    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
 
 snapshots:
 
@@ -6037,7 +6037,7 @@ snapshots:
       '@mikro-orm/core': 7.1.13
       kysely: 0.29.5
 
-  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/dc775906478d6e6c95b644837113ebce98f9f3d5': {}
+  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/42a83dcc119887769a96ab510c96f9764a4e4fd5': {}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
     optional: true
@@ -7172,7 +7172,7 @@ snapshots:
       '@scalar/helpers': 0.11.2
       nanoid: 5.1.16
       type-fest: 5.9.0
-      zod: 4.6.4
+      zod: 4.6.5
 
   '@scalar/validation@0.6.3': {}
 
@@ -8056,7 +8056,7 @@ snapshots:
   cpu-features@0.0.10:
     dependencies:
       buildcheck: 0.0.7
-      nan: 2.28.0
+      nan: 2.29.0
     optional: true
 
   crc-32@1.2.2: {}
@@ -9157,7 +9157,7 @@ snapshots:
       tinyglobby: 0.2.17
       unbash: 4.0.11
       yaml: 2.9.1
-      zod: 4.6.4
+      zod: 4.6.5
 
   kysely@0.29.5: {}
 
@@ -9297,7 +9297,7 @@ snapshots:
 
   mute-stream@2.0.0: {}
 
-  nan@2.28.0:
+  nan@2.29.0:
     optional: true
 
   nanoid@5.1.16: {}
@@ -9850,7 +9850,7 @@ snapshots:
       bcrypt-pbkdf: 1.0.2
     optionalDependencies:
       cpu-features: 0.0.10
-      nan: 2.28.0
+      nan: 2.29.0
 
   stable-hash-x@0.2.0: {}
 
@@ -10355,4 +10355,4 @@ snapshots:
       compress-commons: 6.0.2
       readable-stream: 4.7.0
 
-  zod@4.6.4: {}
+  zod@4.6.5: {}

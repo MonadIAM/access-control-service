@@ -139,7 +139,9 @@ declare global {
         namespace Projection {
             type Message = {
                 actionType: ProjectionScript;
-                payload: UnknownObject;
+                payload: UnknownObject & {
+                    realm: string;
+                };
             };
 
             interface Contract extends PublicContract, InternalContract {}
@@ -155,8 +157,21 @@ declare global {
             }
 
             interface InternalContract {
+                backoff: Backoff.Signature;
                 process: Process.Signature;
                 reject: Reject.Signature;
+                retry: Retry.Signature;
+                wait: Wait.Signature;
+            }
+
+            namespace Backoff {
+                type Props = {
+                    attempt: number;
+                };
+
+                type Result = number;
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace Process {
@@ -175,6 +190,28 @@ declare global {
                     incoming: TransactionManager.Service.IncomingMessage;
                     message: Message;
                     error: unknown;
+                };
+
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Retry {
+                type Props = Process.Props & {
+                    heartbeat: ReturnType<KafkaContext["getHeartbeat"]>;
+                    attempt: number;
+                };
+
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Wait {
+                type Props = {
+                    heartbeat: ReturnType<KafkaContext["getHeartbeat"]>;
+                    deadline: number;
                 };
 
                 type Result = Promise<void>;

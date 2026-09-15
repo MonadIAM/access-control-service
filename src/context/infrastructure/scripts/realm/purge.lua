@@ -12,8 +12,8 @@ local function remember_account(account_id)
     accounts[account_id] = true
 end
 
-for _, realm in ipairs(payload.realms or {}) do
-    local realm_id = tostring(realm)
+do
+    local realm_id = tostring(payload.realm)
     accounts = {}
 
     local active_account_ids = redis.call("SMEMBERS", make_key("realm-accounts", realm_id))

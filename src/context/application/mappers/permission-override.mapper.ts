@@ -1,6 +1,25 @@
 import { InvalidationScope } from "~context/enums";
 
 export class PermissionOverrideMapper implements Commands.Mappers.PermissionOverride.Contract {
+    public groupByRealm(
+        props: Commands.Mappers.PermissionOverride.GroupByRealm.Props,
+    ): Commands.Mappers.PermissionOverride.GroupByRealm.Result {
+        const groups = new Map<string, Entities.PermissionOverride[]>();
+
+        for (const override of props.overrides) {
+            const realm = override.realm.id;
+            const group = groups.get(realm);
+
+            if (group) {
+                group.push(override);
+            } else {
+                groups.set(realm, [override]);
+            }
+        }
+
+        return groups;
+    }
+
     public projectionCreatePayload(
         props: Commands.Mappers.PermissionOverride.ProjectionCreatePayload.Props,
     ): Commands.Mappers.PermissionOverride.ProjectionCreatePayload.Result {
@@ -19,30 +38,32 @@ export class PermissionOverrideMapper implements Commands.Mappers.PermissionOver
     public projectionPurgePayload(
         props: Commands.Mappers.PermissionOverride.ProjectionPurgePayload.Props,
     ): Commands.Mappers.PermissionOverride.ProjectionPurgePayload.Result {
-        return {
-            items: props.overrides.map(({ realm, account, permission }) => ({
+        return Array.from(this.groupByRealm({ overrides: props.overrides }), ([realm, overrides]) => ({
+            items: overrides.map(({ account, permission }) => ({
                 permissionRealm: permission.realm.id,
                 permission: permission.id,
-                realm: realm.id,
                 account,
+                realm,
             })),
-        };
+            realm,
+        }));
     }
 
     public projectionUpdatePayload(
         props: Commands.Mappers.PermissionOverride.ProjectionUpdatePayload.Props,
     ): Commands.Mappers.PermissionOverride.ProjectionUpdatePayload.Result {
-        return {
-            items: props.overrides.map(({ id, realm, account, permission, effect }) => ({
+        return Array.from(this.groupByRealm({ overrides: props.overrides }), ([realm, overrides]) => ({
+            items: overrides.map(({ id, account, permission, effect }) => ({
                 permissionRealm: permission.realm.id,
                 permission: permission.id,
-                realm: realm.id,
                 override: id,
                 account,
                 effect,
+                realm,
             })),
-            isRevoked: props.overrides[0].isRevoked,
-        };
+            isRevoked: overrides[0].isRevoked,
+            realm,
+        }));
     }
 
     public accessCachePayload(

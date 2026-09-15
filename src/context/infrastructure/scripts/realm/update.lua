@@ -40,8 +40,8 @@ local function activate_role_permission(realm_id, role_id, permission_id, scope)
     redis.call("SADD", make_key("permission-roles", realm_id, permission_id), role_id)
 end
 
-for _, realm in ipairs(payload.realms or {}) do
-    local realm_id = tostring(realm)
+do
+    local realm_id = tostring(payload.realm)
 
     redis.call("HSET", make_key("realm", realm_id), "isRevoked", redis_bool(is_revoked))
 

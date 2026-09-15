@@ -1,7 +1,21 @@
 declare namespace Commands {
     namespace Mappers {
         namespace AccountRoleAssignment {
-            interface Contract extends PublicContract {}
+            interface Contract extends PublicContract, InternalContract {}
+
+            interface InternalContract {
+                groupByRealm: GroupByRealm.Signature;
+            }
+
+            namespace GroupByRealm {
+                type Props = {
+                    assignments: Entities.AccountRoleAssignment[];
+                };
+
+                type Result = Map<string, Entities.AccountRoleAssignment[]>;
+
+                type Signature = (props: Props) => Result;
+            }
 
             interface PublicContract {
                 notificationRevokePayload: NotificationRevokePayload.Signature;
@@ -61,7 +75,7 @@ declare namespace Commands {
                     assignments: Entities.AccountRoleAssignment[];
                 };
 
-                type Result = Scripts.AccountRoleAssignment.Update.Props;
+                type Result = Scripts.AccountRoleAssignment.Update.Props[];
 
                 type Signature = (props: Props) => Result;
             }
@@ -71,7 +85,7 @@ declare namespace Commands {
                     assignments: Entities.AccountRoleAssignment[];
                 };
 
-                type Result = Scripts.AccountRoleAssignment.Purge.Props;
+                type Result = Scripts.AccountRoleAssignment.Purge.Props[];
 
                 type Signature = (props: Props) => Result;
             }
