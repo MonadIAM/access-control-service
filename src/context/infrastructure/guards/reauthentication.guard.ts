@@ -35,7 +35,10 @@ export class ReauthenticationGuard implements CanActivate {
                     throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REAUTHENTICATION_REQUIRED` });
                 }
             } else {
-                throw Exception.unauthorized({ messageKey: `${this.dictionaryPath}.NOT_AUTHENTICATED` });
+                throw Exception.unauthorized({
+                    messageKey: `${this.dictionaryPath}.NOT_AUTHENTICATED`,
+                    headers: { "WWW-Authenticate": 'Bearer realm="system"' },
+                });
             }
         }
 
