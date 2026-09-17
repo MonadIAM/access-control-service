@@ -16,7 +16,17 @@ export const USER_PERMISSION_CODES: string[] = [
     PermissionCode.INVITE_READ_PERSONAL,
     PermissionCode.INVITE_CHANGE_STATUS,
 
+    PermissionCode.MEMBERSHIP_READ_PERSONAL,
     PermissionCode.MEMBERSHIP_READ_COMMON,
+
+    PermissionCode.PROJECT_READ_PERSONAL,
+    PermissionCode.PROJECT_ACCOUNT_ASSIGNMENT_READ_PERSONAL,
+
+    PermissionCode.DEPARTMENT_READ_PERSONAL,
+    PermissionCode.DEPT_ACCOUNT_ASSIGNMENT_READ_PERSONAL,
+
+    PermissionCode.TEAM_READ_PERSONAL,
+    PermissionCode.TEAM_ACCOUNT_ASSIGNMENT_READ_PERSONAL,
 
     PermissionCode.MEMBERSHIP_HISTORY_READ_PERSONAL,
 
@@ -99,8 +109,17 @@ export const ADMIN_PERMISSION_CODES: string[] = [
 
     PermissionCode.REALM_EXCLUDE,
 
-    PermissionCode.INVITE_READ_ABSOLUTE,
+    PermissionCode.INVITE_READ_COMMON,
     PermissionCode.INVITE_CREATE,
+
+    PermissionCode.PROJECT_READ_COMMON,
+    PermissionCode.PROJECT_ACCOUNT_ASSIGNMENT_READ_COMMON,
+
+    PermissionCode.DEPARTMENT_READ_COMMON,
+    PermissionCode.DEPT_ACCOUNT_ASSIGNMENT_READ_COMMON,
+
+    PermissionCode.TEAM_READ_COMMON,
+    PermissionCode.TEAM_ACCOUNT_ASSIGNMENT_READ_COMMON,
 
     PermissionCode.MEMBERSHIP_HISTORY_READ_COMMON,
 

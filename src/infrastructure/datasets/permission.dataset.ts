@@ -419,32 +419,6 @@ const dataset = [
     // Identity
     // ---------------------------------------------------------------------------
 
-    // Invite
-    entry(
-        "00000003-0001-4000-8000-200000000001",
-        PermissionCode.INVITE_READ_PERSONAL,
-        "Read Personal Invites",
-        "View invite workflow records sent or received by the current account.",
-    ),
-    entry(
-        "00000003-0001-4000-8000-200000000002",
-        PermissionCode.INVITE_READ_ABSOLUTE,
-        "Read Absolute Invites",
-        "View all invite workflow records.",
-    ),
-    entry(
-        "00000003-0001-4000-8000-200000000003",
-        PermissionCode.INVITE_CREATE,
-        "Create Invite",
-        "Start an invite workflow for an account to join a realm.",
-    ),
-    entry(
-        "00000003-0001-4000-8000-200000000004",
-        PermissionCode.INVITE_CHANGE_STATUS,
-        "Change Invite Status",
-        "Accept, decline, or cancel a pending invite.",
-    ),
-
     // Account
     entry(
         "00000003-0002-4000-8000-200000000001",
@@ -743,26 +717,6 @@ const dataset = [
         "Permanently delete a revoked service client within a realm.",
     ),
 
-    // Membership
-    entry(
-        "00000003-0013-4000-8000-200000000001",
-        PermissionCode.MEMBERSHIP_READ_PERSONAL,
-        "Read Personal Membership",
-        "View active realm membership records for the current account.",
-    ),
-    entry(
-        "00000003-0013-4000-8000-200000000002",
-        PermissionCode.MEMBERSHIP_READ_COMMON,
-        "Read Common Membership",
-        "View active realm membership records within a realm.",
-    ),
-    entry(
-        "00000003-0013-4000-8000-200000000003",
-        PermissionCode.MEMBERSHIP_READ_ABSOLUTE,
-        "Read Absolute Membership",
-        "View all active realm membership records.",
-    ),
-
     // Membership History
     entry(
         "00000003-0014-4000-8000-200000000001",
@@ -781,6 +735,196 @@ const dataset = [
         PermissionCode.MEMBERSHIP_HISTORY_READ_COMMON,
         "Read Common Membership History",
         "View realm membership history records within a realm.",
+    ),
+
+    // ---------------------------------------------------------------------------
+    // Multitenancy
+    // ---------------------------------------------------------------------------
+
+    // Organization
+    entry(
+        "00000003-0001-4000-8000-400000000001",
+        PermissionCode.ORGANIZATION_READ_PERSONAL,
+        "Read Personal Organizations",
+        "View organizations associated with the current account.",
+    ),
+    entry(
+        "00000003-0001-4000-8000-400000000002",
+        PermissionCode.ORGANIZATION_READ_ABSOLUTE,
+        "Read Absolute Organizations",
+        "View all organizations.",
+    ),
+
+    // Invite
+    entry(
+        "00000003-0002-4000-8000-400000000001",
+        PermissionCode.INVITE_READ_PERSONAL,
+        "Read Personal Invites",
+        "View invites sent or received by the current account.",
+    ),
+    entry(
+        "00000003-0002-4000-8000-400000000002",
+        PermissionCode.INVITE_READ_COMMON,
+        "Read Common Invites",
+        "View all invites within an organization realm.",
+    ),
+    entry(
+        "00000003-0002-4000-8000-400000000003",
+        PermissionCode.INVITE_READ_ABSOLUTE,
+        "Read Absolute Invites",
+        "View all invites.",
+    ),
+    entry(
+        "00000003-0002-4000-8000-400000000004",
+        PermissionCode.INVITE_CREATE,
+        "Create Invite",
+        "Invite an account to an organization.",
+    ),
+    entry(
+        "00000003-0002-4000-8000-400000000005",
+        PermissionCode.INVITE_CHANGE_STATUS,
+        "Change Invite Status",
+        "Accept, decline, cancel, or invalidate a pending invite.",
+    ),
+
+    // Membership
+    entry(
+        "00000003-0003-4000-8000-400000000001",
+        PermissionCode.MEMBERSHIP_READ_PERSONAL,
+        "Read Personal Memberships",
+        "View organization memberships of the current account.",
+    ),
+    entry(
+        "00000003-0003-4000-8000-400000000002",
+        PermissionCode.MEMBERSHIP_READ_COMMON,
+        "Read Common Memberships",
+        "View all memberships within an organization realm.",
+    ),
+    entry(
+        "00000003-0003-4000-8000-400000000003",
+        PermissionCode.MEMBERSHIP_READ_ABSOLUTE,
+        "Read Absolute Memberships",
+        "View all organization memberships.",
+    ),
+
+    // Project
+    entry(
+        "00000003-0004-4000-8000-400000000001",
+        PermissionCode.PROJECT_READ_PERSONAL,
+        "Read Personal Projects",
+        "View projects assigned to the current account.",
+    ),
+    entry(
+        "00000003-0004-4000-8000-400000000002",
+        PermissionCode.PROJECT_READ_COMMON,
+        "Read Common Projects",
+        "View all projects within a realm.",
+    ),
+    entry(
+        "00000003-0004-4000-8000-400000000003",
+        PermissionCode.PROJECT_READ_ABSOLUTE,
+        "Read Absolute Projects",
+        "View all projects.",
+    ),
+
+    // ProjectAccountAssignment
+    entry(
+        "00000003-0005-4000-8000-400000000001",
+        PermissionCode.PROJECT_ACCOUNT_ASSIGNMENT_READ_PERSONAL,
+        "Read Personal Project Account Assignments",
+        "View project assignments of the current account.",
+    ),
+    entry(
+        "00000003-0005-4000-8000-400000000002",
+        PermissionCode.PROJECT_ACCOUNT_ASSIGNMENT_READ_COMMON,
+        "Read Common Project Account Assignments",
+        "View all project assignments within a realm.",
+    ),
+    entry(
+        "00000003-0005-4000-8000-400000000003",
+        PermissionCode.PROJECT_ACCOUNT_ASSIGNMENT_READ_ABSOLUTE,
+        "Read Absolute Project Account Assignments",
+        "View all project assignments.",
+    ),
+
+    // Department
+    entry(
+        "00000003-0006-4000-8000-400000000001",
+        PermissionCode.DEPARTMENT_READ_PERSONAL,
+        "Read Personal Departments",
+        "View departments assigned to the current account.",
+    ),
+    entry(
+        "00000003-0006-4000-8000-400000000002",
+        PermissionCode.DEPARTMENT_READ_COMMON,
+        "Read Common Departments",
+        "View all departments within an organization realm.",
+    ),
+    entry(
+        "00000003-0006-4000-8000-400000000003",
+        PermissionCode.DEPARTMENT_READ_ABSOLUTE,
+        "Read Absolute Departments",
+        "View all departments.",
+    ),
+
+    // DeptAccountAssignment
+    entry(
+        "00000003-0007-4000-8000-400000000001",
+        PermissionCode.DEPT_ACCOUNT_ASSIGNMENT_READ_PERSONAL,
+        "Read Personal Department Account Assignments",
+        "View department assignments of the current account.",
+    ),
+    entry(
+        "00000003-0007-4000-8000-400000000002",
+        PermissionCode.DEPT_ACCOUNT_ASSIGNMENT_READ_COMMON,
+        "Read Common Department Account Assignments",
+        "View all department assignments within an organization realm.",
+    ),
+    entry(
+        "00000003-0007-4000-8000-400000000003",
+        PermissionCode.DEPT_ACCOUNT_ASSIGNMENT_READ_ABSOLUTE,
+        "Read Absolute Department Account Assignments",
+        "View all department assignments.",
+    ),
+
+    // Team
+    entry(
+        "00000003-0008-4000-8000-400000000001",
+        PermissionCode.TEAM_READ_PERSONAL,
+        "Read Personal Teams",
+        "View teams assigned to the current account.",
+    ),
+    entry(
+        "00000003-0008-4000-8000-400000000002",
+        PermissionCode.TEAM_READ_COMMON,
+        "Read Common Teams",
+        "View all teams within an organization realm.",
+    ),
+    entry(
+        "00000003-0008-4000-8000-400000000003",
+        PermissionCode.TEAM_READ_ABSOLUTE,
+        "Read Absolute Teams",
+        "View all teams.",
+    ),
+
+    // TeamAccountAssignment
+    entry(
+        "00000003-0009-4000-8000-400000000001",
+        PermissionCode.TEAM_ACCOUNT_ASSIGNMENT_READ_PERSONAL,
+        "Read Personal Team Account Assignments",
+        "View team assignments of the current account.",
+    ),
+    entry(
+        "00000003-0009-4000-8000-400000000002",
+        PermissionCode.TEAM_ACCOUNT_ASSIGNMENT_READ_COMMON,
+        "Read Common Team Account Assignments",
+        "View all team assignments within an organization realm.",
+    ),
+    entry(
+        "00000003-0009-4000-8000-400000000003",
+        PermissionCode.TEAM_ACCOUNT_ASSIGNMENT_READ_ABSOLUTE,
+        "Read Absolute Team Account Assignments",
+        "View all team assignments.",
     ),
 
     // ---------------------------------------------------------------------------
