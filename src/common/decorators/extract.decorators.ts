@@ -17,6 +17,7 @@ export class Extract {
     );
 
     public static readonly Permissions = createParamDecorator((_: unknown, ctx: ExecutionContext) => {
-        return ctx.switchToHttp().getRequest().metadata.permissions as Optional<string[]>;
+        const request = ctx.switchToHttp().getRequest<Req>();
+        return request.metadata.permissions ?? [];
     });
 }

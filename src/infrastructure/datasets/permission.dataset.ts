@@ -754,6 +754,42 @@ const dataset = [
         "Read Absolute Organizations",
         "View all organizations.",
     ),
+    entry(
+        "00000003-0001-4000-8000-400000000003",
+        PermissionCode.ORGANIZATION_CREATE,
+        "Create Organization",
+        "Create an organization owned by the current account.",
+    ),
+    entry(
+        "00000003-0001-4000-8000-400000000004",
+        PermissionCode.ORGANIZATION_UPDATE,
+        "Update Organization",
+        "Modify metadata of an organization.",
+    ),
+    entry(
+        "00000003-0001-4000-8000-400000000005",
+        PermissionCode.ORGANIZATION_TRANSFER_OWNERSHIP,
+        "Transfer Organization Ownership",
+        "Transfer ownership of an organization to another active member.",
+    ),
+    entry(
+        "00000003-0001-4000-8000-400000000006",
+        PermissionCode.ORGANIZATION_REVOKE,
+        "Revoke Organization",
+        "Revoke an organization.",
+    ),
+    entry(
+        "00000003-0001-4000-8000-400000000007",
+        PermissionCode.ORGANIZATION_RESTORE,
+        "Restore Organization",
+        "Restore a previously revoked organization.",
+    ),
+    entry(
+        "00000003-0001-4000-8000-400000000008",
+        PermissionCode.ORGANIZATION_PURGE,
+        "Purge Organization",
+        "Permanently delete a revoked organization.",
+    ),
 
     // Invite
     entry(
@@ -786,6 +822,24 @@ const dataset = [
         "Change Invite Status",
         "Accept, decline, cancel, or invalidate a pending invite.",
     ),
+    entry(
+        "00000003-0002-4000-8000-400000000006",
+        PermissionCode.INVITE_ACCEPT,
+        "Accept Invite",
+        "Accept an invitation addressed to the current account.",
+    ),
+    entry(
+        "00000003-0002-4000-8000-400000000007",
+        PermissionCode.INVITE_DECLINE,
+        "Decline Invite",
+        "Decline an invitation addressed to the current account.",
+    ),
+    entry(
+        "00000003-0002-4000-8000-400000000008",
+        PermissionCode.INVITE_CANCEL,
+        "Cancel Invite",
+        "Cancel a pending organization invitation.",
+    ),
 
     // Membership
     entry(
@@ -805,6 +859,30 @@ const dataset = [
         PermissionCode.MEMBERSHIP_READ_ABSOLUTE,
         "Read Absolute Memberships",
         "View all organization memberships.",
+    ),
+    entry(
+        "00000003-0003-4000-8000-400000000004",
+        PermissionCode.MEMBERSHIP_SUSPEND,
+        "Suspend Membership",
+        "Suspend an organization membership.",
+    ),
+    entry(
+        "00000003-0003-4000-8000-400000000005",
+        PermissionCode.MEMBERSHIP_RESUME,
+        "Resume Membership",
+        "Resume a suspended organization membership.",
+    ),
+    entry(
+        "00000003-0003-4000-8000-400000000006",
+        PermissionCode.MEMBERSHIP_LEAVE,
+        "Leave Organization",
+        "End the current account's organization membership.",
+    ),
+    entry(
+        "00000003-0003-4000-8000-400000000007",
+        PermissionCode.MEMBERSHIP_BLOCK,
+        "Block Membership",
+        "Block an organization membership.",
     ),
 
     // Project
@@ -826,6 +904,42 @@ const dataset = [
         "Read Absolute Projects",
         "View all projects.",
     ),
+    entry(
+        "00000003-0004-4000-8000-400000000004",
+        PermissionCode.PROJECT_CREATE,
+        "Create Project",
+        "Create a project within an organization.",
+    ),
+    entry(
+        "00000003-0004-4000-8000-400000000005",
+        PermissionCode.PROJECT_UPDATE,
+        "Update Project",
+        "Modify metadata of a project.",
+    ),
+    entry(
+        "00000003-0004-4000-8000-400000000006",
+        PermissionCode.PROJECT_CHANGE_MANAGER,
+        "Change Project Manager",
+        "Assign, replace, or remove the manager of a project.",
+    ),
+    entry(
+        "00000003-0004-4000-8000-400000000007",
+        PermissionCode.PROJECT_ARCHIVE,
+        "Archive Project",
+        "Archive a project.",
+    ),
+    entry(
+        "00000003-0004-4000-8000-400000000008",
+        PermissionCode.PROJECT_RESTORE,
+        "Restore Project",
+        "Restore an archived project.",
+    ),
+    entry(
+        "00000003-0004-4000-8000-400000000009",
+        PermissionCode.PROJECT_PURGE,
+        "Purge Project",
+        "Permanently delete an archived project.",
+    ),
 
     // ProjectAccountAssignment
     entry(
@@ -845,6 +959,30 @@ const dataset = [
         PermissionCode.PROJECT_ACCOUNT_ASSIGNMENT_READ_ABSOLUTE,
         "Read Absolute Project Account Assignments",
         "View all project assignments.",
+    ),
+    entry(
+        "00000003-0005-4000-8000-400000000004",
+        PermissionCode.PROJECT_ACCOUNT_ASSIGNMENT_CREATE,
+        "Create Project Account Assignment",
+        "Assign an organization member to a project.",
+    ),
+    entry(
+        "00000003-0005-4000-8000-400000000005",
+        PermissionCode.PROJECT_ACCOUNT_ASSIGNMENT_REVOKE,
+        "Revoke Project Account Assignment",
+        "Revoke an account's project assignment.",
+    ),
+    entry(
+        "00000003-0005-4000-8000-400000000006",
+        PermissionCode.PROJECT_ACCOUNT_ASSIGNMENT_RESTORE,
+        "Restore Project Account Assignment",
+        "Restore a revoked project account assignment.",
+    ),
+    entry(
+        "00000003-0005-4000-8000-400000000007",
+        PermissionCode.PROJECT_ACCOUNT_ASSIGNMENT_PURGE,
+        "Purge Project Account Assignment",
+        "Permanently delete a revoked project account assignment.",
     ),
 
     // Department
@@ -866,6 +1004,42 @@ const dataset = [
         "Read Absolute Departments",
         "View all departments.",
     ),
+    entry(
+        "00000003-0006-4000-8000-400000000004",
+        PermissionCode.DEPARTMENT_CREATE,
+        "Create Department",
+        "Create a department within an organization.",
+    ),
+    entry(
+        "00000003-0006-4000-8000-400000000005",
+        PermissionCode.DEPARTMENT_UPDATE,
+        "Update Department",
+        "Modify metadata of a department.",
+    ),
+    entry(
+        "00000003-0006-4000-8000-400000000006",
+        PermissionCode.DEPARTMENT_CHANGE_MANAGER,
+        "Change Department Manager",
+        "Assign, replace, or remove the manager of a department.",
+    ),
+    entry(
+        "00000003-0006-4000-8000-400000000007",
+        PermissionCode.DEPARTMENT_ARCHIVE,
+        "Archive Department",
+        "Archive a department.",
+    ),
+    entry(
+        "00000003-0006-4000-8000-400000000008",
+        PermissionCode.DEPARTMENT_RESTORE,
+        "Restore Department",
+        "Restore an archived department.",
+    ),
+    entry(
+        "00000003-0006-4000-8000-400000000009",
+        PermissionCode.DEPARTMENT_PURGE,
+        "Purge Department",
+        "Permanently delete an archived department.",
+    ),
 
     // DeptAccountAssignment
     entry(
@@ -885,6 +1059,30 @@ const dataset = [
         PermissionCode.DEPT_ACCOUNT_ASSIGNMENT_READ_ABSOLUTE,
         "Read Absolute Department Account Assignments",
         "View all department assignments.",
+    ),
+    entry(
+        "00000003-0007-4000-8000-400000000004",
+        PermissionCode.DEPT_ACCOUNT_ASSIGNMENT_CREATE,
+        "Create Department Account Assignment",
+        "Assign an organization member to a department.",
+    ),
+    entry(
+        "00000003-0007-4000-8000-400000000005",
+        PermissionCode.DEPT_ACCOUNT_ASSIGNMENT_REVOKE,
+        "Revoke Department Account Assignment",
+        "Revoke an account's department assignment.",
+    ),
+    entry(
+        "00000003-0007-4000-8000-400000000006",
+        PermissionCode.DEPT_ACCOUNT_ASSIGNMENT_RESTORE,
+        "Restore Department Account Assignment",
+        "Restore a revoked department account assignment.",
+    ),
+    entry(
+        "00000003-0007-4000-8000-400000000007",
+        PermissionCode.DEPT_ACCOUNT_ASSIGNMENT_PURGE,
+        "Purge Department Account Assignment",
+        "Permanently delete a revoked department account assignment.",
     ),
 
     // Team
@@ -906,6 +1104,42 @@ const dataset = [
         "Read Absolute Teams",
         "View all teams.",
     ),
+    entry(
+        "00000003-0008-4000-8000-400000000004",
+        PermissionCode.TEAM_CREATE,
+        "Create Team",
+        "Create a team within an organization.",
+    ),
+    entry(
+        "00000003-0008-4000-8000-400000000005",
+        PermissionCode.TEAM_UPDATE,
+        "Update Team",
+        "Modify metadata of a team.",
+    ),
+    entry(
+        "00000003-0008-4000-8000-400000000006",
+        PermissionCode.TEAM_CHANGE_LEAD,
+        "Change Team Lead",
+        "Assign, replace, or remove the lead of a team.",
+    ),
+    entry(
+        "00000003-0008-4000-8000-400000000007",
+        PermissionCode.TEAM_ARCHIVE,
+        "Archive Team",
+        "Archive a team.",
+    ),
+    entry(
+        "00000003-0008-4000-8000-400000000008",
+        PermissionCode.TEAM_RESTORE,
+        "Restore Team",
+        "Restore an archived team.",
+    ),
+    entry(
+        "00000003-0008-4000-8000-400000000009",
+        PermissionCode.TEAM_PURGE,
+        "Purge Team",
+        "Permanently delete an archived team.",
+    ),
 
     // TeamAccountAssignment
     entry(
@@ -925,6 +1159,30 @@ const dataset = [
         PermissionCode.TEAM_ACCOUNT_ASSIGNMENT_READ_ABSOLUTE,
         "Read Absolute Team Account Assignments",
         "View all team assignments.",
+    ),
+    entry(
+        "00000003-0009-4000-8000-400000000004",
+        PermissionCode.TEAM_ACCOUNT_ASSIGNMENT_CREATE,
+        "Create Team Account Assignment",
+        "Assign an organization member to a team.",
+    ),
+    entry(
+        "00000003-0009-4000-8000-400000000005",
+        PermissionCode.TEAM_ACCOUNT_ASSIGNMENT_REVOKE,
+        "Revoke Team Account Assignment",
+        "Revoke an account's team assignment.",
+    ),
+    entry(
+        "00000003-0009-4000-8000-400000000006",
+        PermissionCode.TEAM_ACCOUNT_ASSIGNMENT_RESTORE,
+        "Restore Team Account Assignment",
+        "Restore a revoked team account assignment.",
+    ),
+    entry(
+        "00000003-0009-4000-8000-400000000007",
+        PermissionCode.TEAM_ACCOUNT_ASSIGNMENT_PURGE,
+        "Purge Team Account Assignment",
+        "Permanently delete a revoked team account assignment.",
     ),
 
     // ---------------------------------------------------------------------------
