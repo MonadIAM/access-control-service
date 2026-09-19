@@ -175,7 +175,7 @@ const KAFKA_CONSUMER_ERRORS_PROVIDER = makeCounterProvider({
 
 const KAFKA_RETRY_MESSAGES_PROVIDER = makeCounterProvider({
     name: "kafka_retry_messages_total",
-    help: "Total number of Kafka messages sent to retry topics by the application",
+    help: "Total number of Kafka consumer retry attempts scheduled by the application",
     labelNames: ["topic"],
 });
 

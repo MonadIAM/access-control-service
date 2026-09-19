@@ -1,7 +1,10 @@
 import { HttpStatus } from "@nestjs/common";
+import { isString } from "class-validator";
 
 import { ErrorCode, ErrorKind } from "./enums";
 
+const TRANSIENT_CODES = new Set(["ECONNRESET", "ECONNREFUSED", "ETIMEDOUT", "EPIPE", "EAI_AGAIN", "ENETUNREACH"]);
+const TRANSIENT_REDIS_REPLIES = /^(LOADING|TRYAGAIN|CLUSTERDOWN|MASTERDOWN|READONLY|BUSY)\b/;
 const RETRYABLE_STATUSES = new Set<number>([
     HttpStatus.INTERNAL_SERVER_ERROR,
     HttpStatus.SERVICE_UNAVAILABLE,
@@ -44,114 +47,124 @@ export class Exception extends Error {
     }
 
     public static isRetryable(error: unknown): error is Exception {
-        return (
-            error instanceof Exception && (error.kind === ErrorKind.DEADLOCK || RETRYABLE_STATUSES.has(error.statusCode))
-        );
+        if (error instanceof Exception) {
+            return error.kind === ErrorKind.DEADLOCK || RETRYABLE_STATUSES.has(error.statusCode);
+        } else if (error instanceof Error) {
+            const code: unknown = Reflect.get(error, "code");
+            return (
+                (isString(code) && TRANSIENT_CODES.has(code)) ||
+                error.name === "MaxRetriesPerRequestError" ||
+                error.message === "Connection is closed." ||
+                (error.name === "ReplyError" && TRANSIENT_REDIS_REPLIES.test(error.message))
+            );
+        } else {
+            return false;
+        }
     }
 
     public static badRequest(props: Exception.StatusProps): Exception {
         return new Exception({
+            code: props.code ?? ErrorCode.BAD_REQUEST,
             statusCode: HttpStatus.BAD_REQUEST,
             kind: ErrorKind.BAD_REQUEST,
             ...props,
-            code: props.code ?? ErrorCode.BAD_REQUEST,
         });
     }
 
     public static unauthorized(props: Exception.StatusProps): Exception {
         return new Exception({
+            code: props.code ?? ErrorCode.UNAUTHORIZED,
             statusCode: HttpStatus.UNAUTHORIZED,
             kind: ErrorKind.UNAUTHORIZED,
             ...props,
-            code: props.code ?? ErrorCode.UNAUTHORIZED,
         });
     }
 
     public static forbidden(props: Exception.StatusProps): Exception {
         return new Exception({
+            code: props.code ?? ErrorCode.FORBIDDEN,
             statusCode: HttpStatus.FORBIDDEN,
             kind: ErrorKind.FORBIDDEN,
             ...props,
-            code: props.code ?? ErrorCode.FORBIDDEN,
         });
     }
 
     public static methodNotAllowed(props: Exception.StatusProps): Exception {
         return new Exception({
+            code: props.code ?? ErrorCode.METHOD_NOT_ALLOWED,
             statusCode: HttpStatus.METHOD_NOT_ALLOWED,
             kind: ErrorKind.METHOD_NOT_ALLOWED,
             ...props,
-            code: props.code ?? ErrorCode.METHOD_NOT_ALLOWED,
         });
     }
 
     public static notFound(props: Exception.StatusProps): Exception {
         return new Exception({
+            code: props.code ?? ErrorCode.NOT_FOUND,
             statusCode: HttpStatus.NOT_FOUND,
             kind: ErrorKind.NOT_FOUND,
             ...props,
-            code: props.code ?? ErrorCode.NOT_FOUND,
         });
     }
 
     public static conflict(props: Exception.StatusProps): Exception {
         return new Exception({
+            code: props.code ?? ErrorCode.CONFLICT,
             statusCode: HttpStatus.CONFLICT,
             kind: ErrorKind.CONFLICT,
             ...props,
-            code: props.code ?? ErrorCode.CONFLICT,
         });
     }
 
     public static internal(props: Exception.StatusProps): Exception {
         return new Exception({
             statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            code: props.code ?? ErrorCode.INTERNAL,
             kind: ErrorKind.INTERNAL,
             ...props,
-            code: props.code ?? ErrorCode.INTERNAL,
         });
     }
 
     public static unprocessable(props: Exception.StatusProps): Exception {
         return new Exception({
             statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+            code: props.code ?? ErrorCode.UNPROCESSABLE,
             kind: ErrorKind.UNPROCESSABLE,
             ...props,
-            code: props.code ?? ErrorCode.UNPROCESSABLE,
         });
     }
 
     public static invariantViolation(props: Exception.StatusProps): Exception {
         return new Exception({
-            statusCode: HttpStatus.BAD_REQUEST,
-            kind: ErrorKind.INVARIANT_VIOLATION,
-            ...props,
             code: props.code ?? ErrorCode.INVARIANT_VIOLATION,
+            kind: ErrorKind.INVARIANT_VIOLATION,
+            statusCode: HttpStatus.BAD_REQUEST,
+            ...props,
         });
     }
 
     public static externalServiceFailed(props: Exception.StatusProps): Exception {
         return new Exception({
+            code: props.code ?? ErrorCode.EXTERNAL_SERVICE_FAILED,
             kind: ErrorKind.EXTERNAL_SERVICE_FAILED,
             statusCode: HttpStatus.BAD_GATEWAY,
             ...props,
-            code: props.code ?? ErrorCode.EXTERNAL_SERVICE_FAILED,
         });
     }
 
     public static externalAuthnFailed(props: Exception.StatusProps): Exception {
         return new Exception({
-            statusCode: HttpStatus.UNAUTHORIZED,
-            kind: ErrorKind.EXTERNAL_AUTHN_FAILED,
-            ...props,
             code: props.code ?? ErrorCode.EXTERNAL_AUTHN_FAILED,
+            kind: ErrorKind.EXTERNAL_AUTHN_FAILED,
+            statusCode: HttpStatus.UNAUTHORIZED,
+            ...props,
         });
     }
 
     public static validationFailed(details: Exception.ValidationDetail[]): Exception {
         return new Exception({
-            statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
             messageKey: `${this.dictionaryPath}.COMMON_ERROR`,
+            statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
             code: ErrorCode.UNPROCESSABLE,
             kind: ErrorKind.UNPROCESSABLE,
             details,

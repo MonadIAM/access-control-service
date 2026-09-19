@@ -3,17 +3,10 @@ import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { MembershipTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
-import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
+import { KAFKA_RETRY_SERVICE, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE, KafkaIncomingMapper } from "~infrastructure/kafka";
+import { KAFKA_METRICS_RECORDER } from "~observability/metrics/tokens";
 import { MEMBERSHIP_COMMANDS } from "~context/application/commands";
-import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
-import {
-    KAFKA_SCHEMA_REGISTRY,
-    KAFKA_RETRY_REGISTRY,
-    KafkaIncomingMapper,
-    KafkaTopicBuilder,
-    KAFKA_SERVICE,
-} from "~infrastructure/kafka";
 
 @Controller()
 export class MembershipConsumer implements Consumers.Membership.Contract, OnModuleInit {
@@ -24,24 +17,18 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
     public constructor(
         @Inject(MEMBERSHIP_COMMANDS)
         private readonly membershipCommands: Commands.Membership.ConsumerContract,
-        @Inject(KafkaMetricsRecorder)
+        @Inject(KAFKA_METRICS_RECORDER)
         private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
         private readonly schemaRegistry: Kafka.SchemaRegistry.PublicContract,
-        @Inject(KAFKA_RETRY_REGISTRY)
-        private readonly retryRegistry: Kafka.RetryRegistry.Contract,
+        @Inject(KAFKA_RETRY_SERVICE)
+        private readonly kafkaRetry: Kafka.Retry.Contract,
         @Inject(KAFKA_SERVICE)
         private readonly kafkaClient: ClientKafka,
     ) {}
 
     public async onModuleInit(): Promise<void> {
         await this.kafkaClient.connect();
-
-        this.retryRegistry.register({
-            consumerKey: this.consumerKey,
-            topic: KafkaTopic.MEMBERSHIP,
-            handler: this,
-        });
     }
 
     @EventPattern(KafkaTopic.MEMBERSHIP)
@@ -49,16 +36,28 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
         @Payload() message: Consumers.Membership.Message,
         @Ctx() context: KafkaContext,
     ): Consumers.Membership.Handle.Result {
-        const incoming = this.incomingMapper.map({ consumerKey: this.consumerKey, context });
-        try {
-            await this.process({ incoming, message });
-        } catch (error) {
-            await this.reject({ incoming, message, error });
-        }
+        const incoming = {
+            consumerKey: this.consumerKey,
+            event: this.incomingMapper.reference({ context }),
+        };
+        await this.kafkaRetry.execute({
+            topic: KafkaTopic.MEMBERSHIP,
+            heartbeat: context.getHeartbeat(),
+            process: () =>
+                this.process({
+                    incoming: this.incomingMapper.map({ consumerKey: this.consumerKey, context }),
+                    message,
+                }),
+            reject: (error) => this.reject({ incoming, message, error }),
+        });
     }
 
     public async process(props: Consumers.Membership.Process.Props): Consumers.Membership.Process.Result {
-        const { incoming, message } = props;
+        const { incoming } = props;
+        const message = await this.schemaRegistry.decode<Consumers.Membership.Message>({
+            topic: KafkaTopic.MEMBERSHIP,
+            value: props.message,
+        });
         this.schemaRegistry.validate({ topic: KafkaTopic.MEMBERSHIP, value: message });
         switch (message.actionType) {
             case MembershipTopicAction.JOIN_REQUESTED:
@@ -74,14 +73,10 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
 
     public async reject(props: Consumers.Membership.Reject.Props): Consumers.Membership.Reject.Result {
         const { incoming, message, error } = props;
-        const retryable = Exception.isRetryable(error);
-
-        if (!retryable) {
-            this.logger.warn(`Non-retryable error in membership consumer: ${String(error)}`);
-        }
+        this.logger.warn(`Rejected message in membership consumer: ${String(error)}`);
 
         await lastValueFrom(
-            this.kafkaClient.emit(retryable ? KafkaTopicBuilder.retry(KafkaTopic.MEMBERSHIP) : KafkaTopic.MEMBERSHIP_DEAD, {
+            this.kafkaClient.emit(KafkaTopic.MEMBERSHIP_DEAD, {
                 key: incoming.event,
                 value: {
                     originalTopic: KafkaTopic.MEMBERSHIP,
@@ -91,10 +86,6 @@ export class MembershipConsumer implements Consumers.Membership.Contract, OnModu
             }),
         );
 
-        if (retryable) {
-            this.kafkaMetrics.recordRetry({ topic: KafkaTopic.MEMBERSHIP, error });
-        } else {
-            this.kafkaMetrics.recordDead({ topic: KafkaTopic.MEMBERSHIP, error });
-        }
+        this.kafkaMetrics.recordDead({ topic: KafkaTopic.MEMBERSHIP, error });
     }
 }

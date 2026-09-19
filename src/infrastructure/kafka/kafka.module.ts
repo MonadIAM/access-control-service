@@ -3,23 +3,22 @@ import { Global, Inject, Module, OnApplicationShutdown } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
 
-import { KAFKA_CONFIG, KAFKA_RETRY_REGISTRY, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "./tokens";
-import { KafkaSchemaDeserializer } from "./schema.deserializer";
+import { KAFKA_CONFIG, KAFKA_SCHEMA_REGISTRY, KAFKA_RETRY_SERVICE, KAFKA_SERVICE } from "./tokens";
 import { KafkaSchemaSerializer } from "./schema.serializer";
 import { KafkaSchemaRegistry } from "./schema.registry";
-import { KafkaRetryRegistry } from "./retry.registry";
+import { KafkaRetryService } from "./retry.service";
 import { KafkaUtils } from "./utils";
 
 @Global()
 @Module({
     providers: [
         {
-            provide: KAFKA_SCHEMA_REGISTRY,
-            useClass: KafkaSchemaRegistry,
+            provide: KAFKA_RETRY_SERVICE,
+            useClass: KafkaRetryService,
         },
         {
-            provide: KAFKA_RETRY_REGISTRY,
-            useClass: KafkaRetryRegistry,
+            provide: KAFKA_SCHEMA_REGISTRY,
+            useClass: KafkaSchemaRegistry,
         },
         {
             inject: [ConfigService, KAFKA_SCHEMA_REGISTRY],
@@ -33,8 +32,8 @@ import { KafkaUtils } from "./utils";
         },
         {
             provide: KAFKA_CONFIG,
-            inject: [ConfigService, KAFKA_SCHEMA_REGISTRY],
-            useFactory: (config: ConfigService, schemaRegistry: Kafka.SchemaRegistry.Contract): MicroserviceOptions => ({
+            inject: [ConfigService],
+            useFactory: (config: ConfigService): MicroserviceOptions => ({
                 transport: Transport.KAFKA,
                 options: {
                     client: {
@@ -51,12 +50,11 @@ import { KafkaUtils } from "./utils";
                     run: {
                         partitionsConsumedConcurrently: config.getOrThrow<number>("KAFKA_PARTITIONS_CONSUMED_CONCURRENTLY"),
                     },
-                    deserializer: new KafkaSchemaDeserializer(schemaRegistry),
                 },
             }),
         },
     ],
-    exports: [KAFKA_SCHEMA_REGISTRY, KAFKA_RETRY_REGISTRY, KAFKA_SERVICE, KAFKA_CONFIG],
+    exports: [KAFKA_RETRY_SERVICE, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE, KAFKA_CONFIG],
 })
 export class KafkaModule implements OnApplicationShutdown {
     public constructor(

@@ -4,6 +4,56 @@ import { KafkaContext } from "@nestjs/microservices";
 
 declare global {
     namespace Kafka {
+        namespace Retry {
+            interface Contract {
+                execute: Execute.Signature;
+            }
+
+            namespace Execute {
+                type Props = {
+                    heartbeat: ReturnType<KafkaContext["getHeartbeat"]>;
+                    reject(error: unknown): Promise<void>;
+                    process(): Promise<void>;
+                    topic: string;
+                };
+
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Retry {
+                type Props = Execute.Props & {
+                    attempt: number;
+                };
+
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Wait {
+                type Props = {
+                    heartbeat: ReturnType<KafkaContext["getHeartbeat"]>;
+                    deadline: number;
+                };
+
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace Backoff {
+                type Props = {
+                    attempt: number;
+                };
+
+                type Result = number;
+
+                type Signature = (props: Props) => Result;
+            }
+        }
+
         type Message = Pick<Request, "value"> & Partial<Omit<Request, "value">>;
 
         type Request = KafkaRequest;
@@ -12,6 +62,7 @@ declare global {
             type Context = Pick<KafkaContext, "getMessage" | "getPartition" | "getTopic">;
 
             interface Contract {
+                reference: Event.Signature;
                 event: Event.Signature;
                 map: Map.Signature;
             }
@@ -82,56 +133,9 @@ declare global {
                     topic: string;
                 };
 
-                type Result = Promise<unknown>;
+                type Result<T> = Promise<T>;
 
-                type Signature = (props: Props) => Result;
-            }
-        }
-
-        namespace RetryRegistry {
-            type Entry = {
-                consumerKey: string;
-                handler: Handler;
-            };
-
-            interface Handler {
-                process(props: HandlerProcess.Props): HandlerProcess.Result;
-            }
-
-            namespace HandlerProcess {
-                type Props = {
-                    incoming: TransactionManager.Service.IncomingMessage;
-                    message: unknown;
-                };
-
-                type Result = Promise<void>;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            interface Contract {
-                register: Register.Signature;
-                resolve: Resolve.Signature;
-            }
-
-            namespace Register {
-                type Props = Entry & {
-                    topic: string;
-                };
-
-                type Result = void;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace Resolve {
-                type Props = {
-                    topic: string;
-                };
-
-                type Result = Optional<Entry>;
-
-                type Signature = (props: Props) => Result;
+                type Signature = <T>(props: Props) => Result<T>;
             }
         }
     }

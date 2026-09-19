@@ -603,44 +603,6 @@ const dataset = [
         "Revoke all sessions for the current account.",
     ),
 
-    // Application
-    entry(
-        "00000003-0010-4000-8000-200000000001",
-        PermissionCode.APPLICATION_READ_ABSOLUTE,
-        "Read Absolute Applications",
-        "View all applications within a realm.",
-    ),
-    entry(
-        "00000003-0010-4000-8000-200000000002",
-        PermissionCode.APPLICATION_CREATE,
-        "Create Application",
-        "Create an application within a realm.",
-    ),
-    entry(
-        "00000003-0010-4000-8000-200000000003",
-        PermissionCode.APPLICATION_UPDATE,
-        "Update Application",
-        "Modify an application within a realm.",
-    ),
-    entry(
-        "00000003-0010-4000-8000-200000000004",
-        PermissionCode.APPLICATION_REVOKE,
-        "Revoke Application",
-        "Revoke an application within a realm.",
-    ),
-    entry(
-        "00000003-0010-4000-8000-200000000005",
-        PermissionCode.APPLICATION_RESTORE,
-        "Restore Application",
-        "Restore a revoked application within a realm.",
-    ),
-    entry(
-        "00000003-0010-4000-8000-200000000006",
-        PermissionCode.APPLICATION_PURGE,
-        "Purge Application",
-        "Permanently delete a revoked application within a realm.",
-    ),
-
     // InterfaceClient
     entry(
         "00000003-0011-4000-8000-200000000001",

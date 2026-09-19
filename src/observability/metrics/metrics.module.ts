@@ -3,6 +3,7 @@ import { Global, Module } from "@nestjs/common";
 
 import { MetricsController } from "./metrics.controller";
 import { KafkaMetricsRecorder } from "./kafka.recorder";
+import { KAFKA_METRICS_RECORDER } from "./tokens";
 import { PROVIDERS } from "./metrics.providers";
 
 @Global()
@@ -14,7 +15,13 @@ import { PROVIDERS } from "./metrics.providers";
             path: "/metrics",
         }),
     ],
-    providers: [...PROVIDERS, KafkaMetricsRecorder],
-    exports: [...PROVIDERS, KafkaMetricsRecorder],
+    providers: [
+        {
+            provide: KAFKA_METRICS_RECORDER,
+            useClass: KafkaMetricsRecorder,
+        },
+        ...PROVIDERS,
+    ],
+    exports: [KAFKA_METRICS_RECORDER, ...PROVIDERS],
 })
 export class MetricsModule {}

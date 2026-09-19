@@ -13,27 +13,6 @@ declare global {
             type JobCounts = Partial<Record<JobState, number>>;
         }
 
-        namespace KafkaRetry {
-            type JobData = Consumers.Retry.Message & {
-                event: string;
-            };
-
-            interface Contract {
-                schedule: Schedule.Signature;
-            }
-
-            namespace Schedule {
-                type Props = {
-                    message: Consumers.Retry.Message;
-                    event: string;
-                };
-
-                type Result = Promise<void>;
-
-                type Signature = (props: Props) => Result;
-            }
-        }
-
         namespace Cleanup {
             type Result = {
                 nextBatch: boolean;

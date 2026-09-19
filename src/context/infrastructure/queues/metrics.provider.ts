@@ -19,12 +19,9 @@ export const BULLMQ_JOBS_PROVIDER = makeGaugeProvider({
     name: "bullmq_jobs",
     help: "Current number of BullMQ jobs by queue and state",
     labelNames: ["queue", "state"],
-    inject: [getQueueToken(BullQueue.CLEANUP), getQueueToken(BullQueue.KAFKA_RETRY)],
-    collect: async function (this: Gauge<string>, cleanup: Queue, kafkaRetry: Queue): Promise<void> {
-        const queues = [
-            { name: BullQueue.CLEANUP, instance: cleanup },
-            { name: BullQueue.KAFKA_RETRY, instance: kafkaRetry },
-        ];
+    inject: [getQueueToken(BullQueue.CLEANUP)],
+    collect: async function (this: Gauge<string>, cleanup: Queue): Promise<void> {
+        const queues = [{ name: BullQueue.CLEANUP, instance: cleanup }];
 
         const snapshots = await Promise.all(
             queues.map(async (queue) => ({

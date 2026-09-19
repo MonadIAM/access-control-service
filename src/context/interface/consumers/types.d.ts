@@ -157,21 +157,8 @@ declare global {
             }
 
             interface InternalContract {
-                backoff: Backoff.Signature;
                 process: Process.Signature;
                 reject: Reject.Signature;
-                retry: Retry.Signature;
-                wait: Wait.Signature;
-            }
-
-            namespace Backoff {
-                type Props = {
-                    attempt: number;
-                };
-
-                type Result = number;
-
-                type Signature = (props: Props) => Result;
             }
 
             namespace Process {
@@ -190,28 +177,6 @@ declare global {
                     incoming: TransactionManager.Service.IncomingMessage;
                     message: Message;
                     error: unknown;
-                };
-
-                type Result = Promise<void>;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace Retry {
-                type Props = Process.Props & {
-                    heartbeat: ReturnType<KafkaContext["getHeartbeat"]>;
-                    attempt: number;
-                };
-
-                type Result = Promise<void>;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace Wait {
-                type Props = {
-                    heartbeat: ReturnType<KafkaContext["getHeartbeat"]>;
-                    deadline: number;
                 };
 
                 type Result = Promise<void>;
@@ -256,51 +221,6 @@ declare global {
                     incoming: TransactionManager.Service.IncomingMessage;
                     message: Message;
                     error: unknown;
-                };
-
-                type Result = Promise<void>;
-
-                type Signature = (props: Props) => Result;
-            }
-        }
-
-        namespace Retry {
-            type Message = Consumers.DLQ.Message;
-
-            interface Contract extends PublicContract, InternalContract {}
-
-            interface PublicContract {
-                handle: Handle.Signature;
-            }
-
-            namespace Handle {
-                type Result = Promise<void>;
-
-                type Signature = (message: Message, context: KafkaContext) => Result;
-            }
-
-            interface InternalContract {
-                process: Process.Signature;
-                reject: Reject.Signature;
-            }
-
-            namespace Process {
-                type Props = {
-                    context: KafkaContext;
-                    message: Message;
-                    event: string;
-                };
-
-                type Result = Promise<void>;
-
-                type Signature = (props: Props) => Result;
-            }
-
-            namespace Reject {
-                type Props = {
-                    message: Message;
-                    error: unknown;
-                    event: string;
                 };
 
                 type Result = Promise<void>;

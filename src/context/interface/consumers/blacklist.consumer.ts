@@ -2,9 +2,9 @@ import { EventPattern, KafkaContext, Payload, ClientKafka, Ctx } from "@nestjs/m
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 
-import { KafkaIncomingMapper, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE } from "~infrastructure/kafka";
-import { KafkaMetricsRecorder } from "~observability/metrics/kafka.recorder";
-import { BLACKLIST_CACHE_SERVICE } from "~context/infrastructure/services";
+import { KAFKA_RETRY_SERVICE, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE, KafkaIncomingMapper } from "~infrastructure/kafka";
+import { BLACKLIST_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
+import { KAFKA_METRICS_RECORDER } from "~observability/metrics/tokens";
 import { KafkaTopic } from "~context/enums";
 
 @Controller()
@@ -16,10 +16,12 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModule
     public constructor(
         @Inject(BLACKLIST_CACHE_SERVICE)
         private readonly blacklistCacheService: InfrastructureServices.BlacklistCache.PublicContract,
-        @Inject(KafkaMetricsRecorder)
+        @Inject(KAFKA_METRICS_RECORDER)
         private readonly kafkaMetrics: Observability.Metrics.Kafka.PublicContract,
         @Inject(KAFKA_SCHEMA_REGISTRY)
         private readonly schemaRegistry: Kafka.SchemaRegistry.PublicContract,
+        @Inject(KAFKA_RETRY_SERVICE)
+        private readonly kafkaRetry: Kafka.Retry.Contract,
         @Inject(KAFKA_SERVICE)
         private readonly kafkaClient: ClientKafka,
     ) {}
@@ -33,16 +35,30 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModule
         @Payload() message: Consumers.Blacklist.Message,
         @Ctx() context: KafkaContext,
     ): Consumers.Blacklist.Handle.Result {
-        const incoming = this.incomingMapper.map({ consumerKey: this.consumerKey, context });
-        try {
-            await this.process({ incoming, message });
-        } catch (error) {
-            await this.reject({ incoming, message, error });
-        }
+        const incoming = {
+            consumerKey: this.consumerKey,
+            event: this.incomingMapper.reference({ context }),
+        };
+        await this.kafkaRetry.execute({
+            topic: KafkaTopic.BLACKLIST,
+            heartbeat: context.getHeartbeat(),
+            process: () => {
+                return this.process({
+                    incoming: this.incomingMapper.map({ consumerKey: this.consumerKey, context }),
+                    message,
+                });
+            },
+            reject: (error) => {
+                return this.reject({ incoming, message, error });
+            },
+        });
     }
 
     public async process(props: Consumers.Blacklist.Process.Props): Consumers.Blacklist.Process.Result {
-        const { message } = props;
+        const message = await this.schemaRegistry.decode<Consumers.Blacklist.Message>({
+            topic: KafkaTopic.BLACKLIST,
+            value: props.message,
+        });
         this.schemaRegistry.validate({ topic: KafkaTopic.BLACKLIST, value: message });
         const ttl = Math.floor((message.payload.expiresAt - Date.now()) / 1e3);
         if (ttl > 0) {
@@ -52,7 +68,7 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModule
 
     public async reject(props: Consumers.Blacklist.Reject.Props): Consumers.Blacklist.Reject.Result {
         const { incoming, message, error } = props;
-        this.logger.warn(`Non-retryable error in blacklist consumer: ${String(error)}`);
+        this.logger.warn(`Rejected message in blacklist consumer: ${String(error)}`);
 
         await lastValueFrom(
             this.kafkaClient.emit(KafkaTopic.BLACKLIST_DEAD, {
@@ -64,6 +80,7 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModule
                 },
             }),
         );
+
         this.kafkaMetrics.recordDead({ topic: KafkaTopic.BLACKLIST, error });
     }
 }

@@ -270,9 +270,6 @@ export type I18nTranslations = {
             "ROLES_NOT_FOUND": string;
             "ASSIGNMENTS_NOT_FOUND": string;
         };
-        "kafka-retry": {
-            "HANDLER_NOT_REGISTERED": string;
-        };
         "kafka-incoming": {
             "EVENT_MISSING": string;
         };
