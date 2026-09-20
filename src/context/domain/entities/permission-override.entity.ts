@@ -15,6 +15,7 @@ export class PermissionOverride implements Entities.PermissionOverride.Contract 
     public effect: PermissionOverrideEffect;
     public justification?: string;
     public isRevoked: boolean;
+    public isSystemRevoked: boolean = false;
     public expiresAt?: Date;
 
     public permission: Entities.Permission;
@@ -41,7 +42,10 @@ export class PermissionOverride implements Entities.PermissionOverride.Contract 
     }
 
     public revoke(): void {
-        if (this.isRevoked) {
+        if (this.isRevoked && this.isSystemRevoked) {
+            this.isSystemRevoked = false;
+            this.updatedAt = new Date();
+        } else if (this.isRevoked) {
             throw Exception.invariantViolation({ messageKey: `${PermissionOverride.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
@@ -60,7 +64,24 @@ export class PermissionOverride implements Entities.PermissionOverride.Contract 
         } else {
             const now = new Date();
             this.isRevoked = false;
+            this.isSystemRevoked = false;
             this.updatedAt = now;
+        }
+    }
+
+    public revokeBySystem(): void {
+        if (!this.isRevoked) {
+            this.isRevoked = true;
+            this.isSystemRevoked = true;
+            this.updatedAt = new Date();
+        }
+    }
+
+    public restoreBySystem(): void {
+        if (this.isRevoked && this.isSystemRevoked && (this.expiresAt?.getTime() ?? Infinity) > Date.now()) {
+            this.isRevoked = false;
+            this.isSystemRevoked = false;
+            this.updatedAt = new Date();
         }
     }
 

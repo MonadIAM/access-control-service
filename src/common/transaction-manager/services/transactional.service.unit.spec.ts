@@ -509,4 +509,101 @@ describe("TransactionalService", () => {
             ).rejects.toBe(error);
         });
     });
+
+    describe("consume with payload", () => {
+        const props = {
+            incoming: {
+                consumerKey: "payload.consumer.v1",
+                event: "00000000-0000-4000-8000-000000000020",
+            },
+            audit: AUDIT_PROPS,
+            payload: { items: [{ scope: InvalidationScope.GLOBAL }] },
+            actionType: AccessCacheTopicAction.INVALIDATE,
+            destinationTopic: KafkaTopic.ACCESS_CACHE,
+        } satisfies TransactionManager.Service.Consume.PayloadProps;
+
+        it("claims the message and emits its payload and audit in the same transaction", async () => {
+            const { service, transactional, inbox, outbox, operationContext } = helpers.service();
+            const context = jest.spyOn(operationContext, "run");
+            const claim = jest.spyOn(inbox, "claim");
+            const build = jest.spyOn(outbox, "build");
+            const emit = jest.spyOn(service, "emit");
+            const execute = jest.spyOn(service, "executeTransaction");
+
+            const result = await service.consume(props);
+
+            expect(result).toEqual({ status: "processed", value: undefined });
+            expect(inbox.claim).toHaveBeenCalledWith({ incoming: props.incoming, transaction: transactional.transaction });
+            expect(outbox.build).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    payload: props.payload,
+                    destinationTopic: props.destinationTopic,
+                    actionType: props.actionType,
+                }),
+            );
+            expect(context).toHaveBeenCalledWith(
+                expect.objectContaining({ changeLogEnabled: false }),
+                expect.any(Function),
+            );
+            expect(transactional.fork).toHaveBeenCalledTimes(1);
+            expect(transactional.transactional).toHaveBeenCalledTimes(1);
+            expect(transactional.persist).toHaveBeenCalledTimes(3);
+            expect(transactional.flush).toHaveBeenCalledTimes(1);
+            expect(emit).not.toHaveBeenCalled();
+            expect(execute).not.toHaveBeenCalled();
+            expect(claim.mock.invocationCallOrder[0]).toBeLessThan(build.mock.invocationCallOrder[0]);
+        });
+
+        it("does not build or persist payload and audit for a duplicate", async () => {
+            const inbox = helpers.inboxContract({ claim: () => Promise.resolve(false) });
+            const { service, transactional, logMasking, outbox } = helpers.service({ inbox });
+
+            const result = await service.consume(props);
+
+            expect(result).toEqual({ status: "duplicate" });
+            expect(outbox.build).not.toHaveBeenCalled();
+            expect(logMasking.sign).not.toHaveBeenCalled();
+            expect(transactional.persist).not.toHaveBeenCalled();
+            expect(transactional.flush).not.toHaveBeenCalled();
+        });
+
+        it("propagates outbox errors without flushing or opening a separate transaction", async () => {
+            const { service, transactional, outbox } = helpers.service();
+            const error = new Error("payload build failed");
+            jest.spyOn(outbox, "build").mockImplementation(() => {
+                throw error;
+            });
+
+            await expect(service.consume(props)).rejects.toBe(error);
+
+            expect(transactional.transactional).toHaveBeenCalledTimes(1);
+            expect(transactional.flush).not.toHaveBeenCalled();
+        });
+
+        it("propagates flush errors from the payload transaction", async () => {
+            const { service, transactional } = helpers.service();
+            const error = new Error("flush failed");
+            transactional.flush.mockRejectedValue(error);
+
+            await expect(service.consume(props)).rejects.toBe(error);
+
+            expect(transactional.transactional).toHaveBeenCalledTimes(1);
+        });
+
+        it("requires exactly one of execute and payload in the input contract", () => {
+            type Both = typeof props & { execute(): void };
+            type Neither = Pick<typeof props, "incoming" | "audit">;
+            type WithChangeLog = typeof props & { changeLog: true };
+            type Accepts<T> = T extends TransactionManager.Service.Consume.Props<void> ? true : false;
+
+            const accepted: [Accepts<typeof props>, Accepts<Both>, Accepts<Neither>, Accepts<WithChangeLog>] = [
+                true,
+                false,
+                false,
+                false,
+            ];
+
+            expect(accepted).toEqual([true, false, false, false]);
+        });
+    });
 });

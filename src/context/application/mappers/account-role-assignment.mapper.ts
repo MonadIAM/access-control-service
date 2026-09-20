@@ -155,4 +155,69 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
 
         return { items: [...invalidations.values()] };
     }
+
+    public joinAssignmentProjectionPayload(
+        props: Commands.Mappers.AccountRoleAssignment.JoinAssignmentProjectionPayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.JoinAssignmentProjectionPayload.Result {
+        return {
+            assignments: props.assignments.map(({ id, role }) => ({
+                assignment: id,
+                role: role.id,
+            })),
+            account: props.request.account,
+            realm: props.realm,
+        };
+    }
+
+    public joinAccessCachePayload(
+        props: Commands.Mappers.AccountRoleAssignment.JoinAccessCachePayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.JoinAccessCachePayload.Result {
+        return {
+            items: [
+                {
+                    scope: InvalidationScope.ACCOUNT_REALM,
+                    account: props.request.account,
+                    realm: props.realm,
+                },
+            ],
+        };
+    }
+
+    public joinConfirmedPayload(
+        props: Commands.Mappers.AccountRoleAssignment.JoinConfirmedPayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.JoinConfirmedPayload.Result {
+        const [assignment] = props.assignments;
+
+        return {
+            actor: props.actor,
+            realm: props.realm,
+            input: {
+                membership: props.request.membership,
+                process: props.request.process,
+                command: props.request.command,
+                account: props.request.account,
+                invite: props.request.invite,
+                assignment: assignment.id,
+                role: assignment.role.id,
+                joinedAt: Date.now(),
+            },
+        };
+    }
+
+    public joinRejectedPayload(
+        props: Commands.Mappers.AccountRoleAssignment.JoinRejectedPayload.Props,
+    ): Commands.Mappers.AccountRoleAssignment.JoinRejectedPayload.Result {
+        return {
+            actor: props.request.actor,
+            realm: props.request.realm,
+            input: {
+                membership: props.request.input.membership,
+                account: props.request.input.account,
+                process: props.request.input.process,
+                command: props.request.input.command,
+                invite: props.request.input.invite,
+                reason: props.reason,
+            },
+        };
+    }
 }

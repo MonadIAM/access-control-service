@@ -1,6 +1,10 @@
 declare namespace Commands {
     namespace AccountRoleAssignment {
-        interface Contract extends ControllerContract, ConsumerContract, ProcessorContract {}
+        interface Contract extends ControllerContract, ConsumerContract, ProcessorContract, InternalContract {}
+
+        interface InternalContract {
+            rejectJoin: RejectJoin.Signature;
+        }
 
         interface ProcessorContract {
             expire: Expire.Signature;
@@ -18,8 +22,41 @@ declare namespace Commands {
         }
 
         interface ConsumerContract {
+            join: Join.Signature;
             assign: Assign.Signature;
             clean: Clean.Signature;
+        }
+
+        namespace RejectJoin {
+            type Props = {
+                request: Topics.Realm.MembershipJoinRequestedMessage["payload"];
+                incoming: TransactionManager.Service.IncomingMessage;
+                reason: string;
+            };
+
+            type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace Join {
+            type Props = {
+                input: Topics.Realm.MembershipJoinRequestedMessage["payload"]["input"];
+                incoming: TransactionManager.Service.IncomingMessage;
+                actor: string;
+                realm: string;
+            };
+
+            type ExecuteResult = {
+                request: Topics.Realm.MembershipJoinRequestedMessage["payload"]["input"];
+                assignments: Entities.AccountRoleAssignment[];
+                actor: string;
+                realm: string;
+            };
+
+            type Result = Promise<void>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Assign {

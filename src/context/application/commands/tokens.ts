@@ -5,6 +5,5 @@ export const ROLE_CONFLICT_MEMBER_COMMANDS = Symbol("Commands.RoleConflictMember
 export const PERMISSION_OVERRIDE_COMMANDS = Symbol("Commands.PermissionOverride.Contract");
 export const ROLE_CONFLICT_GROUP_COMMANDS = Symbol("Commands.RoleConflictGroup.Contract");
 export const PERMISSION_COMMANDS = Symbol("Commands.Permission.Contract");
-export const MEMBERSHIP_COMMANDS = Symbol("Commands.Membership.Contract");
 export const REALM_COMMANDS = Symbol("Commands.Realm.Contract");
 export const ROLE_COMMANDS = Symbol("Commands.Role.Contract");

@@ -49,11 +49,73 @@ declare namespace Services {
         }
 
         interface CommandContract {
+            transferOwnership: TransferOwnership.Signature;
+            purgeAccountAccess: PurgeAccountAccess.Signature;
+            revokeAccountAccess: RevokeAccountAccess.Signature;
+            restoreAccountAccess: RestoreAccountAccess.Signature;
+            bootstrapOrganization: BootstrapOrganization.Signature;
+            bootstrapProject: BootstrapProject.Signature;
+            revokeBySystem: RevokeBySystem.Signature;
+            restoreBySystem: RestoreBySystem.Signature;
+            purgeBySystem: PurgeBySystem.Signature;
             restore: Restore.Signature;
             revoke: Revoke.Signature;
             create: Create.Signature;
             update: Update.Signature;
             purge: Purge.Signature;
+        }
+
+        namespace BootstrapOrganization {
+            type Props = Topics.Realm.BootstrapOrganizationRequestedMessage["payload"] & {
+                transaction: ORM.EntityManager;
+            };
+
+            type Result = Create.Result;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace BootstrapProject {
+            type Props = Topics.Realm.BootstrapProjectRequestedMessage["payload"] & {
+                transaction: ORM.EntityManager;
+            };
+
+            type Result = Create.Result;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace RevokeBySystem {
+            type Props = {
+                transaction: ORM.EntityManager;
+                realm: string;
+            };
+
+            type Result = Promise<Entities.Realm[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace RestoreBySystem {
+            type Props = {
+                transaction: ORM.EntityManager;
+                realm: string;
+            };
+
+            type Result = Promise<Entities.Realm[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace PurgeBySystem {
+            type Props = {
+                transaction: ORM.EntityManager;
+                realm: string;
+            };
+
+            type Result = Promise<Entities.Realm[]>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace Restore {
@@ -121,6 +183,71 @@ declare namespace Services {
             };
 
             type Result = Promise<Entities.Realm[]>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace TransferOwnership {
+            type Props = Topics.Realm.TransferOwnershipRequestedMessage["payload"] & {
+                transaction: ORM.EntityManager;
+            };
+
+            type Result = Promise<{
+                previousAssignments: Entities.AccountRoleAssignment[];
+                assignments: Entities.AccountRoleAssignment[];
+                realm: Entities.Realm;
+            }>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace PurgeAccountAccess {
+            type Props = {
+                transaction: ORM.EntityManager;
+                account: string;
+                realm: string;
+            };
+
+            type Result = Promise<{
+                assignments: Entities.AccountRoleAssignment[];
+                overrides: Entities.PermissionOverride[];
+                account: string;
+                realm: string;
+            }>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace RevokeAccountAccess {
+            type Props = {
+                transaction: ORM.EntityManager;
+                account: string;
+                realm: string;
+            };
+
+            type Result = Promise<{
+                assignments: Entities.AccountRoleAssignment[];
+                overrides: Entities.PermissionOverride[];
+                account: string;
+                realm: string;
+            }>;
+
+            type Signature = (props: Props) => Result;
+        }
+
+        namespace RestoreAccountAccess {
+            type Props = {
+                transaction: ORM.EntityManager;
+                account: string;
+                realm: string;
+            };
+
+            type Result = Promise<{
+                assignments: Entities.AccountRoleAssignment[];
+                overrides: Entities.PermissionOverride[];
+                account: string;
+                realm: string;
+            }>;
 
             type Signature = (props: Props) => Result;
         }

@@ -1,5 +1,8 @@
+import type { AccountRoleAssignmentRepository } from "~context/infrastructure/repositories/account-role-assignment.repository";
+import type { PermissionOverrideRepository } from "~context/infrastructure/repositories/permission-override.repository";
 import type { PermissionRepository } from "~context/infrastructure/repositories/permission.repository";
 import type { RealmRepository } from "~context/infrastructure/repositories/realm.repository";
+import type { RoleRepository } from "~context/infrastructure/repositories/role.repository";
 import type { RealmService } from "~context/domain/services/realm.service";
 
 declare global {
@@ -16,8 +19,8 @@ declare global {
 
                 namespace Service {
                     type Context = {
-                        readonly realmService: RealmService;
                         readonly repositories: Repositories.Context;
+                        readonly realmService: RealmService;
                     };
 
                     type Signature = (context: Postgres.Suite.FactoryContext, props?: Config.Props) => Context;
@@ -25,8 +28,11 @@ declare global {
 
                 namespace Repositories {
                     type Context = {
+                        readonly accountRoleAssignments: AccountRoleAssignmentRepository;
+                        readonly permissionOverrides: PermissionOverrideRepository;
                         readonly permissions: PermissionRepository;
                         readonly realms: RealmRepository;
+                        readonly roles: RoleRepository;
                     };
 
                     type Signature = (context: Postgres.Suite.FactoryContext, props?: Config.Props) => Context;

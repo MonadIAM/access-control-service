@@ -38,7 +38,7 @@ declare namespace Services {
                 actor: string;
                 input: {
                     account: string;
-                    role: string;
+                    role?: string;
                 };
             };
 

@@ -24,24 +24,9 @@ export class TransactionalService implements TransactionManager.Service.Contract
     public async emit(params: TransactionManager.Service.Emit.Props): TransactionManager.Service.Emit.Result {
         try {
             const writeManager = this.writeManager.fork();
-            const outbox = this.outboxService.build(params);
-            const entity = new AuditLog(params.audit);
-
-            return await this.operationContext.run({ changeLogEnabled: false, auditEntry: entity.id }, () =>
-                writeManager.transactional(async (transaction) => {
-                    if (entity.input) {
-                        entity.input = await this.logMaskingService.maskAuditLog({ input: entity.input });
-                    }
-
-                    const hash = await this.logMaskingService.sign({ entity });
-                    entity.sign(hash);
-
-                    transaction.persist(entity);
-                    transaction.persist(this.outboxService.buildAuditLogArchive(entity));
-                    transaction.persist(outbox);
-                    await transaction.flush();
-                }),
-            );
+            return await writeManager.transactional(async (transaction) => {
+                await this.emitTransaction({ transaction, params });
+            });
         } catch (error) {
             if (error instanceof Exception) {
                 throw error;
@@ -73,15 +58,20 @@ export class TransactionalService implements TransactionManager.Service.Contract
 
     public async consume<T extends TransactionManager.Service.ResultValue>(
         params: TransactionManager.Service.Consume.Props<T>,
-    ): TransactionManager.Service.Consume.Result<T> {
+    ): TransactionManager.Service.Consume.Result<T | void> {
         try {
             const writeManager = this.writeManager.fork();
 
             return await writeManager.transactional(async (transaction) => {
                 const claimed = await this.inboxService.claim({ transaction, incoming: params.incoming });
                 if (claimed) {
-                    const value = await this.executeTransaction({ transaction, params });
-                    return { status: "processed", value };
+                    if (params.execute) {
+                        const value = await this.executeTransaction({ transaction, params });
+                        return { status: "processed", value };
+                    } else {
+                        await this.emitTransaction({ transaction, params });
+                        return { status: "processed", value: undefined };
+                    }
                 } else {
                     return { status: "duplicate" };
                 }
@@ -94,6 +84,28 @@ export class TransactionalService implements TransactionManager.Service.Contract
                 throw ExceptionMapper.isORM(mapped) ? mapped : error;
             }
         }
+    }
+
+    public async emitTransaction(
+        props: TransactionManager.Service.EmitTransaction.Props,
+    ): TransactionManager.Service.EmitTransaction.Result {
+        const { transaction, params } = props;
+        const outbox = this.outboxService.build(params);
+        const entity = new AuditLog(params.audit);
+
+        await this.operationContext.run({ changeLogEnabled: false, auditEntry: entity.id }, async () => {
+            if (entity.input) {
+                entity.input = await this.logMaskingService.maskAuditLog({ input: entity.input });
+            }
+
+            const hash = await this.logMaskingService.sign({ entity });
+            entity.sign(hash);
+
+            transaction.persist(entity);
+            transaction.persist(this.outboxService.buildAuditLogArchive(entity));
+            transaction.persist(outbox);
+            await transaction.flush();
+        });
     }
 
     public async executeTransaction<T extends TransactionManager.Service.ResultValue>(

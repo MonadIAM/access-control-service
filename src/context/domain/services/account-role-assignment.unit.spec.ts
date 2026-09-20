@@ -192,7 +192,6 @@ describe("AccountRoleAssignmentService", () => {
                 transaction: transaction.entityManager,
                 where: {
                     account: ACCOUNT_ID,
-                    isRevoked: false,
                     realm: REALM_ID,
                     role: ROLE_ID,
                 },

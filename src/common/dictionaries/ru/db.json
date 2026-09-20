@@ -1,4 +1,5 @@
 {
+  "CONCURRENT_MODIFICATION": "Ресурс изменён другой операцией.",
   "NOT_FOUND": "{resource} не существует.",
   "UNIQUE_VIOLATION": "{resource} с указанными данными уже существует.",
   "FK_VIOLATION": "Нарушена ссылка на связанный ресурс {resource}.",

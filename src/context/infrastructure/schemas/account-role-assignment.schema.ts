@@ -37,6 +37,7 @@ export const AccountRoleAssignmentSchema = new EntitySchema<AccountRoleAssignmen
 
         isSystemManaged: { type: "boolean" },
         isRevoked: { type: "boolean" },
+        isSystemRevoked: { type: "boolean", default: false },
 
         role: {
             kind: "m:1",

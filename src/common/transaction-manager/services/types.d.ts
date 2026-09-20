@@ -196,9 +196,10 @@ declare global {
             interface Contract extends PublicContract, InternalContract {}
 
             interface InternalContract {
-                executeTransaction: ExecuteTransaction.Signature;
                 persistOutboxEvents: PersistOutboxEvents.Signature;
                 executeWithEffects: ExecuteWithEffects.Signature;
+                executeTransaction: ExecuteTransaction.Signature;
+                emitTransaction: EmitTransaction.Signature;
             }
 
             namespace PersistOutboxEvents {
@@ -224,6 +225,17 @@ declare global {
                 type Signature = <T extends Service.ResultValue>(props: Props<T>) => Result<T>;
             }
 
+            namespace EmitTransaction {
+                type Props = {
+                    params: Emit.Props;
+                    transaction: ORM.EntityManager;
+                };
+
+                type Result = Promise<void>;
+
+                type Signature = (props: Props) => Result;
+            }
+
             namespace ExecuteTransaction {
                 type Props<T extends Service.ResultValue> = {
                     params: TransactionManager.Service.Run.Props<T>;
@@ -242,9 +254,22 @@ declare global {
             }
 
             namespace Consume {
-                type Props<T extends Service.ResultValue> = Run.Props<T> & {
+                type ExecuteProps<T extends Service.ResultValue> = Run.Props<T> & {
                     incoming: IncomingMessage;
+                    payload?: never;
+                    destinationTopic?: never;
+                    actionType?: never;
+                    metadata?: never;
                 };
+
+                type PayloadProps = Emit.Props & {
+                    incoming: IncomingMessage;
+                    execute?: never;
+                    changeLog?: never;
+                    outbox?: never;
+                };
+
+                type Props<T extends Service.ResultValue> = ExecuteProps<T> | PayloadProps;
 
                 type Outcome<T> =
                     | {
@@ -257,7 +282,10 @@ declare global {
 
                 type Result<T> = Promise<Outcome<T>>;
 
-                type Signature = <T extends Service.ResultValue>(props: Props<T>) => Result<T>;
+                type Signature = {
+                    <T extends Service.ResultValue>(props: ExecuteProps<T>): Result<T>;
+                    (props: PayloadProps): Result<void>;
+                };
             }
 
             namespace Run {
@@ -294,7 +322,6 @@ declare global {
             type OutboxPayloadMap = {
                 [KafkaTopic.NOTIFICATION]: Topics.Notification.Message["payload"];
                 [KafkaTopic.ACCESS_CACHE]: Topics.AccessCache.Message["payload"];
-                [KafkaTopic.MEMBERSHIP]: Topics.Membership.Message["payload"];
                 [KafkaTopic.REALM]: Topics.Realm.Message["payload"];
                 [KafkaTopic.PROJECTION_JOURNAL]: UnknownObject;
             };

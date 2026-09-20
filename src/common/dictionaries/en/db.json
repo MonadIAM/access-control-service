@@ -1,4 +1,5 @@
 {
+  "CONCURRENT_MODIFICATION": "The resource was changed by another operation.",
   "NOT_FOUND": "{resource} does not exist.",
   "UNIQUE_VIOLATION": "{resource} with the specified data already exists.",
   "FK_VIOLATION": "A foreign key constraint was violated for related resource {resource}.",

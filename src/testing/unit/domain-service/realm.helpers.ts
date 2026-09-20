@@ -11,6 +11,9 @@ export class RealmUnitHelpers extends DomainServiceCoreUnitHelpers implements Un
             service: new RealmService(
                 this.contract<Repositories.Permission.PublicContract>(repositories.permissions),
                 this.contract<Repositories.Realm.PublicContract>(repositories.realms),
+                this.contract<Repositories.AccountRoleAssignment.PublicContract>(repositories.accountRoleAssignments),
+                this.contract<Repositories.PermissionOverride.PublicContract>(repositories.permissionOverrides),
+                this.contract<Repositories.Role.PublicContract>(repositories.roles),
             ),
             repositories,
             transaction,

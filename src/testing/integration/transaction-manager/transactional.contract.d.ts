@@ -1,4 +1,3 @@
-import type { TransactionalService } from "~common/transaction-manager/services/transactional.service";
 import type { OperationContext } from "~common/transaction-manager/utilities";
 
 declare global {
@@ -35,10 +34,10 @@ declare global {
                 };
 
                 type Result = {
+                    readonly service: globalThis.TransactionManager.Service.PublicContract;
                     readonly orm: Postgres.Suite.FactoryContext["orm"];
                     readonly operationContext: OperationContext;
                     readonly readManager: ORM.EntityManager;
-                    readonly service: TransactionalService;
                 };
 
                 type Signature = (props: Props) => Result;

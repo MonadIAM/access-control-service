@@ -95,6 +95,7 @@ export type I18nTranslations = {
         };
     };
     "db": {
+        "CONCURRENT_MODIFICATION": string;
         "NOT_FOUND": string;
         "UNIQUE_VIOLATION": string;
         "FK_VIOLATION": string;
@@ -262,6 +263,8 @@ export type I18nTranslations = {
             "LIMIT_EXCEEDED": string;
             "MISSING_SYSTEM_PERMISSIONS": string;
             "REALMS_NOT_FOUND": string;
+            "OWNER_MISMATCH": string;
+            "ALREADY_EXISTS": string;
         };
         "account-role-assignment": {
             "DELEGATION_NOT_ALLOWED": string;
@@ -269,6 +272,7 @@ export type I18nTranslations = {
             "HAS_SoD_VIOLATIONS": string;
             "ROLES_NOT_FOUND": string;
             "ASSIGNMENTS_NOT_FOUND": string;
+            "EXISTING_ACCESS_INACTIVE": string;
         };
         "kafka-incoming": {
             "EVENT_MISSING": string;

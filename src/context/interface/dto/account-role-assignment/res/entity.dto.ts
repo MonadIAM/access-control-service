@@ -64,6 +64,11 @@ export class AccountRoleAssignmentDTO {
     declare public isRevoked: boolean;
 
     @Expose()
+    @Validator.IsBoolean()
+    @ApiProperty({ required: true, type: Boolean })
+    declare public isSystemRevoked: boolean;
+
+    @Expose()
     @Validator.IsInt()
     @ApiProperty({ required: true, type: Number })
     declare public version: number;

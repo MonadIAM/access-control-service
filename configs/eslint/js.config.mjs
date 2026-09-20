@@ -37,6 +37,17 @@ const enabledRules = {
     "operator-assignment": ["error", "always"],
     // Always use double quotes, but allow escaping avoidance
     "quotes": ["error", "double", { avoidEscape: true }],
+    "no-restricted-syntax": [
+        "error",
+        {
+            selector: "ReturnStatement[argument=null]",
+            message: "Return statements without a value are not allowed.",
+        },
+        {
+            selector: "MethodDefinition[value.type='TSEmptyBodyFunctionExpression']",
+            message: "Declare overload signatures in type contracts, not in classes.",
+        },
+    ],
     "max-len": [
         "error",
         {

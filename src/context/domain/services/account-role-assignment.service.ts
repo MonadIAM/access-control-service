@@ -93,21 +93,35 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
 
     public async ensure(props: Services.AccountRoleAssignment.Ensure.Props): Services.AccountRoleAssignment.Ensure.Result {
         const { transaction, input, realm, actor } = props;
+
+        const realmEntity = await this.realmRepository.findUniqueOrThrow({
+            where: { id: realm, isRevoked: false },
+            transaction,
+        });
+        const role = await this.roleRepository.findUniqueOrThrow({
+            where: { realm, isRevoked: false, ...(input.role ? { id: input.role } : { code: `${realmEntity.code}.user` }) },
+            transaction,
+        });
         const existing = await this.accountRoleAssignmentRepository.findUnique({
-            where: { account: input.account, role: input.role, isRevoked: false, realm },
+            where: { account: input.account, role: role.id, realm },
             options: { populate: ["realm", "role"] },
             transaction,
         });
 
         if (existing) {
-            return [existing];
+            if (existing.isRevoked || (existing.expiresAt && existing.expiresAt.getTime() <= Date.now())) {
+                throw Exception.conflict({ messageKey: "services.account-role-assignment.EXISTING_ACCESS_INACTIVE" });
+            } else {
+                return [existing];
+            }
+        } else if (input.role) {
+            return this.create({ input: { account: input.account, roles: [role.id] }, transaction, realm, actor });
         } else {
-            return await this.create({
-                input: { account: input.account, roles: [input.role] },
-                transaction,
-                realm,
-                actor,
-            });
+            const assignment = new AccountRoleAssignment({ account: input.account, realm: realmEntity, role });
+            assignment.canAssign();
+            transaction.persist(assignment);
+
+            return [assignment];
         }
     }
 

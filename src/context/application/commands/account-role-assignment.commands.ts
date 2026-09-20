@@ -1,6 +1,5 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { NotificationTopicAction, AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { CONSUMER_META, SYSTEM_ACCOUNT_ID, SYSTEM_USER_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
@@ -8,6 +7,14 @@ import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
+import {
+    NotificationTopicAction,
+    AccessCacheTopicAction,
+    RealmTopicAction,
+    ActionType,
+    EntityType,
+    KafkaTopic,
+} from "~context/enums";
 
 import { AccountRoleAssignmentMapper, PermissionOverrideMapper } from "../mappers";
 
@@ -32,6 +39,85 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
     ) {
         this.mapper = new AccountRoleAssignmentMapper();
         this.permissionOverrideMapper = new PermissionOverrideMapper();
+    }
+
+    public async join(props: Commands.AccountRoleAssignment.Join.Props): Commands.AccountRoleAssignment.Join.Result {
+        const { incoming, input, actor, realm } = props;
+
+        try {
+            await this.transactionalService.consume<Commands.AccountRoleAssignment.Join.ExecuteResult>({
+                incoming,
+                resource: this.resource,
+                outbox: [
+                    {
+                        payloadMapper: this.mapper.joinAssignmentProjectionPayload,
+                        actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_CREATE,
+                        destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    },
+                    {
+                        payloadMapper: this.mapper.joinAccessCachePayload,
+                        actionType: AccessCacheTopicAction.INVALIDATE,
+                        destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    },
+                    {
+                        payloadMapper: this.mapper.joinConfirmedPayload,
+                        actionType: RealmTopicAction.MEMBERSHIP_JOIN_CONFIRMED,
+                        destinationTopic: KafkaTopic.REALM,
+                    },
+                ],
+                audit: {
+                    entityType: EntityType.ROLE_ASSIGNMENT,
+                    actionType: ActionType.CREATE,
+                    context: CONSUMER_META,
+                    input,
+                    actor,
+                    realm,
+                },
+                changeLog: true,
+                execute: async (transaction) => {
+                    const assignments = await this.accountRoleAssignmentService.ensure({
+                        transaction,
+                        input,
+                        actor,
+                        realm,
+                    });
+
+                    return { request: input, actor, realm, assignments };
+                },
+            });
+        } catch (error) {
+            if (!(error instanceof Exception) || Boolean(Exception.isRetryable(error))) {
+                throw error;
+            } else {
+                await this.rejectJoin({
+                    incoming,
+                    request: { actor, realm, input },
+                    reason: error instanceof Error ? error.message : String(error),
+                });
+            }
+        }
+    }
+
+    public async rejectJoin(
+        props: Commands.AccountRoleAssignment.RejectJoin.Props,
+    ): Commands.AccountRoleAssignment.RejectJoin.Result {
+        const { incoming, ...result } = props;
+
+        await this.transactionalService.consume({
+            incoming,
+            resource: this.resource,
+            payload: this.mapper.joinRejectedPayload(result),
+            actionType: RealmTopicAction.MEMBERSHIP_JOIN_REJECTED,
+            destinationTopic: KafkaTopic.REALM,
+            audit: {
+                entityType: EntityType.ROLE_ASSIGNMENT,
+                actionType: ActionType.CREATE,
+                actor: result.request.actor,
+                realm: result.request.realm,
+                context: CONSUMER_META,
+                input: result,
+            },
+        });
     }
 
     public async create(props: Commands.AccountRoleAssignment.Create.Props): Commands.AccountRoleAssignment.Create.Result {
@@ -297,42 +383,40 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
 
             if (missing.length > 0) {
                 throw Exception.notFound({ messageKey: `${this.dictionaryPath}.ASSIGNMENTS_NOT_FOUND` });
-            }
-
-            if (groups.some(({ remaining }) => remaining === 0)) {
+            } else if (groups.some(({ remaining }) => remaining === 0)) {
                 throw Exception.conflict({ messageKey: `${this.dictionaryPath}.CANNOT_PURGE_LAST_ASSIGNMENT` });
-            }
-
-            await this.transactionalService.run({
-                resource: this.resource,
-                outbox: [
-                    {
-                        payloadMapper: this.mapper.projectionPurgePayload,
-                        actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
-                        destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
-                    },
-                    {
-                        payloadMapper: this.mapper.accessCachePayload,
-                        actionType: AccessCacheTopicAction.INVALIDATE,
-                        destinationTopic: KafkaTopic.ACCESS_CACHE,
-                    },
-                ],
-                audit: {
-                    entityType: EntityType.ROLE_ASSIGNMENT,
-                    actionType: ActionType.DELETE,
-                    ...props,
-                },
-                changeLog: true,
-                execute: (transaction) => {
-                    this.accountRoleAssignmentService.purge({ transaction, entities });
-                    return { assignments: entities };
-                },
-            });
-
-            if (entities.length > 1) {
-                return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
             } else {
-                return { message: `${this.dictionaryPath}.PURGED` };
+                await this.transactionalService.run({
+                    resource: this.resource,
+                    outbox: [
+                        {
+                            payloadMapper: this.mapper.projectionPurgePayload,
+                            actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE,
+                            destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                        },
+                        {
+                            payloadMapper: this.mapper.accessCachePayload,
+                            actionType: AccessCacheTopicAction.INVALIDATE,
+                            destinationTopic: KafkaTopic.ACCESS_CACHE,
+                        },
+                    ],
+                    audit: {
+                        entityType: EntityType.ROLE_ASSIGNMENT,
+                        actionType: ActionType.DELETE,
+                        ...props,
+                    },
+                    changeLog: true,
+                    execute: (transaction) => {
+                        this.accountRoleAssignmentService.purge({ transaction, entities });
+                        return { assignments: entities };
+                    },
+                });
+
+                if (entities.length > 1) {
+                    return { message: `${this.dictionaryPath}.BULK_PURGED_COUNT`, params: { count: entities.length } };
+                } else {
+                    return { message: `${this.dictionaryPath}.PURGED` };
+                }
             }
         }
     }

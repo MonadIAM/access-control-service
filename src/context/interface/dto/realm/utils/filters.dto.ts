@@ -3,6 +3,7 @@ import { Expose, Type } from "class-transformer";
 
 import { OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
 import { Validator } from "~common/validator";
+import { RealmType } from "~context/enums";
 
 @ApiSchema({ name: "RealmFilters" })
 export class FiltersDTO implements Repositories.Mappers.Realm.Filters {
@@ -12,6 +13,18 @@ export class FiltersDTO implements Repositories.Mappers.Realm.Filters {
     @Type(() => StringFilterDTO)
     @ApiProperty({ required: false, type: StringFilterDTO })
     public id?: StringFilterDTO;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.IsEnum(RealmType)
+    @ApiProperty({ required: false, enum: RealmType, enumName: "RealmType" })
+    public type?: RealmType;
+
+    @Expose()
+    @Validator.IsOptional()
+    @Validator.IsBoolean()
+    @ApiProperty({ required: false, type: Boolean })
+    public isSystemRevoked?: boolean;
 
     @Expose()
     @Validator.IsOptional()

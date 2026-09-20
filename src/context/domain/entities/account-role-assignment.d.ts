@@ -12,11 +12,14 @@ declare namespace Entities {
             justification?: string;
             isSystemManaged: boolean;
             isRevoked: boolean;
+            isSystemRevoked: boolean;
             expiresAt?: Date;
 
             realm: Entities.Realm;
             role: Entities.Role;
 
+            restoreBySystem(): void;
+            revokeBySystem(): void;
             canAssign(): void;
             canPurge(): void;
             restore(): void;

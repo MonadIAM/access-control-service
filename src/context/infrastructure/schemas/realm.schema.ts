@@ -1,5 +1,6 @@
 import { EntitySchema } from "@mikro-orm/core";
 
+import { RealmType } from "~context/enums";
 import { Realm } from "~context/domain/entities";
 
 export const RealmSchema = new EntitySchema<Realm>({
@@ -30,11 +31,13 @@ export const RealmSchema = new EntitySchema<Realm>({
 
         description: { type: "text", nullable: true },
         code: { type: "text" },
+        type: { enum: true, items: () => RealmType, nativeEnumName: "realm_type" },
         name: { type: "text" },
         owner: { type: "uuid" },
 
         isSystemManaged: { type: "boolean" },
         isRevoked: { type: "boolean" },
+        isSystemRevoked: { type: "boolean", default: false },
 
         updatedAt: { type: "timestamptz", length: 3, nullable: true },
         createdAt: { type: "timestamptz", length: 3 },

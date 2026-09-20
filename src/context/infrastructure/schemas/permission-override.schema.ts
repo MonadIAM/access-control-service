@@ -38,6 +38,7 @@ export const PermissionOverrideSchema = new EntitySchema<PermissionOverride>({
         justification: { type: "text", nullable: true },
 
         isRevoked: { type: "boolean" },
+        isSystemRevoked: { type: "boolean", default: false },
 
         permission: {
             kind: "m:1",

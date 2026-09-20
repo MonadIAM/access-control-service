@@ -185,8 +185,8 @@ declare global {
             }
         }
 
-        namespace Membership {
-            type Message = Topics.Membership.Message;
+        namespace Realm {
+            type Message = Topics.Realm.Message;
 
             interface Contract extends PublicContract, InternalContract {}
 

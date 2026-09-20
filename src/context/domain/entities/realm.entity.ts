@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { RealmType } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 export class Realm implements Entities.Realm.Contract {
@@ -10,6 +11,7 @@ export class Realm implements Entities.Realm.Contract {
     public updatedAt?: Date;
     public version: number = 1;
 
+    public type: RealmType;
     public code: string;
     public name: string;
     public owner: string;
@@ -17,10 +19,12 @@ export class Realm implements Entities.Realm.Contract {
 
     public isSystemManaged: boolean;
     public isRevoked: boolean;
+    public isSystemRevoked: boolean = false;
 
     public constructor(props: Entities.Realm.ConstructorProps) {
         this.createdAt = new Date();
-        this.id = randomUUID();
+        this.id = props.id ?? randomUUID();
+        this.type = props.type ?? RealmType.ORGANIZATION;
 
         this.isSystemManaged = props.isSystemManaged ?? false;
         this.isRevoked = props.isRevoked ?? false;
@@ -51,7 +55,10 @@ export class Realm implements Entities.Realm.Contract {
     }
 
     public revoke(): void {
-        if (this.isRevoked) {
+        if (this.isRevoked && this.isSystemRevoked) {
+            this.isSystemRevoked = false;
+            this.updatedAt = new Date();
+        } else if (this.isRevoked) {
             throw Exception.invariantViolation({ messageKey: `${Realm.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
@@ -64,7 +71,30 @@ export class Realm implements Entities.Realm.Contract {
         if (this.isRevoked) {
             const now = new Date();
             this.isRevoked = false;
+            this.isSystemRevoked = false;
             this.updatedAt = now;
+        } else {
+            throw Exception.invariantViolation({ messageKey: `${Realm.dictionaryPath}.ALREADY_ACTIVE` });
+        }
+    }
+
+    public revokeBySystem(): void {
+        if (this.isRevoked) {
+            throw Exception.invariantViolation({ messageKey: `${Realm.dictionaryPath}.ALREADY_REVOKED` });
+        } else {
+            this.isRevoked = true;
+            this.isSystemRevoked = true;
+            this.updatedAt = new Date();
+        }
+    }
+
+    public restoreBySystem(): void {
+        if (this.isRevoked) {
+            if (this.isRevoked && this.isSystemRevoked) {
+                this.isRevoked = false;
+                this.isSystemRevoked = false;
+                this.updatedAt = new Date();
+            }
         } else {
             throw Exception.invariantViolation({ messageKey: `${Realm.dictionaryPath}.ALREADY_ACTIVE` });
         }

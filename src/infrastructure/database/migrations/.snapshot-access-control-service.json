@@ -111,6 +111,23 @@
           "enumItems": [],
           "mappedType": "boolean"
         },
+        "is_system_revoked": {
+          "name": "is_system_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
         "justification": {
           "name": "justification",
           "type": "text",
@@ -616,6 +633,23 @@
           "enumItems": [],
           "mappedType": "boolean"
         },
+        "is_system_revoked": {
+          "name": "is_system_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
         "justification": {
           "name": "justification",
           "type": "text",
@@ -892,6 +926,23 @@
           "enumItems": [],
           "mappedType": "boolean"
         },
+        "is_system_revoked": {
+          "name": "is_system_revoked",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -925,6 +976,28 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "uuid"
+        },
+        "type": {
+          "name": "type",
+          "type": "access_control.realm_type",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [
+            "SYSTEM",
+            "ORGANIZATION",
+            "PROJECT"
+          ],
+          "mappedType": "enum",
+          "nativeEnumName": "realm_type"
         },
         "updated_at": {
           "name": "updated_at",
@@ -3167,6 +3240,15 @@
       "items": [
         "ALLOW",
         "DENY"
+      ]
+    },
+    "access_control.realm_type": {
+      "name": "realm_type",
+      "schema": "access_control",
+      "items": [
+        "SYSTEM",
+        "ORGANIZATION",
+        "PROJECT"
       ]
     },
     "access_control.role_actor_type": {

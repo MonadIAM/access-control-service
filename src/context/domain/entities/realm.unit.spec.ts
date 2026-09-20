@@ -167,4 +167,33 @@ describe("Realm Entity", () => {
             expect(() => realm.canPurge()).not.toThrow();
         });
     });
+
+    describe("system transitions", () => {
+        it("rejects restore of an active realm", () => {
+            const realm = createRealm();
+
+            expect(() => realm.restoreBySystem()).toThrow("ALREADY_ACTIVE");
+
+            expect(realm.isRevoked).toBe(false);
+        });
+
+        it("rejects a repeated system revoke", () => {
+            const realm = createRealm();
+            realm.revokeBySystem();
+
+            expect(() => realm.revokeBySystem()).toThrow("ALREADY_REVOKED");
+
+            expect(realm.isSystemRevoked).toBe(true);
+        });
+
+        it("preserves a manual revoke during system restore", () => {
+            const realm = createRealm();
+            realm.revoke();
+
+            realm.restoreBySystem();
+
+            expect(realm.isRevoked).toBe(true);
+            expect(realm.isSystemRevoked).toBe(false);
+        });
+    });
 });

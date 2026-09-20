@@ -15,11 +15,14 @@ declare global {
                 effect: PermissionOverrideEffect;
                 justification?: string;
                 isRevoked: boolean;
+                isSystemRevoked: boolean;
                 expiresAt?: Date;
 
                 permission: Entities.Permission;
                 realm: Entities.Realm;
 
+                restoreBySystem(): void;
+                revokeBySystem(): void;
                 canCreate(): void;
                 canPurge(): void;
                 restore(): void;

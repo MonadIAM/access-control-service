@@ -1,6 +1,7 @@
 import { QueryOrder } from "@mikro-orm/postgresql";
 
 import { LinkFilterDTO, OrdinalFilterDTO, StringFilterDTO } from "~common/dto";
+import { RealmType } from "~context/enums";
 
 declare global {
     namespace Repositories {
@@ -149,6 +150,8 @@ declare global {
 
             namespace Realm {
                 type Filters = {
+                    type?: RealmType;
+                    isSystemRevoked?: boolean;
                     id?: StringFilterDTO;
                     isSystemManaged?: boolean;
                     code?: StringFilterDTO;

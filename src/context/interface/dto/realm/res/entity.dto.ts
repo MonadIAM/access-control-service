@@ -2,6 +2,7 @@ import { ApiProperty, ApiSchema } from "@nestjs/swagger";
 import { Expose } from "class-transformer";
 
 import { Validator } from "~common/validator";
+import { RealmType } from "~context/enums";
 
 @ApiSchema({ name: "Realm" })
 export class RealmDTO {
@@ -9,6 +10,11 @@ export class RealmDTO {
     @Validator.IsUUID()
     @ApiProperty({ required: true, type: String, format: "uuid" })
     declare public id: string;
+
+    @Expose()
+    @Validator.IsEnum(RealmType)
+    @ApiProperty({ required: true, enum: RealmType, enumName: "RealmType" })
+    declare public type: RealmType;
 
     @Expose()
     @Validator.IsBoolean()
@@ -46,6 +52,11 @@ export class RealmDTO {
     @Validator.IsBoolean()
     @ApiProperty({ required: true, type: Boolean })
     declare public isRevoked: boolean;
+
+    @Expose()
+    @Validator.IsBoolean()
+    @ApiProperty({ required: true, type: Boolean })
+    declare public isSystemRevoked: boolean;
 
     @Expose()
     @Validator.IsInt()

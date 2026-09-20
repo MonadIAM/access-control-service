@@ -86,7 +86,7 @@ export class PostgresResource implements Integration.Postgres.Resource.Contract 
                 tableName: "mikro_orm_migrations",
                 glob: "!(*.d).{js,ts}",
                 transactional: true,
-                allOrNothing: true,
+                allOrNothing: false,
                 snapshot: false,
             },
             pool: {

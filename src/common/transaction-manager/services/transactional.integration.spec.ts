@@ -505,4 +505,86 @@ describe("TransactionalService integration", () => {
 
         await helper.expectNoTransactionRows(suite.repository().readManager);
     });
+
+    describe("consume with payload", () => {
+        const props = {
+            incoming: INCOMING_MESSAGE,
+            audit: { ...AUDIT_PROPS, input: { password: "payload-secret" } },
+            payload: { items: [{ scope: InvalidationScope.GLOBAL }] },
+            actionType: AccessCacheTopicAction.INVALIDATE,
+            destinationTopic: KafkaTopic.ACCESS_CACHE,
+        } satisfies TransactionManager.Service.Consume.PayloadProps;
+
+        it("commits the inbox, masked audit and payload exactly once", async () => {
+            const { service, readManager } = suite.repository();
+
+            const first = await service.consume(props);
+            const duplicate = await service.consume(props);
+
+            readManager.clear();
+            expect(first).toEqual({ status: "processed", value: undefined });
+            expect(duplicate).toEqual({ status: "duplicate" });
+            await expect(readManager.count(Inbox, {})).resolves.toBe(1);
+            await expect(readManager.count(ChangeLog, {})).resolves.toBe(0);
+            await expect(readManager.count(Outbox, {})).resolves.toBe(2);
+            await expect(readManager.count(AuditLog, {})).resolves.toBe(1);
+            const audit = await readManager.findOneOrFail(AuditLog, { actor: AUDIT_PROPS.actor });
+            const event = await readManager.findOneOrFail(Outbox, { destinationTopic: KafkaTopic.ACCESS_CACHE });
+            expect(audit.input).toEqual({ password: "masked:payload-secret" });
+            expect(event.payload).toEqual(props.payload);
+        });
+
+        it("deduplicates concurrent payload deliveries", async () => {
+            const { service, readManager } = suite.repository();
+
+            const outcomes = await Promise.all([service.consume(props), service.consume(props)]);
+
+            readManager.clear();
+            expect(outcomes.map(({ status }) => status).sort()).toEqual(["duplicate", "processed"]);
+            await expect(readManager.count(Inbox, {})).resolves.toBe(1);
+            await expect(readManager.count(AuditLog, {})).resolves.toBe(1);
+            await expect(readManager.count(Outbox, {})).resolves.toBe(2);
+        });
+
+        it.each(["outbox", "audit"] as const)("rolls back a failed %s and permits payload redelivery", async (stage) => {
+            const error = new Error("payload effects failed");
+            const outboxService = helper.createOutboxService(
+                stage === "outbox"
+                    ? {
+                          buildAuditLogArchive: () => {
+                              throw error;
+                          },
+                      }
+                    : {},
+            );
+            const logMaskingService = helper.createLogMaskingService(
+                stage === "audit"
+                    ? {
+                          sign: () => Promise.reject(error),
+                      }
+                    : {},
+            );
+            const { readManager, service } = suite.repository();
+            const failing = helper.createTransactionalServiceContext({
+                orm: suite.repository().orm,
+                outboxService,
+                logMaskingService,
+            }).service;
+
+            await expect(failing.consume(props)).rejects.toBe(error);
+
+            readManager.clear();
+            await expect(readManager.count(Inbox, {})).resolves.toBe(0);
+            await expect(readManager.count(AuditLog, {})).resolves.toBe(0);
+            await expect(readManager.count(Outbox, {})).resolves.toBe(0);
+            await expect(readManager.count(ChangeLog, {})).resolves.toBe(0);
+
+            await expect(service.consume(props)).resolves.toEqual({ status: "processed", value: undefined });
+
+            readManager.clear();
+            await expect(readManager.count(Inbox, {})).resolves.toBe(1);
+            await expect(readManager.count(AuditLog, {})).resolves.toBe(1);
+            await expect(readManager.count(Outbox, {})).resolves.toBe(2);
+        });
+    });
 });

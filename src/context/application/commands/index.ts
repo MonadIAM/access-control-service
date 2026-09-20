@@ -7,7 +7,6 @@ import { RoleConflictMemberCommands } from "./role-conflict-member.commands";
 import { PermissionOverrideCommands } from "./permission-override.commands";
 import { RoleConflictGroupCommands } from "./role-conflict-group.commands";
 import { PermissionCommands } from "./permission.commands";
-import { MembershipCommands } from "./membership.commands";
 import { RealmCommands } from "./realm.commands";
 import { RoleCommands } from "./role.commands";
 import {
@@ -18,7 +17,6 @@ import {
     PERMISSION_OVERRIDE_COMMANDS,
     ROLE_CONFLICT_GROUP_COMMANDS,
     PERMISSION_COMMANDS,
-    MEMBERSHIP_COMMANDS,
     REALM_COMMANDS,
     ROLE_COMMANDS,
 } from "./tokens";
@@ -53,10 +51,6 @@ export const COMMANDS: ClassProvider[] = [
         useClass: PermissionCommands,
     },
     {
-        provide: MEMBERSHIP_COMMANDS,
-        useClass: MembershipCommands,
-    },
-    {
         provide: REALM_COMMANDS,
         useClass: RealmCommands,
     },
@@ -74,7 +68,6 @@ export {
     PERMISSION_OVERRIDE_COMMANDS,
     ROLE_CONFLICT_GROUP_COMMANDS,
     PERMISSION_COMMANDS,
-    MEMBERSHIP_COMMANDS,
     REALM_COMMANDS,
     ROLE_COMMANDS,
 };

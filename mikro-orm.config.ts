@@ -41,7 +41,7 @@ const config: Options = {
         tableName: "mikro_orm_migrations",
         glob: "!(*.d).{js,ts}",
         transactional: true, // Run each migration inside a transaction (allows automatic rollback on partial failure)
-        allOrNothing: true,  // Ensures atomicity of the entire migration batch (one failure = rollback all)
+        allOrNothing: false, // Commit each migration separately; preserve previously applied migrations on failure
         fileName: (timestamp: string, name?: string) => {
             const prefix = timestamp.replace(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, "$1.$2.$3T$4-$5-$6");
             if (name) {

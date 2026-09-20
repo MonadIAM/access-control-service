@@ -9,6 +9,13 @@ export class RealmMapper implements Repositories.Mappers.Contract<Entities.Realm
     ): ORM.ObjectQuery<Entities.Realm> {
         const where: ORM.ObjectQuery<Entities.Realm> = basic;
 
+        if (filters.type !== undefined) {
+            where.type = filters.type;
+        }
+        if (filters.isSystemRevoked !== undefined) {
+            where.isSystemRevoked = filters.isSystemRevoked;
+        }
+
         if (filters.id) {
             where.id = ORMAdapter.applyStringFilter(filters.id);
         }

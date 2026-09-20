@@ -174,9 +174,9 @@ export abstract class BootstrapSecurity {
                             messageKey: `HTTP method is not allowed: ${method}`,
                         }),
                     );
-                    return;
+                } else {
+                    done();
                 }
-                done();
             });
     }
 

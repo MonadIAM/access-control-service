@@ -5,9 +5,10 @@ import { ADMIN_PERMISSION_CODES, USER_PERMISSION_CODES } from "~infrastructure/d
 import { RealmIntegrationHelpers } from "~testing/integration/domain-service/realm.helpers";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 import { postgresSuite } from "~testing/integration/postgres.suite";
-import { RoleArchetype } from "~context/enums";
+import { RoleArchetype, RealmType, PermissionCode, PermissionOverrideEffect } from "~context/enums";
 import {
     RolePermissionAssignment,
+    PermissionOverride,
     AccountRoleAssignment,
     RoleClosure,
     Permission,
@@ -153,6 +154,72 @@ describe("RealmService integration", () => {
         await expect(countBootstrapRowsByCode(suite, "missing-permissions")).resolves.toBe(0);
     });
 
+    it("bootstraps distinct organization and project realms with project-specific privileges", async () => {
+        await helpers.seedSystemPermissions(suite);
+        const owner = randomUUID();
+        const organizationRequest = {
+            actor: owner,
+            realm: randomUUID(),
+            input: { process: randomUUID(), resource: randomUUID(), owner, name: "Organization" },
+        };
+        const organization = await suite.transaction((transaction) =>
+            suite.repository().realmService.bootstrapOrganization({ ...organizationRequest, transaction }),
+        );
+
+        const project = await suite.transaction((transaction) =>
+            suite.repository().realmService.bootstrapProject({
+                actor: owner,
+                realm: randomUUID(),
+                input: {
+                    process: randomUUID(),
+                    resource: randomUUID(),
+                    organizationRealm: organization.realm.id,
+                    owner,
+                    name: "Project",
+                },
+                transaction,
+            }),
+        );
+
+        expect(organization.realm.type).toBe(RealmType.ORGANIZATION);
+        expect(project.realm.type).toBe(RealmType.PROJECT);
+        expect(project.roles).toHaveLength(3);
+        expect(project.roles.find(({ code }) => code.endsWith(".root"))?.isSystemManaged).toBe(true);
+        const permissions = (await loadPermissionAssignments(suite, project.realm.id)).map(
+            ({ permission }) => permission.code,
+        );
+        expect(permissions).toContain(PermissionCode.PROJECT_UPDATE);
+        expect(permissions).not.toContain(PermissionCode.PROJECT_CREATE);
+        expect(
+            permissions.some((code) => /^(team|department|dept_account_assignment|team_account_assignment)\./.test(code)),
+        ).toBe(false);
+        const organizationPermissions = (await loadPermissionAssignments(suite, organization.realm.id)).map(
+            ({ permission }) => permission.code,
+        );
+        expect(organizationPermissions).toContain(PermissionCode.PROJECT_CREATE);
+        expect(organizationPermissions).toContain(PermissionCode.DEPARTMENT_CREATE);
+        expect(organizationPermissions).toContain(PermissionCode.TEAM_CREATE);
+    });
+
+    it("rejects bootstrap of an existing realm without replacing its owner", async () => {
+        const existing = await suite.fixtures().createRealm();
+
+        await expect(
+            suite.transaction((transaction) =>
+                suite.repository().realmService.bootstrapOrganization({
+                    actor: randomUUID(),
+                    realm: existing.id,
+                    input: { process: randomUUID(), resource: randomUUID(), owner: randomUUID(), name: "Duplicate" },
+                    transaction,
+                }),
+            ),
+        ).rejects.toThrow("services.realm.ALREADY_EXISTS");
+
+        await expect(
+            suite.transaction((transaction) => transaction.count(Realm, { id: existing.id, owner: existing.owner })),
+        ).resolves.toBe(1);
+    });
+
     it("does not create a realm when the owner reaches the real realm limit", async () => {
         await helpers.seedSystemPermissions(suite);
 
@@ -232,5 +299,161 @@ describe("RealmService integration", () => {
         await expect(countRealmGraphRows(suite, realm)).resolves.toBe(0);
         await expect(loadRealm(suite, foreignRealm.id)).resolves.toEqual(expect.objectContaining({ id: foreignRealm.id }));
         await expect(loadRoles(suite, foreignRealm.id)).resolves.toEqual([expect.objectContaining({ id: foreignRole.id })]);
+    });
+
+    it("restores system revocations but preserves manual revocations", async () => {
+        const realm = await suite.fixtures().createRealm();
+        const role = await suite.fixtures().createRole({ realm });
+        const secondRole = await suite.fixtures().createRole({ realm });
+        const permission = await suite.fixtures().createPermission({ realm });
+        const account = randomUUID();
+        const assignment = await suite.fixtures().createAccountRoleAssignment({ realm, role, account });
+        const manual = await suite
+            .fixtures()
+            .createAccountRoleAssignment({ realm, role: secondRole, account, isRevoked: true });
+        const override = await suite
+            .fixtures()
+            .createPermissionOverride({ realm, permission, account, effect: PermissionOverrideEffect.ALLOW });
+        await suite.transaction((transaction) =>
+            suite.repository().realmService.revokeAccountAccess({ realm: realm.id, account, transaction }),
+        );
+
+        await suite.transaction((transaction) =>
+            suite.repository().realmService.restoreAccountAccess({ realm: realm.id, account, transaction }),
+        );
+        const [restored, untouched, restoredOverride] = await suite.transaction((transaction) =>
+            Promise.all([
+                transaction.findOneOrFail(AccountRoleAssignment, assignment.id),
+                transaction.findOneOrFail(AccountRoleAssignment, manual.id),
+                transaction.findOneOrFail(PermissionOverride, override.id),
+            ]),
+        );
+        expect(restored.isRevoked).toBe(false);
+        expect(restored.isSystemRevoked).toBe(false);
+        expect(untouched.isRevoked).toBe(true);
+        expect(untouched.isSystemRevoked).toBe(false);
+        expect(restoredOverride.isRevoked).toBe(false);
+    });
+
+    it("purges active assignments and overrides without soft-purge preconditions", async () => {
+        const realm = await suite.fixtures().createRealm();
+        const role = await suite.fixtures().createRole({ realm });
+        const permission = await suite.fixtures().createPermission({ realm });
+        const account = randomUUID();
+        const other = randomUUID();
+        await suite.fixtures().createAccountRoleAssignment({ realm, role, account });
+        await suite
+            .fixtures()
+            .createPermissionOverride({ realm, permission, account, effect: PermissionOverrideEffect.ALLOW });
+        await suite.fixtures().createAccountRoleAssignment({ realm, role, account: other });
+
+        const result = await suite.transaction((transaction) =>
+            suite.repository().realmService.purgeAccountAccess({ realm: realm.id, account, transaction }),
+        );
+
+        expect(result.assignments).toHaveLength(1);
+        expect(result.overrides).toHaveLength(1);
+        await expect(
+            suite.transaction((transaction) => transaction.count(AccountRoleAssignment, { account, realm: realm.id })),
+        ).resolves.toBe(0);
+        await expect(
+            suite.transaction((transaction) => transaction.count(PermissionOverride, { account, realm: realm.id })),
+        ).resolves.toBe(0);
+        await expect(
+            suite.transaction((transaction) =>
+                transaction.count(AccountRoleAssignment, { account: other, realm: realm.id }),
+            ),
+        ).resolves.toBe(1);
+    });
+
+    it("moves only the administrator role and rejects a repeated transfer", async () => {
+        const previousOwner = randomUUID();
+        const owner = randomUUID();
+        const realm = await suite.fixtures().createRealm({ owner: previousOwner });
+        const admin = await suite.fixtures().createRole({ realm, code: `${realm.code}.administrator` });
+        const custom = await suite.fixtures().createRole({ realm });
+        await suite.fixtures().createAccountRoleAssignment({ realm, account: previousOwner, role: admin });
+        await suite.fixtures().createAccountRoleAssignment({ realm, account: previousOwner, role: custom });
+        const existing = await suite
+            .fixtures()
+            .createAccountRoleAssignment({ realm, account: owner, role: admin, isRevoked: true });
+        const request = {
+            actor: previousOwner,
+            realm: realm.id,
+            input: { process: randomUUID(), organization: randomUUID(), owner, previousOwner },
+        };
+
+        const result = await suite.transaction((transaction) =>
+            suite.repository().realmService.transferOwnership({ ...request, transaction }),
+        );
+
+        expect(result.assignments[0].id).toBe(existing.id);
+        expect(result.previousAssignments).toHaveLength(1);
+        const [loaded, oldAdmin, newAdmin, unrelated] = await suite.transaction((transaction) =>
+            Promise.all([
+                transaction.findOneOrFail(Realm, realm.id),
+                transaction.count(AccountRoleAssignment, { realm: realm.id, account: previousOwner, role: admin.id }),
+                transaction.count(AccountRoleAssignment, {
+                    realm: realm.id,
+                    account: owner,
+                    role: admin.id,
+                    isRevoked: false,
+                }),
+                transaction.count(AccountRoleAssignment, { realm: realm.id, account: previousOwner, role: custom.id }),
+            ]),
+        );
+        expect(loaded.owner).toBe(owner);
+        expect([oldAdmin, newAdmin, unrelated]).toEqual([0, 1, 1]);
+        await expect(
+            suite.transaction((transaction) =>
+                suite.repository().realmService.transferOwnership({ ...request, transaction }),
+            ),
+        ).rejects.toThrow("services.realm.OWNER_MISMATCH");
+    });
+
+    it("rejects an invalid system restore without changing the realm", async () => {
+        const realm = await suite.fixtures().createRealm();
+
+        await expect(
+            suite.transaction((transaction) =>
+                suite.repository().realmService.restoreBySystem({ realm: realm.id, transaction }),
+            ),
+        ).rejects.toThrow("ALREADY_ACTIVE");
+
+        const loaded = await loadRealm(suite, realm.id);
+        expect(loaded.isRevoked).toBe(false);
+        expect(loaded.version).toBe(realm.version);
+    });
+
+    it("preserves manual revocation through system lifecycle operations", async () => {
+        const realm = await suite.fixtures().createRealm({ isRevoked: true });
+
+        const revoked = await suite.transaction((transaction) =>
+            suite.repository().realmService.revokeBySystem({ realm: realm.id, transaction }),
+        );
+        const restored = await suite.transaction((transaction) =>
+            suite.repository().realmService.restoreBySystem({ realm: realm.id, transaction }),
+        );
+
+        expect(revoked).toEqual([]);
+        expect(restored).toEqual([]);
+        const loaded = await loadRealm(suite, realm.id);
+        expect(loaded.isRevoked).toBe(true);
+        expect(loaded.isSystemRevoked).toBe(false);
+    });
+
+    it("rejects system lifecycle changes after realm deletion", async () => {
+        const realm = await suite.fixtures().createRealm();
+        await suite.transaction((transaction) =>
+            suite.repository().realmService.purgeBySystem({ realm: realm.id, transaction }),
+        );
+
+        await expect(
+            suite.transaction((transaction) =>
+                suite.repository().realmService.restoreBySystem({ realm: realm.id, transaction }),
+            ),
+        ).rejects.toThrow();
+
+        await expect(suite.transaction((transaction) => transaction.count(Realm, { id: realm.id }))).resolves.toBe(0);
     });
 });

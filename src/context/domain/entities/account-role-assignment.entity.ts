@@ -14,6 +14,7 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
     public justification?: string;
     public isSystemManaged: boolean;
     public isRevoked: boolean;
+    public isSystemRevoked: boolean = false;
     public expiresAt?: Date;
 
     public realm: Entities.Realm;
@@ -40,7 +41,10 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
     }
 
     public revoke(): void {
-        if (this.isRevoked) {
+        if (this.isRevoked && this.isSystemRevoked) {
+            this.isSystemRevoked = false;
+            this.updatedAt = new Date();
+        } else if (this.isRevoked) {
             throw Exception.invariantViolation({ messageKey: `${AccountRoleAssignment.dictionaryPath}.ALREADY_REVOKED` });
         } else {
             const now = new Date();
@@ -59,7 +63,24 @@ export class AccountRoleAssignment implements Entities.AccountRoleAssignment.Con
         } else {
             const now = new Date();
             this.isRevoked = false;
+            this.isSystemRevoked = false;
             this.updatedAt = now;
+        }
+    }
+
+    public revokeBySystem(): void {
+        if (!this.isRevoked) {
+            this.isRevoked = true;
+            this.isSystemRevoked = true;
+            this.updatedAt = new Date();
+        }
+    }
+
+    public restoreBySystem(): void {
+        if (this.isRevoked && this.isSystemRevoked && (this.expiresAt?.getTime() ?? Infinity) > Date.now()) {
+            this.isRevoked = false;
+            this.isSystemRevoked = false;
+            this.updatedAt = new Date();
         }
     }
 

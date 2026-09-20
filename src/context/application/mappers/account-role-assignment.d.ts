@@ -18,6 +18,10 @@ declare namespace Commands {
             }
 
             interface PublicContract {
+                joinAssignmentProjectionPayload: JoinAssignmentProjectionPayload.Signature;
+                joinConfirmedPayload: JoinConfirmedPayload.Signature;
+                joinRejectedPayload: JoinRejectedPayload.Signature;
+                joinAccessCachePayload: JoinAccessCachePayload.Signature;
                 notificationRevokePayload: NotificationRevokePayload.Signature;
                 notificationGrantPayload: NotificationGrantPayload.Signature;
                 projectionCreatePayload: ProjectionCreatePayload.Signature;
@@ -26,6 +30,38 @@ declare namespace Commands {
                 cleanAccessCachePayload: CleanAccessCachePayload.Signature;
                 projectionPurgePayload: ProjectionPurgePayload.Signature;
                 accessCachePayload: AccessCachePayload.Signature;
+            }
+
+            namespace JoinAssignmentProjectionPayload {
+                type Props = Commands.AccountRoleAssignment.Join.ExecuteResult;
+
+                type Result = Scripts.AccountRoleAssignment.Create.Props;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace JoinAccessCachePayload {
+                type Props = Commands.AccountRoleAssignment.Join.ExecuteResult;
+
+                type Result = Topics.AccessCache.Message["payload"];
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace JoinConfirmedPayload {
+                type Props = Commands.AccountRoleAssignment.Join.ExecuteResult;
+
+                type Result = Topics.Realm.MembershipJoinConfirmedMessage["payload"];
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace JoinRejectedPayload {
+                type Props = Omit<Commands.AccountRoleAssignment.RejectJoin.Props, "incoming">;
+
+                type Result = Topics.Realm.MembershipJoinRejectedMessage["payload"];
+
+                type Signature = (props: Props) => Result;
             }
 
             namespace NotificationRevokePayload {

@@ -9,12 +9,10 @@
     "REPARENT_ROOT_NOT_ALLOWED": "The root role cannot be moved.",
     "REPARENT_TARGET_ALREADY_PARENT": "The specified target parent is already the current parent of the role.",
     "REPARENT_TARGET_IN_SUBTREE": "A role cannot be moved under one of its own descendants.",
-
     "ROLES_NOT_FOUND": "Some of the specified roles were not found."
   },
   "role-permission-assignment": {
     "ROLE_PERMISSION_LIMIT_EXCEEDED": "The allowed permission limit for the role has been exceeded.",
-
     "PERMISSIONS_NOT_FOUND": "Some of the specified permissions were not found.",
     "ASSIGNMENTS_NOT_FOUND": "Some of the specified assignments were not found."
   },
@@ -22,7 +20,6 @@
     "LIMIT_EXCEEDED": "The allowed delegation policy limit for the role has been exceeded.",
     "EXISTS_TRANSITIVE_PATH": "Creating this policy would introduce a transitive delegation cycle.",
     "SELF_DELEGATION_NOT_ALLOWED": "A role cannot be both the delegator and the target of the same policy.",
-
     "DELEGATOR_ROLE_NOT_FOUND": "Delegator role not found.",
     "TARGET_ROLE_NOT_FOUND": "Target role not found.",
     "BOTH_ROLES_NOT_FOUND": "Delegator role and target role were not found.",
@@ -31,7 +28,6 @@
   "role-conflict-member": {
     "MEMBER_LIMIT_EXCEEDED": "The allowed member limit for the conflict group has been exceeded.",
     "HAS_ACCOUNTS_VIOLATING_RULE": "This rule is already violated by existing account role assignments.",
-
     "ROLES_NOT_FOUND": "Some of the specified roles were not found.",
     "MEMBERS_NOT_FOUND": "Some of the specified members were not found."
   },
@@ -39,33 +35,31 @@
     "LIMIT_EXCEEDED": "The allowed conflict group limit for the realm has been exceeded.",
     "MEMBER_LIMIT_EXCEEDED": "The allowed member limit for the conflict group has been exceeded.",
     "HAS_ACCOUNTS_VIOLATING_RULE": "This rule is already violated by existing account role assignments.",
-
     "ROLES_NOT_FOUND": "Some of the specified roles were not found.",
     "GROUPS_NOT_FOUND": "Some of the specified conflict groups were not found."
   },
   "permission": {
     "LIMIT_EXCEEDED": "The allowed permission limit for the realm has been exceeded.",
-
     "PERMISSIONS_NOT_FOUND": "Some of the specified permissions were not found."
   },
   "permission-override": {
     "LIMIT_EXCEEDED": "The allowed permission override limit for the account has been exceeded.",
-
     "OVERRIDES_NOT_FOUND": "Some of the specified overrides were not found."
   },
   "realm": {
     "LIMIT_EXCEEDED": "The allowed realm limit for the account has been exceeded.",
     "MISSING_SYSTEM_PERMISSIONS": "One or more required system permissions were not found.",
-
-    "REALMS_NOT_FOUND": "Some of the specified realms were not found."
+    "REALMS_NOT_FOUND": "Some of the specified realms were not found.",
+    "OWNER_MISMATCH": "Realm owner does not match",
+    "ALREADY_EXISTS": "Realm already exists."
   },
   "account-role-assignment": {
     "DELEGATION_NOT_ALLOWED": "Insufficient privileges to assign this role.",
     "ACCOUNT_ROLE_LIMIT_EXCEEDED": "The allowed role limit for the account has been exceeded.",
     "HAS_SoD_VIOLATIONS": "The assignment violates one or more segregation of duties policies.",
-
     "ROLES_NOT_FOUND": "Some of the specified roles were not found.",
-    "ASSIGNMENTS_NOT_FOUND": "Some of the specified assignments were not found."
+    "ASSIGNMENTS_NOT_FOUND": "Some of the specified assignments were not found.",
+    "EXISTING_ACCESS_INACTIVE": "The existing assignment is inactive"
   },
   "kafka-incoming": {
     "EVENT_MISSING": "The Kafka message key required for idempotent processing is missing."
