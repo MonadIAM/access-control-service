@@ -1,0 +1,24 @@
+{
+  "$schema": "../node_modules/@mizchi/lsmcp/lsmcp.schema.json",
+  "preset": "typescript",
+  "bin": "node",
+  "args": ["node_modules/typescript-language-server/lib/cli.mjs", "--stdio"],
+  "files": ["src/**/*.ts", "env.d.ts", "mikro-orm.config.ts"],
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/.git/**",
+    "**/graphify-out/**"
+  ],
+  "initializationOptions": {
+    "disableAutomaticTypingAcquisition": true,
+    "tsserver": {
+      "path": "./node_modules/typescript/lib/tsserver.js",
+      "useSyntaxServer": "never"
+    }
+  },
+  "settings": {
+    "autoIndex": false,
+    "enableWatchers": true
+  }
+}

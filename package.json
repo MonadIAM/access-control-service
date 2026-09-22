@@ -13,9 +13,15 @@
   },
   "packageManager": "pnpm@11.25.0+sha512.5cde925b4f075f725eb71fbae18a42ffe784524789f19b61c731cb8721ec28aaee160e01a8d5af4fedb2a42cdbf300efe23db356b0d4a17b4d63e11f8ab7c956",
   "scripts": {
+    "lint": "eslint",
+    "lint:fix": "eslint --config ./prettier.config.mjs --fix --format json | node -e \"process.stdin.on('data',d=>JSON.parse(d).forEach(f=>f.output && console.log(f.filePath)));\"",
+    "tsc": "tsc --noEmit",
     "knip": "knip --config configs/knip.config.ts",
+    "secrets:check": "gitleaks protect --staged --config .gitleaks.toml",
+    "env:check": "bash scripts/env.check.sh",
     "intl:types": "nestjs-i18n -p src/common/dictionaries -o src/common/dictionaries/intl.generated.ts",
-    "intl:check": "nestjs-i18n check -p src/common/dictionaries",
+    "intl:check": "bash scripts/intl.check.sh",
+    "lsp": "lsmcp --config .lsmcp/config.json",
     "db:migration": "mikro-orm migration:create",
     "db:migrate": "mikro-orm migration:up",
     "db:seed": "pnpm run db:seed:postgresql && pnpm run db:seed:redis",
@@ -28,8 +34,7 @@
     "start:prod": "node dist/index.js",
     "start:dev": "nest start --watch",
     "start": "nest start",
-    "build": "nest build",
-    "lint": "eslint ."
+    "build": "nest build"
   },
   "repository": {
     "type": "git",
@@ -108,6 +113,7 @@
     "@mikro-orm/entity-generator": "7.1.13",
     "@mikro-orm/migrations": "7.1.13",
     "@mikro-orm/seeder": "7.1.13",
+    "@mizchi/lsmcp": "0.10.0",
     "@nestjs/cli": "11.0.24",
     "@testcontainers/postgresql": "12.1.0",
     "@types/har-format": "1.2.16",
@@ -127,6 +133,7 @@
     "ts-jest": "29.4.12",
     "tsx": "4.23.12",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.67.0"
+    "typescript-eslint": "8.67.0",
+    "typescript-language-server": "5.1.3"
   }
 }

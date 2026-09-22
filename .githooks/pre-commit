@@ -20,7 +20,7 @@ step_gitleaks() {
         return 1
     fi
 
-    if gitleaks protect --staged --config .gitleaks.toml >"$OUTPUT_FILE" 2>&1; then
+    if pnpm run secrets:check >"$OUTPUT_FILE" 2>&1; then
         return 0
     fi
 
@@ -29,7 +29,7 @@ step_gitleaks() {
 }
 
 step_env() {
-    if LOG_NESTED=1 ./scripts/env.check.sh >"$OUTPUT_FILE" 2>&1; then
+    if LOG_NESTED=1 pnpm --silent run env:check >"$OUTPUT_FILE" 2>&1; then
         return 0
     fi
 
@@ -38,7 +38,7 @@ step_env() {
 }
 
 step_intl() {
-    if LOG_NESTED=1 ./scripts/intl.check.sh >"$OUTPUT_FILE" 2>&1; then
+    if LOG_NESTED=1 pnpm --silent run intl:check >"$OUTPUT_FILE" 2>&1; then
         return 0
     fi
 
@@ -47,7 +47,7 @@ step_intl() {
 }
 
 step_tsc() {
-    if npx tsc --noEmit >"$OUTPUT_FILE" 2>&1; then
+    if pnpm run tsc >"$OUTPUT_FILE" 2>&1; then
         return 0
     fi
 
@@ -65,7 +65,9 @@ step_knip() {
 }
 
 step_eslint() {
-    if echo "$FILES_FOR_CHECK" | xargs npx eslint --quiet >"$OUTPUT_FILE" 2>&1; then
+    [ -n "$FILES_FOR_CHECK" ] || return 0
+
+    if echo "$FILES_FOR_CHECK" | xargs pnpm --silent run lint --quiet >"$OUTPUT_FILE" 2>&1; then
         return 0
     fi
 

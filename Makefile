@@ -1,6 +1,7 @@
-.PHONY: env up down build restart lint knip intl-types intl-check migrate migration empty-migration seed test utest itest coverage
+.PHONY: env build up down restart lint lint-fix tsc knip secrets-check env-check intl-types intl-check lsp migrate migration empty-migration seed test utest itest coverage graphify graphify-rebuild graphify-html
 
 SERVICE_EXEC_WITH_SECRETS := docker-compose exec service sh /usr/local/bin/with-vault-secrets.sh
+GRAPHIFY ?= graphify
 
 # Infrastructure
 env:
@@ -16,12 +17,22 @@ restart: down up
 # Development
 lint:
 	pnpm run lint
+lint-fix:
+	@pnpm --silent run lint:fix
+tsc:
+	pnpm run tsc
 knip:
 	pnpm run knip
+secrets-check:
+	pnpm run secrets:check
+env-check:
+	pnpm run env:check
 intl-types:
 	pnpm run intl:types
 intl-check:
 	pnpm run intl:check
+lsp:
+	@pnpm --silent run lsp
 
 # Database
 migrate:
@@ -41,3 +52,15 @@ itest:
 	pnpm run itest
 coverage:
 	NODE_OPTIONS=--experimental-vm-modules npx jest --config ./jest.unit.config.mjs --coverage
+
+# Local code graph
+graphify:
+	$(GRAPHIFY) extract . --code-only
+	$(GRAPHIFY) cluster-only . --no-viz --no-label
+
+graphify-rebuild:
+	$(GRAPHIFY) extract . --code-only --force
+	$(GRAPHIFY) cluster-only . --no-viz --no-label
+
+graphify-html: graphify
+	$(GRAPHIFY) export html

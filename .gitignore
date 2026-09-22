@@ -57,3 +57,10 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Local Graphify outputs
+/graphify-out/
+
+# Local LSP-MCP data
+/.lsmcp/*
+!/.lsmcp/config.json
