@@ -6,9 +6,9 @@ import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
 export class AccountRoleAssignmentQueriesUnitHelpers
     extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.AccountRoleAssignmentQueries.Contract
+    implements Unit.Queries.AccountRoleAssignment.Contract
 {
-    public queries(): Unit.Application.AccountRoleAssignmentQueries.Queries.Result {
+    public queries(): Unit.Queries.AccountRoleAssignment.Queries.Result {
         const repository = {
             findUniqueOrThrow: jest.fn<Repositories.AccountRoleAssignment.QueryContract["findUniqueOrThrow"]>(),
             findMany: jest.fn<Repositories.AccountRoleAssignment.QueryContract["findMany"]>(),

@@ -1,33 +1,22 @@
-import type { jest } from "@jest/globals";
+declare namespace Unit.Commands.PermissionOverride {
+    interface Contract extends Core.Contract {
+        commands: Commands.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Application {
-            namespace PermissionOverrideCommands {
-                interface Contract extends CommandCore.Contract {
-                    readonly commands: Commands.Signature;
-                }
+    namespace Commands {
+        type Result = Core.Execution.Result & {
+            commands: globalThis.Commands.PermissionOverride.Contract;
+            service: Jest.Mocked<
+                Pick<Services.PermissionOverride.CommandContract, "create" | "revoke" | "restore" | "purge" | "expire">
+            >;
+            cache: {
+                checkRealm: Jest.Mock<InfrastructureServices.ProjectionCache.CheckRealm.Signature>;
+            };
+            repository: {
+                find: Jest.Mock<Repositories.PermissionOverride.PublicContract["find"]>;
+            };
+        };
 
-                namespace Commands {
-                    type Result = CommandCore.Execution.Result & {
-                        readonly commands: globalThis.Commands.PermissionOverride.Contract;
-                        readonly service: jest.Mocked<
-                            Pick<
-                                Services.PermissionOverride.CommandContract,
-                                "create" | "revoke" | "restore" | "purge" | "expire"
-                            >
-                        >;
-                        readonly cache: {
-                            readonly checkRealm: jest.Mock<InfrastructureServices.ProjectionCache.CheckRealm.Signature>;
-                        };
-                        readonly repository: {
-                            readonly find: jest.Mock<Repositories.PermissionOverride.PublicContract["find"]>;
-                        };
-                    };
-
-                    type Signature = () => Result;
-                }
-            }
-        }
+        type Signature = () => Result;
     }
 }

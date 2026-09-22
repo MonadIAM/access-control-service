@@ -4,11 +4,8 @@ import { PermissionQueries } from "~context/application/queries/permission.queri
 
 import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
-export class PermissionQueriesUnitHelpers
-    extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.PermissionQueries.Contract
-{
-    public queries(): Unit.Application.PermissionQueries.Queries.Result {
+export class PermissionQueriesUnitHelpers extends DomainServiceCoreUnitHelpers implements Unit.Queries.Permission.Contract {
+    public queries(): Unit.Queries.Permission.Queries.Result {
         const repository = {
             findUniqueOrThrow: jest.fn<Repositories.Permission.QueryContract["findUniqueOrThrow"]>(),
             findMany: jest.fn<Repositories.Permission.QueryContract["findMany"]>(),

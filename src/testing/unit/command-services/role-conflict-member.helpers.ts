@@ -6,9 +6,9 @@ import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
 export class RoleConflictMemberCommandsUnitHelpers
     extends ApplicationCommandUnitHelpers
-    implements Unit.Application.RoleConflictMemberCommands.Contract
+    implements Unit.Commands.RoleConflictMember.Contract
 {
-    public commands(): Unit.Application.RoleConflictMemberCommands.Commands.Result {
+    public commands(): Unit.Commands.RoleConflictMember.Commands.Result {
         const execution = this.execution();
 
         const service = {

@@ -88,7 +88,7 @@ describe("ChangeLogSubscriber", () => {
             subscriber.onFlush(helpers.flushEventArgs({ uow: uow.uow, em: transaction.entityManager })),
         );
 
-        const changeLog = transaction.persist.mock.calls[0][0];
+        const changeLog = transaction.persist.mock.calls[0][0] as SystemEntities.ChangeLog;
         const outboxEntry = transaction.persist.mock.calls[1][0];
 
         expect(logMasking.maskChangeLog).toHaveBeenCalledWith({
@@ -133,7 +133,7 @@ describe("ChangeLogSubscriber", () => {
             subscriber.onFlush(helpers.flushEventArgs({ uow: uow.uow, em: transaction.entityManager })),
         );
 
-        const changeLog = transaction.persist.mock.calls[0][0];
+        const changeLog = transaction.persist.mock.calls[0][0] as SystemEntities.ChangeLog;
 
         expect(logMasking.maskChangeLog).toHaveBeenCalledWith({ delta: { depth: { old: null, new: 2 } } });
         expect(changeLog).toEqual(

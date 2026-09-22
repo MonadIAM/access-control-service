@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
 
-import { EntityFactoryRegistry } from "~testing/unit/entity-factory.registry";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 import {
     PermissionOverrideEffect,
     NotificationContentKind,

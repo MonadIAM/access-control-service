@@ -1,118 +1,119 @@
-declare namespace Unit {
-    namespace Domain {
-        namespace RepositoryMockBank {
-            interface Contract extends EntityFactory.Contract {
-                readonly repositories: Repositories.Signature;
-            }
-
-            namespace Repositories {
-                type Props = {
-                    readonly permissions?: Entities.Permission[];
-                    readonly roles?: Entities.Role[];
-                    readonly realm?: Entities.Realm;
-                };
-
-                type Result = RepositoryMocks.Contract;
-
-                type Signature = (props?: Props) => Result;
-            }
+declare namespace Unit.Domain {
+    namespace RepositoryMockBank {
+        interface Contract extends Testing.EntityFactory.Contract {
+            repositories: Repositories.Signature;
         }
 
-        namespace RepositoryMocks {
-            type Base = {
-                resource: string;
-
-                findUniqueOrThrow: Mock;
-                findUnique: Mock;
-                findMany: Mock;
-                find: Mock;
+        namespace Repositories {
+            type Props = {
+                permissions?: Entities.Permission[];
+                roles?: Entities.Role[];
+                realm?: Entities.Realm;
             };
 
-            type AccountRoleAssignment = Base & {
-                wouldExceedRoleLimit: Mock;
-            };
+            type Result = RepositoryMocks.Contract;
 
-            type RolePermissionAssignment = Base & {
-                wouldExceedPermissionLimit: Mock;
-            };
+            type Signature = (props?: Props) => Result;
+        }
+    }
 
-            type PermissionOverride = Base & {
-                wouldExceedOverrideLimit: Mock;
-            };
+    namespace RepositoryMocks {
+        type Base = {
+            resource: string;
 
-            type RoleConflictMember = Base & {
-                wouldExceedMemberLimit: Mock;
-            };
+            findUniqueOrThrow: Jest.Mock;
+            findUnique: Jest.Mock;
+            findMany: Jest.Mock;
+            find: Jest.Mock;
+        };
 
-            type RoleDelegationPolicy = Base & {
-                wouldExceedPolicyLimit: Mock;
-                existsTransitivePath: Mock;
-                isDelegationAllowed: Mock;
-            };
+        type AccountRoleAssignment = Base & {
+            wouldExceedRoleLimit: Jest.Mock;
+        };
 
-            type RoleConflictGroup = Base & {
-                getGroupsViolatedByAccountQuery: Mock;
-                hasGroupsWithViolatingAccounts: Mock;
-                getAccountsViolatingRuleQuery: Mock;
-                findGroupsViolatedByAccount: Mock;
-                hasGroupsViolatedByAccount: Mock;
-                findAccountsViolatingRule: Mock;
-                hasAccountsViolatingRule: Mock;
-                wouldExceedGroupLimit: Mock;
-            };
+        type RolePermissionAssignment = Base & {
+            wouldExceedPermissionLimit: Jest.Mock;
+        };
 
-            type RoleClosure = {
-                decreaseTransitiveDepth: Mock;
-                existsTransitivePath: Mock;
-                insertNewHierarchy: Mock;
-                moveSubtrees: Mock;
-                move: Mock;
-            };
+        type PermissionOverride = Base & {
+            wouldExceedOverrideLimit: Jest.Mock;
+        };
 
-            type Permission = Base & {
-                wouldExceedPermissionLimit: Mock;
-                findAccountsByPermissions: Mock;
-                collectEffective: Mock;
-                getLookupList: Mock;
-                findEffective: Mock;
-            };
+        type RoleConflictMember = Base & {
+            wouldExceedMemberLimit: Jest.Mock;
+        };
 
-            type Realm = Base & {
-                wouldExceedRealmLimit: Mock;
-                getLookupList: Mock;
-            };
+        type RoleDelegationPolicy = Base & {
+            wouldExceedPolicyLimit: Jest.Mock;
+            existsTransitivePath: Jest.Mock;
+            isDelegationAllowed: Jest.Mock;
+        };
 
-            type Role = Base & {
-                wouldExceedRoleLimit: Mock;
-                findAccountsByRoles: Mock;
-                getHierarchyGraph: Mock;
-                findDescendants: Mock;
-                getDescendants: Mock;
-                getLookupList: Mock;
-                findDelegable: Mock;
-                findEffective: Mock;
-                findAncestors: Mock;
-                getAncestors: Mock;
-            };
+        type RoleConflictGroup = Base & {
+            getGroupsViolatedByAccountQuery: Jest.Mock;
+            hasGroupsWithViolatingAccounts: Jest.Mock;
+            getAccountsViolatingRuleQuery: Jest.Mock;
+            findGroupsViolatedByAccount: Jest.Mock;
+            hasGroupsViolatedByAccount: Jest.Mock;
+            findAccountsViolatingRule: Jest.Mock;
+            hasAccountsViolatingRule: Jest.Mock;
+            wouldExceedGroupLimit: Jest.Mock;
+        };
 
-            type AuditLog = Base;
+        type RoleClosure = {
+            decreaseTransitiveDepth: Jest.Mock;
+            existsTransitivePath: Jest.Mock;
+            insertNewHierarchy: Jest.Mock;
+            moveSubtrees: Jest.Mock;
+            move: Jest.Mock;
+        };
 
-            type ChangeLog = Base;
+        type Permission = Base & {
+            wouldExceedPermissionLimit: Jest.Mock;
+            findAccountsByPermissions: Jest.Mock;
+            collectEffective: Jest.Mock;
+            getLookupList: Jest.Mock;
+            findEffective: Jest.Mock;
+        };
 
-            interface Contract {
-                readonly rolePermissionAssignments: RolePermissionAssignment;
-                readonly accountRoleAssignments: AccountRoleAssignment;
-                readonly roleDelegationPolicies: RoleDelegationPolicy;
-                readonly permissionOverrides: PermissionOverride;
-                readonly roleConflictMembers: RoleConflictMember;
-                readonly roleConflictGroups: RoleConflictGroup;
-                readonly roleClosures: RoleClosure;
-                readonly permissions: Permission;
-                readonly changeLogs: ChangeLog;
-                readonly auditLogs: AuditLog;
-                readonly realms: Realm;
-                readonly roles: Role;
-            }
+        type Realm = Base & {
+            wouldExceedRealmLimit: Jest.Mock;
+            getLookupList: Jest.Mock;
+        };
+
+        type Role = Omit<Base, "findUniqueOrThrow"> & {
+            findUniqueOrThrow: Jest.Mock<
+                (props: Repositories.Base.FindUniqueOrThrow<Entities.Role, never, "*">) => Promise<Entities.Role>
+            >;
+            wouldExceedRoleLimit: Jest.Mock;
+            findAccountsByRoles: Jest.Mock;
+            getHierarchyGraph: Jest.Mock;
+            findDescendants: Jest.Mock;
+            getDescendants: Jest.Mock<Repositories.Role.GetDescendants.Signature>;
+            getLookupList: Jest.Mock;
+            findDelegable: Jest.Mock;
+            findEffective: Jest.Mock;
+            findAncestors: Jest.Mock;
+            getAncestors: Jest.Mock;
+        };
+
+        type AuditLog = Base;
+
+        type ChangeLog = Base;
+
+        interface Contract {
+            rolePermissionAssignments: RolePermissionAssignment;
+            accountRoleAssignments: AccountRoleAssignment;
+            roleDelegationPolicies: RoleDelegationPolicy;
+            permissionOverrides: PermissionOverride;
+            roleConflictMembers: RoleConflictMember;
+            roleConflictGroups: RoleConflictGroup;
+            roleClosures: RoleClosure;
+            permissions: Permission;
+            changeLogs: ChangeLog;
+            auditLogs: AuditLog;
+            realms: Realm;
+            roles: Role;
         }
     }
 }

@@ -4,11 +4,8 @@ import { RealmCommands } from "~context/application/commands/realm.commands";
 
 import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
-export class RealmCommandsUnitHelpers
-    extends ApplicationCommandUnitHelpers
-    implements Unit.Application.RealmCommands.Contract
-{
-    public commands(): Unit.Application.RealmCommands.Commands.Result {
+export class RealmCommandsUnitHelpers extends ApplicationCommandUnitHelpers implements Unit.Commands.Realm.Contract {
+    public commands(): Unit.Commands.Realm.Commands.Result {
         const execution = this.execution();
 
         const service = {

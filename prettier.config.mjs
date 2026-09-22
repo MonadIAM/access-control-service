@@ -7,6 +7,7 @@ const prettierConfig = [
         ignores: [
             "dist/**/*",
             "configs/**/*",
+            "coverage/**/*",
             "node_modules/**/*",
             "./*.config.{mjs,ts}",
             "./configs/*.config.{mjs,ts}",

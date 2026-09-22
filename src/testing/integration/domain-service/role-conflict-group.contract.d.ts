@@ -1,45 +1,34 @@
-import type { RoleConflictGroupRepository } from "~context/infrastructure/repositories/role-conflict-group.repository";
-import type { RoleConflictGroupService } from "~context/domain/services/role-conflict-group.service";
-import type { RealmRepository } from "~context/infrastructure/repositories/realm.repository";
-import type { RoleRepository } from "~context/infrastructure/repositories/role.repository";
+declare namespace Integration.Domain.RoleConflictGroup {
+    type Suite = Postgres.Suite.Contract<Service.Context, Fixtures.Core.Contract>;
 
-declare global {
-    namespace Integration {
-        namespace Domain {
-            namespace RoleConflictGroup {
-                type Suite = Postgres.Suite.Contract<Service.Context, Fixtures.Core.Contract>;
+    interface Contract {
+        repositories: Repositories.Signature;
+        service: Service.Signature;
+    }
 
-                interface Contract {
-                    readonly repositories: Repositories.Signature;
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Context = {
+            roleConflictGroupService: Services.RoleConflictGroup.Contract;
+            repositories: Repositories.Context;
+        };
 
-                namespace Service {
-                    type Context = {
-                        readonly roleConflictGroupService: RoleConflictGroupService;
-                        readonly repositories: Repositories.Context;
-                    };
+        type Signature = (context: Postgres.Suite.FactoryContext, props?: Config.Props) => Context;
+    }
 
-                    type Signature = (context: Postgres.Suite.FactoryContext, props?: Config.Props) => Context;
-                }
+    namespace Repositories {
+        type Context = {
+            roleConflictGroups: globalThis.Repositories.RoleConflictGroup.Contract;
+            realms: globalThis.Repositories.Realm.Contract;
+            roles: globalThis.Repositories.Role.Contract;
+        };
 
-                namespace Repositories {
-                    type Context = {
-                        readonly roleConflictGroups: RoleConflictGroupRepository;
-                        readonly realms: RealmRepository;
-                        readonly roles: RoleRepository;
-                    };
+        type Signature = (context: Postgres.Suite.FactoryContext, props?: Config.Props) => Context;
+    }
 
-                    type Signature = (context: Postgres.Suite.FactoryContext, props?: Config.Props) => Context;
-                }
-
-                namespace Config {
-                    type Props = {
-                        readonly membersLimit?: number;
-                        readonly groupLimit?: number;
-                    };
-                }
-            }
-        }
+    namespace Config {
+        type Props = {
+            membersLimit?: number;
+            groupLimit?: number;
+        };
     }
 }

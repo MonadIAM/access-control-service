@@ -277,16 +277,19 @@ describe("RealmService", () => {
         });
     });
 
-    describe("revoke", () => {
-        it("revokes found realms and returns them", async () => {
-            const first = helpers.createRealm({ id: REALM_ID });
-            const second = helpers.createRealm({ id: SECOND_REALM_ID });
+    describe("revoke / restore", () => {
+        it.each([
+            { method: "revoke", isRevoked: false },
+            { method: "restore", isRevoked: true },
+        ] as const)("$method processes each found entity and returns the batch", async ({ method, isRevoked }) => {
+            const first = helpers.createRealm({ id: REALM_ID, isRevoked });
+            const second = helpers.createRealm({ id: SECOND_REALM_ID, isRevoked });
             const { service, repositories, transaction } = helpers.service({ realm: first });
-            const firstRevokeSpy = jest.spyOn(first, "revoke");
-            const secondRevokeSpy = jest.spyOn(second, "revoke");
+            const firstOperationSpy = jest.spyOn(first, method);
+            const secondOperationSpy = jest.spyOn(second, method);
             repositories.realms.find.mockImplementation(() => Promise.resolve([first, second]));
 
-            const result = await service.revoke({
+            const result = await service[method]({
                 identifiers: [REALM_ID, SECOND_REALM_ID],
                 transaction: transaction.entityManager,
             });
@@ -295,32 +298,8 @@ describe("RealmService", () => {
                 where: { id: { $in: [REALM_ID, SECOND_REALM_ID] } },
                 transaction: transaction.entityManager,
             });
-            expect(firstRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(secondRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(result).toEqual([first, second]);
-        });
-    });
-
-    describe("restore", () => {
-        it("restores found realms and returns them", async () => {
-            const first = helpers.createRealm({ id: REALM_ID, isRevoked: true });
-            const second = helpers.createRealm({ id: SECOND_REALM_ID, isRevoked: true });
-            const { service, repositories, transaction } = helpers.service({ realm: first });
-            const firstRestoreSpy = jest.spyOn(first, "restore");
-            const secondRestoreSpy = jest.spyOn(second, "restore");
-            repositories.realms.find.mockImplementation(() => Promise.resolve([first, second]));
-
-            const result = await service.restore({
-                identifiers: [REALM_ID, SECOND_REALM_ID],
-                transaction: transaction.entityManager,
-            });
-
-            expect(repositories.realms.find).toHaveBeenCalledWith({
-                where: { id: { $in: [REALM_ID, SECOND_REALM_ID] } },
-                transaction: transaction.entityManager,
-            });
-            expect(firstRestoreSpy).toHaveBeenCalledTimes(1);
-            expect(secondRestoreSpy).toHaveBeenCalledTimes(1);
+            expect(firstOperationSpy).toHaveBeenCalledTimes(1);
+            expect(secondOperationSpy).toHaveBeenCalledTimes(1);
             expect(result).toEqual([first, second]);
         });
     });
@@ -353,68 +332,24 @@ describe("RealmService", () => {
 
     describe("bulk identifiers", () => {
         it.each([
-            {
-                name: "bulk identifiers: RealmService.revoke deduplicates repository lookup",
-                run: async () => {
-                    const realm = helpers.createRealm({ id: REALM_ID });
-                    const { service, repositories, transaction } = helpers.service({ realm });
-                    repositories.realms.find.mockImplementation(() => Promise.resolve([realm]));
+            { method: "revoke", isRevoked: false },
+            { method: "restore", isRevoked: true },
+            { method: "purge", isRevoked: true },
+        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked }) => {
+            const realm = helpers.createRealm({ id: REALM_ID, isRevoked });
+            const { service, repositories, transaction } = helpers.service({ realm });
+            repositories.realms.find.mockImplementation(() => Promise.resolve([realm]));
 
-                    await expect(
-                        service.revoke({
-                            transaction: transaction.entityManager,
-                            identifiers: [REALM_ID, REALM_ID],
-                        }),
-                    ).resolves.toEqual([realm]);
+            const result = await service[method]({
+                transaction: transaction.entityManager,
+                identifiers: [REALM_ID, REALM_ID],
+            });
 
-                    expect(repositories.realms.find).toHaveBeenCalledWith({
-                        transaction: transaction.entityManager,
-                        where: { id: { $in: [REALM_ID] } },
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: RealmService.restore deduplicates repository lookup",
-                run: async () => {
-                    const realm = helpers.createRealm({ id: REALM_ID, isRevoked: true });
-                    const { service, repositories, transaction } = helpers.service({ realm });
-                    repositories.realms.find.mockImplementation(() => Promise.resolve([realm]));
-
-                    await expect(
-                        service.restore({
-                            transaction: transaction.entityManager,
-                            identifiers: [REALM_ID, REALM_ID],
-                        }),
-                    ).resolves.toEqual([realm]);
-
-                    expect(repositories.realms.find).toHaveBeenCalledWith({
-                        transaction: transaction.entityManager,
-                        where: { id: { $in: [REALM_ID] } },
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: RealmService.purge deduplicates repository lookup",
-                run: async () => {
-                    const realm = helpers.createRealm({ id: REALM_ID, isRevoked: true });
-                    const { service, repositories, transaction } = helpers.service({ realm });
-                    repositories.realms.find.mockImplementation(() => Promise.resolve([realm]));
-
-                    await expect(
-                        service.purge({
-                            transaction: transaction.entityManager,
-                            identifiers: [REALM_ID, REALM_ID],
-                        }),
-                    ).resolves.toEqual([realm]);
-
-                    expect(repositories.realms.find).toHaveBeenCalledWith({
-                        transaction: transaction.entityManager,
-                        where: { id: { $in: [REALM_ID] } },
-                    });
-                },
-            },
-        ])("$name", async ({ run }) => {
-            await run();
+            expect(result).toEqual([realm]);
+            expect(repositories.realms.find).toHaveBeenCalledWith({
+                transaction: transaction.entityManager,
+                where: { id: { $in: [REALM_ID] } },
+            });
         });
     });
 });

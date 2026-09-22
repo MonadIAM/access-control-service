@@ -4,12 +4,9 @@ import { RealmQueries } from "~context/application/queries/realm.queries";
 
 import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
-export class RealmQueriesUnitHelpers
-    extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.RealmQueries.Contract
-{
-    public queries(): Unit.Application.RealmQueries.Queries.Result {
-        const repository: Unit.Application.RealmQueries.Queries.Result["repository"] = {
+export class RealmQueriesUnitHelpers extends DomainServiceCoreUnitHelpers implements Unit.Queries.Realm.Contract {
+    public queries(): Unit.Queries.Realm.Queries.Result {
+        const repository: Unit.Queries.Realm.Queries.Result["repository"] = {
             findUniqueOrThrow: jest.fn<Repositories.Realm.QueryContract["findUniqueOrThrow"]>(),
             getLookupList: jest.fn<Repositories.Realm.GetLookupList.Signature>(),
             findMany: jest.fn<Repositories.Realm.QueryContract["findMany"]>(),

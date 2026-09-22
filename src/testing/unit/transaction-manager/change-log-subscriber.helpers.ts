@@ -86,7 +86,7 @@ export class ChangeLogSubscriberUnitHelpers
         props: Unit.TransactionManager.Subscriber.UnitOfWorkFactory.Props = {},
     ): Unit.TransactionManager.Subscriber.UnitOfWorkFactory.Result {
         const getChangeSets = jest.fn(() => props.changeSets ?? []);
-        const computeChangeSet = jest.fn();
+        const computeChangeSet = jest.fn<(entity: object) => void>();
 
         return {
             uow: this.contract<Unit.TransactionManager.Subscriber.UnitOfWorkFactory.Result["uow"]>({

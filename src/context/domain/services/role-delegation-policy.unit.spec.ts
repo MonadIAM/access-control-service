@@ -191,16 +191,19 @@ describe("RoleDelegationPolicyService", () => {
         });
     });
 
-    describe("revoke", () => {
-        it("revokes found policies and returns them", async () => {
-            const first = helpers.createRoleDelegationPolicy({ id: POLICY_ID });
-            const second = helpers.createRoleDelegationPolicy({ id: SECOND_POLICY_ID, realm: first.realm });
+    describe("revoke / restore", () => {
+        it.each([
+            { method: "revoke", isRevoked: false },
+            { method: "restore", isRevoked: true },
+        ] as const)("$method processes each found entity and returns the batch", async ({ method, isRevoked }) => {
+            const first = helpers.createRoleDelegationPolicy({ id: POLICY_ID, isRevoked });
+            const second = helpers.createRoleDelegationPolicy({ id: SECOND_POLICY_ID, realm: first.realm, isRevoked });
             const { service, repositories, transaction } = helpers.service({ realm: first.realm });
-            const firstRevokeSpy = jest.spyOn(first, "revoke");
-            const secondRevokeSpy = jest.spyOn(second, "revoke");
+            const firstOperationSpy = jest.spyOn(first, method);
+            const secondOperationSpy = jest.spyOn(second, method);
             repositories.roleDelegationPolicies.find.mockImplementation(() => Promise.resolve([first, second]));
 
-            const result = await service.revoke({
+            const result = await service[method]({
                 identifiers: [POLICY_ID, SECOND_POLICY_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
@@ -210,37 +213,8 @@ describe("RoleDelegationPolicyService", () => {
                 where: { id: { $in: [POLICY_ID, SECOND_POLICY_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
-            expect(firstRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(secondRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(result).toEqual([first, second]);
-        });
-    });
-
-    describe("restore", () => {
-        it("restores found policies and returns them", async () => {
-            const first = helpers.createRoleDelegationPolicy({ id: POLICY_ID, isRevoked: true });
-            const second = helpers.createRoleDelegationPolicy({
-                id: SECOND_POLICY_ID,
-                realm: first.realm,
-                isRevoked: true,
-            });
-            const { service, repositories, transaction } = helpers.service({ realm: first.realm });
-            const firstRestoreSpy = jest.spyOn(first, "restore");
-            const secondRestoreSpy = jest.spyOn(second, "restore");
-            repositories.roleDelegationPolicies.find.mockImplementation(() => Promise.resolve([first, second]));
-
-            const result = await service.restore({
-                identifiers: [POLICY_ID, SECOND_POLICY_ID],
-                transaction: transaction.entityManager,
-                realm: REALM_ID,
-            });
-
-            expect(repositories.roleDelegationPolicies.find).toHaveBeenCalledWith({
-                where: { id: { $in: [POLICY_ID, SECOND_POLICY_ID] }, realm: REALM_ID },
-                transaction: transaction.entityManager,
-            });
-            expect(firstRestoreSpy).toHaveBeenCalledTimes(1);
-            expect(secondRestoreSpy).toHaveBeenCalledTimes(1);
+            expect(firstOperationSpy).toHaveBeenCalledTimes(1);
+            expect(secondOperationSpy).toHaveBeenCalledTimes(1);
             expect(result).toEqual([first, second]);
         });
     });
@@ -295,71 +269,25 @@ describe("RoleDelegationPolicyService", () => {
 
     describe("bulk identifiers", () => {
         it.each([
-            {
-                name: "bulk identifiers: RoleDelegationPolicyService.revoke deduplicates repository lookup",
-                run: async () => {
-                    const policy = helpers.createRoleDelegationPolicy({ id: POLICY_ID });
-                    const { service, repositories, transaction } = helpers.service({ realm: policy.realm });
-                    repositories.roleDelegationPolicies.find.mockImplementation(() => Promise.resolve([policy]));
+            { method: "revoke", isRevoked: false },
+            { method: "restore", isRevoked: true },
+            { method: "purge", isRevoked: true },
+        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked }) => {
+            const policy = helpers.createRoleDelegationPolicy({ id: POLICY_ID, isRevoked });
+            const { service, repositories, transaction } = helpers.service({ realm: policy.realm });
+            repositories.roleDelegationPolicies.find.mockImplementation(() => Promise.resolve([policy]));
 
-                    await expect(
-                        service.revoke({
-                            transaction: transaction.entityManager,
-                            identifiers: [POLICY_ID, POLICY_ID],
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([policy]);
+            const result = await service[method]({
+                transaction: transaction.entityManager,
+                identifiers: [POLICY_ID, POLICY_ID],
+                realm: REALM_ID,
+            });
 
-                    expect(repositories.roleDelegationPolicies.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [POLICY_ID] }, realm: REALM_ID },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: RoleDelegationPolicyService.restore deduplicates repository lookup",
-                run: async () => {
-                    const policy = helpers.createRoleDelegationPolicy({ id: POLICY_ID, isRevoked: true });
-                    const { service, repositories, transaction } = helpers.service({ realm: policy.realm });
-                    repositories.roleDelegationPolicies.find.mockImplementation(() => Promise.resolve([policy]));
-
-                    await expect(
-                        service.restore({
-                            transaction: transaction.entityManager,
-                            identifiers: [POLICY_ID, POLICY_ID],
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([policy]);
-
-                    expect(repositories.roleDelegationPolicies.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [POLICY_ID] }, realm: REALM_ID },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: RoleDelegationPolicyService.purge deduplicates repository lookup",
-                run: async () => {
-                    const policy = helpers.createRoleDelegationPolicy({ id: POLICY_ID, isRevoked: true });
-                    const { service, repositories, transaction } = helpers.service({ realm: policy.realm });
-                    repositories.roleDelegationPolicies.find.mockImplementation(() => Promise.resolve([policy]));
-
-                    await expect(
-                        service.purge({
-                            transaction: transaction.entityManager,
-                            identifiers: [POLICY_ID, POLICY_ID],
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([policy]);
-
-                    expect(repositories.roleDelegationPolicies.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [POLICY_ID] }, realm: REALM_ID },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-        ])("$name", async ({ run }) => {
-            await run();
+            expect(result).toEqual([policy]);
+            expect(repositories.roleDelegationPolicies.find).toHaveBeenCalledWith({
+                where: { id: { $in: [POLICY_ID] }, realm: REALM_ID },
+                transaction: transaction.entityManager,
+            });
         });
     });
 });

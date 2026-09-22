@@ -1,29 +1,19 @@
-import type { jest } from "@jest/globals";
+declare namespace Unit.Queries.Realm {
+    interface Contract extends Domain.Core.Contract {
+        queries: Queries.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Application {
-            namespace RealmQueries {
-                interface Contract extends Domain.Core.Contract {
-                    readonly queries: Queries.Signature;
-                }
+    namespace Queries {
+        type Result = {
+            cache: Jest.Mocked<Pick<InfrastructureServices.ProjectionCache.PublicContract, "checkRealm" | "collectRealms">>;
+            queries: globalThis.Queries.Realm.Contract;
+            repository: {
+                findUniqueOrThrow: Jest.Mock<Repositories.Realm.QueryContract["findUniqueOrThrow"]>;
+                getLookupList: Jest.Mock<Repositories.Realm.GetLookupList.Signature>;
+                findMany: Jest.Mock<Repositories.Realm.QueryContract["findMany"]>;
+            };
+        };
 
-                namespace Queries {
-                    type Result = {
-                        readonly queries: globalThis.Queries.Realm.Contract;
-                        readonly repository: {
-                            readonly findUniqueOrThrow: jest.Mock<Repositories.Realm.QueryContract["findUniqueOrThrow"]>;
-                            readonly findMany: jest.Mock<Repositories.Realm.QueryContract["findMany"]>;
-                            readonly getLookupList: jest.Mock<Repositories.Realm.GetLookupList.Signature>;
-                        };
-                        readonly cache: jest.Mocked<
-                            Pick<InfrastructureServices.ProjectionCache.PublicContract, "checkRealm" | "collectRealms">
-                        >;
-                    };
-
-                    type Signature = () => Result;
-                }
-            }
-        }
+        type Signature = () => Result;
     }
 }

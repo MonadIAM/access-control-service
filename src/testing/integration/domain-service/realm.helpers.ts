@@ -7,10 +7,12 @@ import { PermissionRepository } from "~context/infrastructure/repositories/permi
 import { RealmRepository } from "~context/infrastructure/repositories/realm.repository";
 import { RoleRepository } from "~context/infrastructure/repositories/role.repository";
 import { ADMIN_PERMISSION_CODES } from "~infrastructure/datasets/bootstrap";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 import { RealmService } from "~context/domain/services/realm.service";
-import { Permission, Realm } from "~context/domain/entities";
 
 export class RealmIntegrationHelpers implements Integration.Domain.Realm.Contract {
+    private readonly entities = new EntityFactoryRegistry();
+
     public service(
         context: Integration.Postgres.Suite.FactoryContext,
         props: Integration.Domain.Realm.Config.Props = {},
@@ -48,19 +50,19 @@ export class RealmIntegrationHelpers implements Integration.Domain.Realm.Contrac
         suite: Integration.Domain.Realm.Suite,
     ): Integration.Domain.Realm.SeedSystemPermissions.Result {
         return await suite.transaction(async (transaction) => {
-            const realm = new Realm({
+            const realm = this.entities.createRealm({
+                id: SYSTEM_REALM_ID,
                 isSystemManaged: true,
                 owner: SYSTEM_REALM_ID,
                 code: "system",
                 name: "System",
             });
 
-            realm.id = SYSTEM_REALM_ID;
             transaction.persist(realm);
 
             for (const code of ADMIN_PERMISSION_CODES) {
                 transaction.persist(
-                    new Permission({
+                    this.entities.createPermission({
                         isSystemManaged: true,
                         name: code,
                         realm,
@@ -78,10 +80,10 @@ export class RealmIntegrationHelpers implements Integration.Domain.Realm.Contrac
     private config(props: Integration.Domain.Realm.Config.Props): ConfigService {
         return new ConfigService({
             PERMISSION_OVERRIDE_PER_ACCOUNT_LIMIT: 10,
+            REALM_LIMIT: props.realmLimit ?? 3,
             PERMISSION_PER_REALM_LIMIT: 3,
             ROLE_PER_ACCOUNT_LIMIT: 10,
             ROLE_PER_REALM_LIMIT: 10,
-            REALM_LIMIT: props.realmLimit ?? 3,
         });
     }
 }

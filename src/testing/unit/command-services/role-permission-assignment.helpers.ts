@@ -6,9 +6,9 @@ import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
 export class RolePermissionAssignmentCommandsUnitHelpers
     extends ApplicationCommandUnitHelpers
-    implements Unit.Application.RolePermissionAssignmentCommands.Contract
+    implements Unit.Commands.RolePermissionAssignment.Contract
 {
-    public commands(): Unit.Application.RolePermissionAssignmentCommands.Commands.Result {
+    public commands(): Unit.Commands.RolePermissionAssignment.Commands.Result {
         const execution = this.execution();
 
         const service = {

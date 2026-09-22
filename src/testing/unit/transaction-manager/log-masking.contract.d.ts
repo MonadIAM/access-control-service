@@ -1,52 +1,44 @@
-import type { LogMaskingService } from "~common/transaction-manager/services/log-masking.service";
+declare namespace Unit.TransactionManager.LogMasking {
+    interface Contract extends Unit.Domain.Core.Contract {
+        auditTargets: AuditTargetsFactory.Signature;
+        vault: VaultFactory.Signature;
+        service: Service.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace TransactionManager {
-            namespace LogMasking {
-                interface Contract extends Unit.Domain.Core.Contract {
-                    readonly auditTargets: AuditTargetsFactory.Signature;
-                    readonly vault: VaultFactory.Signature;
-                    readonly service: Service.Signature;
-                }
+    namespace AuditTargetsFactory {
+        type Result = {
+            path: (string | number)[];
+            value: string;
+        }[];
 
-                namespace AuditTargetsFactory {
-                    type Result = {
-                        path: (string | number)[];
-                        value: string;
-                    }[];
+        type Signature = () => Result;
+    }
 
-                    type Signature = () => Result;
-                }
+    namespace VaultFactory {
+        type Props = {
+            hmacBatch?: CommonServices.VaultTransit.HmacBatch.Signature;
+            sign?: CommonServices.VaultTransit.Sign.Signature;
+        };
 
-                namespace VaultFactory {
-                    type Props = {
-                        readonly hmacBatch?: CommonServices.VaultTransit.HmacBatch.Signature;
-                        readonly sign?: CommonServices.VaultTransit.Sign.Signature;
-                    };
+        type Result = {
+            service: CommonServices.VaultTransit.Contract;
+            hmacBatch: Jest.Mock<CommonServices.VaultTransit.HmacBatch.Signature>;
+            sign: Jest.Mock<CommonServices.VaultTransit.Sign.Signature>;
+        };
 
-                    type Result = {
-                        readonly service: CommonServices.VaultTransit.Contract;
-                        readonly hmacBatch: Unit.Domain.Mock;
-                        readonly sign: Unit.Domain.Mock;
-                    };
+        type Signature = (props?: Props) => Result;
+    }
 
-                    type Signature = (props?: Props) => Result;
-                }
+    namespace Service {
+        type Props = {
+            vault?: VaultFactory.Result;
+        };
 
-                namespace Service {
-                    type Props = {
-                        readonly vault?: VaultFactory.Result;
-                    };
+        type Result = {
+            service: globalThis.TransactionManager.LogMasking.Contract;
+            vault: VaultFactory.Result;
+        };
 
-                    type Result = {
-                        readonly service: LogMaskingService;
-                        readonly vault: VaultFactory.Result;
-                    };
-
-                    type Signature = (props?: Props) => Result;
-                }
-            }
-        }
+        type Signature = (props?: Props) => Result;
     }
 }

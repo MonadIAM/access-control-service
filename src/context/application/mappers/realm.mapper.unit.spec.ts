@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { SYSTEM_REALM_ID } from "@monadiam/shared";
 
-import { EntityFactoryRegistry } from "~testing/unit/entity-factory.registry";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 import { AssignmentScope, InvalidationScope } from "~context/enums";
 
 import { RealmMapper } from "./realm.mapper";

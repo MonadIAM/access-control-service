@@ -1,25 +1,17 @@
-import type { RolePermissionAssignmentService } from "~context/domain/services/role-permission-assignment.service";
+declare namespace Unit.Domain.RolePermissionAssignment {
+    interface Contract extends Core.Contract {
+        service: Service.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Domain {
-            namespace RolePermissionAssignment {
-                interface Contract extends Core.Contract {
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Props = {
+            permissions?: Entities.Permission[];
+            roles?: Entities.Role[];
+            realm?: Entities.Realm;
+        };
 
-                namespace Service {
-                    type Props = {
-                        readonly permissions?: Entities.Permission[];
-                        readonly roles?: Entities.Role[];
-                        readonly realm?: Entities.Realm;
-                    };
+        type Result = Core.Service.Context<Services.RolePermissionAssignment.Contract>;
 
-                    type Result = Core.Service.Context<RolePermissionAssignmentService>;
-
-                    type Signature = (props?: Props) => Result;
-                }
-            }
-        }
+        type Signature = (props?: Props) => Result;
     }
 }

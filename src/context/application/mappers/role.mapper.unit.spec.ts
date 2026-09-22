@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { EntityFactoryRegistry } from "~testing/unit/entity-factory.registry";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 import { InvalidationScope } from "~context/enums";
 
 import { RoleMapper } from "./role.mapper";

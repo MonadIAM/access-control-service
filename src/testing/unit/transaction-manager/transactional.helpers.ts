@@ -70,8 +70,8 @@ export class TransactionalUnitHelpers
 
     public transactional(): Unit.TransactionManager.Service.TransactionalFactory.Result {
         const flush = jest.fn(() => Promise.resolve());
-        const persist = jest.fn();
-        const fork = jest.fn();
+        const persist = jest.fn<(entity: object) => void>();
+        const fork = jest.fn<() => ORM.EntityManager>();
 
         const transaction = this.contract<ORM.EntityManager>({ persist, flush });
         const transactional = jest.fn((callback: Unit.TransactionManager.Service.TransactionalFactory.Callback) =>

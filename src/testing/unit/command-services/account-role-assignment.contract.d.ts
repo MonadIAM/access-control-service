@@ -1,37 +1,26 @@
-import type { jest } from "@jest/globals";
+declare namespace Unit.Commands.AccountRoleAssignment {
+    interface Contract extends Core.Contract {
+        commands: Commands.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Application {
-            namespace AccountRoleAssignmentCommands {
-                interface Contract extends CommandCore.Contract {
-                    readonly commands: Commands.Signature;
-                }
+    namespace Commands {
+        type Result = Core.Execution.Result & {
+            overrides: Jest.Mocked<Pick<Services.PermissionOverride.CommandContract, "clean">>;
+            commands: globalThis.Commands.AccountRoleAssignment.Contract;
+            assignments: Jest.Mocked<
+                Pick<
+                    Services.AccountRoleAssignment.CommandContract,
+                    "create" | "ensure" | "purge" | "assign" | "revoke" | "restore" | "expire" | "clean"
+                >
+            >;
+            cache: Jest.Mocked<
+                Pick<InfrastructureServices.ProjectionCache.PublicContract, "checkRealm" | "validateAssignments">
+            >;
+            repository: {
+                find: Jest.Mock<Repositories.AccountRoleAssignment.PublicContract["find"]>;
+            };
+        };
 
-                namespace Commands {
-                    type Result = CommandCore.Execution.Result & {
-                        readonly overrides: jest.Mocked<Pick<Services.PermissionOverride.CommandContract, "clean">>;
-                        readonly commands: globalThis.Commands.AccountRoleAssignment.Contract;
-                        readonly assignments: jest.Mocked<
-                            Pick<
-                                Services.AccountRoleAssignment.CommandContract,
-                                "create" | "ensure" | "purge" | "assign" | "revoke" | "restore" | "expire" | "clean"
-                            >
-                        >;
-                        readonly cache: jest.Mocked<
-                            Pick<
-                                InfrastructureServices.ProjectionCache.PublicContract,
-                                "checkRealm" | "validateAssignments"
-                            >
-                        >;
-                        readonly repository: {
-                            readonly find: jest.Mock<Repositories.AccountRoleAssignment.PublicContract["find"]>;
-                        };
-                    };
-
-                    type Signature = () => Result;
-                }
-            }
-        }
+        type Signature = () => Result;
     }
 }

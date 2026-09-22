@@ -6,9 +6,9 @@ import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
 export class AccountRoleAssignmentCommandsUnitHelpers
     extends ApplicationCommandUnitHelpers
-    implements Unit.Application.AccountRoleAssignmentCommands.Contract
+    implements Unit.Commands.AccountRoleAssignment.Contract
 {
-    public commands(): Unit.Application.AccountRoleAssignmentCommands.Commands.Result {
+    public commands(): Unit.Commands.AccountRoleAssignment.Commands.Result {
         const execution = this.execution();
 
         const repository = {

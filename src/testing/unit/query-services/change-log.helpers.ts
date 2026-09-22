@@ -4,11 +4,8 @@ import { ChangeLogQueries } from "~context/application/queries/change-log.querie
 
 import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
-export class ChangeLogQueriesUnitHelpers
-    extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.ChangeLogQueries.Contract
-{
-    public queries(): Unit.Application.ChangeLogQueries.Queries.Result {
+export class ChangeLogQueriesUnitHelpers extends DomainServiceCoreUnitHelpers implements Unit.Queries.ChangeLog.Contract {
+    public queries(): Unit.Queries.ChangeLog.Queries.Result {
         const repository = {
             findUniqueOrThrow: jest.fn<Repositories.ChangeLog.QueryContract["findUniqueOrThrow"]>(),
             findMany: jest.fn<Repositories.ChangeLog.QueryContract["findMany"]>(),

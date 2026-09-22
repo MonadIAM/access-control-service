@@ -3,100 +3,96 @@ import type { OperationContext } from "~common/transaction-manager/utilities";
 import type { KafkaTopic } from "~context/enums";
 
 declare global {
-    namespace Unit {
-        namespace TransactionManager {
-            namespace Service {
-                interface Contract extends Unit.Domain.Core.Contract {
-                    readonly accessCacheOutboxConfig: AccessCacheOutboxConfigFactory.Signature;
-                    readonly logMaskingContract: LogMaskingContractFactory.Signature;
-                    readonly operationContext: OperationContextFactory.Signature;
-                    readonly outboxContract: OutboxContractFactory.Signature;
-                    readonly service: TransactionalServiceFactory.Signature;
-                    readonly inboxContract: InboxContractFactory.Signature;
-                    readonly transactional: TransactionalFactory.Signature;
-                }
+    namespace Unit.TransactionManager.Service {
+        interface Contract extends Unit.Domain.Core.Contract {
+            accessCacheOutboxConfig: AccessCacheOutboxConfigFactory.Signature;
+            logMaskingContract: LogMaskingContractFactory.Signature;
+            operationContext: OperationContextFactory.Signature;
+            outboxContract: OutboxContractFactory.Signature;
+            service: TransactionalServiceFactory.Signature;
+            inboxContract: InboxContractFactory.Signature;
+            transactional: TransactionalFactory.Signature;
+        }
 
-                namespace OperationContextFactory {
-                    type Result = OperationContext;
+        namespace OperationContextFactory {
+            type Result = OperationContext;
 
-                    type Signature = () => Result;
-                }
+            type Signature = () => Result;
+        }
 
-                namespace LogMaskingContractFactory {
-                    type Props = Partial<Result>;
+        namespace LogMaskingContractFactory {
+            type Props = Partial<Result>;
 
-                    type Result = globalThis.TransactionManager.LogMasking.Contract;
+            type Result = globalThis.TransactionManager.LogMasking.Contract;
 
-                    type Signature = (props?: Props) => Result;
-                }
+            type Signature = (props?: Props) => Result;
+        }
 
-                namespace InboxContractFactory {
-                    type Props = Partial<Result>;
+        namespace InboxContractFactory {
+            type Props = Partial<Result>;
 
-                    type Result = globalThis.TransactionManager.Inbox.Contract;
+            type Result = globalThis.TransactionManager.Inbox.Contract;
 
-                    type Signature = (props?: Props) => Result;
-                }
+            type Signature = (props?: Props) => Result;
+        }
 
-                namespace OutboxContractFactory {
-                    type Props = Partial<Result>;
+        namespace OutboxContractFactory {
+            type Props = Partial<Result>;
 
-                    type Result = {
-                        buildChangeLogArchive(props: SystemEntities.ChangeLog): SystemEntities.Outbox;
-                        buildAuditLogArchive(props: SystemEntities.AuditLog): SystemEntities.Outbox;
-                        build(props: SystemEntities.Outbox.ConstructorProps): SystemEntities.Outbox;
-                    };
+            type Result = {
+                buildChangeLogArchive(props: SystemEntities.ChangeLog): SystemEntities.Outbox;
+                buildAuditLogArchive(props: SystemEntities.AuditLog): SystemEntities.Outbox;
+                build(props: SystemEntities.Outbox.ConstructorProps): SystemEntities.Outbox;
+            };
 
-                    type Signature = (props?: Props) => Result;
-                }
+            type Signature = (props?: Props) => Result;
+        }
 
-                namespace TransactionalFactory {
-                    type Callback = (transaction: ORM.EntityManager) => Thenable<unknown>;
+        namespace TransactionalFactory {
+            type Callback = (transaction: ORM.EntityManager) => Thenable<unknown>;
 
-                    type Result = {
-                        readonly entityManager: ORM.EntityManager;
-                        readonly transactional: Unit.Domain.Mock;
-                        readonly transaction: ORM.EntityManager;
-                        readonly persist: Unit.Domain.Mock;
-                        readonly flush: Unit.Domain.Mock;
-                        readonly fork: Unit.Domain.Mock;
-                    };
+            type Result = {
+                entityManager: ORM.EntityManager;
+                transaction: ORM.EntityManager;
+                transactional: Jest.Mock<(callback: Callback) => Promise<unknown>>;
+                persist: Jest.Mock<(entity: object) => void>;
+                fork: Jest.Mock<() => ORM.EntityManager>;
+                flush: Jest.Mock<() => Promise<void>>;
+            };
 
-                    type Signature = () => Result;
-                }
+            type Signature = () => Result;
+        }
 
-                namespace AccessCacheOutboxConfigFactory {
-                    type Result<T extends ORM.AnyEntity | ORM.AnyEntity[]> = {
-                        payloadMapper(result: T): Topics.AccessCache.Message["payload"];
+        namespace AccessCacheOutboxConfigFactory {
+            type Result<T extends ORM.AnyEntity | ORM.AnyEntity[]> = {
+                payloadMapper(result: T): Topics.AccessCache.Message["payload"];
 
-                        readonly destinationTopic: KafkaTopic.ACCESS_CACHE;
-                        readonly actionType: string;
-                    };
+                destinationTopic: KafkaTopic.ACCESS_CACHE;
+                actionType: string;
+            };
 
-                    type Signature = <T extends ORM.AnyEntity | ORM.AnyEntity[]>() => Result<T>;
-                }
+            type Signature = <T extends ORM.AnyEntity | ORM.AnyEntity[]>() => Result<T>;
+        }
 
-                namespace TransactionalServiceFactory {
-                    type Props = {
-                        readonly logMasking?: LogMaskingContractFactory.Result;
-                        readonly outbox?: OutboxContractFactory.Result;
-                        readonly inbox?: InboxContractFactory.Result;
-                        readonly operationContext?: OperationContext;
-                        readonly manager?: ORM.EntityManager;
-                    };
+        namespace TransactionalServiceFactory {
+            type Props = {
+                logMasking?: LogMaskingContractFactory.Result;
+                outbox?: OutboxContractFactory.Result;
+                inbox?: InboxContractFactory.Result;
+                operationContext?: OperationContext;
+                manager?: ORM.EntityManager;
+            };
 
-                    type Result = {
-                        readonly logMasking: LogMaskingContractFactory.Result;
-                        readonly transactional: TransactionalFactory.Result;
-                        readonly outbox: OutboxContractFactory.Result;
-                        readonly inbox: InboxContractFactory.Result;
-                        readonly operationContext: OperationContext;
-                        readonly service: TransactionalService;
-                    };
+            type Result = {
+                logMasking: LogMaskingContractFactory.Result;
+                transactional: TransactionalFactory.Result;
+                outbox: OutboxContractFactory.Result;
+                inbox: InboxContractFactory.Result;
+                operationContext: OperationContext;
+                service: TransactionalService;
+            };
 
-                    type Signature = (props?: Props) => Result;
-                }
-            }
+            type Signature = (props?: Props) => Result;
         }
     }
 }

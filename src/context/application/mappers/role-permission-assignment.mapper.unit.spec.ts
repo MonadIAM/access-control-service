@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { EntityFactoryRegistry } from "~testing/unit/entity-factory.registry";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 import { AssignmentScope, InvalidationScope } from "~context/enums";
 
 import { RolePermissionAssignmentMapper } from "./role-permission-assignment.mapper";

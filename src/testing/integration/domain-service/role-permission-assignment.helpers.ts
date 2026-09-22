@@ -6,9 +6,11 @@ import { RolePermissionAssignmentService } from "~context/domain/services/role-p
 import { PermissionRepository } from "~context/infrastructure/repositories/permission.repository";
 import { RealmRepository } from "~context/infrastructure/repositories/realm.repository";
 import { RoleRepository } from "~context/infrastructure/repositories/role.repository";
-import { Realm } from "~context/domain/entities";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 
 export class RolePermissionAssignmentIntegrationHelpers implements Integration.Domain.RolePermissionAssignment.Contract {
+    private readonly entities = new EntityFactoryRegistry();
+
     public service(
         context: Integration.Postgres.Suite.FactoryContext,
         props: Integration.Domain.RolePermissionAssignment.Config.Props = {},
@@ -44,13 +46,13 @@ export class RolePermissionAssignmentIntegrationHelpers implements Integration.D
         suite: Integration.Domain.RolePermissionAssignment.Suite,
     ): Integration.Domain.RolePermissionAssignment.SeedSystemRealm.Result {
         return await suite.transaction(async (transaction) => {
-            const realm = new Realm({
+            const realm = this.entities.createRealm({
+                id: SYSTEM_REALM_ID,
                 owner: SYSTEM_REALM_ID,
                 code: "system",
                 name: "System",
             });
 
-            realm.id = SYSTEM_REALM_ID;
             transaction.persist(realm);
             await transaction.flush();
 

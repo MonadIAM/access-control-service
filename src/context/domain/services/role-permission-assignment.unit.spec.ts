@@ -111,10 +111,12 @@ describe("RolePermissionAssignmentService", () => {
                 realm: REALM_ID,
             });
 
-            expect(repositories.roles.findUniqueOrThrow).toHaveBeenCalledWith({
-                where: { id: ROLE_ID, realm: REALM_ID },
-                transaction: transaction.entityManager,
-            });
+            expect(repositories.roles.findUniqueOrThrow.mock.calls).toContainEqual([
+                {
+                    where: { id: ROLE_ID, realm: REALM_ID },
+                    transaction: transaction.entityManager,
+                },
+            ]);
             expect(repositories.permissions.find).toHaveBeenCalledWith({
                 where: { id: { $in: [PERMISSION_ID, SECOND_PERMISSION_ID] }, realm: { $in: [REALM_ID, SYSTEM_REALM_ID] } },
                 transaction: transaction.entityManager,
@@ -131,16 +133,19 @@ describe("RolePermissionAssignmentService", () => {
         });
     });
 
-    describe("revoke", () => {
-        it("revokes found assignments and returns them", async () => {
+    describe("revoke / restore", () => {
+        it.each([
+            { method: "revoke", isRevoked: false },
+            { method: "restore", isRevoked: true },
+        ] as const)("$method processes each found entity and returns the batch", async ({ method, isRevoked }) => {
             const { service, repositories, transaction } = helpers.service();
-            const first = helpers.createRolePermissionAssignment({ id: ASSIGNMENT_ID });
-            const second = helpers.createRolePermissionAssignment({ id: SECOND_ASSIGNMENT_ID });
-            const firstRevokeSpy = jest.spyOn(first, "revoke");
-            const secondRevokeSpy = jest.spyOn(second, "revoke");
+            const first = helpers.createRolePermissionAssignment({ id: ASSIGNMENT_ID, isRevoked });
+            const second = helpers.createRolePermissionAssignment({ id: SECOND_ASSIGNMENT_ID, isRevoked });
+            const firstOperationSpy = jest.spyOn(first, method);
+            const secondOperationSpy = jest.spyOn(second, method);
             repositories.rolePermissionAssignments.find.mockImplementation(() => Promise.resolve([first, second]));
 
-            const result = await service.revoke({
+            const result = await service[method]({
                 identifiers: [ASSIGNMENT_ID, SECOND_ASSIGNMENT_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
@@ -151,34 +156,8 @@ describe("RolePermissionAssignmentService", () => {
                 options: { populate: ["permission.realm"] },
                 transaction: transaction.entityManager,
             });
-            expect(firstRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(secondRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(result).toEqual([first, second]);
-        });
-    });
-
-    describe("restore", () => {
-        it("restores found assignments and returns them", async () => {
-            const { service, repositories, transaction } = helpers.service();
-            const first = helpers.createRolePermissionAssignment({ id: ASSIGNMENT_ID, isRevoked: true });
-            const second = helpers.createRolePermissionAssignment({ id: SECOND_ASSIGNMENT_ID, isRevoked: true });
-            const firstRestoreSpy = jest.spyOn(first, "restore");
-            const secondRestoreSpy = jest.spyOn(second, "restore");
-            repositories.rolePermissionAssignments.find.mockImplementation(() => Promise.resolve([first, second]));
-
-            const result = await service.restore({
-                identifiers: [ASSIGNMENT_ID, SECOND_ASSIGNMENT_ID],
-                transaction: transaction.entityManager,
-                realm: REALM_ID,
-            });
-
-            expect(repositories.rolePermissionAssignments.find).toHaveBeenCalledWith({
-                where: { id: { $in: [ASSIGNMENT_ID, SECOND_ASSIGNMENT_ID] }, realm: REALM_ID },
-                options: { populate: ["permission.realm"] },
-                transaction: transaction.entityManager,
-            });
-            expect(firstRestoreSpy).toHaveBeenCalledTimes(1);
-            expect(secondRestoreSpy).toHaveBeenCalledTimes(1);
+            expect(firstOperationSpy).toHaveBeenCalledTimes(1);
+            expect(secondOperationSpy).toHaveBeenCalledTimes(1);
             expect(result).toEqual([first, second]);
         });
     });
@@ -213,74 +192,26 @@ describe("RolePermissionAssignmentService", () => {
 
     describe("bulk identifiers", () => {
         it.each([
-            {
-                name: "bulk identifiers: RolePermissionAssignmentService.revoke deduplicates repository lookup",
-                run: async () => {
-                    const { service, repositories, transaction } = helpers.service();
-                    const assignment = helpers.createRolePermissionAssignment({ id: ASSIGNMENT_ID });
-                    repositories.rolePermissionAssignments.find.mockImplementation(() => Promise.resolve([assignment]));
+            { method: "revoke", isRevoked: false },
+            { method: "restore", isRevoked: true },
+            { method: "purge", isRevoked: true },
+        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked }) => {
+            const { service, repositories, transaction } = helpers.service();
+            const assignment = helpers.createRolePermissionAssignment({ id: ASSIGNMENT_ID, isRevoked });
+            repositories.rolePermissionAssignments.find.mockImplementation(() => Promise.resolve([assignment]));
 
-                    await expect(
-                        service.revoke({
-                            identifiers: [ASSIGNMENT_ID, ASSIGNMENT_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([assignment]);
+            const result = await service[method]({
+                identifiers: [ASSIGNMENT_ID, ASSIGNMENT_ID],
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
-                    expect(repositories.rolePermissionAssignments.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [ASSIGNMENT_ID] }, realm: REALM_ID },
-                        options: { populate: ["permission.realm"] },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: RolePermissionAssignmentService.restore deduplicates repository lookup",
-                run: async () => {
-                    const { service, repositories, transaction } = helpers.service();
-                    const assignment = helpers.createRolePermissionAssignment({ id: ASSIGNMENT_ID, isRevoked: true });
-                    repositories.rolePermissionAssignments.find.mockImplementation(() => Promise.resolve([assignment]));
-
-                    await expect(
-                        service.restore({
-                            identifiers: [ASSIGNMENT_ID, ASSIGNMENT_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([assignment]);
-
-                    expect(repositories.rolePermissionAssignments.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [ASSIGNMENT_ID] }, realm: REALM_ID },
-                        options: { populate: ["permission.realm"] },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: RolePermissionAssignmentService.purge deduplicates repository lookup",
-                run: async () => {
-                    const { service, repositories, transaction } = helpers.service();
-                    const assignment = helpers.createRolePermissionAssignment({ id: ASSIGNMENT_ID, isRevoked: true });
-                    repositories.rolePermissionAssignments.find.mockImplementation(() => Promise.resolve([assignment]));
-
-                    await expect(
-                        service.purge({
-                            identifiers: [ASSIGNMENT_ID, ASSIGNMENT_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([assignment]);
-
-                    expect(repositories.rolePermissionAssignments.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [ASSIGNMENT_ID] }, realm: REALM_ID },
-                        options: { populate: ["permission.realm"] },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-        ])("$name", async ({ run }) => {
-            await run();
+            expect(result).toEqual([assignment]);
+            expect(repositories.rolePermissionAssignments.find).toHaveBeenCalledWith({
+                where: { id: { $in: [ASSIGNMENT_ID] }, realm: REALM_ID },
+                options: { populate: ["permission.realm"] },
+                transaction: transaction.entityManager,
+            });
         });
     });
 });

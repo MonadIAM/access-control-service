@@ -1,25 +1,17 @@
-import type { RoleConflictGroupService } from "~context/domain/services/role-conflict-group.service";
+declare namespace Unit.Domain.RoleConflictGroup {
+    interface Contract extends Core.Contract {
+        service: Service.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Domain {
-            namespace RoleConflictGroup {
-                interface Contract extends Core.Contract {
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Props = {
+            roles?: Entities.Role[];
+            realm?: Entities.Realm;
+            membersLimit?: number;
+        };
 
-                namespace Service {
-                    type Props = {
-                        readonly roles?: Entities.Role[];
-                        readonly realm?: Entities.Realm;
-                        readonly membersLimit?: number;
-                    };
+        type Result = Core.Service.Context<Services.RoleConflictGroup.Contract>;
 
-                    type Result = Core.Service.Context<RoleConflictGroupService>;
-
-                    type Signature = (props?: Props) => Result;
-                }
-            }
-        }
+        type Signature = (props?: Props) => Result;
     }
 }

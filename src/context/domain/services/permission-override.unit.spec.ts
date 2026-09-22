@@ -114,16 +114,19 @@ describe("PermissionOverrideService", () => {
         });
     });
 
-    describe("revoke", () => {
-        it("revokes found overrides and returns them", async () => {
+    describe("revoke / restore", () => {
+        it.each([
+            { method: "revoke", isRevoked: false },
+            { method: "restore", isRevoked: true },
+        ] as const)("$method processes each found entity and returns the batch", async ({ method, isRevoked }) => {
             const { service, repositories, transaction } = helpers.service();
-            const first = helpers.createPermissionOverride({ id: OVERRIDE_ID });
-            const second = helpers.createPermissionOverride({ id: SECOND_OVERRIDE_ID });
-            const firstRevokeSpy = jest.spyOn(first, "revoke");
-            const secondRevokeSpy = jest.spyOn(second, "revoke");
+            const first = helpers.createPermissionOverride({ id: OVERRIDE_ID, isRevoked });
+            const second = helpers.createPermissionOverride({ id: SECOND_OVERRIDE_ID, isRevoked });
+            const firstOperationSpy = jest.spyOn(first, method);
+            const secondOperationSpy = jest.spyOn(second, method);
             repositories.permissionOverrides.find.mockImplementation(() => Promise.resolve([first, second]));
 
-            const result = await service.revoke({
+            const result = await service[method]({
                 identifiers: [OVERRIDE_ID, SECOND_OVERRIDE_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
@@ -134,34 +137,8 @@ describe("PermissionOverrideService", () => {
                 options: { populate: ["permission.realm"] },
                 transaction: transaction.entityManager,
             });
-            expect(firstRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(secondRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(result).toEqual([first, second]);
-        });
-    });
-
-    describe("restore", () => {
-        it("restores found overrides and returns them", async () => {
-            const { service, repositories, transaction } = helpers.service();
-            const first = helpers.createPermissionOverride({ id: OVERRIDE_ID, isRevoked: true });
-            const second = helpers.createPermissionOverride({ id: SECOND_OVERRIDE_ID, isRevoked: true });
-            const firstRestoreSpy = jest.spyOn(first, "restore");
-            const secondRestoreSpy = jest.spyOn(second, "restore");
-            repositories.permissionOverrides.find.mockImplementation(() => Promise.resolve([first, second]));
-
-            const result = await service.restore({
-                identifiers: [OVERRIDE_ID, SECOND_OVERRIDE_ID],
-                transaction: transaction.entityManager,
-                realm: REALM_ID,
-            });
-
-            expect(repositories.permissionOverrides.find).toHaveBeenCalledWith({
-                where: { id: { $in: [OVERRIDE_ID, SECOND_OVERRIDE_ID] }, realm: REALM_ID },
-                options: { populate: ["permission.realm"] },
-                transaction: transaction.entityManager,
-            });
-            expect(firstRestoreSpy).toHaveBeenCalledTimes(1);
-            expect(secondRestoreSpy).toHaveBeenCalledTimes(1);
+            expect(firstOperationSpy).toHaveBeenCalledTimes(1);
+            expect(secondOperationSpy).toHaveBeenCalledTimes(1);
             expect(result).toEqual([first, second]);
         });
     });
@@ -236,74 +213,26 @@ describe("PermissionOverrideService", () => {
 
     describe("bulk identifiers", () => {
         it.each([
-            {
-                name: "bulk identifiers: PermissionOverrideService.revoke deduplicates repository lookup",
-                run: async () => {
-                    const { service, repositories, transaction } = helpers.service();
-                    const override = helpers.createPermissionOverride({ id: OVERRIDE_ID });
-                    repositories.permissionOverrides.find.mockImplementation(() => Promise.resolve([override]));
+            { method: "revoke", isRevoked: false },
+            { method: "restore", isRevoked: true },
+            { method: "purge", isRevoked: true },
+        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked }) => {
+            const { service, repositories, transaction } = helpers.service();
+            const override = helpers.createPermissionOverride({ id: OVERRIDE_ID, isRevoked });
+            repositories.permissionOverrides.find.mockImplementation(() => Promise.resolve([override]));
 
-                    await expect(
-                        service.revoke({
-                            identifiers: [OVERRIDE_ID, OVERRIDE_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([override]);
+            const result = await service[method]({
+                identifiers: [OVERRIDE_ID, OVERRIDE_ID],
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
-                    expect(repositories.permissionOverrides.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [OVERRIDE_ID] }, realm: REALM_ID },
-                        options: { populate: ["permission.realm"] },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: PermissionOverrideService.restore deduplicates repository lookup",
-                run: async () => {
-                    const { service, repositories, transaction } = helpers.service();
-                    const override = helpers.createPermissionOverride({ id: OVERRIDE_ID, isRevoked: true });
-                    repositories.permissionOverrides.find.mockImplementation(() => Promise.resolve([override]));
-
-                    await expect(
-                        service.restore({
-                            identifiers: [OVERRIDE_ID, OVERRIDE_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([override]);
-
-                    expect(repositories.permissionOverrides.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [OVERRIDE_ID] }, realm: REALM_ID },
-                        options: { populate: ["permission.realm"] },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: PermissionOverrideService.purge deduplicates repository lookup",
-                run: async () => {
-                    const { service, repositories, transaction } = helpers.service();
-                    const override = helpers.createPermissionOverride({ id: OVERRIDE_ID, isRevoked: true });
-                    repositories.permissionOverrides.find.mockImplementation(() => Promise.resolve([override]));
-
-                    await expect(
-                        service.purge({
-                            identifiers: [OVERRIDE_ID, OVERRIDE_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([override]);
-
-                    expect(repositories.permissionOverrides.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [OVERRIDE_ID] }, realm: REALM_ID },
-                        options: { populate: ["permission.realm"] },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-        ])("$name", async ({ run }) => {
-            await run();
+            expect(result).toEqual([override]);
+            expect(repositories.permissionOverrides.find).toHaveBeenCalledWith({
+                where: { id: { $in: [OVERRIDE_ID] }, realm: REALM_ID },
+                options: { populate: ["permission.realm"] },
+                transaction: transaction.entityManager,
+            });
         });
     });
 });

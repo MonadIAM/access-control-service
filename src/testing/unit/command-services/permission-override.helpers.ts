@@ -6,9 +6,9 @@ import { ApplicationCommandUnitHelpers } from "./core.helpers";
 
 export class PermissionOverrideCommandsUnitHelpers
     extends ApplicationCommandUnitHelpers
-    implements Unit.Application.PermissionOverrideCommands.Contract
+    implements Unit.Commands.PermissionOverride.Contract
 {
-    public commands(): Unit.Application.PermissionOverrideCommands.Commands.Result {
+    public commands(): Unit.Commands.PermissionOverride.Commands.Result {
         const execution = this.execution();
 
         const repository = {

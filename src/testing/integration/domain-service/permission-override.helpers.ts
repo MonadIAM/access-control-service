@@ -5,9 +5,11 @@ import { PermissionOverrideRepository } from "~context/infrastructure/repositori
 import { PermissionRepository } from "~context/infrastructure/repositories/permission.repository";
 import { PermissionOverrideService } from "~context/domain/services/permission-override.service";
 import { RealmRepository } from "~context/infrastructure/repositories/realm.repository";
-import { Realm } from "~context/domain/entities";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 
 export class PermissionOverrideIntegrationHelpers implements Integration.Domain.PermissionOverride.Contract {
+    private readonly entities = new EntityFactoryRegistry();
+
     public service(
         context: Integration.Postgres.Suite.FactoryContext,
         props: Integration.Domain.PermissionOverride.Config.Props = {},
@@ -41,13 +43,13 @@ export class PermissionOverrideIntegrationHelpers implements Integration.Domain.
         suite: Integration.Domain.PermissionOverride.Suite,
     ): Integration.Domain.PermissionOverride.SeedSystemRealm.Result {
         return await suite.transaction(async (transaction) => {
-            const realm = new Realm({
+            const realm = this.entities.createRealm({
+                id: SYSTEM_REALM_ID,
                 owner: SYSTEM_REALM_ID,
                 code: "system",
                 name: "System",
             });
 
-            realm.id = SYSTEM_REALM_ID;
             transaction.persist(realm);
             await transaction.flush();
 

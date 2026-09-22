@@ -6,9 +6,9 @@ import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
 export class RoleDelegationPolicyQueriesUnitHelpers
     extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.RoleDelegationPolicyQueries.Contract
+    implements Unit.Queries.RoleDelegationPolicy.Contract
 {
-    public queries(): Unit.Application.RoleDelegationPolicyQueries.Queries.Result {
+    public queries(): Unit.Queries.RoleDelegationPolicy.Queries.Result {
         const repository = {
             findUniqueOrThrow: jest.fn<Repositories.RoleDelegationPolicy.QueryContract["findUniqueOrThrow"]>(),
             findMany: jest.fn<Repositories.RoleDelegationPolicy.QueryContract["findMany"]>(),

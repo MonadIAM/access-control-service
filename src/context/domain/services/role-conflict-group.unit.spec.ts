@@ -363,76 +363,47 @@ describe("RoleConflictGroupService", () => {
 
     describe("bulk identifiers", () => {
         it.each([
-            {
-                name: "bulk identifiers: RoleConflictGroupService.revoke deduplicates repository lookup",
-                run: async () => {
-                    const group = helpers.createRoleConflictGroup({ id: GROUP_ID });
-                    const { service, repositories, transaction } = helpers.service({ realm: group.realm });
-                    repositories.roleConflictGroups.find.mockImplementation(() => Promise.resolve([group]));
+            { method: "revoke", isRevoked: false },
+            { method: "purge", isRevoked: true },
+        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked }) => {
+            const group = helpers.createRoleConflictGroup({ id: GROUP_ID, isRevoked });
+            const { service, repositories, transaction } = helpers.service({ realm: group.realm });
+            repositories.roleConflictGroups.find.mockImplementation(() => Promise.resolve([group]));
 
-                    await expect(
-                        service.revoke({
-                            identifiers: [GROUP_ID, GROUP_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([group]);
+            const result = await service[method]({
+                identifiers: [GROUP_ID, GROUP_ID],
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
-                    expect(repositories.roleConflictGroups.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [GROUP_ID] }, realm: REALM_ID },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: RoleConflictGroupService.restore deduplicates repository lookup",
-                run: async () => {
-                    const group = helpers.createRoleConflictGroup({ id: GROUP_ID, isRevoked: true });
-                    const { service, repositories, transaction } = helpers.service({ realm: group.realm });
-                    repositories.roleConflictGroups.find.mockImplementation(() => Promise.resolve([group]));
+            expect(result).toEqual([group]);
+            expect(repositories.roleConflictGroups.find).toHaveBeenCalledWith({
+                where: { id: { $in: [GROUP_ID] }, realm: REALM_ID },
+                transaction: transaction.entityManager,
+            });
+        });
 
-                    await expect(
-                        service.restore({
-                            identifiers: [GROUP_ID, GROUP_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([group]);
+        it("restore checks SoD violations with deduplicated group identifiers", async () => {
+            const group = helpers.createRoleConflictGroup({ id: GROUP_ID, isRevoked: true });
+            const { service, repositories, transaction } = helpers.service({ realm: group.realm });
+            repositories.roleConflictGroups.find.mockImplementation(() => Promise.resolve([group]));
 
-                    expect(repositories.roleConflictGroups.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [GROUP_ID] }, realm: REALM_ID },
-                        transaction: transaction.entityManager,
-                    });
-                    expect(repositories.roleConflictGroups.hasGroupsWithViolatingAccounts).toHaveBeenCalledWith({
-                        groups: [GROUP_ID],
-                        transaction: transaction.entityManager,
-                        realm: REALM_ID,
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: RoleConflictGroupService.purge deduplicates repository lookup",
-                run: async () => {
-                    const group = helpers.createRoleConflictGroup({ id: GROUP_ID, isRevoked: true });
-                    const { service, repositories, transaction } = helpers.service({ realm: group.realm });
-                    repositories.roleConflictGroups.find.mockImplementation(() => Promise.resolve([group]));
-
-                    await expect(
-                        service.purge({
-                            identifiers: [GROUP_ID, GROUP_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([group]);
-
-                    expect(repositories.roleConflictGroups.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [GROUP_ID] }, realm: REALM_ID },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-        ])("$name", async ({ run }) => {
-            await run();
+            await expect(
+                service.restore({
+                    identifiers: [GROUP_ID, GROUP_ID],
+                    transaction: transaction.entityManager,
+                    realm: REALM_ID,
+                }),
+            ).resolves.toEqual([group]);
+            expect(repositories.roleConflictGroups.find).toHaveBeenCalledWith({
+                where: { id: { $in: [GROUP_ID] }, realm: REALM_ID },
+                transaction: transaction.entityManager,
+            });
+            expect(repositories.roleConflictGroups.hasGroupsWithViolatingAccounts).toHaveBeenCalledWith({
+                groups: [GROUP_ID],
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
         });
     });
 });

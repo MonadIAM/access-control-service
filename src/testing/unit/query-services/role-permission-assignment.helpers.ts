@@ -6,9 +6,9 @@ import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
 export class RolePermissionAssignmentQueriesUnitHelpers
     extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.RolePermissionAssignmentQueries.Contract
+    implements Unit.Queries.RolePermissionAssignment.Contract
 {
-    public queries(): Unit.Application.RolePermissionAssignmentQueries.Queries.Result {
+    public queries(): Unit.Queries.RolePermissionAssignment.Queries.Result {
         const repository = {
             findUniqueOrThrow: jest.fn<Repositories.RolePermissionAssignment.QueryContract["findUniqueOrThrow"]>(),
             findMany: jest.fn<Repositories.RolePermissionAssignment.QueryContract["findMany"]>(),

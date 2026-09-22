@@ -1,57 +1,44 @@
-import type { AccountRoleAssignmentRepository } from "~context/infrastructure/repositories/account-role-assignment.repository";
-import type { PermissionOverrideRepository } from "~context/infrastructure/repositories/permission-override.repository";
-import type { PermissionRepository } from "~context/infrastructure/repositories/permission.repository";
-import type { RealmRepository } from "~context/infrastructure/repositories/realm.repository";
-import type { RoleRepository } from "~context/infrastructure/repositories/role.repository";
-import type { RealmService } from "~context/domain/services/realm.service";
+declare namespace Integration.Domain.Realm {
+    type Suite = Postgres.Suite.Contract<Service.Context, Fixtures.Core.Contract>;
 
-declare global {
-    namespace Integration {
-        namespace Domain {
-            namespace Realm {
-                type Suite = Postgres.Suite.Contract<Service.Context, Fixtures.Core.Contract>;
+    interface Contract {
+        seedSystemPermissions: SeedSystemPermissions.Signature;
+        repositories: Repositories.Signature;
+        service: Service.Signature;
+    }
 
-                interface Contract {
-                    readonly seedSystemPermissions: SeedSystemPermissions.Signature;
-                    readonly repositories: Repositories.Signature;
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Context = {
+            repositories: Repositories.Context;
+            realmService: Services.Realm.Contract;
+        };
 
-                namespace Service {
-                    type Context = {
-                        readonly repositories: Repositories.Context;
-                        readonly realmService: RealmService;
-                    };
+        type Signature = (context: Postgres.Suite.FactoryContext, props?: Config.Props) => Context;
+    }
 
-                    type Signature = (context: Postgres.Suite.FactoryContext, props?: Config.Props) => Context;
-                }
+    namespace Repositories {
+        type Context = {
+            accountRoleAssignments: globalThis.Repositories.AccountRoleAssignment.Contract;
+            permissionOverrides: globalThis.Repositories.PermissionOverride.Contract;
+            permissions: globalThis.Repositories.Permission.Contract;
+            realms: globalThis.Repositories.Realm.Contract;
+            roles: globalThis.Repositories.Role.Contract;
+        };
 
-                namespace Repositories {
-                    type Context = {
-                        readonly accountRoleAssignments: AccountRoleAssignmentRepository;
-                        readonly permissionOverrides: PermissionOverrideRepository;
-                        readonly permissions: PermissionRepository;
-                        readonly realms: RealmRepository;
-                        readonly roles: RoleRepository;
-                    };
+        type Signature = (context: Postgres.Suite.FactoryContext, props?: Config.Props) => Context;
+    }
 
-                    type Signature = (context: Postgres.Suite.FactoryContext, props?: Config.Props) => Context;
-                }
+    namespace Config {
+        type Props = {
+            realmLimit?: number;
+        };
+    }
 
-                namespace Config {
-                    type Props = {
-                        readonly realmLimit?: number;
-                    };
-                }
+    namespace SeedSystemPermissions {
+        type Props = Suite;
 
-                namespace SeedSystemPermissions {
-                    type Props = Suite;
+        type Result = Promise<Entities.Realm>;
 
-                    type Result = Promise<Entities.Realm>;
-
-                    type Signature = (suite: Props) => Result;
-                }
-            }
-        }
+        type Signature = (suite: Props) => Result;
     }
 }

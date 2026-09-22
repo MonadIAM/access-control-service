@@ -116,19 +116,22 @@ describe("PermissionService", () => {
         });
     });
 
-    describe("revoke", () => {
-        it("revokes found permissions and returns them", async () => {
+    describe("revoke / restore", () => {
+        it.each([
+            { method: "revoke", isRevoked: false },
+            { method: "restore", isRevoked: true },
+        ] as const)("$method processes each found entity and returns the batch", async ({ method, isRevoked }) => {
             const realm = createRealm();
-            const permission = createPermission({ realm });
-            const secondPermission = createSecondPermission({ realm });
+            const permission = createPermission({ realm, isRevoked });
+            const secondPermission = createSecondPermission({ realm, isRevoked });
             const { service, repositories, transaction } = createServiceContext({
                 permissions: [permission, secondPermission],
                 realm,
             });
-            const firstRevokeSpy = jest.spyOn(permission, "revoke");
-            const secondRevokeSpy = jest.spyOn(secondPermission, "revoke");
+            const firstOperationSpy = jest.spyOn(permission, method);
+            const secondOperationSpy = jest.spyOn(secondPermission, method);
 
-            const result = await service.revoke({
+            const result = await service[method]({
                 identifiers: [PERMISSION_ID, SECOND_PERMISSION_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
@@ -138,38 +141,8 @@ describe("PermissionService", () => {
                 where: { id: { $in: [PERMISSION_ID, SECOND_PERMISSION_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
-            expect(firstRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(secondRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(result).toEqual([permission, secondPermission]);
-        });
-    });
-
-    describe("restore", () => {
-        it("restores found permissions and returns them", async () => {
-            const realm = createRealm();
-            const permission = createPermission({ realm });
-            const secondPermission = createSecondPermission({ realm });
-            const { service, repositories, transaction } = createServiceContext({
-                permissions: [permission, secondPermission],
-                realm,
-            });
-            permission.isRevoked = true;
-            secondPermission.isRevoked = true;
-            const firstRestoreSpy = jest.spyOn(permission, "restore");
-            const secondRestoreSpy = jest.spyOn(secondPermission, "restore");
-
-            const result = await service.restore({
-                identifiers: [PERMISSION_ID, SECOND_PERMISSION_ID],
-                transaction: transaction.entityManager,
-                realm: REALM_ID,
-            });
-
-            expect(repositories.permissions.find).toHaveBeenCalledWith({
-                where: { id: { $in: [PERMISSION_ID, SECOND_PERMISSION_ID] }, realm: REALM_ID },
-                transaction: transaction.entityManager,
-            });
-            expect(firstRestoreSpy).toHaveBeenCalledTimes(1);
-            expect(secondRestoreSpy).toHaveBeenCalledTimes(1);
+            expect(firstOperationSpy).toHaveBeenCalledTimes(1);
+            expect(secondOperationSpy).toHaveBeenCalledTimes(1);
             expect(result).toEqual([permission, secondPermission]);
         });
     });
@@ -209,80 +182,28 @@ describe("PermissionService", () => {
 
     describe("bulk identifiers", () => {
         it.each([
-            {
-                name: "bulk identifiers: PermissionService.revoke deduplicates repository lookup",
-                run: async () => {
-                    const realm = createRealm();
-                    const permission = createPermission({ realm });
-                    const { service, repositories, transaction } = createServiceContext({
-                        permissions: [permission],
-                        realm,
-                    });
+            { method: "revoke", isRevoked: false },
+            { method: "restore", isRevoked: true },
+            { method: "purge", isRevoked: true },
+        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked }) => {
+            const realm = createRealm();
+            const permission = createPermission({ realm, isRevoked });
+            const { service, repositories, transaction } = createServiceContext({
+                permissions: [permission],
+                realm,
+            });
 
-                    await expect(
-                        service.revoke({
-                            identifiers: [PERMISSION_ID, PERMISSION_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([permission]);
+            const result = await service[method]({
+                identifiers: [PERMISSION_ID, PERMISSION_ID],
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
-                    expect(repositories.permissions.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [PERMISSION_ID] }, realm: REALM_ID },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: PermissionService.restore deduplicates repository lookup",
-                run: async () => {
-                    const realm = createRealm();
-                    const permission = createPermission({ realm, isRevoked: true });
-                    const { service, repositories, transaction } = createServiceContext({
-                        permissions: [permission],
-                        realm,
-                    });
-
-                    await expect(
-                        service.restore({
-                            identifiers: [PERMISSION_ID, PERMISSION_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([permission]);
-
-                    expect(repositories.permissions.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [PERMISSION_ID] }, realm: REALM_ID },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: PermissionService.purge deduplicates repository lookup",
-                run: async () => {
-                    const realm = createRealm();
-                    const permission = createPermission({ realm, isRevoked: true });
-                    const { service, repositories, transaction } = createServiceContext({
-                        permissions: [permission],
-                        realm,
-                    });
-
-                    await expect(
-                        service.purge({
-                            identifiers: [PERMISSION_ID, PERMISSION_ID],
-                            transaction: transaction.entityManager,
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([permission]);
-
-                    expect(repositories.permissions.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [PERMISSION_ID] }, realm: REALM_ID },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-        ])("$name", async ({ run }) => {
-            await run();
+            expect(result).toEqual([permission]);
+            expect(repositories.permissions.find).toHaveBeenCalledWith({
+                where: { id: { $in: [PERMISSION_ID] }, realm: REALM_ID },
+                transaction: transaction.entityManager,
+            });
         });
     });
 });

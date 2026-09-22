@@ -1,31 +1,23 @@
-import type { jest } from "@jest/globals";
+declare namespace Unit.Queries.Permission {
+    interface Contract extends Domain.Core.Contract {
+        queries: Queries.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Application {
-            namespace PermissionQueries {
-                interface Contract extends Domain.Core.Contract {
-                    readonly queries: Queries.Signature;
-                }
+    namespace Repository {
+        type Contract = {
+            findUniqueOrThrow: Jest.Mock<Repositories.Permission.QueryContract["findUniqueOrThrow"]>;
+            findEffective: Jest.Mock<Repositories.Permission.QueryContract["findEffective"]>;
+            getLookupList: Jest.Mock<Repositories.Permission.QueryContract["getLookupList"]>;
+            findMany: Jest.Mock<Repositories.Permission.QueryContract["findMany"]>;
+        };
+    }
 
-                namespace Repository {
-                    type Contract = {
-                        readonly findUniqueOrThrow: jest.Mock<Repositories.Permission.QueryContract["findUniqueOrThrow"]>;
-                        readonly findMany: jest.Mock<Repositories.Permission.QueryContract["findMany"]>;
-                        readonly findEffective: jest.Mock<Repositories.Permission.QueryContract["findEffective"]>;
-                        readonly getLookupList: jest.Mock<Repositories.Permission.QueryContract["getLookupList"]>;
-                    };
-                }
+    namespace Queries {
+        type Result = {
+            queries: globalThis.Queries.Permission.Contract;
+            repository: Repository.Contract;
+        };
 
-                namespace Queries {
-                    type Result = {
-                        readonly queries: globalThis.Queries.Permission.Contract;
-                        readonly repository: Repository.Contract;
-                    };
-
-                    type Signature = () => Result;
-                }
-            }
-        }
+        type Signature = () => Result;
     }
 }

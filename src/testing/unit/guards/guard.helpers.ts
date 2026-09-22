@@ -29,13 +29,9 @@ export class GuardUnitHelpers extends DomainServiceCoreUnitHelpers implements Un
         const permissionPath = "~context/infrastructure/guards/permission.guard";
         const authnPath = "~context/infrastructure/guards/authn.guard";
 
-        const reauthentication = (await import(reauthenticationPath)) as {
-            ReauthenticationGuard: Unit.Guard.ReauthenticationFactory.Constructor;
-        };
-        const permission = (await import(permissionPath)) as {
-            PermissionGuard: Unit.Guard.PermissionFactory.Constructor;
-        };
-        const authn = (await import(authnPath)) as { AuthnGuard: Unit.Guard.AuthnFactory.Constructor };
+        const reauthentication = await import(reauthenticationPath);
+        const permission = await import(permissionPath);
+        const authn = await import(authnPath);
 
         this.ReauthenticationGuard = reauthentication.ReauthenticationGuard;
         this.PermissionGuard = permission.PermissionGuard;

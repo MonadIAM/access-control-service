@@ -1,110 +1,106 @@
 import type { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
 import type { Reflector } from "@nestjs/core";
-import type { jest } from "@jest/globals";
 
 import type { ReauthenticationGuard } from "~context/infrastructure/guards/reauthentication.guard";
 import type { PermissionGuard } from "~context/infrastructure/guards/permission.guard";
 import type { AuthnGuard } from "~context/infrastructure/guards/authn.guard";
 
 declare global {
-    namespace Unit {
-        namespace Guard {
-            type Metadata = readonly (readonly [PropertyKey, unknown])[];
+    namespace Unit.Guard {
+        type Metadata = [PropertyKey, unknown][];
 
-            interface Contract {
-                readonly reauthentication: ReauthenticationFactory.Signature;
-                readonly permission: PermissionFactory.Signature;
-                readonly context: ContextFactory.Signature;
-                readonly request: RequestFactory.Signature;
-                readonly initialize: Initialize.Signature;
-                readonly authn: AuthnFactory.Signature;
-            }
+        interface Contract {
+            reauthentication: ReauthenticationFactory.Signature;
+            permission: PermissionFactory.Signature;
+            context: ContextFactory.Signature;
+            request: RequestFactory.Signature;
+            initialize: Initialize.Signature;
+            authn: AuthnFactory.Signature;
+        }
 
-            namespace Initialize {
-                type Result = Promise<void>;
+        namespace Initialize {
+            type Result = Promise<void>;
 
-                type Signature = () => Result;
-            }
+            type Signature = () => Result;
+        }
 
-            namespace RequestFactory {
-                type Result = Req<{ Querystring: { realm?: string } }>;
+        namespace RequestFactory {
+            type Result = Req<{ Querystring: { realm?: string } }>;
 
-                type Props = Partial<Pick<Result, "headers" | "metadata" | "query" | "session">>;
+            type Props = Partial<Pick<Result, "headers" | "metadata" | "query" | "session">>;
 
-                type Signature = (props?: Props) => Result;
-            }
+            type Signature = (props?: Props) => Result;
+        }
 
-            namespace ContextFactory {
-                type Props = {
-                    readonly classMetadata?: Metadata;
-                    readonly handlerMetadata?: Metadata;
-                    readonly request: RequestFactory.Result;
-                };
+        namespace ContextFactory {
+            type Props = {
+                classMetadata?: Metadata;
+                handlerMetadata?: Metadata;
+                request: RequestFactory.Result;
+            };
 
-                type Result = ExecutionContextHost;
+            type Result = ExecutionContextHost;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace AuthnFactory {
-                type Constructor = new (
-                    reflector: Reflector,
-                    jwt: CommonServices.JWT.PublicContract,
-                    blacklist: InfrastructureServices.BlacklistCache.PublicContract,
-                ) => AuthnGuard;
+        namespace AuthnFactory {
+            type Constructor = new (
+                reflector: Reflector,
+                jwt: CommonServices.JWT.PublicContract,
+                blacklist: InfrastructureServices.BlacklistCache.PublicContract,
+            ) => AuthnGuard;
 
-                type Props = {
-                    readonly blacklisted?: boolean;
-                    readonly scope?: string;
-                };
+            type Props = {
+                blacklisted?: boolean;
+                scope?: string;
+            };
 
-                type Result = {
-                    readonly verifyAccess: jest.MockedFunction<CommonServices.JWT.VerifyAccess.Signature>;
-                    readonly exists: jest.MockedFunction<InfrastructureServices.BlacklistCache.Exists.Signature>;
-                    readonly guard: AuthnGuard;
-                };
+            type Result = {
+                verifyAccess: Jest.MockedFunction<CommonServices.JWT.VerifyAccess.Signature>;
+                exists: Jest.MockedFunction<InfrastructureServices.BlacklistCache.Exists.Signature>;
+                guard: AuthnGuard;
+            };
 
-                type Signature = (props?: Props) => Result;
-            }
+            type Signature = (props?: Props) => Result;
+        }
 
-            namespace PermissionFactory {
-                type CheckPermissions =
-                    jest.MockedFunction<InfrastructureServices.ProjectionCache.CheckPermissions.Signature>;
+        namespace PermissionFactory {
+            type CheckPermissions = Jest.MockedFunction<InfrastructureServices.ProjectionCache.CheckPermissions.Signature>;
 
-                type Constructor = new (
-                    cache: InfrastructureServices.ProjectionCache.PublicContract,
-                    reflector: Reflector,
-                ) => PermissionGuard;
+            type Constructor = new (
+                cache: InfrastructureServices.ProjectionCache.PublicContract,
+                reflector: Reflector,
+            ) => PermissionGuard;
 
-                type Props = {
-                    readonly matched?: string[];
-                };
+            type Props = {
+                matched?: string[];
+            };
 
-                type Result = {
-                    readonly checkPermissions: CheckPermissions;
-                    readonly guard: PermissionGuard;
-                };
+            type Result = {
+                checkPermissions: CheckPermissions;
+                guard: PermissionGuard;
+            };
 
-                type Signature = (props?: Props) => Result;
-            }
+            type Signature = (props?: Props) => Result;
+        }
 
-            namespace ReauthenticationFactory {
-                type Constructor = new (
-                    cache: InfrastructureServices.ReauthenticationCache.PublicContract,
-                    reflector: Reflector,
-                ) => ReauthenticationGuard;
+        namespace ReauthenticationFactory {
+            type Constructor = new (
+                cache: InfrastructureServices.ReauthenticationCache.PublicContract,
+                reflector: Reflector,
+            ) => ReauthenticationGuard;
 
-                type Props = {
-                    readonly active?: boolean;
-                };
+            type Props = {
+                active?: boolean;
+            };
 
-                type Result = {
-                    readonly exists: jest.MockedFunction<InfrastructureServices.ReauthenticationCache.Exists.Signature>;
-                    readonly guard: ReauthenticationGuard;
-                };
+            type Result = {
+                exists: Jest.MockedFunction<InfrastructureServices.ReauthenticationCache.Exists.Signature>;
+                guard: ReauthenticationGuard;
+            };
 
-                type Signature = (props?: Props) => Result;
-            }
+            type Signature = (props?: Props) => Result;
         }
     }
 }

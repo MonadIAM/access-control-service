@@ -1,40 +1,35 @@
 import { ChangeSetType } from "@mikro-orm/core";
 import { randomUUID } from "node:crypto";
 
-import { ActionType, EntityType, RoleActorType, RoleArchetype } from "~context/enums";
-import { AuditLog, ChangeLog } from "~common/transaction-manager/entities";
 import { DeltaChanges } from "~common/transaction-manager/value-objects";
-import {
-    RolePermissionAssignment,
-    AccountRoleAssignment,
-    RoleDelegationPolicy,
-    RoleConflictMember,
-    PermissionOverride,
-    RoleConflictGroup,
-    RoleClosure,
-    Permission,
-    Realm,
-    Role,
-} from "~context/domain/entities";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
+import { ActionType, EntityType } from "~context/enums";
 
 export class CoreFixture implements Fixtures.Core.Contract {
+    private readonly entities = new EntityFactoryRegistry();
     private sequence = 0;
 
     public constructor(protected readonly entityManager: ORM.EntityManager) {}
 
-    public async createRealm(props: Fixtures.Core.CreateRealm.Props = {}): Fixtures.Core.CreateRealm.Result {
-        const realm = new Realm({
-            code: props.code ?? this.nextCode("realm"),
-            isSystemManaged: props.isSystemManaged,
-            owner: props.owner ?? randomUUID(),
-            name: props.name ?? "Test Realm",
-            description: props.description,
-            isRevoked: props.isRevoked,
-        });
+    private async persist<Entity extends ORM.AnyEntity>(entity: Entity): Promise<Entity> {
+        this.entityManager.persist(entity);
+        await this.entityManager.flush();
+        return entity;
+    }
 
-        realm.createdAt = props.createdAt ?? realm.createdAt;
+    private nextCode(prefix: string): string {
+        this.sequence += 1;
+        return `${prefix}.${this.sequence}`;
+    }
 
-        return await this.persist(realm);
+    protected async setCreatedAt<Entity extends { createdAt: Date }>(
+        entities: readonly Entity[],
+        createdAt: Date,
+    ): Promise<void> {
+        for (const entity of entities) {
+            entity.createdAt = new Date(createdAt);
+        }
+        await this.entityManager.flush();
     }
 
     public async createRole(props: Fixtures.Core.CreateRole.Props): Fixtures.Core.CreateRole.Result {
@@ -43,95 +38,35 @@ export class CoreFixture implements Fixtures.Core.Contract {
         return role;
     }
 
+    public async createRealm(props: Fixtures.Core.CreateRealm.Props = {}): Fixtures.Core.CreateRealm.Result {
+        return await this.persist(
+            this.entities.createRealm({
+                ...props,
+                code: props.code ?? this.nextCode("realm"),
+                owner: props.owner ?? randomUUID(),
+                name: props.name ?? "Test Realm",
+            }),
+        );
+    }
+
     public async createDetachedRole(
         props: Fixtures.Core.CreateDetachedRole.Props,
     ): Fixtures.Core.CreateDetachedRole.Result {
         return await this.persist(
-            new Role({
-                archetype: props.archetype ?? RoleArchetype.ATOMIC,
-                actorType: props.actorType ?? RoleActorType.HUMAN,
+            this.entities.createRole({
+                ...props,
                 code: props.code ?? this.nextCode("role"),
-                isSystemManaged: props.isSystemManaged,
                 name: props.name ?? "Test Role",
-                description: props.description,
-                isRevoked: props.isRevoked,
-                realm: props.realm,
             }),
         );
     }
 
     public async createPermission(props: Fixtures.Core.CreatePermission.Props): Fixtures.Core.CreatePermission.Result {
         return await this.persist(
-            new Permission({
+            this.entities.createPermission({
+                ...props,
                 code: props.code ?? this.nextCode("permission"),
-                isSystemManaged: props.isSystemManaged,
                 name: props.name ?? "Test Permission",
-                description: props.description,
-                isRevoked: props.isRevoked,
-                realm: props.realm,
-            }),
-        );
-    }
-
-    public async createAccountRoleAssignment(
-        props: Fixtures.Core.CreateAccountRoleAssignment.Props,
-    ): Fixtures.Core.CreateAccountRoleAssignment.Result {
-        return await this.persist(
-            new AccountRoleAssignment({
-                isSystemManaged: props.isSystemManaged,
-                justification: props.justification,
-                expiresAt: props.expiresAt,
-                isRevoked: props.isRevoked,
-                account: props.account,
-                realm: props.realm,
-                role: props.role,
-            }),
-        );
-    }
-
-    public async createRolePermissionAssignment(
-        props: Fixtures.Core.CreateRolePermissionAssignment.Props,
-    ): Fixtures.Core.CreateRolePermissionAssignment.Result {
-        return await this.persist(
-            new RolePermissionAssignment({
-                isSystemManaged: props.isSystemManaged,
-                permission: props.permission,
-                isRevoked: props.isRevoked,
-                realm: props.realm,
-                role: props.role,
-            }),
-        );
-    }
-
-    public async createRoleDelegationPolicy(
-        props: Fixtures.Core.CreateRoleDelegationPolicy.Props,
-    ): Fixtures.Core.CreateRoleDelegationPolicy.Result {
-        return await this.persist(
-            new RoleDelegationPolicy({
-                isSystemManaged: props.isSystemManaged,
-                justification: props.justification,
-                depthLimit: props.depthLimit,
-                delegator: props.delegator,
-                expiresAt: props.expiresAt,
-                isRevoked: props.isRevoked,
-                target: props.target,
-                realm: props.realm,
-            }),
-        );
-    }
-
-    public async createPermissionOverride(
-        props: Fixtures.Core.CreatePermissionOverride.Props,
-    ): Fixtures.Core.CreatePermissionOverride.Result {
-        return await this.persist(
-            new PermissionOverride({
-                justification: props.justification,
-                permission: props.permission,
-                expiresAt: props.expiresAt,
-                isRevoked: props.isRevoked,
-                account: props.account,
-                effect: props.effect,
-                realm: props.realm,
             }),
         );
     }
@@ -140,37 +75,16 @@ export class CoreFixture implements Fixtures.Core.Contract {
         props: Fixtures.Core.CreateRoleConflictGroup.Props,
     ): Fixtures.Core.CreateRoleConflictGroup.Result {
         return await this.persist(
-            new RoleConflictGroup({
+            this.entities.createRoleConflictGroup({
+                ...props,
                 code: props.code ?? this.nextCode("conflict-group"),
                 name: props.name ?? "Test Conflict Group",
-                isSystemManaged: props.isSystemManaged,
-                maxAllowed: props.maxAllowed ?? 1,
-                description: props.description,
-                isRevoked: props.isRevoked,
-                realm: props.realm,
             }),
         );
-    }
-
-    public async createRoleConflictMember(
-        props: Fixtures.Core.CreateRoleConflictMember.Props,
-    ): Fixtures.Core.CreateRoleConflictMember.Result {
-        return await this.persist(
-            new RoleConflictMember({
-                isSystemManaged: props.isSystemManaged,
-                isRevoked: props.isRevoked,
-                group: props.group,
-                role: props.role,
-            }),
-        );
-    }
-
-    public async createRoleClosure(props: Fixtures.Core.CreateRoleClosure.Props): Fixtures.Core.CreateRoleClosure.Result {
-        return await this.persist(new RoleClosure(props));
     }
 
     public async createAuditLog(props: Fixtures.Core.CreateAuditLog.Props = {}): Fixtures.Core.CreateAuditLog.Result {
-        const auditLog = new AuditLog({
+        const auditLog = this.entities.createAuditLog({
             actionType: props.actionType ?? ActionType.CREATE,
             entityType: props.entityType ?? EntityType.ROLE,
             actor: props.actor ?? randomUUID(),
@@ -189,7 +103,7 @@ export class CoreFixture implements Fixtures.Core.Contract {
 
     public async createChangeLog(props: Fixtures.Core.CreateChangeLog.Props = {}): Fixtures.Core.CreateChangeLog.Result {
         const auditEntry = props.auditEntry ?? (await this.createAuditLog());
-        const changeLog = new ChangeLog({
+        const changeLog = this.entities.createChangeLog({
             delta: props.delta ?? new DeltaChanges({ name: { old: null, new: "Updated Name" } }),
             changeType: props.changeType ?? ChangeSetType.CREATE,
             entityType: props.entityType ?? EntityType.ROLE,
@@ -202,25 +116,37 @@ export class CoreFixture implements Fixtures.Core.Contract {
         return await this.persist(changeLog);
     }
 
-    protected async setCreatedAt<Entity extends { createdAt: Date }>(
-        entities: readonly Entity[],
-        createdAt: Date,
-    ): Promise<void> {
-        for (const entity of entities) {
-            entity.createdAt = new Date(createdAt);
-        }
-
-        await this.entityManager.flush();
+    public async createAccountRoleAssignment(
+        props: Fixtures.Core.CreateAccountRoleAssignment.Props,
+    ): Fixtures.Core.CreateAccountRoleAssignment.Result {
+        return await this.persist(this.entities.createAccountRoleAssignment(props));
     }
 
-    private async persist<Entity extends ORM.AnyEntity>(entity: Entity): Promise<Entity> {
-        this.entityManager.persist(entity);
-        await this.entityManager.flush();
-        return entity;
+    public async createRolePermissionAssignment(
+        props: Fixtures.Core.CreateRolePermissionAssignment.Props,
+    ): Fixtures.Core.CreateRolePermissionAssignment.Result {
+        return await this.persist(this.entities.createRolePermissionAssignment(props));
     }
 
-    private nextCode(prefix: string): string {
-        this.sequence += 1;
-        return `${prefix}.${this.sequence}`;
+    public async createRoleDelegationPolicy(
+        props: Fixtures.Core.CreateRoleDelegationPolicy.Props,
+    ): Fixtures.Core.CreateRoleDelegationPolicy.Result {
+        return await this.persist(this.entities.createRoleDelegationPolicy(props));
+    }
+
+    public async createPermissionOverride(
+        props: Fixtures.Core.CreatePermissionOverride.Props,
+    ): Fixtures.Core.CreatePermissionOverride.Result {
+        return await this.persist(this.entities.createPermissionOverride(props));
+    }
+
+    public async createRoleConflictMember(
+        props: Fixtures.Core.CreateRoleConflictMember.Props,
+    ): Fixtures.Core.CreateRoleConflictMember.Result {
+        return await this.persist(this.entities.createRoleConflictMember(props));
+    }
+
+    public async createRoleClosure(props: Fixtures.Core.CreateRoleClosure.Props): Fixtures.Core.CreateRoleClosure.Result {
+        return await this.persist(this.entities.createRoleClosure(props));
     }
 }

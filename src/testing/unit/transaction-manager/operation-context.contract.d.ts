@@ -1,19 +1,11 @@
-import type { OperationContext as OperationContextInstance } from "~common/transaction-manager/utilities";
+declare namespace Unit.TransactionManager.OperationContext {
+    interface Contract extends Unit.Domain.Core.Contract {
+        operationContext: OperationContextFactory.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace TransactionManager {
-            namespace OperationContext {
-                interface Contract extends Unit.Domain.Core.Contract {
-                    readonly operationContext: OperationContextFactory.Signature;
-                }
+    namespace OperationContextFactory {
+        type Result = import("~common/transaction-manager/utilities").OperationContext;
 
-                namespace OperationContextFactory {
-                    type Result = OperationContextInstance;
-
-                    type Signature = () => Result;
-                }
-            }
-        }
+        type Signature = () => Result;
     }
 }

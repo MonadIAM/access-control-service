@@ -1,54 +1,47 @@
 import { ConfigService } from "@nestjs/config";
-import { jest } from "@jest/globals";
 
 declare global {
-    namespace Unit {
-        namespace Domain {
-            type Mock = ReturnType<typeof jest.fn>;
+    namespace Unit.Domain.Core {
+        interface Transaction {
+            entityManager: ORM.EntityManager;
+            persist: Jest.Mock<(entity: object) => void>;
+            remove: Jest.Mock;
+            flush: Jest.Mock;
+            clear: Jest.Mock;
+            merge: Jest.Mock;
+        }
 
-            namespace Core {
-                interface Transaction {
-                    readonly entityManager: ORM.EntityManager;
-                    readonly persist: Mock;
-                    readonly remove: Mock;
-                    readonly flush: Mock;
-                    readonly clear: Mock;
-                    readonly merge: Mock;
-                }
+        interface Contract extends Unit.Domain.RepositoryMockBank.Contract {
+            transaction: TransactionFactory.Signature;
+            config: Config.Signature;
+        }
 
-                interface Contract extends Unit.Domain.RepositoryMockBank.Contract {
-                    readonly transaction: TransactionFactory.Signature;
-                    readonly config: Config.Signature;
-                }
+        namespace Service {
+            type Context<TService, TExtensions extends object = Record<never, never>> = {
+                repositories: RepositoryMocks.Contract;
+                transaction: Transaction;
+                service: TService;
+            } & TExtensions;
 
-                namespace Service {
-                    type Context<TService, TExtensions extends object = Record<never, never>> = {
-                        readonly service: TService;
-                        readonly repositories: RepositoryMocks.Contract;
-                        readonly transaction: Transaction;
-                    } & TExtensions;
+            type Signature<TProps, TService, TExtensions extends object = Record<never, never>> = (
+                props?: TProps,
+            ) => Context<TService, TExtensions>;
+        }
 
-                    type Signature<TProps, TService, TExtensions extends object = Record<never, never>> = (
-                        props?: TProps,
-                    ) => Context<TService, TExtensions>;
-                }
+        namespace TransactionFactory {
+            type Result = Transaction;
 
-                namespace TransactionFactory {
-                    type Result = Transaction;
+            type Signature = () => Result;
+        }
 
-                    type Signature = () => Result;
-                }
+        namespace Config {
+            type Props = {
+                values?: Record<string, unknown>;
+            };
 
-                namespace Config {
-                    type Props = {
-                        readonly values?: Record<string, unknown>;
-                    };
+            type Result = ConfigService;
 
-                    type Result = ConfigService;
-
-                    type Signature = (props?: Props) => Result;
-                }
-            }
+            type Signature = (props?: Props) => Result;
         }
     }
 }

@@ -6,9 +6,9 @@ import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
 export class RoleConflictMemberQueriesUnitHelpers
     extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.RoleConflictMemberQueries.Contract
+    implements Unit.Queries.RoleConflictMember.Contract
 {
-    public queries(): Unit.Application.RoleConflictMemberQueries.Queries.Result {
+    public queries(): Unit.Queries.RoleConflictMember.Queries.Result {
         const repository = {
             findUniqueOrThrow: jest.fn<Repositories.RoleConflictMember.QueryContract["findUniqueOrThrow"]>(),
             findMany: jest.fn<Repositories.RoleConflictMember.QueryContract["findMany"]>(),

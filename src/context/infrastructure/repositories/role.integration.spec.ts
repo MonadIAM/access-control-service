@@ -117,53 +117,20 @@ describe("RoleRepository", () => {
         expect([...firstPageRoles, ...secondPageRoles].map(({ code }) => code)).toEqual(scenario.expectedOrderedCodes);
     });
 
-    it("does not find delegable roles through revoked account assignments", async () => {
-        const scenario = await suite.fixtures().delegableRevokedScenario();
+    it.each([
+        { name: "revoked account assignments", fixture: "delegableRevokedScenario", filterRealm: true },
+        { name: "expired account assignments", fixture: "delegableExpiredScenario", filterRealm: true },
+        { name: "policies from another realm", fixture: "delegableRealmScenario", filterRealm: true },
+        { name: "cross-realm policies without realm filter", fixture: "delegableRealmScenario", filterRealm: false },
+    ] as const)("does not find delegable roles through $name", async ({ fixture, filterRealm }) => {
+        const scenario = await suite.fixtures()[fixture]();
 
         const [roles, total] = await suite.repository().findDelegable({
-            where: { type: DelegatorType.ACCOUNT, id: scenario.account, realm: scenario.realm.id },
-            pagination: { currentPage: 1, elementsPerPage: 20 },
-            sort: { createdAt: QueryOrder.ASC },
-            filters: { isRevoked: false },
-        });
-
-        expect(total).toBe(scenario.expectedRoleCodes.length);
-        expect(roles.map(({ code }) => code).sort()).toEqual(scenario.expectedRoleCodes);
-    });
-
-    it("does not find delegable roles through expired account assignments", async () => {
-        const scenario = await suite.fixtures().delegableExpiredScenario();
-
-        const [roles, total] = await suite.repository().findDelegable({
-            where: { type: DelegatorType.ACCOUNT, id: scenario.account, realm: scenario.realm.id },
-            pagination: { currentPage: 1, elementsPerPage: 20 },
-            sort: { createdAt: QueryOrder.ASC },
-            filters: { isRevoked: false },
-        });
-
-        expect(total).toBe(scenario.expectedRoleCodes.length);
-        expect(roles.map(({ code }) => code).sort()).toEqual(scenario.expectedRoleCodes);
-    });
-
-    it("does not find delegable roles through policies from another realm", async () => {
-        const scenario = await suite.fixtures().delegableRealmScenario();
-
-        const [roles, total] = await suite.repository().findDelegable({
-            where: { type: DelegatorType.ACCOUNT, id: scenario.account, realm: scenario.realm.id },
-            pagination: { currentPage: 1, elementsPerPage: 20 },
-            sort: { createdAt: QueryOrder.ASC },
-            filters: { isRevoked: false },
-        });
-
-        expect(total).toBe(scenario.expectedRoleCodes.length);
-        expect(roles.map(({ code }) => code).sort()).toEqual(scenario.expectedRoleCodes);
-    });
-
-    it("does not find delegable roles through cross-realm policies without realm filter", async () => {
-        const scenario = await suite.fixtures().delegableRealmScenario();
-
-        const [roles, total] = await suite.repository().findDelegable({
-            where: { type: DelegatorType.ACCOUNT, id: scenario.account },
+            where: {
+                type: DelegatorType.ACCOUNT,
+                id: scenario.account,
+                ...(filterRealm && { realm: scenario.realm.id }),
+            },
             pagination: { currentPage: 1, elementsPerPage: 20 },
             sort: { createdAt: QueryOrder.ASC },
             filters: { isRevoked: false },

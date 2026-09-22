@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { isObject } from "class-validator";
 
 import { RoleUnitHelpers } from "~testing/unit/domain-service/role.helpers";
 import { MoveMode, RoleActorType, RoleArchetype } from "~context/enums";
@@ -100,11 +101,15 @@ function mockMoveRoles(props: {
     props.repositories.roles.getAncestors.mockImplementation(() => Promise.resolve(currentParent ? [currentParent] : []));
     props.repositories.roleClosures.moveSubtrees.mockImplementation(() => Promise.resolve(MOVE_STEP));
     props.repositories.roleClosures.move.mockImplementation(() => Promise.resolve(MOVE_STEP));
-    props.repositories.roles.getDescendants.mockImplementation((input: { ancestor: string }) => {
-        return Promise.resolve(input.ancestor === ROLE_ID ? (props.directChildren ?? []) : (props.displacedChildren ?? []));
+    props.repositories.roles.findUniqueOrThrow.mockImplementation((input) => {
+        return Promise.resolve(
+            isObject(input.where) && "id" in input.where && input.where.id === TARGET_PARENT_ROLE_ID
+                ? targetParent
+                : target,
+        );
     });
-    props.repositories.roles.findUniqueOrThrow.mockImplementation((input: { where: { id: string } }) => {
-        return Promise.resolve(input.where.id === TARGET_PARENT_ROLE_ID ? targetParent : target);
+    props.repositories.roles.getDescendants.mockImplementation((input) => {
+        return Promise.resolve(input.ancestor === ROLE_ID ? (props.directChildren ?? []) : (props.displacedChildren ?? []));
     });
     props.repositories.roleClosures.existsTransitivePath.mockImplementation(() => {
         return Promise.resolve(props.wouldFormCycle ?? false);
@@ -128,10 +133,12 @@ describe("RoleService", () => {
                 "services.role.CREATE_PARENT_NO_INHERITANCE",
             );
 
-            expect(repositories.roles.findUniqueOrThrow).toHaveBeenCalledWith({
-                where: { id: PARENT_ROLE_ID, realm: REALM_ID },
-                transaction: transaction.entityManager,
-            });
+            expect(repositories.roles.findUniqueOrThrow.mock.calls).toContainEqual([
+                {
+                    where: { id: PARENT_ROLE_ID, realm: REALM_ID },
+                    transaction: transaction.entityManager,
+                },
+            ]);
             expect(repositories.roles.wouldExceedRoleLimit).not.toHaveBeenCalled();
             expect(transaction.persist).not.toHaveBeenCalled();
         });
@@ -283,10 +290,12 @@ describe("RoleService", () => {
                 id: ROLE_ID,
             });
 
-            expect(repositories.roles.findUniqueOrThrow).toHaveBeenCalledWith({
-                where: { id: ROLE_ID, realm: REALM_ID },
-                transaction: transaction.entityManager,
-            });
+            expect(repositories.roles.findUniqueOrThrow.mock.calls).toContainEqual([
+                {
+                    where: { id: ROLE_ID, realm: REALM_ID },
+                    transaction: transaction.entityManager,
+                },
+            ]);
             expect(updateSpy).toHaveBeenCalledWith({ patch: { name: "Updated Role" } });
         });
     });
@@ -516,132 +525,81 @@ describe("RoleService", () => {
 
         it("searches the target with isSystemManaged false and propagates not-found", async () => {
             const { service, repositories, transaction } = createRoleServiceContext();
-            repositories.roles.findUniqueOrThrow.mockImplementation(
-                ({ where }: { where: { id: string; isSystemManaged?: boolean } }) => {
-                    return where.isSystemManaged === false
-                        ? Promise.reject(new Error("role not found"))
-                        : Promise.resolve();
-                },
-            );
+            repositories.roles.findUniqueOrThrow.mockImplementation(({ where }) => {
+                return typeof where === "object" && "isSystemManaged" in where && where.isSystemManaged === false
+                    ? Promise.reject(new Error("role not found"))
+                    : Promise.resolve(createAtomicRole());
+            });
 
             await expect(service.move(createMoveProps(transaction.entityManager))).rejects.toThrow("role not found");
 
-            expect(repositories.roles.findUniqueOrThrow).toHaveBeenCalledWith({
-                where: { id: ROLE_ID, realm: REALM_ID, isSystemManaged: false },
-                transaction: transaction.entityManager,
-            });
+            expect(repositories.roles.findUniqueOrThrow.mock.calls).toContainEqual([
+                {
+                    where: { id: ROLE_ID, realm: REALM_ID, isSystemManaged: false },
+                    transaction: transaction.entityManager,
+                },
+            ]);
             expect(repositories.roleClosures.move).not.toHaveBeenCalled();
         });
     });
 
-    describe("revoke", () => {
-        it("revokes found roles and returns them", async () => {
-            const role = createAtomicRole();
-            const secondRole = createCompositeRole({ id: TARGET_PARENT_ROLE_ID });
-            const { service, repositories, transaction } = createRoleServiceContext({
-                roles: [role, secondRole],
-                realm: role.realm,
-            });
-            repositories.roles.find.mockImplementation(() => Promise.resolve([role, secondRole]));
-            const firstRevokeSpy = jest.spyOn(role, "revoke");
-            const secondRevokeSpy = jest.spyOn(secondRole, "revoke");
+    describe("revoke / restore", () => {
+        it.each([
+            { method: "revoke", isRevoked: false, archetype: RoleArchetype.ATOMIC },
+            { method: "restore", isRevoked: true, archetype: RoleArchetype.COMPOSITE },
+        ] as const)(
+            "$method processes each found entity and returns the batch",
+            async ({ method, isRevoked, archetype }) => {
+                const role = createAtomicRole({ archetype, isRevoked });
+                const secondRole = createCompositeRole({ id: TARGET_PARENT_ROLE_ID, isRevoked });
+                const { service, repositories, transaction } = createRoleServiceContext({
+                    roles: [role, secondRole],
+                    realm: role.realm,
+                });
+                repositories.roles.find.mockImplementation(() => Promise.resolve([role, secondRole]));
+                const firstOperationSpy = jest.spyOn(role, method);
+                const secondOperationSpy = jest.spyOn(secondRole, method);
 
-            const result = await service.revoke({
-                identifiers: [ROLE_ID, TARGET_PARENT_ROLE_ID],
-                transaction: transaction.entityManager,
-                realm: REALM_ID,
-            });
+                const result = await service[method]({
+                    identifiers: [ROLE_ID, TARGET_PARENT_ROLE_ID],
+                    transaction: transaction.entityManager,
+                    realm: REALM_ID,
+                });
 
-            expect(repositories.roles.find).toHaveBeenCalledWith({
-                where: { id: { $in: [ROLE_ID, TARGET_PARENT_ROLE_ID] }, realm: REALM_ID },
-                transaction: transaction.entityManager,
-            });
-            expect(firstRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(secondRevokeSpy).toHaveBeenCalledTimes(1);
-            expect(result).toEqual([role, secondRole]);
-        });
-    });
-
-    describe("restore", () => {
-        it("restores found roles and returns them", async () => {
-            const role = createCompositeRole({ id: ROLE_ID, isRevoked: true });
-            const secondRole = createCompositeRole({ id: TARGET_PARENT_ROLE_ID, isRevoked: true });
-            const { service, repositories, transaction } = createRoleServiceContext({
-                roles: [role, secondRole],
-                realm: role.realm,
-            });
-            repositories.roles.find.mockImplementation(() => Promise.resolve([role, secondRole]));
-            const firstRestoreSpy = jest.spyOn(role, "restore");
-            const secondRestoreSpy = jest.spyOn(secondRole, "restore");
-
-            const result = await service.restore({
-                identifiers: [ROLE_ID, TARGET_PARENT_ROLE_ID],
-                transaction: transaction.entityManager,
-                realm: REALM_ID,
-            });
-
-            expect(repositories.roles.find).toHaveBeenCalledWith({
-                where: { id: { $in: [ROLE_ID, TARGET_PARENT_ROLE_ID] }, realm: REALM_ID },
-                transaction: transaction.entityManager,
-            });
-            expect(firstRestoreSpy).toHaveBeenCalledTimes(1);
-            expect(secondRestoreSpy).toHaveBeenCalledTimes(1);
-            expect(result).toEqual([role, secondRole]);
-        });
+                expect(repositories.roles.find).toHaveBeenCalledWith({
+                    where: { id: { $in: [ROLE_ID, TARGET_PARENT_ROLE_ID] }, realm: REALM_ID },
+                    transaction: transaction.entityManager,
+                });
+                expect(firstOperationSpy).toHaveBeenCalledTimes(1);
+                expect(secondOperationSpy).toHaveBeenCalledTimes(1);
+                expect(result).toEqual([role, secondRole]);
+            },
+        );
     });
 
     describe("bulk identifiers", () => {
         it.each([
-            {
-                name: "bulk identifiers: RoleService.revoke deduplicates repository lookup",
-                run: async () => {
-                    const role = createAtomicRole({ id: ROLE_ID });
-                    const { service, repositories, transaction } = createRoleServiceContext({
-                        realm: role.realm,
-                        roles: [role],
-                    });
-                    repositories.roles.find.mockImplementation(() => Promise.resolve([role]));
+            { method: "revoke", isRevoked: false, archetype: RoleArchetype.ATOMIC },
+            { method: "restore", isRevoked: true, archetype: RoleArchetype.COMPOSITE },
+        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked, archetype }) => {
+            const role = helpers.createRole({ id: ROLE_ID, archetype, isRevoked });
+            const { service, repositories, transaction } = createRoleServiceContext({
+                realm: role.realm,
+                roles: [role],
+            });
+            repositories.roles.find.mockImplementation(() => Promise.resolve([role]));
 
-                    await expect(
-                        service.revoke({
-                            transaction: transaction.entityManager,
-                            identifiers: [ROLE_ID, ROLE_ID],
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([role]);
+            const result = await service[method]({
+                transaction: transaction.entityManager,
+                identifiers: [ROLE_ID, ROLE_ID],
+                realm: REALM_ID,
+            });
 
-                    expect(repositories.roles.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [ROLE_ID] }, realm: REALM_ID },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-            {
-                name: "bulk identifiers: RoleService.restore deduplicates repository lookup",
-                run: async () => {
-                    const role = createCompositeRole({ id: ROLE_ID, isRevoked: true });
-                    const { service, repositories, transaction } = createRoleServiceContext({
-                        realm: role.realm,
-                        roles: [role],
-                    });
-                    repositories.roles.find.mockImplementation(() => Promise.resolve([role]));
-
-                    await expect(
-                        service.restore({
-                            transaction: transaction.entityManager,
-                            identifiers: [ROLE_ID, ROLE_ID],
-                            realm: REALM_ID,
-                        }),
-                    ).resolves.toEqual([role]);
-
-                    expect(repositories.roles.find).toHaveBeenCalledWith({
-                        where: { id: { $in: [ROLE_ID] }, realm: REALM_ID },
-                        transaction: transaction.entityManager,
-                    });
-                },
-            },
-        ])("$name", async ({ run }) => {
-            await run();
+            expect(result).toEqual([role]);
+            expect(repositories.roles.find).toHaveBeenCalledWith({
+                where: { id: { $in: [ROLE_ID] }, realm: REALM_ID },
+                transaction: transaction.entityManager,
+            });
         });
     });
 
@@ -756,11 +714,13 @@ describe("RoleService", () => {
                 id: ROLE_ID,
             });
 
-            expect(repositories.roles.getDescendants).toHaveBeenCalledWith({
-                transaction: transaction.entityManager,
-                where: { realm: REALM_ID },
-                ancestor: ROLE_ID,
-            });
+            expect(repositories.roles.getDescendants.mock.calls).toContainEqual([
+                {
+                    transaction: transaction.entityManager,
+                    where: { realm: REALM_ID },
+                    ancestor: ROLE_ID,
+                },
+            ]);
             expect(transaction.remove).toHaveBeenCalledWith(root);
         });
     });

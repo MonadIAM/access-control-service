@@ -1,24 +1,16 @@
-import type { jest } from "@jest/globals";
+declare namespace Unit.Commands.Permission {
+    interface Contract extends Core.Contract {
+        commands: Commands.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Application {
-            namespace PermissionCommands {
-                interface Contract extends CommandCore.Contract {
-                    readonly commands: Commands.Signature;
-                }
+    namespace Commands {
+        type Result = Core.Execution.Result & {
+            commands: globalThis.Commands.Permission.Contract;
+            service: Jest.Mocked<
+                Pick<Services.Permission.CommandContract, "create" | "update" | "revoke" | "restore" | "purge">
+            >;
+        };
 
-                namespace Commands {
-                    type Result = CommandCore.Execution.Result & {
-                        readonly commands: globalThis.Commands.Permission.Contract;
-                        readonly service: jest.Mocked<
-                            Pick<Services.Permission.CommandContract, "create" | "update" | "revoke" | "restore" | "purge">
-                        >;
-                    };
-
-                    type Signature = () => Result;
-                }
-            }
-        }
+        type Signature = () => Result;
     }
 }

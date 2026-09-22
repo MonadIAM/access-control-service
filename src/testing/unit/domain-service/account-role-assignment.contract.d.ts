@@ -1,24 +1,16 @@
-import type { AccountRoleAssignmentService } from "~context/domain/services/account-role-assignment.service";
+declare namespace Unit.Domain.AccountRoleAssignment {
+    interface Contract extends Core.Contract {
+        service: Service.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Domain {
-            namespace AccountRoleAssignment {
-                interface Contract extends Core.Contract {
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Props = {
+            roles?: Entities.Role[];
+            realm?: Entities.Realm;
+        };
 
-                namespace Service {
-                    type Props = {
-                        readonly roles?: Entities.Role[];
-                        readonly realm?: Entities.Realm;
-                    };
+        type Result = Core.Service.Context<Services.AccountRoleAssignment.Contract>;
 
-                    type Result = Core.Service.Context<AccountRoleAssignmentService>;
-
-                    type Signature = (props?: Props) => Result;
-                }
-            }
-        }
+        type Signature = (props?: Props) => Result;
     }
 }

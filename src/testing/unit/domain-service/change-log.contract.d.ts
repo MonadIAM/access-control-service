@@ -1,23 +1,15 @@
-import type { ChangeLogService } from "~context/domain/services/change-log.service";
+declare namespace Unit.Domain.ChangeLog {
+    interface Contract extends Core.Contract {
+        service: Service.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Domain {
-            namespace ChangeLog {
-                interface Contract extends Core.Contract {
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Result = {
+            repositories: RepositoryMocks.Contract;
+            service: Services.ChangeLog.Contract;
+            transaction: Core.Transaction;
+        };
 
-                namespace Service {
-                    type Result = {
-                        readonly repositories: RepositoryMocks.Contract;
-                        readonly transaction: Core.Transaction;
-                        readonly service: ChangeLogService;
-                    };
-
-                    type Signature = () => Result;
-                }
-            }
-        }
+        type Signature = () => Result;
     }
 }

@@ -1,25 +1,17 @@
-import type { RoleService } from "~context/domain/services/role.service";
+declare namespace Unit.Domain.Role {
+    interface Contract extends Core.Contract {
+        service: Service.Signature;
+    }
 
-declare global {
-    namespace Unit {
-        namespace Domain {
-            namespace Role {
-                interface Contract extends Core.Contract {
-                    readonly service: Service.Signature;
-                }
+    namespace Service {
+        type Props = {
+            roles?: Entities.Role[];
+            realm?: Entities.Realm;
+            subtreeLimit?: number;
+        };
 
-                namespace Service {
-                    type Props = {
-                        readonly roles?: Entities.Role[];
-                        readonly realm?: Entities.Realm;
-                        readonly subtreeLimit?: number;
-                    };
+        type Result = Core.Service.Context<Services.Role.Contract>;
 
-                    type Result = Core.Service.Context<RoleService>;
-
-                    type Signature = (props?: Props) => Result;
-                }
-            }
-        }
+        type Signature = (props?: Props) => Result;
     }
 }

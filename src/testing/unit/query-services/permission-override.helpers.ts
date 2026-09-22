@@ -6,9 +6,9 @@ import { DomainServiceCoreUnitHelpers } from "../core.helpers";
 
 export class PermissionOverrideQueriesUnitHelpers
     extends DomainServiceCoreUnitHelpers
-    implements Unit.Application.PermissionOverrideQueries.Contract
+    implements Unit.Queries.PermissionOverride.Contract
 {
-    public queries(): Unit.Application.PermissionOverrideQueries.Queries.Result {
+    public queries(): Unit.Queries.PermissionOverride.Queries.Result {
         const repository = {
             findUniqueOrThrow: jest.fn<Repositories.PermissionOverride.QueryContract["findUniqueOrThrow"]>(),
             findMany: jest.fn<Repositories.PermissionOverride.QueryContract["findMany"]>(),

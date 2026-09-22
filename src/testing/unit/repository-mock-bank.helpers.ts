@@ -1,6 +1,6 @@
 import { jest } from "@jest/globals";
 
-import { EntityFactoryRegistry } from "./entity-factory.registry";
+import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 
 export class RepositoryMockBank extends EntityFactoryRegistry implements Unit.Domain.RepositoryMockBank.Contract {
     public repositories(
@@ -129,13 +129,13 @@ export class RepositoryMockBank extends EntityFactoryRegistry implements Unit.Do
     private roleRepository(roles: Entities.Role[]): Unit.Domain.RepositoryMocks.Role {
         return {
             ...this.baseRepository("Role"),
+            getDescendants: jest.fn<Repositories.Role.GetDescendants.Signature>(),
             findUniqueOrThrow: jest.fn(() => Promise.resolve(roles[0])),
             find: jest.fn(() => Promise.resolve(roles)),
             wouldExceedRoleLimit: jest.fn(),
             findAccountsByRoles: jest.fn(),
             getHierarchyGraph: jest.fn(),
             findDescendants: jest.fn(),
-            getDescendants: jest.fn(),
             getLookupList: jest.fn(),
             findDelegable: jest.fn(),
             findEffective: jest.fn(),
