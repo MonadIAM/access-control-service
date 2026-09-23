@@ -1,3 +1,4 @@
+import ms, { StringValue } from "ms";
 import {
     ValidatorConstraintInterface,
     ValidatorConstraint,
@@ -9,7 +10,12 @@ import {
 @ValidatorConstraint({ name: "IsMsString", async: false })
 class IsMsStringConstraint implements ValidatorConstraintInterface {
     public validate(value: unknown, _: ValidationArguments): boolean {
-        return typeof value === "string" && /^\d+.+$/.test(value);
+        if (typeof value !== "string" || value.length === 0) {
+            return false;
+        } else {
+            const duration = ms(value as StringValue);
+            return Number.isFinite(duration) && duration >= 0;
+        }
     }
 
     public defaultMessage(args: ValidationArguments): string {

@@ -131,7 +131,17 @@ Shared Docker networks are created by the infra repository:
 | `make seed`                       | Run PostgreSQL seeder, then Redis projection seeder.                |
 | **Test**                          |                                                                     |
 | `make test`                       | Run unit tests.                                                     |
-| `make coverage`                   | Run unit tests with coverage report.                                |
+| `make make coverage-unit`         | Run unit tests with coverage in `coverage/unit`.                    |
+| `make coverage-integration`       | Run integration tests with coverage in `coverage/integration`.      |
+| `make coverage`                   | Run both suites with combined coverage in `coverage/all`.           |
+
+Coverage uses source maps from the Jest TypeScript transform. Integration and combined
+coverage require a working Docker runtime for the PostgreSQL test container. The
+combined command runs both suites in one Jest invocation and counts each source
+location once; it does not average the two reports. Unit coverage includes the
+service source tree, so infrastructure exercised only by integration tests can
+remain uncovered in that report. Decorator metadata can still contribute generated
+branches; investigate the source location before adding tests solely for a percentage.
 
 The seed command executes `db:seed:postgresql` first and `db:seed:redis` second.
 

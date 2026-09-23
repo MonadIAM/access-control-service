@@ -34,7 +34,10 @@
     "start:prod": "node dist/index.js",
     "start:dev": "nest start --watch",
     "start": "nest start",
-    "build": "nest build"
+    "build": "nest build",
+    "coverage:unit": "pnpm run utest --coverage --coverageDirectory=coverage/unit",
+    "coverage:integration": "pnpm run itest --coverage --coverageDirectory=coverage/integration",
+    "coverage:all": "NODE_OPTIONS='--import tsx --experimental-vm-modules' jest --config ./jest.coverage.config.mjs --coverage"
   },
   "repository": {
     "type": "git",
