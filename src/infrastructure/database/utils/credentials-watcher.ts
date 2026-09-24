@@ -55,11 +55,11 @@ export class CredentialsWatcher implements OnModuleInit, OnModuleDestroy {
         const password = (await readFile(this.passwordPath, "utf8")).trim();
 
         if (username !== this.lastUsername || password !== this.lastPassword) {
-            this.lastUsername = username;
-            this.lastPassword = password;
-
             await this.writeORM.reconnect({ user: username, password });
             await this.readORM.reconnect({ user: username, password });
+
+            this.lastUsername = username;
+            this.lastPassword = password;
 
             this.logger.log("PostgreSQL credentials rotated, reconnected.");
         }

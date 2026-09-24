@@ -1,15 +1,15 @@
 import { describe, expect, it } from "@jest/globals";
 import { randomUUID } from "node:crypto";
 
+import { RoleArchetype, RealmType, PermissionCode, PermissionOverrideEffect } from "~context/enums";
 import { ADMIN_PERMISSION_CODES, USER_PERMISSION_CODES } from "~infrastructure/datasets/bootstrap";
 import { RealmIntegrationHelpers } from "~testing/integration/domain-service/realm.helpers";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
-import { RoleArchetype, RealmType, PermissionCode, PermissionOverrideEffect } from "~context/enums";
 import {
     RolePermissionAssignment,
-    PermissionOverride,
     AccountRoleAssignment,
+    PermissionOverride,
     RoleClosure,
     Permission,
     Realm,

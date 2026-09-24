@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { PermissionOverrideRepository } from "~context/infrastructure/repositories/permission-override.repository";
 import { PermissionOverrideFixture } from "~testing/integration/repositories/permission-override.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { PermissionOverrideEffect } from "~context/enums";
 
 function createRepositoryConfig(): ConfigService {

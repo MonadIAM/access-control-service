@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { RoleConflictMemberRepository } from "~context/infrastructure/repositories/role-conflict-member.repository";
 import { RoleConflictMemberFixture } from "~testing/integration/repositories/role-conflict-member.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 
 function createRepositoryConfig(): ConfigService {
     return new ConfigService({

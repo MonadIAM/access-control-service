@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 
 import { InboxService } from "./inbox.service";
 import { Inbox } from "../entities";

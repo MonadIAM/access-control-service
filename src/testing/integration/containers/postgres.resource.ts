@@ -1,6 +1,7 @@
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { MikroORM, Options, PostgreSqlDriver } from "@mikro-orm/postgresql";
 import { Migrator } from "@mikro-orm/migrations";
+import { ConfigService } from "@nestjs/config";
 import path from "node:path";
 
 import {
@@ -12,7 +13,7 @@ import {
     POSTGRES_IMAGE,
     DATABASE_NAME,
     DATABASE_USER,
-} from "./constants";
+} from "./postgres.constants";
 
 let container: Optional<StartedPostgreSqlContainer>;
 
@@ -45,6 +46,24 @@ export class PostgresResource implements Integration.Postgres.Resource.Contract 
 
     public static async connect(): Promise<PostgresResource> {
         return new PostgresResource(await MikroORM.init(PostgresResource.buildOptions(PostgresResource.envConnection())));
+    }
+
+    public static config(): ConfigService {
+        const connection = PostgresResource.envConnection();
+        return new ConfigService({
+            POSTGRES_PASSWORD: connection.password,
+            POSTGRES_WRITE_HOST: connection.host,
+            POSTGRES_WRITE_PORT: connection.port,
+            POSTGRES_READ_HOST: connection.host,
+            POSTGRES_READ_PORT: connection.port,
+            POSTGRES_USER: connection.username,
+            POSTGRES_DB: connection.database,
+            POSTGRES_WRITE_POOL_IDLE_MS: "1s",
+            POSTGRES_READ_POOL_IDLE_MS: "1s",
+            POSTGRES_WRITE_POOL_MAX: 3,
+            POSTGRES_READ_POOL_MAX: 2,
+            POSTGRES_SSL_ENABLED: false,
+        });
     }
 
     public async reset(): Integration.Postgres.Resource.Reset.Result {

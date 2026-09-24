@@ -34,7 +34,7 @@ export class DatabaseHealthIndicator {
         if (isConnected) {
             await entityManager.getConnection().execute("SELECT 1");
         } else {
-            throw new Error("Connection lost");
+            throw new Error("connection_lost");
         }
     }
 }

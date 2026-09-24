@@ -2,8 +2,8 @@ import { describe, expect, it } from "@jest/globals";
 import { randomUUID } from "node:crypto";
 
 import { AccountRoleAssignmentIntegrationHelpers } from "~testing/integration/domain-service/account-role-assignment.helpers";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 import { AccountRoleAssignment } from "~context/domain/entities";
 import { RoleArchetype } from "~context/enums";
 

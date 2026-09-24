@@ -2,8 +2,8 @@ import { describe, expect, it } from "@jest/globals";
 import { randomUUID } from "node:crypto";
 
 import { RoleDelegationPolicyIntegrationHelpers } from "~testing/integration/domain-service/role-delegation-policy.helpers";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 import { RoleDelegationPolicy } from "~context/domain/entities";
 import { DelegatorType } from "~context/enums";
 

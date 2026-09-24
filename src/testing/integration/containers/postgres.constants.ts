@@ -1,7 +1,7 @@
 export const POSTGRES_IMAGE = "postgres:17-alpine";
 export const DATABASE_NAME = "access_control_test";
-export const DATABASE_USER = "access_control";
 export const DATABASE_PASSWORD = "access_control";
+export const DATABASE_USER = "access_control";
 
 export const CONNECTION_ENV_KEYS = {
     database: "MONADIAM_TEST_POSTGRES_DATABASE",

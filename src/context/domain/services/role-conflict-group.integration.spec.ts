@@ -3,8 +3,8 @@ import { randomUUID } from "node:crypto";
 
 import { RoleConflictGroupIntegrationHelpers } from "~testing/integration/domain-service/role-conflict-group.helpers";
 import { RoleConflictGroup, RoleConflictMember } from "~context/domain/entities";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 
 const helpers = new RoleConflictGroupIntegrationHelpers();
 

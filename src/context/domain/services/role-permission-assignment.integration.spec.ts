@@ -1,9 +1,9 @@
 import { describe, expect, it } from "@jest/globals";
 
 import { RolePermissionAssignmentIntegrationHelpers } from "~testing/integration/domain-service/role-permission-assignment.helpers";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 import { RolePermissionAssignment } from "~context/domain/entities";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 
 const helpers = new RolePermissionAssignmentIntegrationHelpers();
 

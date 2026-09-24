@@ -3,9 +3,9 @@ import { QueryOrder } from "@mikro-orm/postgresql";
 import { ConfigService } from "@nestjs/config";
 
 import { RoleRepository } from "~context/infrastructure/repositories/role.repository";
-import { DelegatorType, RoleActorType, RoleArchetype } from "~context/enums";
-import { postgresSuite } from "~testing/integration/postgres.suite";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { RoleFixture } from "~testing/integration/repositories/role.fixture";
+import { DelegatorType, RoleActorType, RoleArchetype } from "~context/enums";
 
 function createRepositoryConfig(): ConfigService {
     return new ConfigService({

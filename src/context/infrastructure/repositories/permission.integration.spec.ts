@@ -4,8 +4,8 @@ import { ConfigService } from "@nestjs/config";
 
 import { PermissionRepository } from "~context/infrastructure/repositories/permission.repository";
 import { PermissionFixture } from "~testing/integration/repositories/permission.fixture";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { PublicStringOperator } from "~infrastructure/database/enums";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 
 function createRepositoryConfig(): ConfigService {
     return new ConfigService({

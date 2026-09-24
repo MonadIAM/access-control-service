@@ -18,7 +18,7 @@ export class RedisConfig {
             },
             reconnectOnError: (error: Error): boolean => {
                 const message = error.message.toLowerCase();
-                return message.includes("read only") ?? message.includes("econnreset");
+                return message.includes("read only") || message.includes("readonly") || message.includes("econnreset");
             },
         };
     }

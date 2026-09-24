@@ -3,8 +3,8 @@ import { describe, expect, it } from "@jest/globals";
 
 import { TrackedWritesHelper } from "~testing/integration/mixins/tracked-writes.helpers";
 import { ExternalChanges } from "~infrastructure/database/utils/external-changes";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 import { RoleClosure } from "~context/domain/entities";
 
 import { TrackedWrites } from "./mixin";

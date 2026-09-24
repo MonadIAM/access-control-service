@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { RolePermissionAssignmentRepository } from "~context/infrastructure/repositories/role-permission-assignment.repository";
 import { RolePermissionAssignmentFixture } from "~testing/integration/repositories/role-permission-assignment.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 
 function createRepositoryConfig(): ConfigService {
     return new ConfigService({

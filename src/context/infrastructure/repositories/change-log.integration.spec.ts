@@ -2,9 +2,9 @@ import { describe, expect, it } from "@jest/globals";
 import { ChangeSetType } from "@mikro-orm/core";
 import { randomUUID } from "node:crypto";
 
-import { DeltaChanges } from "~common/transaction-manager/value-objects";
-import { postgresSuite } from "~testing/integration/postgres.suite";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
+import { DeltaChanges } from "~common/transaction-manager/value-objects";
 import { EntityType } from "~context/enums";
 
 import { ChangeLogRepository } from "./change-log.repository";

@@ -6,9 +6,9 @@ import { randomUUID } from "node:crypto";
 import { RoleClosureRepository } from "~context/infrastructure/repositories/role-closure.repository";
 import { TransactionalHelper } from "~testing/integration/transaction-manager/transactional.helpers";
 import { ActionType, EntityType, KafkaTopic, RoleActorType, RoleArchetype } from "~context/enums";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
 import { RoleClosure, Realm, Role } from "~context/domain/entities";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 
 import { AuditLog, ChangeLog, Inbox, Outbox } from "../entities";
 

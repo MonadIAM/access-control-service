@@ -2,7 +2,7 @@ import { describe, expect, it } from "@jest/globals";
 import { ConfigService } from "@nestjs/config";
 
 import { RealmRepository } from "~context/infrastructure/repositories/realm.repository";
-import { postgresSuite } from "~testing/integration/postgres.suite";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { RealmFixture } from "~testing/integration/repositories/realm.fixture";
 
 function createRepositoryConfig(): ConfigService {

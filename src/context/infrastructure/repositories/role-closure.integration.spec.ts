@@ -2,8 +2,8 @@ import { describe, expect, it } from "@jest/globals";
 
 import { RoleClosureRepository } from "~context/infrastructure/repositories/role-closure.repository";
 import { RoleClosureFixture } from "~testing/integration/repositories/role-closure.fixture";
-import { PostgresHelpers } from "~testing/integration/postgres.helpers";
-import { postgresSuite } from "~testing/integration/postgres.suite";
+import { PostgresHelpers } from "~testing/integration/containers/postgres.helpers";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { RoleClosure } from "~context/domain/entities";
 
 function pathKey(path: Omit<Entities.RoleClosure, "realm" | "depth">): string {

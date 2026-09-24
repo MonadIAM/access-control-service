@@ -106,11 +106,7 @@ export class QueryBuilderAdapter {
             ordered = ordered.orderBy(ref(defaultColumn), this.direction(basicSort[1]));
         }
 
-        let hasIDOrder = false;
-
-        for (const key in sort) {
-            hasIDOrder = sort[key] ? key === "id" || key === `${tableAlias}.id` : false;
-        }
+        const hasIDOrder = entries.some(([key, value]) => Boolean(value) && (key === "id" || key === `${tableAlias}.id`));
 
         if (!hasIDOrder) {
             ordered = ordered.orderBy(ref(`${tableAlias}.id`), this.direction(QueryOrder.ASC));

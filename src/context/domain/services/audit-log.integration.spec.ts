@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
 
 import { AuditLogIntegrationHelpers } from "~testing/integration/domain-service/audit-log.helpers";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 import { AuditLog } from "~common/transaction-manager";
 
 const helpers = new AuditLogIntegrationHelpers();

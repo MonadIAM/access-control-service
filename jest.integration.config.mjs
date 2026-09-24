@@ -5,8 +5,8 @@ const config = {
 
     testMatch: ["**/*.integration.spec.ts"],
     testTimeout: 120_000,
-    globalSetup: "<rootDir>/src/testing/integration/postgres.setup.ts",
-    globalTeardown: "<rootDir>/src/testing/integration/postgres.teardown.ts",
+    globalSetup: "<rootDir>/src/testing/integration/containers/setup.ts",
+    globalTeardown: "<rootDir>/src/testing/integration/containers/teardown.ts",
     detectOpenHandles: false,
     maxWorkers: 1,
 };

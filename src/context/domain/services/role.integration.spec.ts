@@ -4,9 +4,9 @@ import { randomUUID } from "node:crypto";
 
 import { ActionType, EntityType, MoveMode, RoleActorType, RoleArchetype } from "~context/enums";
 import { RoleIntegrationHelpers } from "~testing/integration/domain-service/role.helpers";
+import { PostgresHelpers } from "~testing/integration/containers/postgres.helpers";
+import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
-import { PostgresHelpers } from "~testing/integration/postgres.helpers";
-import { postgresSuite } from "~testing/integration/postgres.suite";
 import { AuditLog, ChangeLog } from "~common/transaction-manager";
 import { RoleClosure, Role } from "~context/domain/entities";
 
