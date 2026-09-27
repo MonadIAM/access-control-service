@@ -97,68 +97,78 @@ describe("Kafka infrastructure with broker and Schema Registry", () => {
         await producer?.disconnect();
     });
 
-    it("delivers an encoded message with key and headers and decodes it using the registered schema", async () => {
-        const id = randomUUID();
-        const result = receive(consumer, id, async ({ message, partition, topic: receivedTopic }) => {
-            const decoded = await registry.decode<{ id: string }>({ topic: receivedTopic, value: message.value });
-            registry.validate({ topic: receivedTopic, value: decoded });
-            const mapped = new KafkaIncomingMapper().map({
+    describe("message delivery", () => {
+        it("delivers an encoded message with key and headers and decodes it using the registered schema", async () => {
+            const id = randomUUID();
+            const result = receive(consumer, id, async ({ message, partition, topic: receivedTopic }) => {
+                const decoded = await registry.decode<{ id: string }>({ topic: receivedTopic, value: message.value });
+                registry.validate({ topic: receivedTopic, value: decoded });
+                const mapped = new KafkaIncomingMapper().map({
+                    consumerKey: "integration",
+                    context: { getMessage: () => message, getTopic: () => receivedTopic, getPartition: () => partition },
+                });
+                return { decoded, mapped, header: message.headers?.source?.toString(), value: message.value };
+            });
+            const message = await serializer.serialize(
+                { key: id, value: { id }, headers: { source: "integration" } },
+                { pattern: topic },
+            );
+            await producer.send({ topic, messages: [message] });
+            const received = await result;
+            expect(received.decoded).toEqual({ id });
+            expect(received.mapped).toMatchObject({
+                event: id,
                 consumerKey: "integration",
-                context: { getMessage: () => message, getTopic: () => receivedTopic, getPartition: () => partition },
+                source: { topic, partition: 0 },
             });
-            return { decoded, mapped, header: message.headers?.source?.toString(), value: message.value };
-        });
-        const message = await serializer.serialize(
-            { key: id, value: { id }, headers: { source: "integration" } },
-            { pattern: topic },
-        );
-        await producer.send({ topic, messages: [message] });
-        const received = await result;
-        expect(received.decoded).toEqual({ id });
-        expect(received.mapped).toMatchObject({ event: id, consumerKey: "integration", source: { topic, partition: 0 } });
-        expect(received.header).toBe("integration");
-        expect(received.value?.readUInt8(0)).toBe(0);
-    });
-
-    it("rejects invalid payloads against a schema fetched from the real registry", async () => {
-        expect(() => registry.validate({ topic, value: { id: 123 } })).toThrow();
-        await expect(registry.encode({ topic, value: { id: 123 } })).rejects.toMatchObject({
-            messageKey: "services.schema-registry.ENCODE_FAILED",
+            expect(received.header).toBe("integration");
+            expect(received.value?.readUInt8(0)).toBe(0);
         });
     });
 
-    it("retries processing of a consumed message with the real consumer heartbeat", async () => {
-        const id = randomUUID();
-        const attempts: string[] = [];
-        const retries: string[] = [];
-        retry = new KafkaRetryService(
-            {
-                recordRetry: ({ topic: name }) => {
-                    retries.push(name);
-                },
-                recordDead: () => {},
-            },
-            KafkaResource.config(),
-        );
-        const result = receive(consumer, id, async ({ heartbeat, message }) => {
-            await retry!.execute({
-                topic,
-                heartbeat,
-                process: () => {
-                    attempts.push(message.offset);
-                    return attempts.length === 1
-                        ? Promise.reject(Exception.externalServiceFailed({ messageKey: "temporary" }))
-                        : Promise.resolve();
-                },
-                reject: (error) => Promise.reject(error),
+    describe("schema validation", () => {
+        it("rejects invalid payloads against a schema fetched from the real registry", async () => {
+            expect(() => registry.validate({ topic, value: { id: 123 } })).toThrow();
+            await expect(registry.encode({ topic, value: { id: 123 } })).rejects.toMatchObject({
+                messageKey: "services.schema-registry.ENCODE_FAILED",
             });
-            return message.key?.toString();
         });
-        const message = await serializer.serialize({ key: id, value: { id } }, { pattern: topic });
-        await producer.send({ topic, messages: [message] });
-        expect(await result).toBe(id);
-        expect(attempts).toHaveLength(2);
-        expect(attempts[0]).toBe(attempts[1]);
-        expect(retries).toEqual([topic]);
+    });
+
+    describe("retry", () => {
+        it("retries processing of a consumed message with the real consumer heartbeat", async () => {
+            const id = randomUUID();
+            const attempts: string[] = [];
+            const retries: string[] = [];
+            retry = new KafkaRetryService(
+                {
+                    recordRetry: ({ topic: name }) => {
+                        retries.push(name);
+                    },
+                    recordDead: () => {},
+                },
+                KafkaResource.config(),
+            );
+            const result = receive(consumer, id, async ({ heartbeat, message }) => {
+                await retry!.execute({
+                    topic,
+                    heartbeat,
+                    process: () => {
+                        attempts.push(message.offset);
+                        return attempts.length === 1
+                            ? Promise.reject(Exception.externalServiceFailed({ messageKey: "temporary" }))
+                            : Promise.resolve();
+                    },
+                    reject: (error) => Promise.reject(error),
+                });
+                return message.key?.toString();
+            });
+            const message = await serializer.serialize({ key: id, value: { id } }, { pattern: topic });
+            await producer.send({ topic, messages: [message] });
+            expect(await result).toBe(id);
+            expect(attempts).toHaveLength(2);
+            expect(attempts[0]).toBe(attempts[1]);
+            expect(retries).toEqual([topic]);
+        });
     });
 });

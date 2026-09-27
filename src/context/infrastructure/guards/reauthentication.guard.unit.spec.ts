@@ -11,63 +11,65 @@ const helpers = new GuardUnitHelpers();
 beforeAll(() => helpers.initialize());
 
 describe("ReauthenticationGuard", () => {
-    it("allows handlers that do not require reauthentication", async () => {
-        const { guard, exists } = helpers.reauthentication();
-        const context = helpers.context({ request: helpers.request() });
+    describe("canActivate", () => {
+        it("allows handlers that do not require reauthentication", async () => {
+            const { guard, exists } = helpers.reauthentication();
+            const context = helpers.context({ request: helpers.request() });
 
-        await expect(guard.canActivate(context)).resolves.toBe(true);
-        expect(exists).not.toHaveBeenCalled();
-    });
-
-    it("rejects an unauthenticated request", async () => {
-        const { guard } = helpers.reauthentication();
-        const request = helpers.request();
-        const context = helpers.context({ request, handlerMetadata: [[REAUTHENTICATION, true]] });
-
-        await expect(guard.canActivate(context)).rejects.toMatchObject({
-            message: "guard.reauthentication.NOT_AUTHENTICATED",
-            statusCode: HttpStatus.UNAUTHORIZED,
-            headers: { "WWW-Authenticate": 'Bearer realm="system"' },
+            await expect(guard.canActivate(context)).resolves.toBe(true);
+            expect(exists).not.toHaveBeenCalled();
         });
-    });
 
-    it("rejects a session without active reauthentication", async () => {
-        const { guard, exists } = helpers.reauthentication();
-        const request = helpers.request({ session: { session: SESSION_ID } });
-        const context = helpers.context({ request, handlerMetadata: [[REAUTHENTICATION, true]] });
+        it("rejects an unauthenticated request", async () => {
+            const { guard } = helpers.reauthentication();
+            const request = helpers.request();
+            const context = helpers.context({ request, handlerMetadata: [[REAUTHENTICATION, true]] });
 
-        await expect(guard.canActivate(context)).rejects.toMatchObject({
-            message: "guard.reauthentication.REAUTHENTICATION_REQUIRED",
-            statusCode: HttpStatus.FORBIDDEN,
+            await expect(guard.canActivate(context)).rejects.toMatchObject({
+                message: "guard.reauthentication.NOT_AUTHENTICATED",
+                statusCode: HttpStatus.UNAUTHORIZED,
+                headers: { "WWW-Authenticate": 'Bearer realm="system"' },
+            });
         });
-        expect(exists).toHaveBeenCalledWith({ session: SESSION_ID });
-    });
 
-    it("fails closed when the reauthentication cache lookup fails", async () => {
-        const error = new Error("reauthentication cache unavailable");
-        const { guard, exists } = helpers.reauthentication();
-        const request = helpers.request({ session: { session: SESSION_ID } });
-        const context = helpers.context({ request, handlerMetadata: [[REAUTHENTICATION, true]] });
-        exists.mockRejectedValueOnce(error);
+        it("rejects a session without active reauthentication", async () => {
+            const { guard, exists } = helpers.reauthentication();
+            const request = helpers.request({ session: { session: SESSION_ID } });
+            const context = helpers.context({ request, handlerMetadata: [[REAUTHENTICATION, true]] });
 
-        await expect(guard.canActivate(context)).rejects.toBe(error);
-    });
+            await expect(guard.canActivate(context)).rejects.toMatchObject({
+                message: "guard.reauthentication.REAUTHENTICATION_REQUIRED",
+                statusCode: HttpStatus.FORBIDDEN,
+            });
+            expect(exists).toHaveBeenCalledWith({ session: SESSION_ID });
+        });
 
-    it("allows a session with active reauthentication", async () => {
-        const { guard, exists } = helpers.reauthentication({ active: true });
-        const request = helpers.request({ session: { session: SESSION_ID } });
-        const context = helpers.context({ request, handlerMetadata: [[REAUTHENTICATION, true]] });
+        it("fails closed when the reauthentication cache lookup fails", async () => {
+            const error = new Error("reauthentication cache unavailable");
+            const { guard, exists } = helpers.reauthentication();
+            const request = helpers.request({ session: { session: SESSION_ID } });
+            const context = helpers.context({ request, handlerMetadata: [[REAUTHENTICATION, true]] });
+            exists.mockRejectedValueOnce(error);
 
-        await expect(guard.canActivate(context)).resolves.toBe(true);
-        expect(exists).toHaveBeenCalledWith({ session: SESSION_ID });
-    });
+            await expect(guard.canActivate(context)).rejects.toBe(error);
+        });
 
-    it("reads the reauthentication requirement from controller metadata", async () => {
-        const { guard, exists } = helpers.reauthentication({ active: true });
-        const request = helpers.request({ session: { session: SESSION_ID } });
-        const context = helpers.context({ request, classMetadata: [[REAUTHENTICATION, true]] });
+        it("allows a session with active reauthentication", async () => {
+            const { guard, exists } = helpers.reauthentication({ active: true });
+            const request = helpers.request({ session: { session: SESSION_ID } });
+            const context = helpers.context({ request, handlerMetadata: [[REAUTHENTICATION, true]] });
 
-        await expect(guard.canActivate(context)).resolves.toBe(true);
-        expect(exists).toHaveBeenCalledWith({ session: SESSION_ID });
+            await expect(guard.canActivate(context)).resolves.toBe(true);
+            expect(exists).toHaveBeenCalledWith({ session: SESSION_ID });
+        });
+
+        it("reads the reauthentication requirement from controller metadata", async () => {
+            const { guard, exists } = helpers.reauthentication({ active: true });
+            const request = helpers.request({ session: { session: SESSION_ID } });
+            const context = helpers.context({ request, classMetadata: [[REAUTHENTICATION, true]] });
+
+            await expect(guard.canActivate(context)).resolves.toBe(true);
+            expect(exists).toHaveBeenCalledWith({ session: SESSION_ID });
+        });
     });
 });

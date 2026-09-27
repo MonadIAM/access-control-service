@@ -55,64 +55,68 @@ describe("JWTService", () => {
         });
     }
 
-    it("configures key discovery durations in milliseconds and returns verified claims", async () => {
-        const token = await sign(claims);
+    describe("verifyAccess", () => {
+        it("configures key discovery durations in milliseconds and returns verified claims", async () => {
+            const token = await sign(claims);
 
-        const result = await service.verifyAccess({ token });
+            const result = await service.verifyAccess({ token });
 
-        expect(remoteKeys).toHaveBeenCalledWith(new URL(`${issuer}/jwks`), {
-            cooldownDuration: 5000,
-            timeoutDuration: 2000,
-            cacheMaxAge: 600000,
+            expect(remoteKeys).toHaveBeenCalledWith(new URL(`${issuer}/jwks`), {
+                cooldownDuration: 5000,
+                timeoutDuration: 2000,
+                cacheMaxAge: 600000,
+            });
+            expect(result).toEqual(claims);
         });
-        expect(result).toEqual(claims);
+
+        it.each(["client_id", "sub", "sid", "exp", "iat", "jti"])("requires the %s claim", async (claim) => {
+            const payload = { ...claims };
+            delete payload[claim];
+
+            await expectInvalid(await sign(payload));
+        });
+
+        it.each([
+            { iss: "https://other.example" },
+            { aud: "other-api" },
+            { exp: 1 },
+            { nbf: Math.floor(Date.now() / 1000) + 3600 },
+        ])("rejects invalid token claims %j", async (override) => {
+            await expectInvalid(await sign({ ...claims, ...override }));
+        });
+
+        it("rejects a token with a different type", async () => {
+            await expectInvalid(await sign(claims, "JWT"));
+        });
+
+        it("rejects a signature from an untrusted key", async () => {
+            const other = await jose.generateKeyPair("ES256");
+            const token = await new jose.SignJWT(claims)
+                .setProtectedHeader({ alg: "ES256", kid: "test-key", typ: "at+jwt" })
+                .sign(other.privateKey);
+
+            await expectInvalid(token);
+        });
+
+        it("rejects an otherwise correctly signed token using a different algorithm", async () => {
+            const token = await new jose.SignJWT(claims)
+                .setProtectedHeader({ alg: "HS256", typ: "at+jwt" })
+                .sign(new Uint8Array(32));
+
+            await expectInvalid(token);
+        });
+
+        it("normalizes malformed tokens", async () => {
+            await expectInvalid("not.a.jwt");
+        });
     });
 
-    it.each(["client_id", "sub", "sid", "exp", "iat", "jti"])("requires the %s claim", async (claim) => {
-        const payload = { ...claims };
-        delete payload[claim];
+    describe("onModuleInit", () => {
+        it("normalizes key resolution failures", async () => {
+            remoteKeys.mockReturnValueOnce(() => Promise.reject(new Error("private network failure")));
+            service.onModuleInit();
 
-        await expectInvalid(await sign(payload));
-    });
-
-    it.each([
-        { iss: "https://other.example" },
-        { aud: "other-api" },
-        { exp: 1 },
-        { nbf: Math.floor(Date.now() / 1000) + 3600 },
-    ])("rejects invalid token claims %j", async (override) => {
-        await expectInvalid(await sign({ ...claims, ...override }));
-    });
-
-    it("rejects a token with a different type", async () => {
-        await expectInvalid(await sign(claims, "JWT"));
-    });
-
-    it("rejects a signature from an untrusted key", async () => {
-        const other = await jose.generateKeyPair("ES256");
-        const token = await new jose.SignJWT(claims)
-            .setProtectedHeader({ alg: "ES256", kid: "test-key", typ: "at+jwt" })
-            .sign(other.privateKey);
-
-        await expectInvalid(token);
-    });
-
-    it("rejects an otherwise correctly signed token using a different algorithm", async () => {
-        const token = await new jose.SignJWT(claims)
-            .setProtectedHeader({ alg: "HS256", typ: "at+jwt" })
-            .sign(new Uint8Array(32));
-
-        await expectInvalid(token);
-    });
-
-    it("normalizes malformed tokens", async () => {
-        await expectInvalid("not.a.jwt");
-    });
-
-    it("normalizes key resolution failures", async () => {
-        remoteKeys.mockReturnValueOnce(() => Promise.reject(new Error("private network failure")));
-        service.onModuleInit();
-
-        await expectInvalid(await sign(claims));
+            await expectInvalid(await sign(claims));
+        });
     });
 });

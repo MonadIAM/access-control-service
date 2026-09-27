@@ -69,250 +69,258 @@ describe("AccountRoleAssignmentService integration", () => {
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    it("creates assignments allowed by an active delegation policy", async () => {
-        const actor = randomUUID();
-        const account = randomUUID();
-        const realm = await suite.fixtures().createRealm({ code: "assignment-delegated" });
-        const delegator = await suite.fixtures().createRole({ code: "roles.delegator", name: "Delegator", realm });
-        const parent = await suite.fixtures().createRole({
-            archetype: RoleArchetype.COMPOSITE,
-            code: "roles.parent",
-            name: "Parent",
-            realm,
-        });
-        const child = await suite.fixtures().createRole({ code: "roles.child", name: "Child", realm });
+    describe("create", () => {
+        it("creates assignments allowed by an active delegation policy", async () => {
+            const actor = randomUUID();
+            const account = randomUUID();
+            const realm = await suite.fixtures().createRealm({ code: "assignment-delegated" });
+            const delegator = await suite.fixtures().createRole({ code: "roles.delegator", name: "Delegator", realm });
+            const parent = await suite.fixtures().createRole({
+                archetype: RoleArchetype.COMPOSITE,
+                code: "roles.parent",
+                name: "Parent",
+                realm,
+            });
+            const child = await suite.fixtures().createRole({ code: "roles.child", name: "Child", realm });
 
-        await createHierarchy(suite, realm, parent, child, 1);
-        await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
-        await suite.fixtures().createRoleDelegationPolicy({
-            delegator,
-            target: parent,
-            depthLimit: 1,
-            realm,
-        });
+            await createHierarchy(suite, realm, parent, child, 1);
+            await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
+            await suite.fixtures().createRoleDelegationPolicy({
+                delegator,
+                target: parent,
+                depthLimit: 1,
+                realm,
+            });
 
-        const result = await suite.transaction((transaction) =>
-            suite.repository().accountRoleAssignmentService.create({
-                input: {
-                    roles: [child.id],
-                    justification: "delegated",
-                    account,
-                },
-                actor,
-                realm: realm.id,
-                transaction,
-            }),
-        );
-
-        const assignments = await loadAssignments(suite, account, realm);
-        const effectiveRoleCodes = await loadEffectiveRoleCodes(suite, account, realm);
-
-        expect(result).toHaveLength(1);
-        expect(assignments).toHaveLength(1);
-        expect(assignments[0]).toMatchObject({
-            justification: "delegated",
-            role: { id: child.id },
-            account,
-        });
-        expect(effectiveRoleCodes).toEqual(["roles.child", "roles.parent"]);
-    });
-
-    it("rolls back assignment creation when delegation is not allowed", async () => {
-        const actor = randomUUID();
-        const account = randomUUID();
-        const realm = await suite.fixtures().createRealm({ code: "assignment-delegation-denied" });
-        const role = await suite.fixtures().createRole({ code: "roles.denied", name: "Denied", realm });
-
-        await expect(
-            suite.transaction((transaction) =>
+            const result = await suite.transaction((transaction) =>
                 suite.repository().accountRoleAssignmentService.create({
                     input: {
-                        roles: [role.id],
+                        roles: [child.id],
+                        justification: "delegated",
                         account,
                     },
                     actor,
                     realm: realm.id,
                     transaction,
                 }),
-            ),
-        ).rejects.toThrow("services.account-role-assignment.DELEGATION_NOT_ALLOWED");
+            );
 
-        await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(0);
-    });
+            const assignments = await loadAssignments(suite, account, realm);
+            const effectiveRoleCodes = await loadEffectiveRoleCodes(suite, account, realm);
 
-    it("rolls back assignment creation when the account role limit is exceeded", async () => {
-        const actor = randomUUID();
-        const account = randomUUID();
-        const realm = await suite.fixtures().createRealm({ code: "assignment-limit" });
-        const delegator = await suite.fixtures().createRole({ code: "roles.delegator", name: "Delegator", realm });
-        const first = await suite.fixtures().createRole({ code: "roles.first", name: "First", realm });
-        const second = await suite.fixtures().createRole({ code: "roles.second", name: "Second", realm });
-        const third = await suite.fixtures().createRole({ code: "roles.third", name: "Third", realm });
-        const candidate = await suite.fixtures().createRole({ code: "roles.candidate", name: "Candidate", realm });
-
-        await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
-        await suite.fixtures().createAccountRoleAssignment({ realm, role: first, account });
-        await suite.fixtures().createAccountRoleAssignment({ realm, role: second, account });
-        await suite.fixtures().createAccountRoleAssignment({ realm, role: third, account });
-        await suite.fixtures().createRoleDelegationPolicy({
-            delegator,
-            target: candidate,
-            realm,
+            expect(result).toHaveLength(1);
+            expect(assignments).toHaveLength(1);
+            expect(assignments[0]).toMatchObject({
+                justification: "delegated",
+                role: { id: child.id },
+                account,
+            });
+            expect(effectiveRoleCodes).toEqual(["roles.child", "roles.parent"]);
         });
 
-        await expect(
-            suite.transaction((transaction) =>
-                suite.repository().accountRoleAssignmentService.create({
+        it("rolls back assignment creation when delegation is not allowed", async () => {
+            const actor = randomUUID();
+            const account = randomUUID();
+            const realm = await suite.fixtures().createRealm({ code: "assignment-delegation-denied" });
+            const role = await suite.fixtures().createRole({ code: "roles.denied", name: "Denied", realm });
+
+            await expect(
+                suite.transaction((transaction) =>
+                    suite.repository().accountRoleAssignmentService.create({
+                        input: {
+                            roles: [role.id],
+                            account,
+                        },
+                        actor,
+                        realm: realm.id,
+                        transaction,
+                    }),
+                ),
+            ).rejects.toThrow("services.account-role-assignment.DELEGATION_NOT_ALLOWED");
+
+            await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(0);
+        });
+
+        it("rolls back assignment creation when the account role limit is exceeded", async () => {
+            const actor = randomUUID();
+            const account = randomUUID();
+            const realm = await suite.fixtures().createRealm({ code: "assignment-limit" });
+            const delegator = await suite.fixtures().createRole({ code: "roles.delegator", name: "Delegator", realm });
+            const first = await suite.fixtures().createRole({ code: "roles.first", name: "First", realm });
+            const second = await suite.fixtures().createRole({ code: "roles.second", name: "Second", realm });
+            const third = await suite.fixtures().createRole({ code: "roles.third", name: "Third", realm });
+            const candidate = await suite.fixtures().createRole({ code: "roles.candidate", name: "Candidate", realm });
+
+            await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
+            await suite.fixtures().createAccountRoleAssignment({ realm, role: first, account });
+            await suite.fixtures().createAccountRoleAssignment({ realm, role: second, account });
+            await suite.fixtures().createAccountRoleAssignment({ realm, role: third, account });
+            await suite.fixtures().createRoleDelegationPolicy({
+                delegator,
+                target: candidate,
+                realm,
+            });
+
+            await expect(
+                suite.transaction((transaction) =>
+                    suite.repository().accountRoleAssignmentService.create({
+                        input: {
+                            roles: [candidate.id],
+                            account,
+                        },
+                        actor,
+                        realm: realm.id,
+                        transaction,
+                    }),
+                ),
+            ).rejects.toThrow("services.account-role-assignment.ACCOUNT_ROLE_LIMIT_EXCEEDED");
+
+            await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(3);
+        });
+
+        it("rolls back assignment creation when the target roles violate SoD", async () => {
+            const actor = randomUUID();
+            const account = randomUUID();
+            const realm = await suite.fixtures().createRealm({ code: "assignment-sod" });
+            const delegator = await suite.fixtures().createRole({ code: "roles.delegator", name: "Delegator", realm });
+            const existing = await suite.fixtures().createRole({ code: "roles.existing", name: "Existing", realm });
+            const candidate = await suite.fixtures().createRole({ code: "roles.candidate", name: "Candidate", realm });
+            const group = await suite.fixtures().createRoleConflictGroup({
+                code: "conflicts.exclusive",
+                name: "Exclusive",
+                maxAllowed: 1,
+                realm,
+            });
+
+            await suite.fixtures().createRoleConflictMember({ group, role: existing });
+            await suite.fixtures().createRoleConflictMember({ group, role: candidate });
+            await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
+            await suite.fixtures().createAccountRoleAssignment({ realm, role: existing, account });
+            await suite.fixtures().createRoleDelegationPolicy({
+                delegator,
+                target: candidate,
+                realm,
+            });
+
+            await expect(
+                suite.transaction((transaction) =>
+                    suite.repository().accountRoleAssignmentService.create({
+                        input: {
+                            roles: [candidate.id],
+                            account,
+                        },
+                        actor,
+                        realm: realm.id,
+                        transaction,
+                    }),
+                ),
+            ).rejects.toThrow("services.account-role-assignment.HAS_SoD_VIOLATIONS");
+
+            await expect(loadAssignments(suite, account, realm)).resolves.toHaveLength(1);
+        });
+    });
+
+    describe("ensure", () => {
+        it("ensures an existing active assignment without creating a duplicate", async () => {
+            const actor = randomUUID();
+            const account = randomUUID();
+            const realm = await suite.fixtures().createRealm({ code: "assignment-ensure" });
+            const delegator = await suite.fixtures().createRole({ code: "roles.delegator", name: "Delegator", realm });
+            const role = await suite.fixtures().createRole({ code: "roles.existing", name: "Existing", realm });
+            const existing = await suite.fixtures().createAccountRoleAssignment({ realm, role, account });
+
+            await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
+            await suite.fixtures().createRoleDelegationPolicy({
+                delegator,
+                target: role,
+                realm,
+            });
+
+            const result = await suite.transaction((transaction) =>
+                suite.repository().accountRoleAssignmentService.ensure({
                     input: {
-                        roles: [candidate.id],
+                        role: role.id,
                         account,
                     },
                     actor,
                     realm: realm.id,
                     transaction,
                 }),
-            ),
-        ).rejects.toThrow("services.account-role-assignment.ACCOUNT_ROLE_LIMIT_EXCEEDED");
+            );
 
-        await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(3);
+            expect(result).toHaveLength(1);
+            expect(result[0].id).toBe(existing.id);
+            await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(1);
+        });
     });
 
-    it("rolls back assignment creation when the target roles violate SoD", async () => {
-        const actor = randomUUID();
-        const account = randomUUID();
-        const realm = await suite.fixtures().createRealm({ code: "assignment-sod" });
-        const delegator = await suite.fixtures().createRole({ code: "roles.delegator", name: "Delegator", realm });
-        const existing = await suite.fixtures().createRole({ code: "roles.existing", name: "Existing", realm });
-        const candidate = await suite.fixtures().createRole({ code: "roles.candidate", name: "Candidate", realm });
-        const group = await suite.fixtures().createRoleConflictGroup({
-            code: "conflicts.exclusive",
-            name: "Exclusive",
-            maxAllowed: 1,
-            realm,
-        });
+    describe("assign", () => {
+        it("assigns a role directly only inside its own realm", async () => {
+            const account = randomUUID();
+            const realm = await suite.fixtures().createRealm({ code: "assignment-direct" });
+            const foreignRealm = await suite.fixtures().createRealm({ code: "assignment-direct-foreign" });
+            const role = await suite.fixtures().createRole({ code: "roles.direct", name: "Direct", realm });
 
-        await suite.fixtures().createRoleConflictMember({ group, role: existing });
-        await suite.fixtures().createRoleConflictMember({ group, role: candidate });
-        await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
-        await suite.fixtures().createAccountRoleAssignment({ realm, role: existing, account });
-        await suite.fixtures().createRoleDelegationPolicy({
-            delegator,
-            target: candidate,
-            realm,
-        });
-
-        await expect(
-            suite.transaction((transaction) =>
-                suite.repository().accountRoleAssignmentService.create({
-                    input: {
-                        roles: [candidate.id],
-                        account,
-                    },
-                    actor,
-                    realm: realm.id,
-                    transaction,
-                }),
-            ),
-        ).rejects.toThrow("services.account-role-assignment.HAS_SoD_VIOLATIONS");
-
-        await expect(loadAssignments(suite, account, realm)).resolves.toHaveLength(1);
-    });
-
-    it("ensures an existing active assignment without creating a duplicate", async () => {
-        const actor = randomUUID();
-        const account = randomUUID();
-        const realm = await suite.fixtures().createRealm({ code: "assignment-ensure" });
-        const delegator = await suite.fixtures().createRole({ code: "roles.delegator", name: "Delegator", realm });
-        const role = await suite.fixtures().createRole({ code: "roles.existing", name: "Existing", realm });
-        const existing = await suite.fixtures().createAccountRoleAssignment({ realm, role, account });
-
-        await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
-        await suite.fixtures().createRoleDelegationPolicy({
-            delegator,
-            target: role,
-            realm,
-        });
-
-        const result = await suite.transaction((transaction) =>
-            suite.repository().accountRoleAssignmentService.ensure({
-                input: {
-                    role: role.id,
-                    account,
-                },
-                actor,
-                realm: realm.id,
-                transaction,
-            }),
-        );
-
-        expect(result).toHaveLength(1);
-        expect(result[0].id).toBe(existing.id);
-        await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(1);
-    });
-
-    it("assigns a role directly only inside its own realm", async () => {
-        const account = randomUUID();
-        const realm = await suite.fixtures().createRealm({ code: "assignment-direct" });
-        const foreignRealm = await suite.fixtures().createRealm({ code: "assignment-direct-foreign" });
-        const role = await suite.fixtures().createRole({ code: "roles.direct", name: "Direct", realm });
-
-        const created = await suite.transaction((transaction) =>
-            suite.repository().accountRoleAssignmentService.assign({
-                input: {
-                    realm: realm.id,
-                    role: role.id,
-                    account,
-                },
-                transaction,
-            }),
-        );
-
-        await expect(
-            suite.transaction((transaction) =>
+            const created = await suite.transaction((transaction) =>
                 suite.repository().accountRoleAssignmentService.assign({
                     input: {
-                        realm: foreignRealm.id,
+                        realm: realm.id,
                         role: role.id,
                         account,
                     },
                     transaction,
                 }),
-            ),
-        ).rejects.toThrow("db.NOT_FOUND");
+            );
 
-        expect(created.role.id).toBe(role.id);
-        await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(1);
-        await expect(countRoleAssignments(suite, account, foreignRealm)).resolves.toBe(0);
+            await expect(
+                suite.transaction((transaction) =>
+                    suite.repository().accountRoleAssignmentService.assign({
+                        input: {
+                            realm: foreignRealm.id,
+                            role: role.id,
+                            account,
+                        },
+                        transaction,
+                    }),
+                ),
+            ).rejects.toThrow("db.NOT_FOUND");
+
+            expect(created.role.id).toBe(role.id);
+            await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(1);
+            await expect(countRoleAssignments(suite, account, foreignRealm)).resolves.toBe(0);
+        });
     });
 
-    it("expires only provided assignments through persisted merge and revoke", async () => {
-        const account = randomUUID();
-        const realm = await suite.fixtures().createRealm({ code: "assignment-expire" });
-        const expiredRole = await suite.fixtures().createRole({ code: "roles.expired", name: "Expired", realm });
-        const activeRole = await suite.fixtures().createRole({ code: "roles.active", name: "Active", realm });
-        const expired = await suite.fixtures().createAccountRoleAssignment({
-            expiresAt: new Date("2026-01-01T00:00:00.000Z"),
-            role: expiredRole,
-            account,
-            realm,
-        });
-        const active = await suite.fixtures().createAccountRoleAssignment({
-            expiresAt: new Date("2999-01-01T00:00:00.000Z"),
-            role: activeRole,
-            account,
-            realm,
-        });
+    describe("expire", () => {
+        it("expires only provided assignments through persisted merge and revoke", async () => {
+            const account = randomUUID();
+            const realm = await suite.fixtures().createRealm({ code: "assignment-expire" });
+            const expiredRole = await suite.fixtures().createRole({ code: "roles.expired", name: "Expired", realm });
+            const activeRole = await suite.fixtures().createRole({ code: "roles.active", name: "Active", realm });
+            const expired = await suite.fixtures().createAccountRoleAssignment({
+                expiresAt: new Date("2026-01-01T00:00:00.000Z"),
+                role: expiredRole,
+                account,
+                realm,
+            });
+            const active = await suite.fixtures().createAccountRoleAssignment({
+                expiresAt: new Date("2999-01-01T00:00:00.000Z"),
+                role: activeRole,
+                account,
+                realm,
+            });
 
-        await suite.transaction((transaction) =>
-            Promise.resolve(
-                suite.repository().accountRoleAssignmentService.expire({
-                    entities: [expired],
-                    transaction,
-                }),
-            ),
-        );
+            await suite.transaction((transaction) =>
+                Promise.resolve(
+                    suite.repository().accountRoleAssignmentService.expire({
+                        entities: [expired],
+                        transaction,
+                    }),
+                ),
+            );
 
-        await expect(loadAssignment(suite, expired.id)).resolves.toEqual(expect.objectContaining({ isRevoked: true }));
-        await expect(loadAssignment(suite, active.id)).resolves.toEqual(expect.objectContaining({ isRevoked: false }));
+            await expect(loadAssignment(suite, expired.id)).resolves.toEqual(expect.objectContaining({ isRevoked: true }));
+            await expect(loadAssignment(suite, active.id)).resolves.toEqual(expect.objectContaining({ isRevoked: false }));
+        });
     });
 });

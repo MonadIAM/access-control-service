@@ -50,37 +50,39 @@ describe("Swagger.Exceptions OpenAPI contract", () => {
         await app?.close();
     });
 
-    it.each([HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN, HttpStatus.CONFLICT] as const)(
-        "documents status %s with a resolvable error schema and its example",
-        (status) => {
-            const response = document.paths["/documented/specific"].get!.responses[status];
+    describe("Exceptions", () => {
+        it.each([HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN, HttpStatus.CONFLICT] as const)(
+            "documents status %s with a resolvable error schema and its example",
+            (status) => {
+                const response = document.paths["/documented/specific"].get!.responses[status];
 
-            expect(response).toMatchObject({
-                content: {
-                    "application/json": {
-                        schema: { $ref: "#/components/schemas/ErrorResponseBody" },
-                        example: EXCEPTION_EXAMPLES[status],
+                expect(response).toMatchObject({
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/ErrorResponseBody" },
+                            example: EXCEPTION_EXAMPLES[status],
+                        },
                     },
-                },
-            });
-            expect(document.components?.schemas?.ErrorResponseBody).toMatchObject({
-                properties: { statusCode: expect.any(Object), message: expect.any(Object), error: expect.any(Object) },
-            });
-        },
-    );
+                });
+                expect(document.components?.schemas?.ErrorResponseBody).toMatchObject({
+                    properties: { statusCode: expect.any(Object), message: expect.any(Object), error: expect.any(Object) },
+                });
+            },
+        );
 
-    it("does not leak handler responses to sibling routes or another controller", () => {
-        expect(Object.keys(document.paths["/documented/specific"].get!.responses).sort()).toEqual([
-            "200",
-            "401",
-            "403",
-            "409",
-        ]);
-        expect(Object.keys(document.paths["/documented/inherited"].get!.responses).sort()).toEqual(["200", "401"]);
-        expect(Object.keys(document.paths["/plain"].get!.responses)).toEqual(["200"]);
-    });
+        it("does not leak handler responses to sibling routes or another controller", () => {
+            expect(Object.keys(document.paths["/documented/specific"].get!.responses).sort()).toEqual([
+                "200",
+                "401",
+                "403",
+                "409",
+            ]);
+            expect(Object.keys(document.paths["/documented/inherited"].get!.responses).sort()).toEqual(["200", "401"]);
+            expect(Object.keys(document.paths["/plain"].get!.responses)).toEqual(["200"]);
+        });
 
-    it("accepts an empty status list without introducing extra error responses", () => {
-        expect(Object.keys(document.paths["/documented/empty"].get!.responses).sort()).toEqual(["200", "401"]);
+        it("accepts an empty status list without introducing extra error responses", () => {
+            expect(Object.keys(document.paths["/documented/empty"].get!.responses).sort()).toEqual(["200", "401"]);
+        });
     });
 });

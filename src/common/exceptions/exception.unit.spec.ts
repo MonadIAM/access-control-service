@@ -20,66 +20,72 @@ const factories = [
 ];
 
 describe("Exception contracts", () => {
-    it.each(factories)("$name provides the status, kind and default code", ({ create, status, kind, code }) => {
-        const error = create({ messageKey: "test.message" });
+    describe("factory methods", () => {
+        it.each(factories)("$name provides the status, kind and default code", ({ create, status, kind, code }) => {
+            const error = create({ messageKey: "test.message" });
 
-        expect(error).toMatchObject({
-            messageKey: "test.message",
-            message: "test.message",
-            statusCode: status,
-            kind,
-            code,
+            expect(error).toMatchObject({
+                messageKey: "test.message",
+                message: "test.message",
+                statusCode: status,
+                kind,
+                code,
+            });
+        });
+
+        it.each(factories)("$name preserves an explicit code and response context", ({ create, status, kind }) => {
+            const props = {
+                code: ErrorCode.CORS_ORIGIN_FORBIDDEN,
+                headers: { "X-Reason": "test" },
+                params: { resource: "role" },
+                messageKey: "test.message",
+            };
+
+            const error = create(props);
+
+            expect(error).toMatchObject({ ...props, statusCode: status, kind });
         });
     });
 
-    it.each(factories)("$name preserves an explicit code and response context", ({ create, status, kind }) => {
-        const props = {
-            code: ErrorCode.CORS_ORIGIN_FORBIDDEN,
-            headers: { "X-Reason": "test" },
-            params: { resource: "role" },
-            messageKey: "test.message",
-        };
+    describe("constructor", () => {
+        it("preserves error identity, cause, details and an ISO timestamp", () => {
+            class CustomException extends Exception {}
+            const cause = new Error("original failure");
+            const details = [{ path: "name", message: "invalid", constraint: "isString" }];
 
-        const error = create(props);
+            const error = new CustomException({
+                kind: ErrorKind.BAD_REQUEST,
+                code: ErrorCode.BAD_REQUEST,
+                messageKey: "invalid",
+                statusCode: 400,
+                details,
+                cause,
+            });
 
-        expect(error).toMatchObject({ ...props, statusCode: status, kind });
-    });
-
-    it("preserves error identity, cause, details and an ISO timestamp", () => {
-        class CustomException extends Exception {}
-        const cause = new Error("original failure");
-        const details = [{ path: "name", message: "invalid", constraint: "isString" }];
-
-        const error = new CustomException({
-            kind: ErrorKind.BAD_REQUEST,
-            code: ErrorCode.BAD_REQUEST,
-            messageKey: "invalid",
-            statusCode: 400,
-            details,
-            cause,
+            expect(error).toBeInstanceOf(Error);
+            expect(error).toBeInstanceOf(Exception);
+            expect(error.name).toBe("CustomException");
+            expect(error.cause).toBe(cause);
+            expect(error.details).toEqual(details);
+            expect(new Date(error.timestamp).toISOString()).toBe(error.timestamp);
         });
-
-        expect(error).toBeInstanceOf(Error);
-        expect(error).toBeInstanceOf(Exception);
-        expect(error.name).toBe("CustomException");
-        expect(error.cause).toBe(cause);
-        expect(error.details).toEqual(details);
-        expect(new Date(error.timestamp).toISOString()).toBe(error.timestamp);
     });
 
-    it("builds a validation response without losing individual field details", () => {
-        const details = [
-            { path: "items.0.name", constraint: "isString", message: "validator.IS_STRING", invalidValue: 123 },
-        ];
+    describe("validationFailed", () => {
+        it("builds a validation response without losing individual field details", () => {
+            const details = [
+                { path: "items.0.name", constraint: "isString", message: "validator.IS_STRING", invalidValue: 123 },
+            ];
 
-        const error = Exception.validationFailed(details);
+            const error = Exception.validationFailed(details);
 
-        expect(error).toMatchObject({
-            statusCode: 422,
-            kind: ErrorKind.UNPROCESSABLE,
-            code: ErrorCode.UNPROCESSABLE,
-            messageKey: "validator.COMMON_ERROR",
-            details,
+            expect(error).toMatchObject({
+                statusCode: 422,
+                kind: ErrorKind.UNPROCESSABLE,
+                code: ErrorCode.UNPROCESSABLE,
+                messageKey: "validator.COMMON_ERROR",
+                details,
+            });
         });
     });
 });

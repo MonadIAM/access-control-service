@@ -28,31 +28,33 @@ describe("ChangeLogService integration", () => {
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    it("purges only an expired batch and keeps fresh change logs", async () => {
-        const fresh = await suite.fixtures().createChangeLog();
-        const first = await suite.fixtures().createChangeLog();
-        const second = await suite.fixtures().createChangeLog();
-        const third = await suite.fixtures().createChangeLog();
+    describe("purgeExpired", () => {
+        it("purges only an expired batch and keeps fresh change logs", async () => {
+            const fresh = await suite.fixtures().createChangeLog();
+            const first = await suite.fixtures().createChangeLog();
+            const second = await suite.fixtures().createChangeLog();
+            const third = await suite.fixtures().createChangeLog();
 
-        await setCreatedAt(suite, fresh, new Date("2999-01-01T00:00:00.000Z"));
-        await setCreatedAt(suite, first, new Date("2026-01-01T00:00:00.000Z"));
-        await setCreatedAt(suite, second, new Date("2026-01-02T00:00:00.000Z"));
-        await setCreatedAt(suite, third, new Date("2026-01-03T00:00:00.000Z"));
+            await setCreatedAt(suite, fresh, new Date("2999-01-01T00:00:00.000Z"));
+            await setCreatedAt(suite, first, new Date("2026-01-01T00:00:00.000Z"));
+            await setCreatedAt(suite, second, new Date("2026-01-02T00:00:00.000Z"));
+            await setCreatedAt(suite, third, new Date("2026-01-03T00:00:00.000Z"));
 
-        const purged = await suite.transaction((transaction) =>
-            suite.repository().changeLogService.purgeExpired({
-                expirationDate: new Date("2026-02-01T00:00:00.000Z"),
-                batchSize: 2,
-                transaction,
-            }),
-        );
+            const purged = await suite.transaction((transaction) =>
+                suite.repository().changeLogService.purgeExpired({
+                    expirationDate: new Date("2026-02-01T00:00:00.000Z"),
+                    batchSize: 2,
+                    transaction,
+                }),
+            );
 
-        const remaining = await loadChangeLogs(suite);
+            const remaining = await loadChangeLogs(suite);
 
-        expect(purged).toHaveLength(2);
-        expect(purged.every(({ createdAt }) => createdAt < new Date("2026-02-01T00:00:00.000Z"))).toBe(true);
-        expect(remaining).toHaveLength(2);
-        expect(remaining.map(({ id }) => id)).toContain(fresh.id);
-        expect(remaining.filter(({ createdAt }) => createdAt < new Date("2026-02-01T00:00:00.000Z"))).toHaveLength(1);
+            expect(purged).toHaveLength(2);
+            expect(purged.every(({ createdAt }) => createdAt < new Date("2026-02-01T00:00:00.000Z"))).toBe(true);
+            expect(remaining).toHaveLength(2);
+            expect(remaining.map(({ id }) => id)).toContain(fresh.id);
+            expect(remaining.filter(({ createdAt }) => createdAt < new Date("2026-02-01T00:00:00.000Z"))).toHaveLength(1);
+        });
     });
 });

@@ -156,39 +156,43 @@ describe("RealmMapper", () => {
         });
     });
 
-    it("preserves mixed revocation states when rebuilding assignment projections", () => {
-        const realm = helpers.createRealm();
-        const account = "account";
-        const active = helpers.createAccountRoleAssignment({ realm, account, isRevoked: false });
-        const manual = helpers.createAccountRoleAssignment({ realm, account, isRevoked: true });
+    describe("accessAssignmentUpdate", () => {
+        it("preserves mixed revocation states when rebuilding assignment projections", () => {
+            const realm = helpers.createRealm();
+            const account = "account";
+            const active = helpers.createAccountRoleAssignment({ realm, account, isRevoked: false });
+            const manual = helpers.createAccountRoleAssignment({ realm, account, isRevoked: true });
 
-        const payloads = mapper.accessAssignmentUpdate({
-            assignments: [active, manual],
-            overrides: [],
-            realm: realm.id,
-            account,
+            const payloads = mapper.accessAssignmentUpdate({
+                assignments: [active, manual],
+                overrides: [],
+                realm: realm.id,
+                account,
+            });
+
+            expect(payloads.map(({ isRevoked }) => isRevoked)).toEqual([false, true]);
+            expect(payloads.map(({ items }) => items[0].assignment)).toEqual([active.id, manual.id]);
         });
-
-        expect(payloads.map(({ isRevoked }) => isRevoked)).toEqual([false, true]);
-        expect(payloads.map(({ items }) => items[0].assignment)).toEqual([active.id, manual.id]);
     });
 
-    it("preserves mixed revocation states and permission realms in override projections", () => {
-        const realm = helpers.createRealm();
-        const permissionRealm = helpers.createRealm();
-        const permission = helpers.createPermission({ realm: permissionRealm });
-        const account = "account";
-        const active = helpers.createPermissionOverride({ realm, permission, account, isRevoked: false });
-        const manual = helpers.createPermissionOverride({ realm, permission, account, isRevoked: true });
+    describe("accessOverrideUpdate", () => {
+        it("preserves mixed revocation states and permission realms in override projections", () => {
+            const realm = helpers.createRealm();
+            const permissionRealm = helpers.createRealm();
+            const permission = helpers.createPermission({ realm: permissionRealm });
+            const account = "account";
+            const active = helpers.createPermissionOverride({ realm, permission, account, isRevoked: false });
+            const manual = helpers.createPermissionOverride({ realm, permission, account, isRevoked: true });
 
-        const payloads = mapper.accessOverrideUpdate({
-            assignments: [],
-            overrides: [active, manual],
-            realm: realm.id,
-            account,
+            const payloads = mapper.accessOverrideUpdate({
+                assignments: [],
+                overrides: [active, manual],
+                realm: realm.id,
+                account,
+            });
+
+            expect(payloads.map(({ isRevoked }) => isRevoked)).toEqual([false, true]);
+            expect(payloads.map(({ items }) => items[0].permissionRealm)).toEqual([permissionRealm.id, permissionRealm.id]);
         });
-
-        expect(payloads.map(({ isRevoked }) => isRevoked)).toEqual([false, true]);
-        expect(payloads.map(({ items }) => items[0].permissionRealm)).toEqual([permissionRealm.id, permissionRealm.id]);
     });
 });

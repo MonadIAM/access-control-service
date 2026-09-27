@@ -9,43 +9,50 @@ const ACTOR = "acting-account";
 const REALM = "realm-a";
 
 describe("RoleConflictMemberCommands", () => {
-    it("creates through the transaction and records the acting user's audit context", async () => {
-        const { commands, service, run, transaction } = helpers.commands();
-        const input: Commands.RoleConflictMember.Create.Props["input"] = { roles: ["role-a", "role-b"], group: "group-a" };
+    describe("create", () => {
+        it("creates through the transaction and records the acting user's audit context", async () => {
+            const { commands, service, run, transaction } = helpers.commands();
+            const input: Commands.RoleConflictMember.Create.Props["input"] = {
+                roles: ["role-a", "role-b"],
+                group: "group-a",
+            };
 
-        await commands.create({ input, actor: ACTOR, realm: REALM, context: CONTEXT });
+            await commands.create({ input, actor: ACTOR, realm: REALM, context: CONTEXT });
 
-        expect(service.create.mock.calls).toEqual([[{ input, transaction: transaction.entityManager, realm: REALM }]]);
-        expect(run).toHaveBeenCalledWith(
-            expect.objectContaining({
-                audit: expect.objectContaining({
-                    input,
-                    actor: ACTOR,
-                    context: CONTEXT,
-                    actionType: ActionType.CREATE,
-                    entityType: EntityType.CONFLICT_MEMBER,
+            expect(service.create.mock.calls).toEqual([[{ input, transaction: transaction.entityManager, realm: REALM }]]);
+            expect(run).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    audit: expect.objectContaining({
+                        input,
+                        actor: ACTOR,
+                        context: CONTEXT,
+                        actionType: ActionType.CREATE,
+                        entityType: EntityType.CONFLICT_MEMBER,
+                    }),
+                    changeLog: true,
                 }),
-                changeLog: true,
-            }),
-        );
+            );
+        });
     });
 
-    it.each(["purge"] as const)("%s scopes the mutation and audits the requested identifiers", async (method) => {
-        const { commands, service, run, transaction } = helpers.commands();
-        const changed = [helpers.createRoleConflictMember(), helpers.createRoleConflictMember()];
-        service[method].mockResolvedValue(changed);
-        const input = { identifiers: changed.map((entity) => entity.id), reason: "Lifecycle change" };
+    describe("purge", () => {
+        it.each(["purge"] as const)("%s scopes the mutation and audits the requested identifiers", async (method) => {
+            const { commands, service, run, transaction } = helpers.commands();
+            const changed = [helpers.createRoleConflictMember(), helpers.createRoleConflictMember()];
+            service[method].mockResolvedValue(changed);
+            const input = { identifiers: changed.map((entity) => entity.id), reason: "Lifecycle change" };
 
-        await commands[method]({ input, actor: ACTOR, realm: REALM, context: CONTEXT });
+            await commands[method]({ input, actor: ACTOR, realm: REALM, context: CONTEXT });
 
-        expect(service[method].mock.calls).toEqual([
-            [{ identifiers: input.identifiers, transaction: transaction.entityManager, realm: REALM }],
-        ]);
-        expect(run).toHaveBeenCalledWith(
-            expect.objectContaining({
-                audit: expect.objectContaining({ input, actor: ACTOR, context: CONTEXT }),
-                changeLog: true,
-            }),
-        );
+            expect(service[method].mock.calls).toEqual([
+                [{ identifiers: input.identifiers, transaction: transaction.entityManager, realm: REALM }],
+            ]);
+            expect(run).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    audit: expect.objectContaining({ input, actor: ACTOR, context: CONTEXT }),
+                    changeLog: true,
+                }),
+            );
+        });
     });
 });

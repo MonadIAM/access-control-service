@@ -7,23 +7,27 @@ const helpers = new ChangeLogQueriesUnitHelpers();
 const ID = "requested-entity";
 
 describe("ChangeLogQueries", () => {
-    it("scopes a single entity lookup to the requested identity", async () => {
-        const { queries, repository } = helpers.queries();
-        const entity = helpers.createChangeLog();
-        repository.findUniqueOrThrow.mockResolvedValue(entity);
+    describe("findUnique", () => {
+        it("scopes a single entity lookup to the requested identity", async () => {
+            const { queries, repository } = helpers.queries();
+            const entity = helpers.createChangeLog();
+            repository.findUniqueOrThrow.mockResolvedValue(entity);
 
-        await expect(queries.findUnique({ log: ID })).resolves.toBe(entity);
+            await expect(queries.findUnique({ log: ID })).resolves.toBe(entity);
 
-        expect(repository.findUniqueOrThrow).toHaveBeenCalledWith(expect.objectContaining({ where: { id: ID } }));
+            expect(repository.findUniqueOrThrow).toHaveBeenCalledWith(expect.objectContaining({ where: { id: ID } }));
+        });
     });
 
-    it("keeps the list within its scope and preserves the repository page", async () => {
-        const { queries, repository } = helpers.queries();
-        const page: [SystemEntities.ChangeLog[], number] = [[helpers.createChangeLog()], 31];
-        repository.findMany.mockResolvedValue(page);
+    describe("findMany", () => {
+        it("keeps the list within its scope and preserves the repository page", async () => {
+            const { queries, repository } = helpers.queries();
+            const page: [SystemEntities.ChangeLog[], number] = [[helpers.createChangeLog()], 31];
+            repository.findMany.mockResolvedValue(page);
 
-        await expect(queries.findMany({ pagination: PAGINATION, filters: {}, sort: {} })).resolves.toBe(page);
+            await expect(queries.findMany({ pagination: PAGINATION, filters: {}, sort: {} })).resolves.toBe(page);
 
-        expect(repository.findMany).toHaveBeenCalledWith(expect.objectContaining({ pagination: PAGINATION }));
+            expect(repository.findMany).toHaveBeenCalledWith(expect.objectContaining({ pagination: PAGINATION }));
+        });
     });
 });

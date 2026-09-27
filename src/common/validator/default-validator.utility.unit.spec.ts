@@ -39,88 +39,96 @@ const rules = [
 ];
 
 describe("Standard validation contracts", () => {
-    it.each(rules)(
-        "$name validates, transforms and returns a localized error",
-        ({ decorator, valid, invalid, expected, message }) => {
+    describe("localized validators", () => {
+        it.each(rules)(
+            "$name validates, transforms and returns a localized error",
+            ({ decorator, valid, invalid, expected, message }) => {
+                class Input {
+                    declare public value: unknown;
+                    public other = "same";
+                }
+                decorator(Input.prototype, "value");
+
+                const accepted = plainToInstance(Input, { value: valid });
+                const acceptedErrors = validateSync(accepted);
+                const errors = validateSync(plainToInstance(Input, { value: invalid }));
+
+                expect(acceptedErrors).toEqual([]);
+                expect(accepted.value).toEqual(expected ?? valid);
+                expect(errors).toHaveLength(1);
+                expect(Object.values(errors[0].constraints!)).toContain(`validator.${message}`);
+                expect(Object.values(errors[0].contexts!)).toContainEqual(
+                    expect.objectContaining({ property: "value", label: "value" }),
+                );
+            },
+        );
+    });
+
+    describe("Length", () => {
+        it("preserves options, custom context, bounds and an explicit label", () => {
             class Input {
-                declare public value: unknown;
-                public other = "same";
+                @Validator.Length(2, 3, { each: true, groups: ["create"], context: { fieldCode: "names" } }, "Names")
+                declare public values: string[];
             }
-            decorator(Input.prototype, "value");
+            const input = plainToInstance(Input, { values: ["ab", "x"] });
 
-            const accepted = plainToInstance(Input, { value: valid });
-            const acceptedErrors = validateSync(accepted);
-            const errors = validateSync(plainToInstance(Input, { value: invalid }));
+            const errors = validateSync(input, { groups: ["create"] });
+            const otherGroupErrors = validateSync(input, { groups: ["update"], forbidUnknownValues: false });
 
-            expect(acceptedErrors).toEqual([]);
-            expect(accepted.value).toEqual(expected ?? valid);
             expect(errors).toHaveLength(1);
-            expect(Object.values(errors[0].constraints!)).toContain(`validator.${message}`);
-            expect(Object.values(errors[0].contexts!)).toContainEqual(
-                expect.objectContaining({ property: "value", label: "value" }),
-            );
-        },
-    );
-
-    it("preserves options, custom context, bounds and an explicit label", () => {
-        class Input {
-            @Validator.Length(2, 3, { each: true, groups: ["create"], context: { fieldCode: "names" } }, "Names")
-            declare public values: string[];
-        }
-        const input = plainToInstance(Input, { values: ["ab", "x"] });
-
-        const errors = validateSync(input, { groups: ["create"] });
-        const otherGroupErrors = validateSync(input, { groups: ["update"], forbidUnknownValues: false });
-
-        expect(errors).toHaveLength(1);
-        expect(Object.values(errors[0].contexts!)).toEqual([
-            { fieldCode: "names", property: "values", label: "Names", min: 2, max: 3 },
-        ]);
-        expect(otherGroupErrors).toEqual([]);
-    });
-
-    it("validates nested transformed DTOs and preserves child errors", () => {
-        class Child {
-            @Validator.IsString()
-            declare public name: string;
-        }
-        class Input {
-            @Type(() => Child)
-            @Validator.ValidateNested()
-            declare public child: Child;
-        }
-
-        const validErrors = validateSync(plainToInstance(Input, { child: { name: "valid" } }));
-        const errors = validateSync(plainToInstance(Input, { child: { name: 123 } }));
-        const primitiveErrors = validateSync(plainToInstance(Input, { child: 123 }));
-
-        expect(validErrors).toEqual([]);
-        expect(errors[0].children?.[0]).toMatchObject({
-            property: "name",
-            constraints: { isString: "validator.IS_STRING" },
-        });
-        expect(primitiveErrors[0].constraints).toEqual({
-            nestedValidation: "validator.NESTED",
+            expect(Object.values(errors[0].contexts!)).toEqual([
+                { fieldCode: "names", property: "values", label: "Names", min: 2, max: 3 },
+            ]);
+            expect(otherGroupErrors).toEqual([]);
         });
     });
 
-    it.each([
-        { value: "2", valid: true },
-        { value: 0, valid: false },
-        { value: -1, valid: false },
-        { value: 1.5, valid: false },
-    ])("checks the composed positive integer rule for $value", ({ value, valid }) => {
-        class Input {
-            @Validator.IsPositiveInt()
-            declare public count: number;
-        }
-        const input = plainToInstance(Input, { count: value });
+    describe("ValidateNested", () => {
+        it("validates nested transformed DTOs and preserves child errors", () => {
+            class Child {
+                @Validator.IsString()
+                declare public name: string;
+            }
+            class Input {
+                @Type(() => Child)
+                @Validator.ValidateNested()
+                declare public child: Child;
+            }
 
-        const errors = validateSync(input);
+            const validErrors = validateSync(plainToInstance(Input, { child: { name: "valid" } }));
+            const errors = validateSync(plainToInstance(Input, { child: { name: 123 } }));
+            const primitiveErrors = validateSync(plainToInstance(Input, { child: 123 }));
 
-        expect(errors.length === 0).toBe(valid);
-        if (valid) {
-            expect(input.count).toBe(2);
-        }
+            expect(validErrors).toEqual([]);
+            expect(errors[0].children?.[0]).toMatchObject({
+                property: "name",
+                constraints: { isString: "validator.IS_STRING" },
+            });
+            expect(primitiveErrors[0].constraints).toEqual({
+                nestedValidation: "validator.NESTED",
+            });
+        });
+    });
+
+    describe("IsPositiveInt", () => {
+        it.each([
+            { value: "2", valid: true },
+            { value: 0, valid: false },
+            { value: -1, valid: false },
+            { value: 1.5, valid: false },
+        ])("checks the composed positive integer rule for $value", ({ value, valid }) => {
+            class Input {
+                @Validator.IsPositiveInt()
+                declare public count: number;
+            }
+            const input = plainToInstance(Input, { count: value });
+
+            const errors = validateSync(input);
+
+            expect(errors.length === 0).toBe(valid);
+            if (valid) {
+                expect(input.count).toBe(2);
+            }
+        });
     });
 });
