@@ -60,14 +60,14 @@ export class AccountConsumer implements OnModuleInit, Consumers.Account.Contract
         });
         this.schemaRegistry.validate({ topic: KafkaTopic.ACCOUNT, value: message });
         switch (message.actionType) {
-            case AccountTopicAction.CREATE:
+            case AccountTopicAction.VERIFY:
                 await this.accountRoleAssignmentCommands.assign({ incoming, account: message.payload.account });
                 break;
             case AccountTopicAction.PURGE:
                 await this.accountRoleAssignmentCommands.clean({ incoming, account: message.payload.account });
                 break;
-            default:
-                this.logger.warn(`Unknown membership action type: ${message.actionType}`);
+            case AccountTopicAction.CREATE:
+                break;
         }
     }
 
