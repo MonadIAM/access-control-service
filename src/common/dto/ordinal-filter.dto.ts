@@ -16,8 +16,11 @@ export class OrdinalFilterDTO<T extends Ordinal> {
     @Validator.IsOrdinal()
     @ApiProperty({
         required: true,
-        type: Object,
-        oneOf: [{ type: "array", oneOf: [{ type: "Date" }, { type: "number" }] }, { type: "Date" }, { type: "number" }],
+        oneOf: [
+            { type: "string" },
+            { type: "number" },
+            { type: "array", items: { oneOf: [{ type: "string" }, { type: "number" }] } },
+        ],
     })
     declare public value: T | [T, T] | T[];
 }

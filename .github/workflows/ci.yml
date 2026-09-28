@@ -17,7 +17,7 @@ jobs:
         run: |
           docker run --rm \
             -v "${{ github.workspace }}:/repo" \
-            ghcr.io/gitleaks/gitleaks:v8.24.2 \
+            ghcr.io/gitleaks/gitleaks:v8.29.0 \
             git /repo --config /repo/.gitleaks.toml --verbose
 
   static-analysis:
