@@ -1,8 +1,6 @@
 export enum PublicOrdinalOperator {
     EQUAL = "EQUAL",
     NOT_EQUAL = "NOT_EQUAL",
-    IN = "IN",
-    NOT_IN = "NOT_IN",
     GREATER_THAN = "GREATER_THAN",
     GREATER_OR_EQUAL = "GREATER_OR_EQUAL",
     LESS_THAN = "LESS_THAN",

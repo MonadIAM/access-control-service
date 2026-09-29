@@ -77,17 +77,24 @@ describe("QueryBuilderAdapter", () => {
             expect(compiled.parameters).toEqual([value]);
         });
 
-        it.each([
-            [OrdinalOperator.IN, "in"],
-            [OrdinalOperator.NOT_IN, "not in"],
-        ] as const)("compiles ordinal array operator %s", (operator, sqlOperator) => {
+        it("compiles BETWEEN as inclusive bounds", () => {
             const compiled = QueryBuilderAdapter.applyOrdinalFilter(
                 base,
-                { operator, value: [1, 2] },
+                { operator: OrdinalOperator.BETWEEN, value: [1, 2] },
                 "r.version",
             ).compile();
-            expect(compiled.sql).toBe(`${baseSQL} where "r"."version" ${sqlOperator} (?, ?)`);
+            expect(compiled.sql).toBe(`${baseSQL} where "r"."version" >= ? and "r"."version" <= ?`);
             expect(compiled.parameters).toEqual([1, 2]);
+        });
+
+        it.each(["IN", "NOT_IN"])("does not apply removed ordinal operator %s", (operator) => {
+            expect(
+                QueryBuilderAdapter.applyOrdinalFilter(
+                    base,
+                    { operator: operator as OrdinalOperator, value: [1, 2] },
+                    "r.version",
+                ),
+            ).toBe(base);
         });
     });
 
@@ -100,10 +107,14 @@ describe("QueryBuilderAdapter", () => {
                 base,
             );
             expect(
-                QueryBuilderAdapter.applyOrdinalFilter(base, { operator: OrdinalOperator.EQUAL, value: [1] }, "r.version"),
+                QueryBuilderAdapter.applyOrdinalFilter(
+                    base,
+                    { operator: OrdinalOperator.EQUAL, value: [1, 2] },
+                    "r.version",
+                ),
             ).toBe(base);
             expect(
-                QueryBuilderAdapter.applyOrdinalFilter(base, { operator: OrdinalOperator.IN, value: 1 }, "r.version"),
+                QueryBuilderAdapter.applyOrdinalFilter(base, { operator: "IN" as OrdinalOperator, value: 1 }, "r.version"),
             ).toBe(base);
         });
     });

@@ -22,5 +22,5 @@ export class OrdinalFilterDTO<T extends Ordinal> {
             { type: "array", items: { oneOf: [{ type: "string" }, { type: "number" }] } },
         ],
     })
-    declare public value: T | [T, T] | T[];
+    declare public value: T | [T, T];
 }

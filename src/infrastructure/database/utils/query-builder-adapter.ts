@@ -58,10 +58,8 @@ export class QueryBuilderAdapter {
     ): ORM.QueryBuilder<DB, Table, Output> {
         if (Array.isArray(filter.value)) {
             switch (filter.operator) {
-                case PublicOrdinalOperator.IN:
-                    return query.where(ref(column), "in", filter.value);
-                case PublicOrdinalOperator.NOT_IN:
-                    return query.where(ref(column), "not in", filter.value);
+                case PublicOrdinalOperator.BETWEEN:
+                    return query.where(ref(column), ">=", filter.value[0]).where(ref(column), "<=", filter.value[1]);
                 default:
                     return query;
             }
@@ -73,6 +71,7 @@ export class QueryBuilderAdapter {
                     return query.where(ref(column), "!=", filter.value);
                 case PublicOrdinalOperator.GREATER_THAN:
                     return query.where(ref(column), ">", filter.value);
+                case PublicOrdinalOperator.BETWEEN:
                 case PublicOrdinalOperator.GREATER_OR_EQUAL:
                     return query.where(ref(column), ">=", filter.value);
                 case PublicOrdinalOperator.LESS_THAN:

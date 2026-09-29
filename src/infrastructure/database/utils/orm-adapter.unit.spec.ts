@@ -42,13 +42,6 @@ describe("ORMAdapter", () => {
             expect(ORMAdapter.applyOrdinalFilter({ operator, value: 42 })).toEqual({ [expectedOperator]: 42 });
         });
 
-        it.each([
-            [OrdinalOperator.IN, "$in"],
-            [OrdinalOperator.NOT_IN, "$nin"],
-        ] as const)("preserves ordinal arrays for %s", (operator, expectedOperator) => {
-            expect(ORMAdapter.applyOrdinalFilter({ operator, value: [1, 2] })).toEqual({ [expectedOperator]: [1, 2] });
-        });
-
         it("converts BETWEEN to inclusive bounds without converting dates", () => {
             const start = new Date("2025-01-01");
             const end = new Date("2025-02-01");
