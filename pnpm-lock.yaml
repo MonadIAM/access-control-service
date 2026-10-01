@@ -39,8 +39,8 @@ importers:
         specifier: 7.1.13
         version: 7.1.13(@mikro-orm/core@7.1.13)
       '@monadiam/shared':
-        specifier: github:MonadIAM/shared#v2.0.11
-        version: https://codeload.github.com/MonadIAM/shared/tar.gz/4156b964afaf549924fd92ab22fa7303da428b62
+        specifier: github:MonadIAM/shared#v2.0.12
+        version: https://codeload.github.com/MonadIAM/shared/tar.gz/52c5ce74963f38d22e7d31fe5b5585e12e2c6734
       '@nest-lab/throttler-storage-redis':
         specifier: 1.2.0
         version: 1.2.0(@nestjs/common@11.2.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.1)(@nestjs/throttler@6.5.0(@nestjs/common@11.2.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.1)(reflect-metadata@0.2.2))(ioredis@6.0.0(supports-color@8.1.1))(reflect-metadata@0.2.2)
@@ -1106,9 +1106,9 @@ packages:
     engines: {node: '>=22.0.0'}
     hasBin: true
 
-  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/4156b964afaf549924fd92ab22fa7303da428b62':
-    resolution: {gitHosted: true, integrity: sha512-nEVXxIoqAVq9DbcsaUvKWXc24pCq+yjXDaJOjH9B4KHMzDnFajneZol6jgIzPvk7KQgLWPFBuCOCGkkggG8ZUA==, tarball: https://codeload.github.com/MonadIAM/shared/tar.gz/4156b964afaf549924fd92ab22fa7303da428b62}
-    version: 2.0.11
+  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/52c5ce74963f38d22e7d31fe5b5585e12e2c6734':
+    resolution: {gitHosted: true, integrity: sha512-+mQwSYbkzzo8TVWmcBi/YIvd2oMVpCDd5p5ITunO2erQxlz43JhH92k27tvmqyjQpDSwZrbEtnHrelWo3N1nuQ==, tarball: https://codeload.github.com/MonadIAM/shared/tar.gz/52c5ce74963f38d22e7d31fe5b5585e12e2c6734}
+    version: 2.0.12
     engines: {node: 24.18.0}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
@@ -6088,7 +6088,7 @@ snapshots:
       uuid: 11.1.1
       zod: 3.25.76
 
-  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/4156b964afaf549924fd92ab22fa7303da428b62': {}
+  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/52c5ce74963f38d22e7d31fe5b5585e12e2c6734': {}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
     optional: true

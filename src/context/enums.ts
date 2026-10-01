@@ -8,21 +8,6 @@ export enum MoveMode {
     /* eslint-enable prettier/prettier */
 }
 
-export enum RoleActorType {
-    /* eslint-disable prettier/prettier */
-    SERVICE = "SERVICE",
-    SYSTEM  = "SYSTEM",
-    HUMAN   = "HUMAN",
-    /* eslint-enable prettier/prettier */
-}
-
-export enum RoleArchetype {
-    /* eslint-disable prettier/prettier */
-    COMPOSITE = "COMPOSITE",
-    ATOMIC    = "ATOMIC",
-    /* eslint-enable prettier/prettier */
-}
-
 export enum PermissionOverrideEffect {
     /* eslint-disable prettier/prettier */
     ALLOW = "ALLOW",
@@ -74,13 +59,6 @@ export enum ResponseViewType {
     /* eslint-disable prettier/prettier */
     DETAILED = "DETAILED",
     COMPACT  = "COMPACT",
-    /* eslint-enable prettier/prettier */
-}
-
-export enum AssignmentScope {
-    /* eslint-disable prettier/prettier */
-    REALM  = "REALM",
-    GLOBAL = "GLOBAL",
     /* eslint-enable prettier/prettier */
 }
 

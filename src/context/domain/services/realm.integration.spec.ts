@@ -1,8 +1,8 @@
+import { bootstrap } from "@monadiam/shared/datasets/access-control";
 import { describe, expect, it } from "@jest/globals";
 import { randomUUID } from "node:crypto";
 
 import { RoleArchetype, RealmType, PermissionCode, PermissionOverrideEffect } from "~context/enums";
-import { ADMIN_PERMISSION_CODES, USER_PERMISSION_CODES } from "~infrastructure/datasets/bootstrap";
 import { RealmIntegrationHelpers } from "~testing/integration/domain-service/realm.helpers";
 import { postgresSuite } from "~testing/integration/containers/postgres.suite";
 import { CoreFixture } from "~testing/integration/repositories/core.fixture";
@@ -121,16 +121,16 @@ describe("RealmService integration", () => {
             const userAssignments = permissionAssignments.filter(({ role }) => role.code === "customer.user");
 
             expect(adminAssignments.map(({ permission }) => permission.code).sort()).toEqual(
-                [...ADMIN_PERMISSION_CODES].sort(),
+                [...bootstrap.ADMIN_PERMISSION_CODES].sort(),
             );
             expect(userAssignments.map(({ permission }) => permission.code).sort()).toEqual(
-                [...USER_PERMISSION_CODES].sort(),
+                [...bootstrap.USER_PERMISSION_CODES].sort(),
             );
         });
 
         it("rolls back a partial bootstrap when a system permission is missing", async () => {
             const systemRealm = await helpers.seedSystemPermissions(suite);
-            const [missingCode] = ADMIN_PERMISSION_CODES;
+            const [missingCode] = bootstrap.ADMIN_PERMISSION_CODES;
 
             await suite.transaction(async (transaction) => {
                 const permission = await transaction.findOneOrFail(Permission, {
@@ -189,7 +189,7 @@ describe("RealmService integration", () => {
             });
 
             await suite.fixtures().createPermission({
-                code: ADMIN_PERMISSION_CODES[0],
+                code: bootstrap.ADMIN_PERMISSION_CODES[0],
                 name: "Foreign Duplicate Permission",
                 realm: foreignRealm,
             });
@@ -208,7 +208,9 @@ describe("RealmService integration", () => {
             const assignments = await loadPermissionAssignments(suite, result.realm.id);
             const assignedRealmIds = assignments.map(({ permission }) => permission.realm.id);
 
-            expect(assignments).toHaveLength(ADMIN_PERMISSION_CODES.length + USER_PERMISSION_CODES.length);
+            expect(assignments).toHaveLength(
+                bootstrap.ADMIN_PERMISSION_CODES.length + bootstrap.USER_PERMISSION_CODES.length,
+            );
             expect(assignedRealmIds.every((realm) => realm === systemRealm.id)).toBe(true);
         });
     });

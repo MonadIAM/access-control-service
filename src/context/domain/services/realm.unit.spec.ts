@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
+import { bootstrap } from "@monadiam/shared/datasets/access-control";
 
-import { ADMIN_PERMISSION_CODES, USER_PERMISSION_CODES } from "~infrastructure/datasets/bootstrap";
 import { RoleActorType, RoleArchetype, SYSTEM_REALM_ID } from "~context/enums";
 import { RealmUnitHelpers } from "~testing/unit/domain-service/realm.helpers";
 
@@ -39,7 +39,7 @@ describe("RealmService", () => {
 
         it("persists a realm, creates base roles, assigns permissions and admin role, and returns the bootstrap result", async () => {
             const systemRealm = helpers.createRealm({ id: SYSTEM_REALM_ID, code: "realm.system" });
-            const permissions = ADMIN_PERMISSION_CODES.map((code) =>
+            const permissions = bootstrap.ADMIN_PERMISSION_CODES.map((code) =>
                 helpers.createPermission({ code, realm: systemRealm }),
             );
             const { service, transaction } = helpers.service({ permissions });
@@ -69,7 +69,7 @@ describe("RealmService", () => {
             expect(result.paths).toHaveLength(5);
             expect(result.assignments.role).toHaveLength(1);
             expect(result.assignments.permission).toHaveLength(
-                ADMIN_PERMISSION_CODES.length + USER_PERMISSION_CODES.length,
+                bootstrap.ADMIN_PERMISSION_CODES.length + bootstrap.USER_PERMISSION_CODES.length,
             );
         });
     });
@@ -180,7 +180,7 @@ describe("RealmService", () => {
             ).rejects.toThrow("services.realm.MISSING_SYSTEM_PERMISSIONS");
 
             expect(repositories.permissions.find).toHaveBeenCalledWith({
-                where: { code: { $in: ADMIN_PERMISSION_CODES }, realm: SYSTEM_REALM_ID },
+                where: { code: { $in: bootstrap.ADMIN_PERMISSION_CODES }, realm: SYSTEM_REALM_ID },
                 transaction: transaction.entityManager,
             });
             expect(transaction.persist).not.toHaveBeenCalled();
@@ -194,7 +194,7 @@ describe("RealmService", () => {
                 root: helpers.createRole({ code: "realm.root", realm }),
                 user: helpers.createRole({ code: "realm.user", realm }),
             };
-            const permissions = ADMIN_PERMISSION_CODES.map((code) =>
+            const permissions = bootstrap.ADMIN_PERMISSION_CODES.map((code) =>
                 helpers.createPermission({ code, realm: systemRealm }),
             );
             const { service, transaction } = helpers.service({ permissions, realm });
@@ -202,8 +202,8 @@ describe("RealmService", () => {
             const result = await service.assignBasePermissions({ transaction: transaction.entityManager, roles, realm });
             const adminAssignments = result.filter(({ role }) => role === roles.admin);
 
-            expect(adminAssignments).toHaveLength(ADMIN_PERMISSION_CODES.length);
-            expect(adminAssignments.map(({ permission }) => permission.code)).toEqual(ADMIN_PERMISSION_CODES);
+            expect(adminAssignments).toHaveLength(bootstrap.ADMIN_PERMISSION_CODES.length);
+            expect(adminAssignments.map(({ permission }) => permission.code)).toEqual(bootstrap.ADMIN_PERMISSION_CODES);
         });
 
         it("creates user assignments only for system user permissions", async () => {
@@ -214,7 +214,7 @@ describe("RealmService", () => {
                 root: helpers.createRole({ code: "realm.root", realm }),
                 user: helpers.createRole({ code: "realm.user", realm }),
             };
-            const permissions = ADMIN_PERMISSION_CODES.map((code) =>
+            const permissions = bootstrap.ADMIN_PERMISSION_CODES.map((code) =>
                 helpers.createPermission({ code, realm: systemRealm }),
             );
             const { service, transaction } = helpers.service({ permissions, realm });
@@ -222,8 +222,8 @@ describe("RealmService", () => {
             const result = await service.assignBasePermissions({ transaction: transaction.entityManager, roles, realm });
             const userAssignments = result.filter(({ role }) => role === roles.user);
 
-            expect(userAssignments).toHaveLength(USER_PERMISSION_CODES.length);
-            expect(userAssignments.map(({ permission }) => permission.code)).toEqual(USER_PERMISSION_CODES);
+            expect(userAssignments).toHaveLength(bootstrap.USER_PERMISSION_CODES.length);
+            expect(userAssignments.map(({ permission }) => permission.code)).toEqual(bootstrap.USER_PERMISSION_CODES);
         });
 
         it("ignores duplicate permission codes from foreign custom realms by querying only system realm permissions", async () => {
@@ -235,10 +235,13 @@ describe("RealmService", () => {
                 root: helpers.createRole({ code: "realm.root", realm }),
                 user: helpers.createRole({ code: "realm.user", realm }),
             };
-            const systemPermissions = ADMIN_PERMISSION_CODES.map((code) =>
+            const systemPermissions = bootstrap.ADMIN_PERMISSION_CODES.map((code) =>
                 helpers.createPermission({ code, realm: systemRealm }),
             );
-            const foreignPermission = helpers.createPermission({ code: ADMIN_PERMISSION_CODES[0], realm: foreignRealm });
+            const foreignPermission = helpers.createPermission({
+                code: bootstrap.ADMIN_PERMISSION_CODES[0],
+                realm: foreignRealm,
+            });
             const { service, repositories, transaction } = helpers.service({
                 permissions: [foreignPermission, ...systemPermissions],
                 realm,
@@ -248,7 +251,7 @@ describe("RealmService", () => {
             const result = await service.assignBasePermissions({ transaction: transaction.entityManager, roles, realm });
 
             expect(repositories.permissions.find).toHaveBeenCalledWith({
-                where: { code: { $in: ADMIN_PERMISSION_CODES }, realm: SYSTEM_REALM_ID },
+                where: { code: { $in: bootstrap.ADMIN_PERMISSION_CODES }, realm: SYSTEM_REALM_ID },
                 transaction: transaction.entityManager,
             });
             expect(result.filter(({ role }) => role === roles.admin).map(({ permission }) => permission.realm)).toEqual(

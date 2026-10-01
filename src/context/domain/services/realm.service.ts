@@ -1,3 +1,4 @@
+import { bootstrap } from "@monadiam/shared/datasets/access-control";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { SYSTEM_REALM_ID } from "@monadiam/shared";
 
@@ -10,12 +11,6 @@ import {
     REALM_REPOSITORY,
     ROLE_REPOSITORY,
 } from "~context/infrastructure/repositories";
-import {
-    PROJECT_ADMIN_PERMISSION_CODES,
-    PROJECT_USER_PERMISSION_CODES,
-    ADMIN_PERMISSION_CODES,
-    USER_PERMISSION_CODES,
-} from "~infrastructure/datasets/bootstrap";
 
 import { RolePermissionAssignment, AccountRoleAssignment, RoleClosure, Realm, Role } from "../entities";
 
@@ -201,8 +196,10 @@ export class RealmService implements Services.Realm.Contract {
         props: Services.Realm.AssignBasePermissions.Props,
     ): Services.Realm.AssignBasePermissions.Result {
         const { transaction, roles, realm } = props;
-        const adminCodes = realm.type === RealmType.PROJECT ? PROJECT_ADMIN_PERMISSION_CODES : ADMIN_PERMISSION_CODES;
-        const userCodes = realm.type === RealmType.PROJECT ? PROJECT_USER_PERMISSION_CODES : USER_PERMISSION_CODES;
+        const adminCodes =
+            realm.type === RealmType.PROJECT ? bootstrap.PROJECT_ADMIN_PERMISSION_CODES : bootstrap.ADMIN_PERMISSION_CODES;
+        const userCodes =
+            realm.type === RealmType.PROJECT ? bootstrap.PROJECT_USER_PERMISSION_CODES : bootstrap.USER_PERMISSION_CODES;
         const permissions = await this.permissionRepository.find({
             where: { code: { $in: adminCodes }, realm: SYSTEM_REALM_ID },
             transaction,

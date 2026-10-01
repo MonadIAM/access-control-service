@@ -1,3 +1,4 @@
+import { bootstrap } from "@monadiam/shared/datasets/access-control";
 import { SYSTEM_REALM_ID } from "@monadiam/shared";
 import { ConfigService } from "@nestjs/config";
 
@@ -6,7 +7,6 @@ import { PermissionOverrideRepository } from "~context/infrastructure/repositori
 import { PermissionRepository } from "~context/infrastructure/repositories/permission.repository";
 import { RealmRepository } from "~context/infrastructure/repositories/realm.repository";
 import { RoleRepository } from "~context/infrastructure/repositories/role.repository";
-import { ADMIN_PERMISSION_CODES } from "~infrastructure/datasets/bootstrap";
 import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
 import { RealmService } from "~context/domain/services/realm.service";
 
@@ -60,7 +60,7 @@ export class RealmIntegrationHelpers implements Integration.Domain.Realm.Contrac
 
             transaction.persist(realm);
 
-            for (const code of ADMIN_PERMISSION_CODES) {
+            for (const code of bootstrap.ADMIN_PERMISSION_CODES) {
                 transaction.persist(
                     this.entities.createPermission({
                         isSystemManaged: true,

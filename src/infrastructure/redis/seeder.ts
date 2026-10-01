@@ -1,11 +1,10 @@
+import { dataset } from "@monadiam/shared/datasets/access-control";
 import { readFile } from "node:fs/promises";
 import { isString } from "class-validator";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import dotenv from "dotenv";
 import Redis from "ioredis";
-
-import datasets from "../datasets";
 
 dotenv.config();
 
@@ -62,12 +61,12 @@ class ProjectionSeed {
 
     private static getPayload(): string {
         return JSON.stringify({
-            rolePermissionAssignments: datasets.RolePermissionAssignments.redis,
-            accountRoleAssignments: datasets.AccountRoleAssignments.redis,
-            roleClosures: datasets.RoleClosures.redis,
-            permissions: datasets.Permissions.redis,
-            realms: datasets.Realms.redis,
-            roles: datasets.Roles.redis,
+            rolePermissionAssignments: dataset.RolePermissionAssignments.redis,
+            accountRoleAssignments: dataset.AccountRoleAssignments.redis,
+            roleClosures: dataset.RoleClosures.redis,
+            permissions: dataset.Permissions.redis,
+            realms: dataset.Realms.redis,
+            roles: dataset.Roles.redis,
         });
     }
 }
