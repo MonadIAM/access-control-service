@@ -1,6 +1,7 @@
 import { bootstrap } from "@monadiam/shared/datasets/access-control";
 import { Inject, Injectable, Scope } from "@nestjs/common";
 import { SYSTEM_REALM_ID } from "@monadiam/shared";
+import { LockMode } from "@mikro-orm/core";
 
 import { RoleActorType, RoleArchetype, RealmType } from "~context/enums";
 import { Exception } from "~common/exceptions";
@@ -236,10 +237,11 @@ export class RealmService implements Services.Realm.Contract {
     }
 
     public async revoke(props: Services.Realm.Revoke.Props): Services.Realm.Revoke.Result {
-        const { transaction, identifiers } = props;
+        const { transaction, identifiers, actor, global } = props;
         const unique = Array.from(new Set(identifiers));
         const entities = await this.realmRepository.find({
-            where: { id: { $in: unique } },
+            options: { lockMode: LockMode.PESSIMISTIC_WRITE, orderBy: { id: "ASC" }, refresh: true },
+            where: { id: { $in: unique }, ...(global ? {} : { owner: actor }) },
             transaction,
         });
 
@@ -255,10 +257,11 @@ export class RealmService implements Services.Realm.Contract {
     }
 
     public async restore(props: Services.Realm.Restore.Props): Services.Realm.Restore.Result {
-        const { transaction, identifiers } = props;
+        const { transaction, identifiers, actor, global } = props;
         const unique = Array.from(new Set(identifiers));
         const entities = await this.realmRepository.find({
-            where: { id: { $in: unique } },
+            options: { lockMode: LockMode.PESSIMISTIC_WRITE, orderBy: { id: "ASC" }, refresh: true },
+            where: { id: { $in: unique }, ...(global ? {} : { owner: actor }) },
             transaction,
         });
 
@@ -274,10 +277,11 @@ export class RealmService implements Services.Realm.Contract {
     }
 
     public async purge(props: Services.Realm.Purge.Props): Services.Realm.Purge.Result {
-        const { transaction, identifiers } = props;
+        const { transaction, identifiers, actor, global } = props;
         const unique = Array.from(new Set(identifiers));
         const entities = await this.realmRepository.find({
-            where: { id: { $in: unique } },
+            options: { lockMode: LockMode.PESSIMISTIC_WRITE, orderBy: { id: "ASC" }, refresh: true },
+            where: { id: { $in: unique }, ...(global ? {} : { owner: actor }) },
             transaction,
         });
 

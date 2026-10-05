@@ -1,4 +1,5 @@
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
+import { PrivilegeScope } from "@monadiam/shared";
 
 export class Extract {
     public static readonly Meta = createParamDecorator((_: unknown, ctx: ExecutionContext): Extract.Meta => {
@@ -16,8 +17,10 @@ export class Extract {
         },
     );
 
-    public static readonly Permissions = createParamDecorator((_: unknown, ctx: ExecutionContext) => {
+    public static readonly Permissions = createParamDecorator((scope: Optional<PrivilegeScope>, ctx: ExecutionContext) => {
         const request = ctx.switchToHttp().getRequest<Req>();
-        return request.metadata.permissions ?? [];
+        return Object.entries(request.metadata.permissions ?? {})
+            .filter(([, matchedScope]) => !scope || matchedScope === scope)
+            .map(([permission]) => permission);
     });
 }

@@ -12,12 +12,13 @@ declare namespace Commands {
 
         namespace Restore {
             type Props = {
-                actor: string;
                 input: {
                     identifiers: string[];
                     reason: string;
                 };
                 context: Extract.Meta;
+                global: boolean;
+                actor: string;
             };
 
             type Result = Promise<MessageResult>;
@@ -59,12 +60,13 @@ declare namespace Commands {
 
         namespace Revoke {
             type Props = {
-                actor: string;
                 input: {
                     identifiers: string[];
                     reason: string;
                 };
                 context: Extract.Meta;
+                global: boolean;
+                actor: string;
             };
 
             type Result = Promise<MessageResult>;
@@ -74,12 +76,13 @@ declare namespace Commands {
 
         namespace Purge {
             type Props = {
-                actor: string;
                 input: {
                     identifiers: string[];
                     reason: string;
                 };
                 context: Extract.Meta;
+                global: boolean;
+                actor: string;
             };
 
             type Result = Promise<MessageResult>;

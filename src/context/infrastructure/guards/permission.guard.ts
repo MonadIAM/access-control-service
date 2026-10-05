@@ -71,7 +71,7 @@ export class PermissionGuard implements CanActivate {
             realm,
         });
 
-        if (!matched.length) {
+        if (!Object.keys(matched).length) {
             throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.INSUFFICIENT_PERMISSIONS` });
         }
 

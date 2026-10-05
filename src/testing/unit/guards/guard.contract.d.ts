@@ -1,4 +1,5 @@
 import type { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
+import type { PermissionCode, PrivilegeScope } from "@monadiam/shared";
 import type { Reflector } from "@nestjs/core";
 
 import type { ReauthenticationGuard } from "~context/infrastructure/guards/reauthentication.guard";
@@ -74,7 +75,7 @@ declare global {
             ) => PermissionGuard;
 
             type Props = {
-                matched?: string[];
+                matched?: Partial<Record<PermissionCode, PrivilegeScope>>;
             };
 
             type Result = {

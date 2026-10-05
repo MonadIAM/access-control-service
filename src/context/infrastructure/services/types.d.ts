@@ -1,4 +1,4 @@
-import { PrivilegeScope } from "@monadiam/shared";
+import { PermissionCode, PrivilegeScope } from "@monadiam/shared";
 
 import { ProjectionScript } from "../scripts";
 
@@ -90,13 +90,13 @@ declare global {
 
             namespace CheckPermissions {
                 type Props = {
-                    permissions: string[];
+                    permissions: PermissionCode[];
                     globalOnly?: boolean;
                     account: string;
                     realm: string;
                 };
 
-                type Result = Promise<string[]>;
+                type Result = Promise<Partial<Record<PermissionCode, PrivilegeScope>>>;
 
                 type Signature = (props: Props) => Result;
             }

@@ -1,3 +1,4 @@
+import type { PermissionCode, PrivilegeScope } from "@monadiam/shared";
 import type { FastifyRequest, RouteGenericInterface } from "fastify";
 
 declare global {
@@ -14,7 +15,7 @@ declare global {
     type Req<T extends RouteGenericInterface = RouteGenericInterface> = FastifyRequest<T> & {
         session: Extract.Session.Public | Extract.Session.Auth;
         metadata: {
-            permissions?: string[];
+            permissions?: Partial<Record<PermissionCode, PrivilegeScope>>;
         };
     };
 }

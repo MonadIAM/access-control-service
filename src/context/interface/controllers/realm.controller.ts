@@ -2,10 +2,10 @@ import { Controller, HttpStatus, HttpCode, Delete, Inject, Patch, Query, Body, P
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 import { RequirePermission, FormatResponse, Swagger, Extract, Reauthentication } from "~common/decorators";
+import { PermissionCode, PrivilegeScope } from "~context/enums";
 import { REALM_COMMANDS } from "~context/application/commands";
 import { REALM_QUERIES } from "~context/application/queries";
 import { SuccessMessageDTO } from "~common/dto";
-import { PermissionCode } from "~context/enums";
 
 import {
     GetLookupListQueryDTO,
@@ -200,10 +200,11 @@ export class RealmController {
     )
     public revoke(
         @Body() input: RevokeBodyDTO,
+        @Extract.Permissions(PrivilegeScope.GLOBAL) permissions: string[],
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
-        return this.realmCommands.revoke({ context, actor, input });
+        return this.realmCommands.revoke({ context, actor, input, global: permissions.length > 0 });
     }
 
     @HttpCode(OK)
@@ -227,10 +228,11 @@ export class RealmController {
     )
     public restore(
         @Body() input: RestoreBodyDTO,
+        @Extract.Permissions(PrivilegeScope.GLOBAL) permissions: string[],
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
-        return this.realmCommands.restore({ context, actor, input });
+        return this.realmCommands.restore({ context, actor, input, global: permissions.length > 0 });
     }
 
     @HttpCode(OK)
@@ -255,9 +257,10 @@ export class RealmController {
     )
     public purge(
         @Body() input: PurgeBodyDTO,
+        @Extract.Permissions(PrivilegeScope.GLOBAL) permissions: string[],
         @Extract.Session() { account: actor }: Extract.Session.Auth,
         @Extract.Meta() context: Extract.Meta,
     ): Promise<MessageResult> {
-        return this.realmCommands.purge({ context, actor, input });
+        return this.realmCommands.purge({ context, actor, input, global: permissions.length > 0 });
     }
 }

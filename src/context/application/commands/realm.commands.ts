@@ -1,10 +1,10 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { AccessCacheTopicAction, RealmTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
+import { SYSTEM_REALM_ID, CONSUMER_META } from "~context/constants";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { REALM_SERVICE } from "~context/domain/services";
-import { CONSUMER_META } from "~context/constants";
 import { Exception } from "~common/exceptions";
 
 import { RealmMapper } from "../mappers";
@@ -72,7 +72,7 @@ export class RealmCommands implements Commands.Realm.Contract {
     }
 
     public async revoke(props: Commands.Realm.Revoke.Props): Commands.Realm.Revoke.Result {
-        const { input, actor } = props;
+        const { input, actor, global } = props;
 
         const { realms } = await this.transactionalService.run({
             resource: this.resource,
@@ -96,6 +96,7 @@ export class RealmCommands implements Commands.Realm.Contract {
             audit: {
                 actionType: ActionType.REVOKE,
                 entityType: EntityType.REALM,
+                realm: SYSTEM_REALM_ID,
                 ...props,
             },
             changeLog: true,
@@ -103,6 +104,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 const realms = await this.realmService.revoke({
                     identifiers: input.identifiers,
                     transaction,
+                    global,
+                    actor,
                 });
 
                 return { realms, actor };
@@ -117,7 +120,7 @@ export class RealmCommands implements Commands.Realm.Contract {
     }
 
     public async restore(props: Commands.Realm.Restore.Props): Commands.Realm.Restore.Result {
-        const { input, actor } = props;
+        const { input, actor, global } = props;
 
         const { realms } = await this.transactionalService.run({
             resource: this.resource,
@@ -141,6 +144,7 @@ export class RealmCommands implements Commands.Realm.Contract {
             audit: {
                 actionType: ActionType.RESTORE,
                 entityType: EntityType.REALM,
+                realm: SYSTEM_REALM_ID,
                 ...props,
             },
             changeLog: true,
@@ -148,6 +152,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 const realms = await this.realmService.restore({
                     identifiers: input.identifiers,
                     transaction,
+                    global,
+                    actor,
                 });
 
                 return { realms, actor };
@@ -162,7 +168,7 @@ export class RealmCommands implements Commands.Realm.Contract {
     }
 
     public async purge(props: Commands.Realm.Purge.Props): Commands.Realm.Purge.Result {
-        const { input, actor } = props;
+        const { input, actor, global } = props;
 
         const { realms } = await this.transactionalService.run({
             resource: this.resource,
@@ -186,6 +192,7 @@ export class RealmCommands implements Commands.Realm.Contract {
             audit: {
                 actionType: ActionType.DELETE,
                 entityType: EntityType.REALM,
+                realm: SYSTEM_REALM_ID,
                 ...props,
             },
             changeLog: true,
@@ -193,6 +200,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 const realms = await this.realmService.purge({
                     identifiers: input.identifiers,
                     transaction,
+                    global,
+                    actor,
                 });
 
                 return { realms, actor };
@@ -228,15 +237,14 @@ export class RealmCommands implements Commands.Realm.Contract {
                     },
                 ],
                 audit: {
-                    entityType: EntityType.REALM,
                     actionType: ActionType.CREATE,
+                    entityType: EntityType.REALM,
                     context: CONSUMER_META,
                     ...request,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const result = await this.realmService.bootstrapOrganization({ ...request, transaction });
-
                     return { ...result, request };
                 },
             });
@@ -273,15 +281,14 @@ export class RealmCommands implements Commands.Realm.Contract {
                     },
                 ],
                 audit: {
-                    entityType: EntityType.REALM,
                     actionType: ActionType.CREATE,
+                    entityType: EntityType.REALM,
                     context: CONSUMER_META,
                     ...request,
                 },
                 changeLog: true,
                 execute: async (transaction) => {
                     const result = await this.realmService.bootstrapProject({ ...request, transaction });
-
                     return { ...result, request };
                 },
             });
@@ -336,7 +343,6 @@ export class RealmCommands implements Commands.Realm.Contract {
                 changeLog: true,
                 execute: async (transaction) => {
                     const result = await this.realmService.transferOwnership({ ...request, transaction });
-
                     return { ...result, request };
                 },
             });
@@ -427,7 +433,6 @@ export class RealmCommands implements Commands.Realm.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 const realms = await this.realmService.revokeBySystem({ transaction, realm });
-
                 return { realms, actor };
             },
         });
@@ -467,7 +472,6 @@ export class RealmCommands implements Commands.Realm.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 const realms = await this.realmService.restoreBySystem({ transaction, realm });
-
                 return { realms, actor };
             },
         });
@@ -507,7 +511,6 @@ export class RealmCommands implements Commands.Realm.Contract {
             changeLog: true,
             execute: async (transaction) => {
                 const realms = await this.realmService.purgeBySystem({ transaction, realm });
-
                 return { realms, actor };
             },
         });
@@ -547,7 +550,9 @@ export class RealmCommands implements Commands.Realm.Contract {
                 realm,
             },
             changeLog: true,
-            execute: (transaction) => this.realmService.purgeAccountAccess({ transaction, realm, ...input }),
+            execute: (transaction) => {
+                return this.realmService.purgeAccountAccess({ transaction, realm, ...input });
+            },
         });
     }
 
@@ -585,7 +590,9 @@ export class RealmCommands implements Commands.Realm.Contract {
                 realm,
             },
             changeLog: true,
-            execute: (transaction) => this.realmService.revokeAccountAccess({ transaction, realm, ...input }),
+            execute: (transaction) => {
+                return this.realmService.revokeAccountAccess({ transaction, realm, ...input });
+            },
         });
     }
 
@@ -623,7 +630,9 @@ export class RealmCommands implements Commands.Realm.Contract {
                 realm,
             },
             changeLog: true,
-            execute: (transaction) => this.realmService.restoreAccountAccess({ transaction, realm, ...input }),
+            execute: (transaction) => {
+                return this.realmService.restoreAccountAccess({ transaction, realm, ...input });
+            },
         });
     }
 }

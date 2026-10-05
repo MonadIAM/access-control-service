@@ -45,31 +45,30 @@ local function has_global_role_permission(permission_id)
 end
 
 local matched = {}
-local total = #permission_codes
 
 for _, permission in ipairs(permission_codes) do
     local permission_code = tostring(permission)
     local permission_id = redis.call("HGET", make_key("permission-id-by-code", permission_realm_id), permission_code)
 
     if permission_id then
-        local granted = false
+        local scope = nil
 
         if global_only then
-            granted = has_global_role_permission(permission_id)
-        else
-            if redis.call("SISMEMBER", make_key("account-overrides-deny", realm_id, account_id), permission_id) ~= 1 then
-                granted = redis.call("SISMEMBER", make_key("account-overrides-allow", realm_id, account_id), permission_id) == 1
-                    or has_role_permission(permission_id)
-                    or has_global_role_permission(permission_id)
+            if has_global_role_permission(permission_id) then
+                scope = "GLOBAL"
+            end
+        elseif redis.call("SISMEMBER", make_key("account-overrides-deny", realm_id, account_id), permission_id) ~= 1 then
+            if redis.call("SISMEMBER", make_key("account-overrides-allow", realm_id, account_id), permission_id) == 1 then
+                scope = "REALM"
+            elseif has_global_role_permission(permission_id) then
+                scope = "GLOBAL"
+            elseif has_role_permission(permission_id) then
+                scope = "REALM"
             end
         end
 
-        if granted then
-            table.insert(matched, permission_code)
-
-            if #matched == total then
-                break
-            end
+        if scope then
+            matched[permission_code] = scope
         end
     end
 end

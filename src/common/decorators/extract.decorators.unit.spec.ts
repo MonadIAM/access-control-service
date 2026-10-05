@@ -1,5 +1,6 @@
 import { FastifyAdapter, NestFastifyApplication } from "@nestjs/platform-fastify";
 import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
+import { PermissionCode, PrivilegeScope } from "@monadiam/shared";
 import { Controller, Get, Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
@@ -12,7 +13,7 @@ const session: Extract.Session.Auth = {
     realms: ["realm-a"],
     scope: "openid",
 };
-const permissions = ["role.read", "role.update"];
+const permissions = [PermissionCode.ROLE_READ_PERSONAL, PermissionCode.ROLE_UPDATE];
 
 @Controller("extract")
 class ExtractController {
@@ -21,8 +22,9 @@ class ExtractController {
         @Extract.Meta() meta: Extract.Meta,
         @Extract.Session() currentSession: Extract.Session.Public,
         @Extract.Permissions() currentPermissions: string[],
-    ): { meta: Extract.Meta; session: Extract.Session.Public; permissions: string[] } {
-        return { meta, session: currentSession, permissions: currentPermissions };
+        @Extract.Permissions(PrivilegeScope.GLOBAL) globalPermissions: string[],
+    ): { meta: Extract.Meta; session: Extract.Session.Public; permissions: string[]; globalPermissions: string[] } {
+        return { meta, session: currentSession, permissions: currentPermissions, globalPermissions };
     }
 }
 
@@ -38,7 +40,9 @@ describe("Extract decorators", () => {
             const authenticated = request.headers["x-test-authenticated"] === "true";
             Object.assign(request, {
                 session: authenticated ? { ...session, realms: [...session.realms] } : {},
-                metadata: authenticated ? { permissions: [...permissions] } : {},
+                metadata: authenticated
+                    ? { permissions: { [permissions[0]]: PrivilegeScope.REALM, [permissions[1]]: PrivilegeScope.GLOBAL } }
+                    : {},
             });
             done();
         });
@@ -65,6 +69,7 @@ describe("Extract decorators", () => {
                 meta: { userAgent: "decorator-contract-test", ip: "192.0.2.10" },
                 session,
                 permissions,
+                globalPermissions: [permissions[1]],
             });
         });
 
@@ -81,6 +86,7 @@ describe("Extract decorators", () => {
                 meta: { userAgent: "unknown", ip: "192.0.2.11" },
                 session: {},
                 permissions: [],
+                globalPermissions: [],
             });
         });
 

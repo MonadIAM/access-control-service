@@ -295,10 +295,13 @@ describe("RealmService", () => {
             const result = await service[method]({
                 identifiers: [REALM_ID, SECOND_REALM_ID],
                 transaction: transaction.entityManager,
+                actor: ACTOR_ID,
+                global: false,
             });
 
             expect(repositories.realms.find).toHaveBeenCalledWith({
-                where: { id: { $in: [REALM_ID, SECOND_REALM_ID] } },
+                where: { id: { $in: [REALM_ID, SECOND_REALM_ID] }, owner: ACTOR_ID },
+                options: expect.objectContaining({ refresh: true }),
                 transaction: transaction.entityManager,
             });
             expect(firstOperationSpy).toHaveBeenCalledTimes(1);
@@ -319,10 +322,13 @@ describe("RealmService", () => {
             const result = await service.purge({
                 identifiers: [REALM_ID, SECOND_REALM_ID],
                 transaction: transaction.entityManager,
+                actor: ACTOR_ID,
+                global: false,
             });
 
             expect(repositories.realms.find).toHaveBeenCalledWith({
-                where: { id: { $in: [REALM_ID, SECOND_REALM_ID] } },
+                where: { id: { $in: [REALM_ID, SECOND_REALM_ID] }, owner: ACTOR_ID },
+                options: expect.objectContaining({ refresh: true }),
                 transaction: transaction.entityManager,
             });
             expect(firstCanPurgeSpy).toHaveBeenCalledTimes(1);
@@ -346,12 +352,15 @@ describe("RealmService", () => {
             const result = await service[method]({
                 transaction: transaction.entityManager,
                 identifiers: [REALM_ID, REALM_ID],
+                actor: ACTOR_ID,
+                global: false,
             });
 
             expect(result).toEqual([realm]);
             expect(repositories.realms.find).toHaveBeenCalledWith({
+                options: expect.objectContaining({ refresh: true }),
+                where: { id: { $in: [REALM_ID] }, owner: ACTOR_ID },
                 transaction: transaction.entityManager,
-                where: { id: { $in: [REALM_ID] } },
             });
         });
     });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { RealmTopicAction, KafkaTopic, AccessCacheTopicAction, ActionType, EntityType } from "~context/enums";
+import { AccessCacheTopicAction, RealmTopicAction, KafkaTopic, ActionType, EntityType } from "~context/enums";
 import { RealmCommandsUnitHelpers } from "~testing/unit/command-services/realm.helpers";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
@@ -73,46 +73,57 @@ describe("RealmCommands", () => {
     });
 
     describe("revoke / restore / purge", () => {
-        it.each(["revoke", "restore", "purge"] as const)(
-            "%s scopes the mutation and audits the requested identifiers",
-            async (method) => {
-                const { commands, service, run, transaction } = helpers.commands();
-                const changed = [helpers.createRealm(), helpers.createRealm()];
-                service[method].mockResolvedValue(changed);
-                const input = { identifiers: changed.map((entity) => entity.id), reason: "Lifecycle change" };
+        it.each([
+            { method: "revoke", global: false },
+            { method: "restore", global: false },
+            { method: "purge", global: false },
+            { method: "revoke", global: true },
+            { method: "restore", global: true },
+            { method: "purge", global: true },
+        ] as const)("$method forwards global=$global and audits the requested identifiers", async ({ method, global }) => {
+            const { commands, service, run, transaction } = helpers.commands();
+            const changed = [helpers.createRealm(), helpers.createRealm()];
+            service[method].mockResolvedValue(changed);
+            const input = { identifiers: changed.map((entity) => entity.id), reason: "Lifecycle change" };
 
-                await commands[method]({ input, actor: ACTOR, context: CONTEXT });
+            await commands[method]({ input, actor: ACTOR, context: CONTEXT, global });
 
-                expect(service[method].mock.calls).toEqual([
-                    [{ identifiers: input.identifiers, transaction: transaction.entityManager }],
-                ]);
-                const projection = method === "purge" ? ProjectionScript.REALM_PURGE : ProjectionScript.REALM_UPDATE;
-                expect(run).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        outbox: expect.arrayContaining([
-                            expect.objectContaining({
-                                actionType: projection,
-                                destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
-                                payloadMapper: expect.any(Function),
-                            }),
-                            expect.objectContaining({
-                                actionType: AccessCacheTopicAction.INVALIDATE,
-                                destinationTopic: KafkaTopic.ACCESS_CACHE,
-                                payloadMapper: expect.any(Function),
-                            }),
-                        ]),
-                    }),
-                );
-                await expect(run.mock.results[0].value).resolves.toMatchObject({ realms: changed });
+            expect(service[method].mock.calls).toEqual([
+                [
+                    {
+                        transaction: transaction.entityManager,
+                        identifiers: input.identifiers,
+                        actor: ACTOR,
+                        global,
+                    },
+                ],
+            ]);
+            const projection = method === "purge" ? ProjectionScript.REALM_PURGE : ProjectionScript.REALM_UPDATE;
+            expect(run).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    outbox: expect.arrayContaining([
+                        expect.objectContaining({
+                            actionType: projection,
+                            destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                            payloadMapper: expect.any(Function),
+                        }),
+                        expect.objectContaining({
+                            actionType: AccessCacheTopicAction.INVALIDATE,
+                            destinationTopic: KafkaTopic.ACCESS_CACHE,
+                            payloadMapper: expect.any(Function),
+                        }),
+                    ]),
+                }),
+            );
+            await expect(run.mock.results[0].value).resolves.toMatchObject({ realms: changed });
 
-                expect(run).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        audit: expect.objectContaining({ input, actor: ACTOR, context: CONTEXT }),
-                        changeLog: true,
-                    }),
-                );
-            },
-        );
+            expect(run).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    audit: expect.objectContaining({ input, actor: ACTOR, context: CONTEXT }),
+                    changeLog: true,
+                }),
+            );
+        });
     });
 
     describe("bootstrapOrganization", () => {

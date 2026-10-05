@@ -122,6 +122,8 @@ declare namespace Services {
             type Props = {
                 transaction: ORM.EntityManager;
                 identifiers: string[];
+                global: boolean;
+                actor: string;
             };
 
             type Result = Promise<Entities.Realm[]>;
@@ -169,6 +171,8 @@ declare namespace Services {
             type Props = {
                 transaction: ORM.EntityManager;
                 identifiers: string[];
+                global: boolean;
+                actor: string;
             };
 
             type Result = Promise<Entities.Realm[]>;
@@ -180,6 +184,8 @@ declare namespace Services {
             type Props = {
                 transaction: ORM.EntityManager;
                 identifiers: string[];
+                global: boolean;
+                actor: string;
             };
 
             type Result = Promise<Entities.Realm[]>;
