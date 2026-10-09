@@ -39,8 +39,8 @@ importers:
         specifier: 7.1.13
         version: 7.1.13(@mikro-orm/core@7.1.13)
       '@monadiam/shared':
-        specifier: github:MonadIAM/shared#v2.0.13
-        version: https://codeload.github.com/MonadIAM/shared/tar.gz/9e906fece5f8362fb4434eedd64bd53d234c226b
+        specifier: github:MonadIAM/shared#v2.0.16
+        version: https://codeload.github.com/MonadIAM/shared/tar.gz/c0082e8a88da226a1788ce1a1b71e8793d5086fd
       '@nest-lab/throttler-storage-redis':
         specifier: 1.2.0
         version: 1.2.0(@nestjs/common@11.2.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.1)(@nestjs/throttler@6.5.0(@nestjs/common@11.2.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.1)(reflect-metadata@0.2.2))(ioredis@6.0.0(supports-color@8.1.1))(reflect-metadata@0.2.2)
@@ -1106,9 +1106,9 @@ packages:
     engines: {node: '>=22.0.0'}
     hasBin: true
 
-  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/9e906fece5f8362fb4434eedd64bd53d234c226b':
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/MonadIAM/shared/tar.gz/9e906fece5f8362fb4434eedd64bd53d234c226b}
-    version: 2.0.13
+  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/c0082e8a88da226a1788ce1a1b71e8793d5086fd':
+    resolution: {gitHosted: true, integrity: sha512-Yjb1bpUPlHx4x7/nhbwE1OnxWHpWBB4SvsUS1/DrnPQ4tssYKnyUeJm4FnakcRl+RyIKamIjH7/ppGHkWmotdQ==, tarball: https://codeload.github.com/MonadIAM/shared/tar.gz/c0082e8a88da226a1788ce1a1b71e8793d5086fd}
+    version: 2.0.15
     engines: {node: 24.18.0}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
@@ -6088,7 +6088,7 @@ snapshots:
       uuid: 11.1.1
       zod: 3.25.76
 
-  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/9e906fece5f8362fb4434eedd64bd53d234c226b': {}
+  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/c0082e8a88da226a1788ce1a1b71e8793d5086fd': {}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
     optional: true

@@ -46,6 +46,7 @@ export abstract class BootstrapReference {
                 .setDescription(description)
                 .setVersion(version)
                 .setTitle(name)
+                .addServer(process.env.ACCESS_CONTROL_SERVICE_URL)
                 .addOAuth2(this.securityScheme(), SECURITY_SCHEME)
                 .addSecurityRequirements(SECURITY_SCHEME);
 
@@ -90,8 +91,9 @@ export abstract class BootstrapReference {
         return [
             { slug: "access-control", title: "AccessControl", origin: process.env.ACCESS_CONTROL_SERVICE_URL },
             { slug: "notification", title: "Notification", origin: process.env.NOTIFICATION_SERVICE_URL },
+            { slug: "organization", title: "Organization", origin: process.env.ORGANIZATION_SERVICE_URL },
             { slug: "identity", title: "Identity", origin: process.env.IDENTITY_SERVICE_URL },
-            { slug: "template", title: "Template", origin: process.env.TEMPLATE_SERVICE_URL },
+            { slug: "hr", title: "HR", origin: process.env.HR_SERVICE_URL },
         ].map(({ slug, title, origin }) =>
             slug === DOCUMENT_SLUG
                 ? { content: document, title, slug, default: true }
