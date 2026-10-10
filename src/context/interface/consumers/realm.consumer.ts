@@ -101,6 +101,23 @@ export class RealmConsumer implements Consumers.Realm.Contract, OnModuleInit {
         const { incoming, message, error } = props;
         this.logger.warn(`Rejected realm event: ${String(error)}`);
 
+        const decoded = await this.schemaRegistry.decode<Consumers.Realm.Message>({
+            topic: KafkaTopic.REALM,
+            value: message,
+        });
+
+        this.schemaRegistry.validate({ topic: KafkaTopic.REALM, value: decoded });
+
+        if (decoded.actionType === RealmTopicAction.BOOTSTRAP_ORGANIZATION_REQUESTED) {
+            await this.realmCommands.rejectBootstrap({ incoming, request: decoded.payload, reason: String(error) });
+        } else if (
+            decoded.actionType === RealmTopicAction.SYSTEM_PURGE ||
+            decoded.actionType === RealmTopicAction.SYSTEM_REVOKE ||
+            decoded.actionType === RealmTopicAction.SYSTEM_RESTORE
+        ) {
+            throw error;
+        }
+
         await lastValueFrom(
             this.kafkaClient.emit(KafkaTopic.REALM_DEAD, {
                 key: incoming.event,

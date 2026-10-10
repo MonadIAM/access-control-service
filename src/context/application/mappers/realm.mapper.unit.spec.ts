@@ -1,8 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
 import { SYSTEM_REALM_ID } from "@monadiam/shared";
 
+import { AssignmentScope, InvalidationScope, RealmType } from "~context/enums";
 import { EntityFactoryRegistry } from "~testing/entity-factory.registry";
-import { AssignmentScope, InvalidationScope } from "~context/enums";
 
 import { RealmMapper } from "./realm.mapper";
 
@@ -133,17 +133,18 @@ describe("RealmMapper", () => {
     });
 
     describe("realmLifecyclePayload", () => {
-        it("maps one lifecycle event per realm with the next version", () => {
-            const first = helpers.createRealm({ id: REALM_ID, version: 3 });
+        it("maps project realms only, without involving Identity in organization realm operations", () => {
+            const first = helpers.createRealm({ id: REALM_ID, version: 3, type: RealmType.PROJECT });
             const second = helpers.createRealm({
                 id: SECOND_REALM_ID,
                 version: 7,
+                type: RealmType.PROJECT,
             });
 
             expect(
                 mapper.realmLifecyclePayload({
                     actor: ACTOR_ID,
-                    realms: [first, second],
+                    realms: [first, second, helpers.createRealm({ type: RealmType.ORGANIZATION })],
                 }),
             ).toEqual([
                 { actor: ACTOR_ID, realm: REALM_ID, input: { version: 4 } },

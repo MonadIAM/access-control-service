@@ -57,13 +57,19 @@ export class RealmMapper implements Commands.Mappers.Realm.Contract {
     public realmLifecyclePayload(
         props: Commands.Mappers.Realm.RealmLifecyclePayload.Props,
     ): Commands.Mappers.Realm.RealmLifecyclePayload.Result {
-        return props.realms.map(({ id, version }) => ({
-            actor: props.actor,
-            realm: id,
-            input: {
-                version: version + 1,
-            },
-        }));
+        const result: Commands.Mappers.Realm.RealmLifecyclePayload.Result = [];
+
+        for (const { id, type, version } of props.realms) {
+            if (type === RealmType.PROJECT) {
+                result.push({
+                    input: { version: version + 1 },
+                    actor: props.actor,
+                    realm: id,
+                });
+            }
+        }
+
+        return result;
     }
 
     public bootstrapConfirmed(
