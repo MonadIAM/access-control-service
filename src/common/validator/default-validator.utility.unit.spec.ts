@@ -38,21 +38,24 @@ const rules = [
     /* eslint-enable prettier/prettier */
 ];
 
-describe("Standard validation contracts", () => {
-    describe("localized validators", () => {
+describe("[Validator] - Default", () => {
+    describe("[Behavior] - localized validators", () => {
         it.each(rules)(
-            "$name validates, transforms and returns a localized error",
+            "[case] - validates, transforms and returns a localized error ($name)",
             ({ decorator, valid, invalid, expected, message }) => {
+                // Arrange
                 class Input {
                     declare public value: unknown;
                     public other = "same";
                 }
                 decorator(Input.prototype, "value");
 
+                // Act
                 const accepted = plainToInstance(Input, { value: valid });
                 const acceptedErrors = validateSync(accepted);
                 const errors = validateSync(plainToInstance(Input, { value: invalid }));
 
+                // Assert
                 expect(acceptedErrors).toEqual([]);
                 expect(accepted.value).toEqual(expected ?? valid);
                 expect(errors).toHaveLength(1);
@@ -64,17 +67,20 @@ describe("Standard validation contracts", () => {
         );
     });
 
-    describe("Length", () => {
-        it("preserves options, custom context, bounds and an explicit label", () => {
+    describe("[Function] - Length", () => {
+        it("[case] - preserves options, custom context, bounds and an explicit label", () => {
+            // Arrange
             class Input {
                 @Validator.Length(2, 3, { each: true, groups: ["create"], context: { fieldCode: "names" } }, "Names")
                 declare public values: string[];
             }
             const input = plainToInstance(Input, { values: ["ab", "x"] });
 
+            // Act
             const errors = validateSync(input, { groups: ["create"] });
             const otherGroupErrors = validateSync(input, { groups: ["update"], forbidUnknownValues: false });
 
+            // Assert
             expect(errors).toHaveLength(1);
             expect(Object.values(errors[0].contexts!)).toEqual([
                 { fieldCode: "names", property: "values", label: "Names", min: 2, max: 3 },
@@ -83,8 +89,9 @@ describe("Standard validation contracts", () => {
         });
     });
 
-    describe("ValidateNested", () => {
-        it("validates nested transformed DTOs and preserves child errors", () => {
+    describe("[Function] - ValidateNested", () => {
+        it("[case] - validates nested transformed DTOs and preserves child errors", () => {
+            // Arrange
             class Child {
                 @Validator.IsString()
                 declare public name: string;
@@ -95,10 +102,12 @@ describe("Standard validation contracts", () => {
                 declare public child: Child;
             }
 
+            // Act
             const validErrors = validateSync(plainToInstance(Input, { child: { name: "valid" } }));
             const errors = validateSync(plainToInstance(Input, { child: { name: 123 } }));
             const primitiveErrors = validateSync(plainToInstance(Input, { child: 123 }));
 
+            // Assert
             expect(validErrors).toEqual([]);
             expect(errors[0].children?.[0]).toMatchObject({
                 property: "name",
@@ -110,21 +119,24 @@ describe("Standard validation contracts", () => {
         });
     });
 
-    describe("IsPositiveInt", () => {
+    describe("[Function] - IsPositiveInt", () => {
         it.each([
-            { value: "2", valid: true },
-            { value: 0, valid: false },
-            { value: -1, valid: false },
-            { value: 1.5, valid: false },
-        ])("checks the composed positive integer rule for $value", ({ value, valid }) => {
+            { label: "string 2", value: "2", valid: true },
+            { label: "0", value: 0, valid: false },
+            { label: "-1", value: -1, valid: false },
+            { label: "1.5", value: 1.5, valid: false },
+        ])("[case] - checks the composed positive integer rule for $label", ({ value, valid }) => {
+            // Arrange
             class Input {
                 @Validator.IsPositiveInt()
                 declare public count: number;
             }
             const input = plainToInstance(Input, { count: value });
 
+            // Act
             const errors = validateSync(input);
 
+            // Assert
             expect(errors.length === 0).toBe(valid);
             if (valid) {
                 expect(input.count).toBe(2);

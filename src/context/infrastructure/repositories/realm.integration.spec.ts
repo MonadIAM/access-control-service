@@ -11,14 +11,15 @@ function createRepositoryConfig(): ConfigService {
     });
 }
 
-describe("RealmRepository", () => {
+describe("[Repository] - Realm", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new RealmRepository(readManager, createRepositoryConfig()),
         fixture: (entityManager) => new RealmFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted realm through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted realm through the schema", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm({
                 description: "Mapping realm description",
                 name: "Mapping Realm",
@@ -27,7 +28,11 @@ describe("RealmRepository", () => {
                 isRevoked: true,
             });
 
-            await expect(suite.repository().findUniqueOrThrow({ where: { id: realm.id } })).resolves.toMatchObject({
+            // Act
+            const result = await suite.repository().findUniqueOrThrow({ where: { id: realm.id } });
+
+            // Assert
+            expect(result).toMatchObject({
                 description: "Mapping realm description",
                 createdAt: realm.createdAt,
                 version: realm.version,
@@ -41,43 +46,52 @@ describe("RealmRepository", () => {
         });
     });
 
-    describe("getLookupList", () => {
-        it("returns lookup page scoped to allowed realms", async () => {
+    describe("[Method] - getLookupList", () => {
+        it("[case] - returns lookup page scoped to allowed realms", async () => {
+            // Arrange
             const scenario = await suite.fixtures().lookupScenario();
 
+            // Act
             const [realms, total] = await suite.repository().getLookupList({
                 pagination: { currentPage: 1, elementsPerPage: 2 },
                 realms: scenario.realms.map(({ id }) => id),
                 term: "",
             });
 
+            // Assert
             expect(total).toBe(scenario.expectedTotal);
             expect(realms.map(({ code }) => code)).toEqual(scenario.expectedFirstPageCodes);
         });
 
-        it("uses trigram similarity lookup with stable tie-breakers", async () => {
+        it("[case] - uses trigram similarity lookup with stable tie-breakers", async () => {
+            // Arrange
             const scenario = await suite.fixtures().lookupSearchScenario();
 
+            // Act
             const [realms] = await suite.repository().getLookupList({
                 pagination: { currentPage: 1, elementsPerPage: 10 },
                 realms: scenario.realms.map(({ id }) => id),
                 term: scenario.term,
             });
 
+            // Assert
             expect(realms.map(({ code }) => code)).toEqual(scenario.expectedCodes);
         });
     });
 
-    describe("wouldExceedRealmLimit", () => {
-        it("checks realm count limit per owner", async () => {
+    describe("[Method] - wouldExceedRealmLimit", () => {
+        it("[case] - checks realm count limit per owner", async () => {
+            // Arrange
             const scenario = await suite.fixtures().limitScenario();
 
-            await expect(suite.repository().wouldExceedRealmLimit({ account: scenario.account })).resolves.toBe(
-                scenario.expectedCountOneResult,
-            );
-            await expect(suite.repository().wouldExceedRealmLimit({ account: scenario.account, count: 2 })).resolves.toBe(
-                scenario.expectedCountTwoResult,
-            );
+            // Act
+            const result = await suite.repository().wouldExceedRealmLimit({ account: scenario.account });
+
+            const result2 = await suite.repository().wouldExceedRealmLimit({ account: scenario.account, count: 2 });
+
+            // Assert
+            expect(result).toBe(scenario.expectedCountOneResult);
+            expect(result2).toBe(scenario.expectedCountTwoResult);
         });
     });
 });

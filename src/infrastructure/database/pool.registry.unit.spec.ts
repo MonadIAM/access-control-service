@@ -3,29 +3,43 @@ import { Pool } from "pg";
 
 import { PostgreSQLPoolRegistry } from "./pool.registry";
 
-describe("PostgreSQLPoolRegistry", () => {
+describe("[InfrastructureService] - PostgreSQLPoolRegistry", () => {
     let registry: PostgreSQLPoolRegistry;
 
     beforeEach(() => {
         registry = new PostgreSQLPoolRegistry();
     });
 
-    describe("snapshot / snapshots", () => {
-        it("returns no snapshots before registration", () => {
-            expect(registry.snapshot({ kind: "read" })).toBeNull();
-            expect(registry.snapshots()).toEqual([]);
+    describe("[Behavior] - pool snapshots", () => {
+        it("[case] - returns no snapshots before registration", () => {
+            // Arrange
+
+            // Act
+            const result = registry.snapshot({ kind: "read" });
+            const result2 = registry.snapshots();
+
+            // Assert
+            expect(result).toBeNull();
+            expect(result2).toEqual([]);
         });
 
-        it("reads current pool counters and keeps read and write pools separate", () => {
+        it("[case] - reads current pool counters and keeps read and write pools separate", () => {
+            // Arrange
             const pool = { totalCount: 8, idleCount: 3, waitingCount: 2, options: { max: 10 } } as Pool;
             registry.register({ kind: "read", pool });
             registry.register({ kind: "write", pool: new Pool({ max: 20 }) });
-            expect(registry.snapshots()).toEqual([
+
+            // Act
+            const result = registry.snapshots();
+            Object.assign(pool, { totalCount: 2, idleCount: 4, waitingCount: 0 });
+            const result2 = registry.snapshot({ kind: "read" });
+
+            // Assert
+            expect(result).toEqual([
                 { kind: "read", total: 8, idle: 3, active: 5, waiting: 2, max: 10 },
                 { kind: "write", total: 0, idle: 0, active: 0, waiting: 0, max: 20 },
             ]);
-            Object.assign(pool, { totalCount: 2, idleCount: 4, waitingCount: 0 });
-            expect(registry.snapshot({ kind: "read" })).toEqual({
+            expect(result2).toEqual({
                 kind: "read",
                 total: 2,
                 idle: 4,
@@ -36,11 +50,18 @@ describe("PostgreSQLPoolRegistry", () => {
         });
     });
 
-    describe("register", () => {
-        it("replaces a registered pool without adding duplicate snapshots", () => {
+    describe("[Method] - register", () => {
+        it("[case] - replaces a registered pool without adding duplicate snapshots", () => {
+            // Arrange
             registry.register({ kind: "write", pool: new Pool({ max: 5 }) });
+
+            // Act
             registry.register({ kind: "write", pool: new Pool({ max: 15 }) });
-            expect(registry.snapshots()).toEqual([{ kind: "write", total: 0, idle: 0, active: 0, waiting: 0, max: 15 }]);
+
+            const result = registry.snapshots();
+
+            // Assert
+            expect(result).toEqual([{ kind: "write", total: 0, idle: 0, active: 0, waiting: 0, max: 15 }]);
         });
     });
 });

@@ -21,9 +21,10 @@ const ACTOR_ID              = "00000000-0000-4000-8000-000000000009";
 const helpers = new EntityFactoryRegistry();
 const mapper = new RealmMapper();
 
-describe("RealmMapper", () => {
-    describe("projectionCreatePayload", () => {
-        it("maps the complete realm bootstrap projection", () => {
+describe("[DataMapper] - Realm", () => {
+    describe("[Method] - projectionCreatePayload", () => {
+        it("[case] - maps the complete realm bootstrap projection", () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const root = helpers.createRole({ id: ROOT_ROLE_ID, realm });
             const user = helpers.createRole({ id: USER_ROLE_ID, realm });
@@ -48,6 +49,7 @@ describe("RealmMapper", () => {
                 realm,
             });
 
+            // Act
             const result = mapper.projectionCreatePayload({
                 assignments: {
                     permission: [permissionAssignment],
@@ -58,6 +60,7 @@ describe("RealmMapper", () => {
                 realm,
             });
 
+            // Assert
             expect(result).toEqual({
                 rolePermissionAssignments: [
                     {
@@ -88,8 +91,9 @@ describe("RealmMapper", () => {
         });
     });
 
-    describe("projectionUpdatePayload", () => {
-        it("maps each realm with its own revocation state", () => {
+    describe("[Method] - projectionUpdatePayload", () => {
+        it("[case] - maps each realm with its own revocation state", () => {
+            // Arrange
             const first = helpers.createRealm({
                 id: REALM_ID,
                 isRevoked: true,
@@ -99,31 +103,42 @@ describe("RealmMapper", () => {
                 isRevoked: false,
             });
 
-            expect(mapper.projectionUpdatePayload({ realms: [first, second] })).toEqual([
+            // Act
+            const result = mapper.projectionUpdatePayload({ realms: [first, second] });
+
+            // Assert
+            expect(result).toEqual([
                 { isRevoked: true, realm: REALM_ID },
                 { isRevoked: false, realm: SECOND_REALM_ID },
             ]);
         });
     });
 
-    describe("projectionPurgePayload", () => {
-        it("maps every purged realm to an independent payload", () => {
+    describe("[Method] - projectionPurgePayload", () => {
+        it("[case] - maps every purged realm to an independent payload", () => {
+            // Arrange
             const first = helpers.createRealm({ id: REALM_ID });
             const second = helpers.createRealm({ id: SECOND_REALM_ID });
 
-            expect(mapper.projectionPurgePayload({ realms: [first, second] })).toEqual([
-                { realm: REALM_ID },
-                { realm: SECOND_REALM_ID },
-            ]);
+            // Act
+            const result = mapper.projectionPurgePayload({ realms: [first, second] });
+
+            // Assert
+            expect(result).toEqual([{ realm: REALM_ID }, { realm: SECOND_REALM_ID }]);
         });
     });
 
-    describe("accessCachePayload", () => {
-        it("maps realm-scoped invalidations", () => {
+    describe("[Method] - accessCachePayload", () => {
+        it("[case] - maps realm-scoped invalidations", () => {
+            // Arrange
             const first = helpers.createRealm({ id: REALM_ID });
             const second = helpers.createRealm({ id: SECOND_REALM_ID });
 
-            expect(mapper.accessCachePayload({ realms: [first, second] })).toEqual({
+            // Act
+            const result = mapper.accessCachePayload({ realms: [first, second] });
+
+            // Assert
+            expect(result).toEqual({
                 items: [
                     { scope: InvalidationScope.REALM, realm: REALM_ID },
                     { scope: InvalidationScope.REALM, realm: SECOND_REALM_ID },
@@ -132,8 +147,9 @@ describe("RealmMapper", () => {
         });
     });
 
-    describe("realmLifecyclePayload", () => {
-        it("maps project realms only, without involving Identity in organization realm operations", () => {
+    describe("[Method] - realmLifecyclePayload", () => {
+        it("[case] - maps project realms only, without involving Identity in organization realm operations", () => {
+            // Arrange
             const first = helpers.createRealm({ id: REALM_ID, version: 3, type: RealmType.PROJECT });
             const second = helpers.createRealm({
                 id: SECOND_REALM_ID,
@@ -141,12 +157,14 @@ describe("RealmMapper", () => {
                 type: RealmType.PROJECT,
             });
 
-            expect(
-                mapper.realmLifecyclePayload({
-                    actor: ACTOR_ID,
-                    realms: [first, second, helpers.createRealm({ type: RealmType.ORGANIZATION })],
-                }),
-            ).toEqual([
+            // Act
+            const result = mapper.realmLifecyclePayload({
+                actor: ACTOR_ID,
+                realms: [first, second, helpers.createRealm({ type: RealmType.ORGANIZATION })],
+            });
+
+            // Assert
+            expect(result).toEqual([
                 { actor: ACTOR_ID, realm: REALM_ID, input: { version: 4 } },
                 {
                     actor: ACTOR_ID,
@@ -157,13 +175,15 @@ describe("RealmMapper", () => {
         });
     });
 
-    describe("accessAssignmentUpdate", () => {
-        it("preserves mixed revocation states when rebuilding assignment projections", () => {
+    describe("[Method] - accessAssignmentUpdate", () => {
+        it("[case] - preserves mixed revocation states when rebuilding assignment projections", () => {
+            // Arrange
             const realm = helpers.createRealm();
             const account = "account";
             const active = helpers.createAccountRoleAssignment({ realm, account, isRevoked: false });
             const manual = helpers.createAccountRoleAssignment({ realm, account, isRevoked: true });
 
+            // Act
             const payloads = mapper.accessAssignmentUpdate({
                 assignments: [active, manual],
                 overrides: [],
@@ -171,13 +191,15 @@ describe("RealmMapper", () => {
                 account,
             });
 
+            // Assert
             expect(payloads.map(({ isRevoked }) => isRevoked)).toEqual([false, true]);
             expect(payloads.map(({ items }) => items[0].assignment)).toEqual([active.id, manual.id]);
         });
     });
 
-    describe("accessOverrideUpdate", () => {
-        it("preserves mixed revocation states and permission realms in override projections", () => {
+    describe("[Method] - accessOverrideUpdate", () => {
+        it("[case] - preserves mixed revocation states and permission realms in override projections", () => {
+            // Arrange
             const realm = helpers.createRealm();
             const permissionRealm = helpers.createRealm();
             const permission = helpers.createPermission({ realm: permissionRealm });
@@ -185,6 +207,7 @@ describe("RealmMapper", () => {
             const active = helpers.createPermissionOverride({ realm, permission, account, isRevoked: false });
             const manual = helpers.createPermissionOverride({ realm, permission, account, isRevoked: true });
 
+            // Act
             const payloads = mapper.accessOverrideUpdate({
                 assignments: [],
                 overrides: [active, manual],
@@ -192,6 +215,7 @@ describe("RealmMapper", () => {
                 account,
             });
 
+            // Assert
             expect(payloads.map(({ isRevoked }) => isRevoked)).toEqual([false, true]);
             expect(payloads.map(({ items }) => items[0].permissionRealm)).toEqual([permissionRealm.id, permissionRealm.id]);
         });

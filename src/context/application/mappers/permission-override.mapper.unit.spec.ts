@@ -48,9 +48,10 @@ function createOverride(
     });
 }
 
-describe("PermissionOverrideMapper", () => {
-    describe("groupByRealm", () => {
-        it("groups overrides by target realm and preserves their order", () => {
+describe("[DataMapper] - PermissionOverride", () => {
+    describe("[Method] - groupByRealm", () => {
+        it("[case] - groups overrides by target realm and preserves their order", () => {
+            // Arrange
             const first = createOverride();
             const second = createOverride({
                 override: SECOND_OVERRIDE_ID,
@@ -62,23 +63,32 @@ describe("PermissionOverrideMapper", () => {
                 realm: secondRealm,
             });
 
+            // Act
             const result = mapper.groupByRealm({
                 overrides: [first, third, second],
             });
+            const result2 = result.get(REALM_ID);
+            const result3 = result.get(SECOND_REALM_ID);
 
+            // Assert
             expect([...result.keys()]).toEqual([REALM_ID, SECOND_REALM_ID]);
-            expect(result.get(REALM_ID)).toEqual([first, second]);
-            expect(result.get(SECOND_REALM_ID)).toEqual([third]);
+            expect(result2).toEqual([first, second]);
+            expect(result3).toEqual([third]);
         });
     });
 
-    describe("projectionCreatePayload", () => {
-        it("maps target and permission realms independently", () => {
+    describe("[Method] - projectionCreatePayload", () => {
+        it("[case] - maps target and permission realms independently", () => {
+            // Arrange
             const override = createOverride({
                 effect: PermissionOverrideEffect.DENY,
             });
 
-            expect(mapper.projectionCreatePayload({ overrides: [override] })).toEqual({
+            // Act
+            const result = mapper.projectionCreatePayload({ overrides: [override] });
+
+            // Assert
+            expect(result).toEqual({
                 permissionRealm: PERMISSION_REALM_ID,
                 effect: PermissionOverrideEffect.DENY,
                 permission: PERMISSION_ID,
@@ -89,8 +99,9 @@ describe("PermissionOverrideMapper", () => {
         });
     });
 
-    describe("projectionUpdatePayload", () => {
-        it("splits updates by target realm", () => {
+    describe("[Method] - projectionUpdatePayload", () => {
+        it("[case] - splits updates by target realm", () => {
+            // Arrange
             const first = createOverride({ isRevoked: true });
             const secondRealm = helpers.createRealm({ id: SECOND_REALM_ID });
             const second = createOverride({
@@ -103,7 +114,11 @@ describe("PermissionOverrideMapper", () => {
                 realm: secondRealm,
             });
 
-            expect(mapper.projectionUpdatePayload({ overrides: [first, second] })).toEqual([
+            // Act
+            const result = mapper.projectionUpdatePayload({ overrides: [first, second] });
+
+            // Assert
+            expect(result).toEqual([
                 {
                     isRevoked: true,
                     realm: REALM_ID,
@@ -136,8 +151,9 @@ describe("PermissionOverrideMapper", () => {
         });
     });
 
-    describe("projectionPurgePayload", () => {
-        it("splits relation cleanup by target realm", () => {
+    describe("[Method] - projectionPurgePayload", () => {
+        it("[case] - splits relation cleanup by target realm", () => {
+            // Arrange
             const first = createOverride();
             const secondRealm = helpers.createRealm({ id: SECOND_REALM_ID });
             const second = createOverride({
@@ -147,7 +163,11 @@ describe("PermissionOverrideMapper", () => {
                 realm: secondRealm,
             });
 
-            expect(mapper.projectionPurgePayload({ overrides: [first, second] })).toEqual([
+            // Act
+            const result = mapper.projectionPurgePayload({ overrides: [first, second] });
+
+            // Assert
+            expect(result).toEqual([
                 {
                     realm: REALM_ID,
                     items: [
@@ -174,8 +194,9 @@ describe("PermissionOverrideMapper", () => {
         });
     });
 
-    describe("accessCachePayload", () => {
-        it("maps account-realm invalidations", () => {
+    describe("[Method] - accessCachePayload", () => {
+        it("[case] - maps account-realm invalidations", () => {
+            // Arrange
             const first = createOverride();
             const secondRealm = helpers.createRealm({ id: SECOND_REALM_ID });
             const second = createOverride({
@@ -183,7 +204,11 @@ describe("PermissionOverrideMapper", () => {
                 realm: secondRealm,
             });
 
-            expect(mapper.accessCachePayload({ overrides: [first, second] })).toEqual({
+            // Act
+            const result = mapper.accessCachePayload({ overrides: [first, second] });
+
+            // Assert
+            expect(result).toEqual({
                 items: [
                     {
                         scope: InvalidationScope.ACCOUNT_REALM,

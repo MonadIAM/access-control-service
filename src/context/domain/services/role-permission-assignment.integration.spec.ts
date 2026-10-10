@@ -27,14 +27,15 @@ async function countAssignments(
     return await suite.transaction((transaction) => transaction.count(RolePermissionAssignment, { realm: realm.id }));
 }
 
-describe("RolePermissionAssignmentService integration", () => {
+describe("[DomainService] - RolePermissionAssignment", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("create", () => {
-        it("creates assignments for custom and system-realm permissions", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates assignments for custom and system-realm permissions", async () => {
+            // Arrange
             const systemRealm = await helpers.seedSystemRealm(suite);
             const realm = await suite.fixtures().createRealm({ code: "role-permission-create" });
             const role = await suite.fixtures().createRole({ code: "roles.editor", name: "Editor", realm });
@@ -44,6 +45,7 @@ describe("RolePermissionAssignmentService integration", () => {
                 realm: systemRealm,
             });
 
+            // Act
             const result = await suite.transaction((transaction) =>
                 suite.repository().rolePermissionAssignmentService.create({
                     input: {
@@ -54,15 +56,16 @@ describe("RolePermissionAssignmentService integration", () => {
                     transaction,
                 }),
             );
-
             const assignments = await loadAssignments(suite, realm);
 
+            // Assert
             expect(result).toHaveLength(2);
             expect(assignments.map(({ permission }) => permission.code)).toEqual(["documents.write", "system.audit.read"]);
             expect(assignments.every(({ role: assignedRole }) => assignedRole.id === role.id)).toBe(true);
         });
 
-        it("rolls back assignment creation for a foreign non-system permission", async () => {
+        it("[case] - rolls back assignment creation for a foreign non-system permission", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm({ code: "role-permission-foreign" });
             const foreignRealm = await suite.fixtures().createRealm({ code: "role-permission-foreign-source" });
             const role = await suite.fixtures().createRole({ code: "roles.editor", name: "Editor", realm });
@@ -71,48 +74,54 @@ describe("RolePermissionAssignmentService integration", () => {
                 realm: foreignRealm,
             });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().rolePermissionAssignmentService.create({
-                        input: {
-                            permissions: [foreignPermission.id],
-                            role: role.id,
-                        },
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.role-permission-assignment.PERMISSIONS_NOT_FOUND");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().rolePermissionAssignmentService.create({
+                    input: {
+                        permissions: [foreignPermission.id],
+                        role: role.id,
+                    },
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await countAssignments(suite, realm);
 
-            await expect(countAssignments(suite, realm)).resolves.toBe(0);
+            // Assert
+            await expect(result).rejects.toThrow("services.role-permission-assignment.PERMISSIONS_NOT_FOUND");
+            expect(result2).toBe(0);
         });
 
-        it("rolls back assignment creation when the role permission limit is exceeded", async () => {
+        it("[case] - rolls back assignment creation when the role permission limit is exceeded", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm({ code: "role-permission-limit" });
             const role = await suite.fixtures().createRole({ code: "roles.editor", name: "Editor", realm });
             const first = await suite.fixtures().createPermission({ realm, code: "permissions.first" });
             const second = await suite.fixtures().createPermission({ realm, code: "permissions.second" });
             const third = await suite.fixtures().createPermission({ realm, code: "permissions.third" });
             const fourth = await suite.fixtures().createPermission({ realm, code: "permissions.fourth" });
-
             await suite.fixtures().createRolePermissionAssignment({ realm, role, permission: first });
             await suite.fixtures().createRolePermissionAssignment({ realm, role, permission: second });
             await suite.fixtures().createRolePermissionAssignment({ realm, role, permission: third });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().rolePermissionAssignmentService.create({
-                        input: {
-                            permissions: [fourth.id],
-                            role: role.id,
-                        },
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.role-permission-assignment.ROLE_PERMISSION_LIMIT_EXCEEDED");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().rolePermissionAssignmentService.create({
+                    input: {
+                        permissions: [fourth.id],
+                        role: role.id,
+                    },
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await countAssignments(suite, realm);
 
-            await expect(countAssignments(suite, realm)).resolves.toBe(3);
+            // Assert
+            await expect(result).rejects.toThrow("services.role-permission-assignment.ROLE_PERMISSION_LIMIT_EXCEEDED");
+            expect(result2).toBe(3);
         });
     });
 });

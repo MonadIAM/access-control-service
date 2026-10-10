@@ -74,11 +74,18 @@ const cases = [
     },
 ];
 
-describe("ExceptionMapper", () => {
-    describe("fromORM / isORM", () => {
-        it.each(cases)("maps $key and preserves diagnostic context", ({ error, status, kind, code, key }) => {
-            const mapped = ExceptionMapper.fromORM(error, "role");
+describe("[DataMapper] - Exception", () => {
+    describe("[Behavior] - ORM errors", () => {
+        it.each(cases)("[case] - maps $key and preserves diagnostic context", ({ error, status, kind, code, key }) => {
+            // Arrange
 
+            // Act
+            const mapped = ExceptionMapper.fromORM(error, "role");
+            const result = ExceptionMapper.isORM(mapped);
+            const result2 = ExceptionMapper.fromORM(mapped);
+            const result3 = ExceptionMapper.isORM(error);
+
+            // Assert
             expect(mapped).toMatchObject({
                 statusCode: status,
                 kind,
@@ -87,16 +94,20 @@ describe("ExceptionMapper", () => {
                 params: { resource: "role", timestamp: expect.any(String) },
             });
             expect(mapped.cause).toBe(error);
-            expect(ExceptionMapper.isORM(mapped)).toBe(true);
-            expect(ExceptionMapper.fromORM(mapped)).toBe(mapped);
-            expect(ExceptionMapper.isORM(error)).toBe(false);
+            expect(result).toBe(true);
+            expect(result2).toBe(mapped);
+            expect(result3).toBe(false);
         });
 
-        it("keeps the driver code on a generic driver failure", () => {
+        it("[case] - keeps the driver code on a generic driver failure", () => {
+            // Arrange
             const error = new DriverException(Object.assign(new Error("driver failure"), { code: "XX000" }));
 
+            // Act
             const mapped = ExceptionMapper.fromORM(error);
+            const result = ExceptionMapper.isORM(mapped);
 
+            // Assert
             expect(mapped).toMatchObject({
                 statusCode: 500,
                 kind: ErrorKind.INTERNAL,
@@ -105,38 +116,58 @@ describe("ExceptionMapper", () => {
                 params: { code: "XX000" },
             });
             expect(mapped.cause).toBe(error);
-            expect(ExceptionMapper.isORM(mapped)).toBe(true);
+            expect(result).toBe(true);
         });
 
-        it("passes external dependency failures through without marking them as ORM failures", () => {
+        it("[case] - passes external dependency failures through without marking them as ORM failures", () => {
+            // Arrange
             const error = Exception.externalServiceFailed({ messageKey: "vault.failed" });
 
-            expect(ExceptionMapper.fromORM(error, "role")).toBe(error);
-            expect(ExceptionMapper.isORM(error)).toBe(false);
+            // Act
+            const result = ExceptionMapper.fromORM(error, "role");
+            const result2 = ExceptionMapper.isORM(error);
+
+            // Assert
+            expect(result).toBe(error);
+            expect(result2).toBe(false);
         });
 
-        it.each([new Error("unexpected"), null, undefined, "failure", { message: "not an Error" }])(
-            "wraps unknown errors without classifying them as ORM: %s",
-            (error) => {
-                const mapped = ExceptionMapper.fromORM(error, "role");
+        it.each([
+            { label: "Error", value: new Error("unexpected") },
+            { label: "null", value: null },
+            { label: "undefined", value: undefined },
+            { label: "string", value: "failure" },
+            { label: "plain object", value: { message: "not an Error" } },
+        ])("[case] - wraps unknown errors without classifying them as ORM ($label)", ({ value: error }) => {
+            // Arrange
 
-                expect(mapped).toMatchObject({
-                    statusCode: 500,
-                    kind: ErrorKind.INTERNAL,
-                    code: ErrorCode.INTERNAL,
-                    messageKey: "db.INTERNAL_DRIVER_ERROR",
-                    params: { resource: "role" },
-                });
-                expect(mapped.cause).toBe(error);
-                expect(ExceptionMapper.isORM(mapped)).toBe(false);
-                expect(ExceptionMapper.isORM(error)).toBe(false);
-            },
-        );
+            // Act
+            const mapped = ExceptionMapper.fromORM(error, "role");
+            const result = ExceptionMapper.isORM(mapped);
+            const result2 = ExceptionMapper.isORM(error);
 
-        it("does not infer ORM origin from matching public properties", () => {
+            // Assert
+            expect(mapped).toMatchObject({
+                statusCode: 500,
+                kind: ErrorKind.INTERNAL,
+                code: ErrorCode.INTERNAL,
+                messageKey: "db.INTERNAL_DRIVER_ERROR",
+                params: { resource: "role" },
+            });
+            expect(mapped.cause).toBe(error);
+            expect(result).toBe(false);
+            expect(result2).toBe(false);
+        });
+
+        it("[case] - does not infer ORM origin from matching public properties", () => {
+            // Arrange
+
+            // Act
             const mapped = ExceptionMapper.fromORM(new DeadlockException(new Error("deadlock")));
+            const result = ExceptionMapper.isORM(new Exception(mapped));
 
-            expect(ExceptionMapper.isORM(new Exception(mapped))).toBe(false);
+            // Assert
+            expect(result).toBe(false);
         });
     });
 });

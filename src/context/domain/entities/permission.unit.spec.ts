@@ -13,162 +13,249 @@ function createPermission(overrides?: Partial<Entities.Permission.ConstructorPro
     });
 }
 
-describe("Permission Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - Permission", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
+
+            // Act
             const permission = createPermission({
                 code: "WRITE_USERS",
                 name: "Write Users",
             });
 
+            // Assert
             expect(permission.code).toBe("WRITE_USERS");
             expect(permission.name).toBe("Write Users");
         });
 
-        it("should default booleans to false", () => {
+        it("[case] - defaults booleans to false", () => {
+            // Arrange
+
+            // Act
             const permission = createPermission();
 
+            // Assert
             expect(permission.isSystemManaged).toBe(false);
             expect(permission.isRevoked).toBe(false);
         });
 
-        it("should respect explicit boolean overrides", () => {
+        it("[case] - respects explicit boolean overrides", () => {
+            // Arrange
+
+            // Act
             const permission = createPermission({ isSystemManaged: true, isRevoked: true });
 
+            // Assert
             expect(permission.isSystemManaged).toBe(true);
             expect(permission.isRevoked).toBe(true);
         });
 
-        it("should auto-generate id, createdAt, version", () => {
+        it("[case] - generates id, createdAt, version", () => {
+            // Arrange
+
+            // Act
             const permission = createPermission();
 
-            expect(isUUID(permission.id, "4")).toBe(true);
+            const result = isUUID(permission.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(permission.createdAt).toBeInstanceOf(Date);
             expect(permission.version).toBe(1);
             expect(permission.updatedAt).toBeUndefined();
         });
 
-        it("should assign description when provided", () => {
+        it("[case] - assigns description when provided", () => {
+            // Arrange
+
+            // Act
             const permission = createPermission({ description: "Allows reading users" });
+
+            // Assert
             expect(permission.description).toBe("Allows reading users");
         });
 
-        it("should leave description undefined when omitted", () => {
+        it("[case] - leaves description undefined when omitted", () => {
+            // Arrange
+
+            // Act
             const permission = createPermission();
+
+            // Assert
             expect(permission.description).toBeUndefined();
         });
 
-        it("should assign realm", () => {
+        it("[case] - assigns realm", () => {
+            // Arrange
             const realm = {} as Realm;
+
+            // Act
             const permission = createPermission({ realm });
 
+            // Assert
             expect(permission.realm).toBe(realm);
         });
     });
 
-    describe("update", () => {
-        it("should update a single field", () => {
+    describe("[Method] - update", () => {
+        it("[case] - updates a single field", () => {
+            // Arrange
             const permission = createPermission({ name: "Old" });
 
+            // Act
             permission.update({ patch: { name: "New" } });
 
+            // Assert
             expect(permission.name).toBe("New");
             expect(permission.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should update multiple fields at once", () => {
+        it("[case] - updates multiple fields at once", () => {
+            // Arrange
             const permission = createPermission({ name: "Old", description: "Old desc" });
 
+            // Act
             permission.update({ patch: { name: "New", description: "New desc" } });
 
+            // Assert
             expect(permission.name).toBe("New");
             expect(permission.description).toBe("New desc");
         });
 
-        it("should skip unchanged fields", () => {
+        it("[case] - skips unchanged fields", () => {
+            // Arrange
             const permission = createPermission({ name: "Same", description: "Old" });
 
+            // Act
             permission.update({ patch: { name: "Same", description: "New" } });
 
+            // Assert
             expect(permission.name).toBe("Same");
             expect(permission.description).toBe("New");
         });
 
-        it("should ignore undefined values in patch", () => {
+        it("[case] - ignores undefined values in patch", () => {
+            // Arrange
             const permission = createPermission({ name: "Original" });
 
+            // Act
             permission.update({ patch: { name: "Updated", description: undefined } });
 
+            // Assert
             expect(permission.name).toBe("Updated");
             expect(permission.description).toBeUndefined();
         });
 
-        it("should throw when patch is empty object", () => {
+        it("[case] - throws when patch is empty object", () => {
+            // Arrange
             const permission = createPermission();
 
-            expect(() => permission.update({ patch: {} })).toThrow("EMPTY_UPDATE_PATCH");
+            // Act
+            const act = (): unknown => permission.update({ patch: {} });
+
+            // Assert
+            expect(act).toThrow("EMPTY_UPDATE_PATCH");
         });
 
-        it("should throw when no values actually changed", () => {
+        it("[case] - throws when no values actually changed", () => {
+            // Arrange
             const permission = createPermission({ name: "Same" });
 
-            expect(() => permission.update({ patch: { name: "Same" } })).toThrow("NO_CHANGES_DETECTED");
+            // Act
+            const act = (): unknown => permission.update({ patch: { name: "Same" } });
+
+            // Assert
+            expect(act).toThrow("NO_CHANGES_DETECTED");
         });
     });
 
-    describe("revoke", () => {
-        it("should revoke an active permission", () => {
+    describe("[Method] - revoke", () => {
+        it("[case] - revokes an active permission", () => {
+            // Arrange
             const permission = createPermission();
+
+            // Act
             permission.revoke();
 
+            // Assert
             expect(permission.isRevoked).toBe(true);
             expect(permission.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already revoked", () => {
+        it("[case] - throws when already revoked", () => {
+            // Arrange
             const permission = createPermission();
             permission.revoke();
 
-            expect(() => permission.revoke()).toThrow("ALREADY_REVOKED");
+            // Act
+            const act = (): unknown => permission.revoke();
+
+            // Assert
+            expect(act).toThrow("ALREADY_REVOKED");
         });
     });
 
-    describe("restore", () => {
-        it("should restore a revoked permission", () => {
+    describe("[Method] - restore", () => {
+        it("[case] - restores a revoked permission", () => {
+            // Arrange
             const permission = createPermission();
             permission.revoke();
+
+            // Act
             permission.restore();
 
+            // Assert
             expect(permission.isRevoked).toBe(false);
             expect(permission.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already active", () => {
+        it("[case] - throws when already active", () => {
+            // Arrange
             const permission = createPermission();
 
-            expect(() => permission.restore()).toThrow("ALREADY_ACTIVE");
+            // Act
+            const act = (): unknown => permission.restore();
+
+            // Assert
+            expect(act).toThrow("ALREADY_ACTIVE");
         });
     });
 
-    describe("canPurge", () => {
-        it("should throw for active permission", () => {
+    describe("[Method] - canPurge", () => {
+        it("[case] - throws for active permission", () => {
+            // Arrange
             const permission = createPermission();
 
-            expect(() => permission.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
+            // Act
+            const act = (): unknown => permission.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_ACTIVE");
         });
 
-        it("should throw for revoked system-managed permission", () => {
+        it("[case] - throws for revoked system-managed permission", () => {
+            // Arrange
             const permission = createPermission({ isSystemManaged: true });
             permission.revoke();
 
-            expect(() => permission.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
+            // Act
+            const act = (): unknown => permission.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
-        it("should pass for revoked non-system permission", () => {
+        it("[case] - passes for revoked non-system permission", () => {
+            // Arrange
             const permission = createPermission();
             permission.revoke();
 
-            expect(() => permission.canPurge()).not.toThrow();
+            // Act
+            const act = (): unknown => permission.canPurge();
+
+            // Assert
+            expect(act).not.toThrow();
         });
     });
 });

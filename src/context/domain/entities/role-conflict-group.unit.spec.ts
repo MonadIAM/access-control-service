@@ -14,11 +14,13 @@ function createGroup(overrides?: Partial<Entities.RoleConflictGroup.ConstructorP
     });
 }
 
-describe("RoleConflictGroup Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - RoleConflictGroup", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
             const realm = {} as Realm;
 
+            // Act
             const group = new RoleConflictGroup({
                 code: "SoD_OPS",
                 name: "Ops Separation",
@@ -26,171 +28,265 @@ describe("RoleConflictGroup Entity", () => {
                 realm,
             });
 
+            // Assert
             expect(group.code).toBe("SoD_OPS");
             expect(group.name).toBe("Ops Separation");
             expect(group.maxAllowed).toBe(2);
             expect(group.realm).toBe(realm);
         });
 
-        it("should default booleans to false", () => {
+        it("[case] - defaults booleans to false", () => {
+            // Arrange
+
+            // Act
             const group = createGroup();
 
+            // Assert
             expect(group.isSystemManaged).toBe(false);
             expect(group.isRevoked).toBe(false);
         });
 
-        it("should respect explicit boolean overrides", () => {
+        it("[case] - respects explicit boolean overrides", () => {
+            // Arrange
+
+            // Act
             const group = createGroup({ isSystemManaged: true, isRevoked: true });
 
+            // Assert
             expect(group.isSystemManaged).toBe(true);
             expect(group.isRevoked).toBe(true);
         });
 
-        it("should auto-generate id, createdAt, version", () => {
+        it("[case] - generates id, createdAt, version", () => {
+            // Arrange
             const group = createGroup();
 
-            expect(isUUID(group.id, "4")).toBe(true);
+            // Act
+            const result = isUUID(group.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(group.createdAt).toBeInstanceOf(Date);
             expect(group.version).toBe(1);
             expect(group.updatedAt).toBeUndefined();
         });
 
-        it("should assign description when provided", () => {
+        it("[case] - assigns description when provided", () => {
+            // Arrange
+
+            // Act
             const group = createGroup({ description: "Prevents dual control" });
+
+            // Assert
             expect(group.description).toBe("Prevents dual control");
         });
 
-        it("should leave description undefined when omitted", () => {
+        it("[case] - leaves description undefined when omitted", () => {
+            // Arrange
+
+            // Act
             const group = createGroup();
+
+            // Assert
             expect(group.description).toBeUndefined();
         });
     });
 
-    describe("update", () => {
-        it("should update a single field", () => {
+    describe("[Method] - update", () => {
+        it("[case] - updates a single field", () => {
+            // Arrange
             const group = createGroup({ name: "Old" });
 
+            // Act
             group.update({ patch: { name: "New" } });
 
+            // Assert
             expect(group.name).toBe("New");
             expect(group.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should update multiple fields at once", () => {
+        it("[case] - updates multiple fields at once", () => {
+            // Arrange
             const group = createGroup({ name: "Old", maxAllowed: 1 });
 
+            // Act
             group.update({ patch: { name: "New", maxAllowed: 3 } });
 
+            // Assert
             expect(group.name).toBe("New");
             expect(group.maxAllowed).toBe(3);
         });
 
-        it("should skip unchanged fields", () => {
+        it("[case] - skips unchanged fields", () => {
+            // Arrange
             const group = createGroup({ name: "Same", maxAllowed: 1 });
 
+            // Act
             group.update({ patch: { name: "Same", maxAllowed: 5 } });
 
+            // Assert
             expect(group.name).toBe("Same");
             expect(group.maxAllowed).toBe(5);
         });
 
-        it("should ignore undefined values in patch", () => {
+        it("[case] - ignores undefined values in patch", () => {
+            // Arrange
             const group = createGroup({ maxAllowed: 1 });
 
+            // Act
             group.update({ patch: { maxAllowed: 2, description: undefined } });
 
+            // Assert
             expect(group.maxAllowed).toBe(2);
             expect(group.description).toBeUndefined();
         });
 
-        it("should throw when patch is empty object", () => {
+        it("[case] - throws when patch is empty object", () => {
+            // Arrange
             const group = createGroup();
 
-            expect(() => group.update({ patch: {} })).toThrow("EMPTY_UPDATE_PATCH");
+            // Act
+            const act = (): unknown => group.update({ patch: {} });
+
+            // Assert
+            expect(act).toThrow("EMPTY_UPDATE_PATCH");
         });
 
-        it("should throw when no values actually changed", () => {
+        it("[case] - throws when no values actually changed", () => {
+            // Arrange
             const group = createGroup({ name: "Same" });
 
-            expect(() => group.update({ patch: { name: "Same" } })).toThrow("NO_CHANGES_DETECTED");
+            // Act
+            const act = (): unknown => group.update({ patch: { name: "Same" } });
+
+            // Assert
+            expect(act).toThrow("NO_CHANGES_DETECTED");
         });
 
-        it("should throw when the group is revoked", () => {
+        it("[case] - throws when the group is revoked", () => {
+            // Arrange
             const group = createGroup();
             group.revoke();
 
-            expect(() => group.update({ patch: { name: "New" } })).toThrow("CANNOT_UPDATE_REVOKED");
+            // Act
+            const act = (): unknown => group.update({ patch: { name: "New" } });
+
+            // Assert
+            expect(act).toThrow("CANNOT_UPDATE_REVOKED");
         });
     });
 
-    describe("revoke", () => {
-        it("should revoke an active group", () => {
+    describe("[Method] - revoke", () => {
+        it("[case] - revokes an active group", () => {
+            // Arrange
             const group = createGroup();
+
+            // Act
             group.revoke();
 
+            // Assert
             expect(group.isRevoked).toBe(true);
             expect(group.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already revoked", () => {
+        it("[case] - throws when already revoked", () => {
+            // Arrange
             const group = createGroup();
             group.revoke();
 
-            expect(() => group.revoke()).toThrow("ALREADY_REVOKED");
+            // Act
+            const act = (): unknown => group.revoke();
+
+            // Assert
+            expect(act).toThrow("ALREADY_REVOKED");
         });
     });
 
-    describe("restore", () => {
-        it("should restore a revoked group", () => {
+    describe("[Method] - restore", () => {
+        it("[case] - restores a revoked group", () => {
+            // Arrange
             const group = createGroup();
             group.revoke();
+
+            // Act
             group.restore();
 
+            // Assert
             expect(group.isRevoked).toBe(false);
             expect(group.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already active", () => {
+        it("[case] - throws when already active", () => {
+            // Arrange
             const group = createGroup();
 
-            expect(() => group.restore()).toThrow("ALREADY_ACTIVE");
+            // Act
+            const act = (): unknown => group.restore();
+
+            // Assert
+            expect(act).toThrow("ALREADY_ACTIVE");
         });
     });
 
-    describe("canPurge", () => {
-        it("should throw for active group", () => {
+    describe("[Method] - canPurge", () => {
+        it("[case] - throws for active group", () => {
+            // Arrange
             const group = createGroup();
 
-            expect(() => group.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
+            // Act
+            const act = (): unknown => group.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_ACTIVE");
         });
 
-        it("should throw for revoked system-managed group", () => {
+        it("[case] - throws for revoked system-managed group", () => {
+            // Arrange
             const group = createGroup({ isSystemManaged: true });
             group.revoke();
 
-            expect(() => group.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
+            // Act
+            const act = (): unknown => group.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
-        it("should pass for revoked non-system group", () => {
+        it("[case] - passes for revoked non-system group", () => {
+            // Arrange
             const group = createGroup();
             group.revoke();
 
-            expect(() => group.canPurge()).not.toThrow();
+            // Act
+            const act = (): unknown => group.canPurge();
+
+            // Assert
+            expect(act).not.toThrow();
         });
     });
 
-    describe("canModifyMembers", () => {
-        it("should throw when the group is revoked", () => {
+    describe("[Method] - canModifyMembers", () => {
+        it("[case] - throws when the group is revoked", () => {
+            // Arrange
             const group = createGroup();
             group.revoke();
 
-            expect(() => group.canModifyMembers()).toThrow("CANNOT_MODIFY_MEMBERS_REVOKED");
+            // Act
+            const act = (): unknown => group.canModifyMembers();
+
+            // Assert
+            expect(act).toThrow("CANNOT_MODIFY_MEMBERS_REVOKED");
         });
 
-        it("should pass for an active group", () => {
+        it("[case] - passes for an active group", () => {
+            // Arrange
             const group = createGroup();
 
-            expect(() => group.canModifyMembers()).not.toThrow();
+            // Act
+            const act = (): unknown => group.canModifyMembers();
+
+            // Assert
+            expect(act).not.toThrow();
         });
     });
 });

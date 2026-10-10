@@ -5,17 +5,31 @@ import { PublicOrdinalOperator } from "~infrastructure/database/enums";
 
 import { OrdinalFilterDTO } from "./ordinal-filter.dto";
 
-describe("OrdinalFilterDTO", () => {
-    it.each(["IN", "NOT_IN"])("rejects removed predicate %s", (operator) => {
-        const filter = Object.assign(new OrdinalFilterDTO<number>(), { operator, value: [1, 2] });
-        expect(validateSync(filter).some((error) => error.property === "operator")).toBe(true);
-    });
+describe("[DTO] - OrdinalFilter", () => {
+    describe("[Behavior] - validation", () => {
+        it.each(["IN", "NOT_IN"])("[case] - rejects removed predicate %s", (operator) => {
+            // Arrange
+            const filter = Object.assign(new OrdinalFilterDTO<number>(), { operator, value: [1, 2] });
 
-    it.each(Object.values(PublicOrdinalOperator))("accepts supported predicate %s", (operator) => {
-        const filter = Object.assign(new OrdinalFilterDTO<number>(), {
-            operator,
-            value: operator === PublicOrdinalOperator.BETWEEN ? [1, 2] : 1,
+            // Act
+            const result = validateSync(filter).some((error) => error.property === "operator");
+
+            // Assert
+            expect(result).toBe(true);
         });
-        expect(validateSync(filter)).toEqual([]);
+
+        it.each(Object.values(PublicOrdinalOperator))("[case] - accepts supported predicate %s", (operator) => {
+            // Arrange
+            const filter = Object.assign(new OrdinalFilterDTO<number>(), {
+                operator,
+                value: operator === PublicOrdinalOperator.BETWEEN ? [1, 2] : 1,
+            });
+
+            // Act
+            const result = validateSync(filter);
+
+            // Assert
+            expect(result).toEqual([]);
+        });
     });
 });

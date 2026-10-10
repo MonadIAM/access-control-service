@@ -30,18 +30,20 @@ async function loadMembers(
     );
 }
 
-describe("RoleConflictGroupService integration", () => {
+describe("[DomainService] - RoleConflictGroup", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("create", () => {
-        it("creates a conflict group and its members atomically", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates a conflict group and its members atomically", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm({ code: "conflict-create" });
             const first = await suite.fixtures().createRole({ realm, code: "roles.first" });
             const second = await suite.fixtures().createRole({ realm, code: "roles.second" });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().roleConflictGroupService.create({
                     input: {
@@ -59,6 +61,7 @@ describe("RoleConflictGroupService integration", () => {
             const [group] = await loadGroups(suite, realm);
             const members = await loadMembers(suite, group);
 
+            // Assert
             expect(group).toMatchObject({
                 description: "Exclusive roles",
                 code: "conflicts.exclusive",
@@ -68,37 +71,41 @@ describe("RoleConflictGroupService integration", () => {
             expect(members.map(({ role }) => role.code)).toEqual(["roles.first", "roles.second"]);
         });
 
-        it("rolls back group creation when existing assignments violate the rule", async () => {
+        it("[case] - rolls back group creation when existing assignments violate the rule", async () => {
+            // Arrange
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "conflict-create-rollback" });
             const first = await suite.fixtures().createRole({ realm, code: "roles.first" });
             const second = await suite.fixtures().createRole({ realm, code: "roles.second" });
-
             await suite.fixtures().createAccountRoleAssignment({ realm, role: first, account });
             await suite.fixtures().createAccountRoleAssignment({ realm, role: second, account });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().roleConflictGroupService.create({
-                        input: {
-                            description: "Exclusive roles",
-                            members: [first.id, second.id],
-                            code: "conflicts.exclusive",
-                            name: "Exclusive",
-                            maxAllowed: 1,
-                        },
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.role-conflict-group.HAS_ACCOUNTS_VIOLATING_RULE");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().roleConflictGroupService.create({
+                    input: {
+                        description: "Exclusive roles",
+                        members: [first.id, second.id],
+                        code: "conflicts.exclusive",
+                        name: "Exclusive",
+                        maxAllowed: 1,
+                    },
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await loadGroups(suite, realm);
 
-            await expect(loadGroups(suite, realm)).resolves.toHaveLength(0);
+            // Assert
+            await expect(result).rejects.toThrow("services.role-conflict-group.HAS_ACCOUNTS_VIOLATING_RULE");
+            expect(result2).toHaveLength(0);
         });
     });
 
-    describe("update", () => {
-        it("rolls back maxAllowed reduction when existing accounts would violate it", async () => {
+    describe("[Method] - update", () => {
+        it("[case] - rolls back maxAllowed reduction when existing accounts would violate it", async () => {
+            // Arrange
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "conflict-update-rollback" });
             const first = await suite.fixtures().createRole({ realm, code: "roles.first" });
@@ -109,29 +116,32 @@ describe("RoleConflictGroupService integration", () => {
                 maxAllowed: 2,
                 realm,
             });
-
             await suite.fixtures().createRoleConflictMember({ group, role: first });
             await suite.fixtures().createRoleConflictMember({ group, role: second });
             await suite.fixtures().createAccountRoleAssignment({ realm, role: first, account });
             await suite.fixtures().createAccountRoleAssignment({ realm, role: second, account });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().roleConflictGroupService.update({
-                        patch: { maxAllowed: 1 },
-                        id: group.id,
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.role-conflict-group.HAS_ACCOUNTS_VIOLATING_RULE");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().roleConflictGroupService.update({
+                    patch: { maxAllowed: 1 },
+                    id: group.id,
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await loadGroups(suite, realm);
 
-            await expect(loadGroups(suite, realm)).resolves.toEqual([expect.objectContaining({ maxAllowed: 2 })]);
+            // Assert
+            await expect(result).rejects.toThrow("services.role-conflict-group.HAS_ACCOUNTS_VIOLATING_RULE");
+            expect(result2).toEqual([expect.objectContaining({ maxAllowed: 2 })]);
         });
     });
 
-    describe("restore", () => {
-        it("rolls back restore when revoked groups have violating accounts", async () => {
+    describe("[Method] - restore", () => {
+        it("[case] - rolls back restore when revoked groups have violating accounts", async () => {
+            // Arrange
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "conflict-restore-rollback" });
             const first = await suite.fixtures().createRole({ realm, code: "roles.first" });
@@ -143,23 +153,25 @@ describe("RoleConflictGroupService integration", () => {
                 maxAllowed: 1,
                 realm,
             });
-
             await suite.fixtures().createRoleConflictMember({ group, role: first });
             await suite.fixtures().createRoleConflictMember({ group, role: second });
             await suite.fixtures().createAccountRoleAssignment({ realm, role: first, account });
             await suite.fixtures().createAccountRoleAssignment({ realm, role: second, account });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().roleConflictGroupService.restore({
-                        identifiers: [group.id],
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.role-conflict-group.HAS_ACCOUNTS_VIOLATING_RULE");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().roleConflictGroupService.restore({
+                    identifiers: [group.id],
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await loadGroups(suite, realm);
 
-            await expect(loadGroups(suite, realm)).resolves.toEqual([expect.objectContaining({ isRevoked: true })]);
+            // Assert
+            await expect(result).rejects.toThrow("services.role-conflict-group.HAS_ACCOUNTS_VIOLATING_RULE");
+            expect(result2).toEqual([expect.objectContaining({ isRevoked: true })]);
         });
     });
 });

@@ -21,7 +21,7 @@ const sasl = {
     KAFKA_SASL_USERNAME: "service",
 };
 
-describe("KafkaUtils", () => {
+describe("[Utility] - KafkaUtils", () => {
     beforeAll(async () => {
         const modulePath = "./utils";
         ({ KafkaUtils } = await import(modulePath));
@@ -31,22 +31,40 @@ describe("KafkaUtils", () => {
         readFileSync.mockReset().mockImplementation((path) => `contents:${path}`);
     });
 
-    describe("buildClientConfig", () => {
-        it.each([false, true])("includes clientId only when requested: %s", (withClientId) => {
-            expect(KafkaUtils.buildClientConfig(new ConfigService(base), { withClientId })).toEqual({
+    describe("[Method] - buildClientConfig", () => {
+        it.each([false, true])("[case] - includes clientId only when requested: %s", (withClientId) => {
+            // Arrange
+
+            // Act
+            const result = KafkaUtils.buildClientConfig(new ConfigService(base), { withClientId });
+
+            // Assert
+            expect(result).toEqual({
                 brokers: ["broker:9093"],
                 ...(withClientId ? { clientId: "access-control" } : {}),
             });
             expect(readFileSync).not.toHaveBeenCalled();
         });
 
-        it("disables clientId and security by default", () => {
-            expect(KafkaUtils.buildClientConfig(new ConfigService(base))).toEqual({ brokers: ["broker:9093"] });
+        it("[case] - disables clientId and security by default", () => {
+            // Arrange
+
+            // Act
+            const result = KafkaUtils.buildClientConfig(new ConfigService(base));
+
+            // Assert
+            expect(result).toEqual({ brokers: ["broker:9093"] });
         });
 
-        it.each([false, true])("builds TLS options and preserves rejectUnauthorized=%s", (rejectUnauthorized) => {
+        it.each([false, true])("[case] - builds TLS options and preserves rejectUnauthorized=%s", (rejectUnauthorized) => {
+            // Arrange
             const config = new ConfigService({ ...base, ...ssl, KAFKA_SSL_REJECT_UNAUTHORIZED: rejectUnauthorized });
-            expect(KafkaUtils.buildClientConfig(config)).toEqual({
+
+            // Act
+            const result = KafkaUtils.buildClientConfig(config);
+
+            // Assert
+            expect(result).toEqual({
                 brokers: ["broker:9093"],
                 ssl: {
                     servername: "broker",
@@ -63,33 +81,54 @@ describe("KafkaUtils", () => {
             ]);
         });
 
-        it("combines TLS and SASL and trims the password file", () => {
+        it("[case] - combines TLS and SASL and trims the password file", () => {
+            // Arrange
             readFileSync.mockImplementation((path) => (path === "/password" ? "  secret\n" : `contents:${path}`));
+
+            // Act
             const result = KafkaUtils.buildClientConfig(new ConfigService({ ...base, ...ssl, ...sasl }));
+
+            // Assert
             expect(result.ssl).toMatchObject({ servername: "broker" });
             expect(result.sasl).toEqual({ mechanism: "scram-sha-512", username: "service", password: "secret" });
             expect(readFileSync).toHaveBeenCalledWith("/password", "utf8");
         });
 
-        it("supports SASL without TLS", () => {
-            expect(KafkaUtils.buildClientConfig(new ConfigService({ ...base, ...sasl }))).toEqual({
+        it("[case] - supports SASL without TLS", () => {
+            // Arrange
+
+            // Act
+            const result = KafkaUtils.buildClientConfig(new ConfigService({ ...base, ...sasl }));
+
+            // Assert
+            expect(result).toEqual({
                 brokers: ["broker:9093"],
                 sasl: { mechanism: "scram-sha-512", username: "service", password: "contents:/password" },
             });
         });
 
-        it("propagates secret file errors", () => {
+        it("[case] - propagates secret file errors", () => {
+            // Arrange
             const error = new Error("unreadable secret");
             readFileSync.mockImplementation(() => {
                 throw error;
             });
-            expect(() => KafkaUtils.buildClientConfig(new ConfigService({ ...base, ...sasl }))).toThrow(error);
+
+            // Act
+            const act = (): unknown => KafkaUtils.buildClientConfig(new ConfigService({ ...base, ...sasl }));
+
+            // Assert
+            expect(act).toThrow(error);
         });
 
-        it("fails on missing required configuration", () => {
-            expect(() => KafkaUtils.buildClientConfig(new ConfigService({ SERVICE_NAME: "service" }))).toThrow(
-                "KAFKA_BROKER",
-            );
+        it("[case] - fails on missing required configuration", () => {
+            // Arrange
+
+            // Act
+            const act = (): unknown => KafkaUtils.buildClientConfig(new ConfigService({ SERVICE_NAME: "service" }));
+
+            // Assert
+            expect(act).toThrow("KAFKA_BROKER");
         });
     });
 });

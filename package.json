@@ -1,6 +1,6 @@
 {
   "name": "@monadiam/access-control-service",
-  "description": "Access Control Service implementing HRBAC, DAC, SoD (N-of-M), Delegation Policies, Multitenancy and Invitation mechanics, with Audit and Change Log support.",
+  "description": "IAM | Access Control & AuthZ: hierarchical RBAC, DAC permission overrides, separation of duties (SoD), role delegation policies and realm-scoped access control.",
   "author": "Daniil Egorov (https://github.com/Lambdius)",
   "license": "SEE LICENSE IN LICENSE",
   "version": "0.0.1",

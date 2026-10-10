@@ -42,7 +42,7 @@ function callbacks(): {
     };
 }
 
-describe("KafkaRetryService", () => {
+describe("[InfrastructureService] - KafkaRetry", () => {
     beforeAll(async () => {
         const modulePath = "./retry.service";
         ({ KafkaRetryService } = await import(modulePath));
@@ -79,27 +79,41 @@ describe("KafkaRetryService", () => {
         jest.restoreAllMocks();
     });
 
-    describe("execute", () => {
-        it("heartbeats before processing a successful message", async () => {
+    describe("[Method] - execute", () => {
+        it("[case] - heartbeats before processing a successful message", async () => {
+            // Arrange
+            let heartbeatsBeforeProcessing = 0;
             props.process.mockImplementation(() => {
-                expect(props.heartbeat).toHaveBeenCalledTimes(1);
+                heartbeatsBeforeProcessing = props.heartbeat.mock.calls.length;
                 return Promise.resolve();
             });
+
+            // Act
             await service.execute(props);
+
+            // Assert
+            expect(heartbeatsBeforeProcessing).toBe(1);
             expect(props.process).toHaveBeenCalledTimes(1);
             expect(props.reject).not.toHaveBeenCalled();
             expect(metrics.recordRetry).not.toHaveBeenCalled();
             expect(sleep).not.toHaveBeenCalled();
         });
 
-        it("retries transient errors and heartbeats at most one second apart while waiting", async () => {
+        it("[case] - retries transient errors and heartbeats at most one second apart while waiting", async () => {
+            // Arrange
             props.process.mockRejectedValueOnce(transient);
+
+            // Act
             const result = service.execute(props);
             await jest.advanceTimersByTimeAsync(1499);
-            expect(props.process).toHaveBeenCalledTimes(1);
-            expect(props.heartbeat).toHaveBeenCalledTimes(2);
+            const attemptsBeforeRetry = props.process.mock.calls.length;
+            const heartbeatsBeforeRetry = props.heartbeat.mock.calls.length;
             await jest.advanceTimersByTimeAsync(1);
             await result;
+
+            // Assert
+            expect(attemptsBeforeRetry).toBe(1);
+            expect(heartbeatsBeforeRetry).toBe(2);
             expect(props.process).toHaveBeenCalledTimes(2);
             expect(props.heartbeat).toHaveBeenCalledTimes(4);
             expect(sleep.mock.calls.map(([delay]) => delay)).toEqual([1000, 500]);
@@ -107,104 +121,180 @@ describe("KafkaRetryService", () => {
             expect(props.reject).not.toHaveBeenCalled();
         });
 
-        it("rejects after the configured number of retries", async () => {
+        it("[case] - rejects after the configured number of retries", async () => {
+            // Arrange
             props.process.mockRejectedValue(transient);
+
+            // Act
             const result = service.execute(props);
             await jest.runAllTimersAsync();
             await result;
+
+            // Assert
             expect(props.process).toHaveBeenCalledTimes(3);
             expect(metrics.recordRetry).toHaveBeenCalledTimes(2);
             expect(props.reject.mock.calls).toEqual([[transient]]);
             expect(metrics.recordDead).not.toHaveBeenCalled();
         });
 
-        it("does not retry when the retry budget is zero", async () => {
+        it("[case] - does not retry when the retry budget is zero", async () => {
+            // Arrange
             service = create(0);
             props.process.mockRejectedValue(transient);
+
+            // Act
             await service.execute(props);
+
+            // Assert
             expect(props.process).toHaveBeenCalledTimes(1);
             expect(props.reject).toHaveBeenCalledWith(transient);
             expect(sleep).not.toHaveBeenCalled();
         });
 
-        it.each([permanent, "unclassified"])("rejects permanent errors without waiting: %s", async (error) => {
+        it.each([
+            { label: "application error", value: permanent },
+            { label: "string", value: "unclassified" },
+        ])("[case] - rejects permanent errors without waiting ($label)", async ({ value: error }) => {
+            // Arrange
             props.process.mockRejectedValue(error);
+
+            // Act
             await service.execute(props);
+
+            // Assert
             expect(props.reject.mock.calls).toEqual([[error]]);
             expect(metrics.recordRetry).not.toHaveBeenCalled();
             expect(sleep).not.toHaveBeenCalled();
         });
 
-        it("returns Kafka retry exceptions to the transport without local retry or rejection", async () => {
+        it("[case] - returns Kafka retry exceptions to the transport without local retry or rejection", async () => {
+            // Arrange
             props.process.mockRejectedValue(new KafkaRetriableException("transport retry"));
-            await expect(service.execute(props)).rejects.toBeInstanceOf(KafkaRetriableException);
+
+            // Act
+            const result = service.execute(props);
+
+            // Assert
+            await expect(result).rejects.toBeInstanceOf(KafkaRetriableException);
             expect(props.process).toHaveBeenCalledTimes(1);
             expect(props.reject).not.toHaveBeenCalled();
             expect(metrics.recordRetry).not.toHaveBeenCalled();
         });
 
-        it.each([new Error("heartbeat failed"), "heartbeat failed"])("wraps heartbeat failures: %s", async (error) => {
+        it.each([
+            { label: "Error", value: new Error("heartbeat failed") },
+            { label: "string", value: "heartbeat failed" },
+        ])("[case] - wraps heartbeat failures ($label)", async ({ value: error }) => {
+            // Arrange
             props.heartbeat.mockRejectedValue(error);
-            await expect(service.execute(props)).rejects.toMatchObject({ message: "heartbeat failed" });
+
+            // Act
+            const result = service.execute(props);
+
+            // Assert
+            await expect(result).rejects.toMatchObject({ message: "heartbeat failed" });
             expect(props.process).not.toHaveBeenCalled();
             expect(props.reject).not.toHaveBeenCalled();
         });
 
-        it("propagates failure of the rejection handler to the transport", async () => {
+        it("[case] - propagates failure of the rejection handler to the transport", async () => {
+            // Arrange
             props.process.mockRejectedValue(permanent);
             props.reject.mockRejectedValue(new Error("dead topic unavailable"));
-            await expect(service.execute(props)).rejects.toBeInstanceOf(KafkaRetriableException);
+
+            // Act
+            const result = service.execute(props);
+
+            // Assert
+            await expect(result).rejects.toBeInstanceOf(KafkaRetriableException);
             expect(props.process).toHaveBeenCalledTimes(1);
         });
     });
 
-    describe("onModuleDestroy", () => {
-        it("aborts an active backoff without another attempt or rejection", async () => {
+    describe("[Method] - onModuleDestroy", () => {
+        it("[case] - aborts an active backoff without another attempt or rejection", async () => {
+            // Arrange
             props.process.mockRejectedValue(transient);
-            const result = expect(service.execute(props)).rejects.toBeInstanceOf(KafkaRetriableException);
+
+            // Act
+            const result = service.execute(props);
+            const settled = Promise.allSettled([result]);
             await jest.advanceTimersByTimeAsync(0);
-            expect(sleep).toHaveBeenCalledTimes(1);
+            const waitsBeforeShutdown = sleep.mock.calls.length;
             service.onModuleDestroy();
-            await result;
+            await settled;
+            await Promise.allSettled([result]);
+            const result2 = jest.getTimerCount();
+
+            // Assert
+            expect(waitsBeforeShutdown).toBe(1);
+            await expect(result).rejects.toBeInstanceOf(KafkaRetriableException);
             expect(sleep.mock.calls[0][2].signal.aborted).toBe(true);
-            expect(jest.getTimerCount()).toBe(0);
+            expect(result2).toBe(0);
             expect(props.process).toHaveBeenCalledTimes(1);
             expect(props.reject).not.toHaveBeenCalled();
         });
 
-        it("does not start processing after shutdown", async () => {
+        it("[case] - does not start processing after shutdown", async () => {
+            // Arrange
+
+            // Act
             service.onModuleDestroy();
-            await expect(service.execute(props)).rejects.toBeInstanceOf(KafkaRetriableException);
+
+            const result = service.execute(props);
+
+            // Assert
+            await expect(result).rejects.toBeInstanceOf(KafkaRetriableException);
             expect(props.heartbeat).not.toHaveBeenCalled();
             expect(props.process).not.toHaveBeenCalled();
         });
 
-        it.each([false, true])("does not acknowledge work finishing during shutdown, failing=%s", async (failing) => {
-            props.process.mockImplementation(() => {
-                service.onModuleDestroy();
-                return failing ? Promise.reject(transient) : Promise.resolve();
-            });
-            await expect(service.execute(props)).rejects.toBeInstanceOf(KafkaRetriableException);
-            expect(props.reject).not.toHaveBeenCalled();
-            expect(metrics.recordRetry).not.toHaveBeenCalled();
-        });
+        it.each([false, true])(
+            "[case] - does not acknowledge work finishing during shutdown, failing=%s",
+            async (failing) => {
+                // Arrange
+                props.process.mockImplementation(() => {
+                    service.onModuleDestroy();
+                    return failing ? Promise.reject(transient) : Promise.resolve();
+                });
+
+                // Act
+                const result = service.execute(props);
+
+                // Assert
+                await expect(result).rejects.toBeInstanceOf(KafkaRetriableException);
+                expect(props.reject).not.toHaveBeenCalled();
+                expect(metrics.recordRetry).not.toHaveBeenCalled();
+            },
+        );
     });
 
-    describe("wait", () => {
-        it("does not wait or heartbeat when the deadline has passed", async () => {
+    describe("[Method] - wait", () => {
+        it("[case] - does not wait or heartbeat when the deadline has passed", async () => {
+            // Arrange
+
+            // Act
             await service.wait({ heartbeat: props.heartbeat, deadline: -1 });
+
+            // Assert
             expect(sleep).not.toHaveBeenCalled();
             expect(props.heartbeat).not.toHaveBeenCalled();
         });
     });
 
-    describe("backoff", () => {
+    describe("[Method] - backoff", () => {
         it.each([
             [1, 1500],
             [2, 2500],
             [8, 2500],
-        ])("caps exponential backoff before applying jitter for attempt %s", (attempt, expected) => {
-            expect(service.backoff({ attempt })).toBe(expected);
+        ])("[case] - caps exponential backoff before applying jitter for attempt %s", (attempt, expected) => {
+            // Arrange
+
+            // Act
+            const result = service.backoff({ attempt });
+
+            // Assert
+            expect(result).toBe(expected);
         });
     });
 });

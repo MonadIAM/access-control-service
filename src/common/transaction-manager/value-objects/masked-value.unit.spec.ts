@@ -2,21 +2,33 @@ import { describe, expect, it } from "@jest/globals";
 
 import { MaskedValue } from "./masked-value";
 
-describe("MaskedValue Value Object", () => {
-    describe("constructor", () => {
-        it("should assign value and hash", () => {
+describe("[ValueObject] - MaskedValue", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns value and hash", () => {
+            // Arrange
+
+            // Act
             const value = new MaskedValue({ value: "****************", hash: "hmac:value" });
 
+            // Assert
             expect(value.value).toBe("****************");
             expect(value.hash).toBe("hmac:value");
         });
 
-        it("should freeze stored data", () => {
+        it("[case] - freezes stored data", () => {
+            // Arrange
+
+            // Act
             const value = new MaskedValue({ value: "****************", hash: "hmac:value" });
 
-            expect(Object.isFrozen(value)).toBe(true);
-            expect(Reflect.set(value, "value", "plain-secret")).toBe(false);
-            expect(Reflect.set(value, "hash", "tampered")).toBe(false);
+            const result = Object.isFrozen(value);
+            const result2 = Reflect.set(value, "value", "plain-secret");
+            const result3 = Reflect.set(value, "hash", "tampered");
+
+            // Assert
+            expect(result).toBe(true);
+            expect(result2).toBe(false);
+            expect(result3).toBe(false);
             expect(value).toEqual({
                 value: "****************",
                 hash: "hmac:value",

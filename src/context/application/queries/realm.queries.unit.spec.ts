@@ -11,12 +11,13 @@ const FOREIGN_REALM = "00000000-0000-4000-8000-000000000003";
 const PAGINATION: Pagination = { currentPage: 1, elementsPerPage: 10 };
 const helpers = new RealmQueriesUnitHelpers();
 
-describe("RealmQueries visibility", () => {
-    describe("findMany", () => {
+describe("[Queries] - Realm", () => {
+    describe("[Method] - findMany", () => {
         it.each([
             { mode: QueryMode.DEFAULT, expectedIds: [REALM], scope: "accessible realms" },
             { mode: QueryMode.MANAGE, expectedIds: [FOREIGN_REALM], scope: "requested realms" },
-        ])("$mode limits the selection to $scope", async ({ mode, expectedIds }) => {
+        ])("[case] - limits the selection to $scope ($mode)", async ({ mode, expectedIds }) => {
+            // Arrange
             const { queries, repository, cache } = helpers.queries();
             const filters: Repositories.Mappers.Realm.Filters = {
                 id: { operator: PublicStringOperator.IN, value: [FOREIGN_REALM] },
@@ -24,6 +25,7 @@ describe("RealmQueries visibility", () => {
             cache.collectRealms.mockResolvedValue([REALM]);
             repository.findMany.mockResolvedValue([[], 0]);
 
+            // Act
             await queries.findMany({
                 mode,
                 account: ACCOUNT,
@@ -33,6 +35,7 @@ describe("RealmQueries visibility", () => {
                 view: ResponseViewType.COMPACT,
             });
 
+            // Assert
             expect(repository.findMany).toHaveBeenCalledWith(
                 expect.objectContaining({
                     filters: { id: { operator: PublicStringOperator.IN, value: expectedIds } },
@@ -41,30 +44,33 @@ describe("RealmQueries visibility", () => {
             expect(filters.id?.value).toEqual([FOREIGN_REALM]);
         });
 
-        it("propagates a visibility lookup failure without querying unrestricted data", async () => {
+        it("[case] - propagates a visibility lookup failure without querying unrestricted data", async () => {
+            // Arrange
             const { queries, repository, cache } = helpers.queries();
             const error = new Error("projection unavailable");
             cache.collectRealms.mockRejectedValue(error);
 
-            await expect(
-                queries.findMany({
-                    mode: QueryMode.DEFAULT,
-                    account: ACCOUNT,
-                    pagination: PAGINATION,
-                    filters: {},
-                    sort: {},
-                    view: ResponseViewType.COMPACT,
-                }),
-            ).rejects.toBe(error);
+            // Act
+            const result = queries.findMany({
+                mode: QueryMode.DEFAULT,
+                account: ACCOUNT,
+                pagination: PAGINATION,
+                filters: {},
+                sort: {},
+                view: ResponseViewType.COMPACT,
+            });
 
+            // Assert
+            await expect(result).rejects.toBe(error);
             expect(repository.findMany).not.toHaveBeenCalled();
         });
     });
 
-    describe("findMany / getLookupList", () => {
+    describe("[Behavior] - list visibility", () => {
         it.each(["findMany", "getLookupList"] as const)(
-            "%s returns an empty page without querying an unrestricted repository when no realms are accessible",
+            "[case] - returns an empty page without querying an unrestricted repository when no realms are accessible (%s)",
             async (method) => {
+                // Arrange
                 const { queries, repository, cache } = helpers.queries();
                 cache.collectRealms.mockResolvedValue([]);
                 const request: Queries.Realm.FindMany.DefaultProps & Queries.Realm.GetLookupList.DefaultProps = {
@@ -77,78 +83,93 @@ describe("RealmQueries visibility", () => {
                     term: "",
                 };
 
-                await expect(queries[method](request)).resolves.toEqual([[], 0]);
+                // Act
+                const result = await queries[method](request);
 
+                // Assert
+                expect(result).toEqual([[], 0]);
                 expect(cache.collectRealms).toHaveBeenCalledWith({ account: ACCOUNT });
                 expect(repository[method]).not.toHaveBeenCalled();
             },
         );
     });
 
-    describe("findUnique", () => {
-        it("does not fetch a realm when the account has no relation to it", async () => {
+    describe("[Method] - findUnique", () => {
+        it("[case] - does not fetch a realm when the account has no relation to it", async () => {
+            // Arrange
             const { queries, repository, cache } = helpers.queries();
             cache.checkRealm.mockResolvedValue(false);
 
-            await expect(
-                queries.findUnique({
-                    mode: QueryMode.DEFAULT,
-                    view: ResponseViewType.COMPACT,
-                    account: ACCOUNT,
-                    realm: REALM,
-                }),
-            ).rejects.toThrow("queries.realm.RELATION_NOT_FOUND");
+            // Act
+            const result = queries.findUnique({
+                mode: QueryMode.DEFAULT,
+                view: ResponseViewType.COMPACT,
+                account: ACCOUNT,
+                realm: REALM,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("queries.realm.RELATION_NOT_FOUND");
             expect(cache.checkRealm).toHaveBeenCalledWith({ account: ACCOUNT, realm: REALM });
             expect(repository.findUniqueOrThrow).not.toHaveBeenCalled();
         });
 
-        it("returns the requested realm when the account has a relation to it", async () => {
+        it("[case] - returns the requested realm when the account has a relation to it", async () => {
+            // Arrange
             const { queries, repository, cache } = helpers.queries();
             const realm = helpers.createRealm({ id: REALM });
             cache.checkRealm.mockResolvedValue(true);
             repository.findUniqueOrThrow.mockResolvedValue(realm);
 
-            await expect(
-                queries.findUnique({
-                    mode: QueryMode.DEFAULT,
-                    view: ResponseViewType.COMPACT,
-                    account: ACCOUNT,
-                    realm: REALM,
-                }),
-            ).resolves.toBe(realm);
+            // Act
+            const result = await queries.findUnique({
+                mode: QueryMode.DEFAULT,
+                view: ResponseViewType.COMPACT,
+                account: ACCOUNT,
+                realm: REALM,
+            });
 
+            // Assert
+            expect(result).toBe(realm);
             expect(cache.checkRealm).toHaveBeenCalledWith({ account: ACCOUNT, realm: REALM });
             expect(repository.findUniqueOrThrow).toHaveBeenCalledWith(expect.objectContaining({ where: { id: REALM } }));
         });
 
-        it("allows management access without requiring personal realm membership", async () => {
+        it("[case] - allows management access without requiring personal realm membership", async () => {
+            // Arrange
             const { queries, repository, cache } = helpers.queries();
             const realm = helpers.createRealm({ id: REALM });
             repository.findUniqueOrThrow.mockResolvedValue(realm);
 
-            await expect(
-                queries.findUnique({ mode: QueryMode.MANAGE, realm: REALM, view: ResponseViewType.COMPACT }),
-            ).resolves.toBe(realm);
+            // Act
+            const result = await queries.findUnique({
+                mode: QueryMode.MANAGE,
+                realm: REALM,
+                view: ResponseViewType.COMPACT,
+            });
 
+            // Assert
+            expect(result).toBe(realm);
             expect(cache.checkRealm).not.toHaveBeenCalled();
         });
     });
 
-    describe("getLookupList", () => {
+    describe("[Method] - getLookupList", () => {
         it.each([
             { mode: QueryMode.DEFAULT, expectedRealms: [REALM] },
             { mode: QueryMode.MANAGE, expectedRealms: undefined },
-        ])("$mode applies realm visibility to a nonempty lookup", async ({ mode, expectedRealms }) => {
+        ])("[case] - applies realm visibility to a nonempty lookup ($mode)", async ({ mode, expectedRealms }) => {
+            // Arrange
             const { queries, repository, cache } = helpers.queries();
             cache.collectRealms.mockResolvedValue([REALM]);
             const page: [Entities.Realm[], number] = [[helpers.createRealm({ id: REALM })], 1];
             repository.getLookupList.mockResolvedValue(page);
 
-            await expect(
-                queries.getLookupList({ mode, account: ACCOUNT, pagination: PAGINATION, term: "project" }),
-            ).resolves.toBe(page);
+            // Act
+            const result = await queries.getLookupList({ mode, account: ACCOUNT, pagination: PAGINATION, term: "project" });
 
+            // Assert
+            expect(result).toBe(page);
             expect(repository.getLookupList).toHaveBeenCalledWith({
                 realms: expectedRealms,
                 pagination: PAGINATION,

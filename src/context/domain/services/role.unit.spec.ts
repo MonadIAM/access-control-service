@@ -116,23 +116,25 @@ function mockMoveRoles(props: {
     });
 }
 
-describe("RoleService", () => {
+describe("[DomainService] - Role", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("throws when parent role has no inheritance", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - throws when parent role has no inheritance", async () => {
+            // Arrange
             const parent = createAtomicRole({ id: PARENT_ROLE_ID });
             const { service, repositories, transaction } = createRoleServiceContext({
                 realm: parent.realm,
                 roles: [parent],
             });
 
-            await expect(service.create(createCreateProps(transaction.entityManager))).rejects.toThrow(
-                "services.role.CREATE_PARENT_NO_INHERITANCE",
-            );
+            // Act
+            const result = service.create(createCreateProps(transaction.entityManager));
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role.CREATE_PARENT_NO_INHERITANCE");
             expect(repositories.roles.findUniqueOrThrow.mock.calls).toContainEqual([
                 {
                     where: { id: PARENT_ROLE_ID, realm: REALM_ID },
@@ -143,7 +145,8 @@ describe("RoleService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("throws when the realm role limit would be exceeded", async () => {
+        it("[case] - throws when the realm role limit would be exceeded", async () => {
+            // Arrange
             const parent = createCompositeRole({ id: PARENT_ROLE_ID });
             const { service, repositories, transaction } = createRoleServiceContext({
                 realm: parent.realm,
@@ -151,10 +154,11 @@ describe("RoleService", () => {
             });
             repositories.roles.wouldExceedRoleLimit.mockImplementation(() => Promise.resolve(true));
 
-            await expect(service.create(createCreateProps(transaction.entityManager))).rejects.toThrow(
-                "services.role.REALM_ROLE_LIMIT_EXCEEDED",
-            );
+            // Act
+            const result = service.create(createCreateProps(transaction.entityManager));
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role.REALM_ROLE_LIMIT_EXCEEDED");
             expect(repositories.roles.wouldExceedRoleLimit).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
@@ -162,17 +166,20 @@ describe("RoleService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("creates a role, flushes it, builds hierarchy, and returns the created role with parent", async () => {
+        it("[case] - creates a role, flushes it, builds hierarchy, and returns the created role with parent", async () => {
+            // Arrange
             const parent = createCompositeRole({ id: PARENT_ROLE_ID });
             const { service, repositories, transaction } = createRoleServiceContext({
                 realm: parent.realm,
                 roles: [parent],
             });
 
+            // Act
             const result = await service.create(
                 createCreateProps(transaction.entityManager, { description: "Created for tests" }),
             );
 
+            // Assert
             expect(result.parent).toBe(parent);
             expect(result.entity).toEqual(
                 expect.objectContaining({
@@ -195,8 +202,9 @@ describe("RoleService", () => {
         });
     });
 
-    describe("buildHierarchy", () => {
-        it("always inserts the base hierarchy path when there are no children", async () => {
+    describe("[Method] - buildHierarchy", () => {
+        it("[case] - inserts the base path when there are no children", async () => {
+            // Arrange
             const parent = createCompositeRole({ id: PARENT_ROLE_ID });
             const role = createAtomicRole({ realm: parent.realm });
             const { service, repositories, transaction } = createRoleServiceContext({
@@ -204,11 +212,13 @@ describe("RoleService", () => {
                 roles: [role],
             });
 
+            // Act
             await service.buildHierarchy({
                 input: { entity: role, parent, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
 
+            // Assert
             expect(repositories.roleClosures.insertNewHierarchy).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 ancestor: PARENT_ROLE_ID,
@@ -219,7 +229,8 @@ describe("RoleService", () => {
             expect(repositories.roleClosures.moveSubtrees).not.toHaveBeenCalled();
         });
 
-        it("moves direct children from the parent under the new role", async () => {
+        it("[case] - moves direct children from the parent under the new role", async () => {
+            // Arrange
             const parent = createCompositeRole({ id: PARENT_ROLE_ID });
             const child = createCompositeRole({ id: CHILD_ROLE_ID });
             const role = createAtomicRole({ realm: parent.realm });
@@ -229,11 +240,13 @@ describe("RoleService", () => {
             });
             repositories.roles.getDescendants.mockImplementation(() => Promise.resolve([child]));
 
+            // Act
             await service.buildHierarchy({
                 transaction: transaction.entityManager,
                 input: { entity: role, parent, realm: REALM_ID, children: [CHILD_ROLE_ID] },
             });
 
+            // Assert
             expect(repositories.roles.getDescendants).toHaveBeenCalledWith({
                 ancestor: PARENT_ROLE_ID,
                 transaction: transaction.entityManager,
@@ -248,7 +261,8 @@ describe("RoleService", () => {
             });
         });
 
-        it("throws when a requested child is not a direct descendant of the parent", async () => {
+        it("[case] - throws when a requested child is not a direct descendant of the parent", async () => {
+            // Arrange
             const parent = createCompositeRole({ id: PARENT_ROLE_ID });
             const child = createCompositeRole({ id: CHILD_ROLE_ID });
             const role = createAtomicRole({ realm: parent.realm });
@@ -258,24 +272,26 @@ describe("RoleService", () => {
             });
             repositories.roles.getDescendants.mockImplementation(() => Promise.resolve([child]));
 
-            await expect(
-                service.buildHierarchy({
-                    transaction: transaction.entityManager,
-                    input: {
-                        children: [DISPLACED_ROLE_ID],
-                        realm: REALM_ID,
-                        entity: role,
-                        parent,
-                    },
-                }),
-            ).rejects.toThrow("services.role.CREATE_CHILD_NOT_DIRECT_DESCENDANT");
+            // Act
+            const result = service.buildHierarchy({
+                transaction: transaction.entityManager,
+                input: {
+                    children: [DISPLACED_ROLE_ID],
+                    realm: REALM_ID,
+                    entity: role,
+                    parent,
+                },
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role.CREATE_CHILD_NOT_DIRECT_DESCENDANT");
             expect(repositories.roleClosures.moveSubtrees).not.toHaveBeenCalled();
         });
     });
 
-    describe("update", () => {
-        it("finds a role in the realm and applies the patch", async () => {
+    describe("[Method] - update", () => {
+        it("[case] - finds a role in the realm and applies the patch", async () => {
+            // Arrange
             const role = createAtomicRole();
             const { service, repositories, transaction } = createRoleServiceContext({
                 realm: role.realm,
@@ -283,6 +299,7 @@ describe("RoleService", () => {
             });
             const updateSpy = jest.spyOn(role, "update");
 
+            // Act
             await service.update({
                 transaction: transaction.entityManager,
                 patch: { name: "Updated Role" },
@@ -290,6 +307,7 @@ describe("RoleService", () => {
                 id: ROLE_ID,
             });
 
+            // Assert
             expect(repositories.roles.findUniqueOrThrow.mock.calls).toContainEqual([
                 {
                     where: { id: ROLE_ID, realm: REALM_ID },
@@ -300,8 +318,9 @@ describe("RoleService", () => {
         });
     });
 
-    describe("move", () => {
-        it("throws when the target parent has no inheritance", async () => {
+    describe("[Method] - move", () => {
+        it("[case] - throws when the target parent has no inheritance", async () => {
+            // Arrange
             const role = createAtomicRole();
             const { service, repositories, transaction } = createRoleServiceContext({ realm: role.realm, roles: [role] });
             mockMoveRoles({
@@ -310,15 +329,17 @@ describe("RoleService", () => {
                 target: role,
             });
 
-            await expect(service.move(createMoveProps(transaction.entityManager))).rejects.toThrow(
-                "services.role.REPARENT_TARGET_NO_INHERITANCE",
-            );
+            // Act
+            const result = service.move(createMoveProps(transaction.entityManager));
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role.REPARENT_TARGET_NO_INHERITANCE");
             expect(repositories.roles.getAncestors).not.toHaveBeenCalled();
             expect(repositories.roleClosures.move).not.toHaveBeenCalled();
         });
 
-        it("throws when the target parent is the target itself", async () => {
+        it("[case] - throws when the target parent is the target itself", async () => {
+            // Arrange
             const role = createAtomicRole();
             const { service, repositories, transaction } = createRoleServiceContext({ realm: role.realm, roles: [role] });
             mockMoveRoles({
@@ -327,27 +348,31 @@ describe("RoleService", () => {
                 target: role,
             });
 
-            await expect(service.move(createMoveProps(transaction.entityManager))).rejects.toThrow(
-                "services.role.REPARENT_TARGET_IS_SELF",
-            );
+            // Act
+            const result = service.move(createMoveProps(transaction.entityManager));
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role.REPARENT_TARGET_IS_SELF");
             expect(repositories.roleClosures.existsTransitivePath).not.toHaveBeenCalled();
             expect(repositories.roleClosures.move).not.toHaveBeenCalled();
         });
 
-        it("throws when the target has no current parent", async () => {
+        it("[case] - throws when the target has no current parent", async () => {
+            // Arrange
             const role = createAtomicRole();
             const { service, repositories, transaction } = createRoleServiceContext({ realm: role.realm, roles: [role] });
             mockMoveRoles({ repositories, target: role, currentParent: null });
 
-            await expect(service.move(createMoveProps(transaction.entityManager))).rejects.toThrow(
-                "services.role.REPARENT_ROOT_NOT_ALLOWED",
-            );
+            // Act
+            const result = service.move(createMoveProps(transaction.entityManager));
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role.REPARENT_ROOT_NOT_ALLOWED");
             expect(repositories.roleClosures.move).not.toHaveBeenCalled();
         });
 
-        it("throws for a non-linear move to the current parent", async () => {
+        it("[case] - throws for a non-linear move to the current parent", async () => {
+            // Arrange
             const targetParent = createCompositeRole({ id: TARGET_PARENT_ROLE_ID });
             const role = createAtomicRole({ realm: targetParent.realm });
             const { service, repositories, transaction } = createRoleServiceContext({
@@ -356,33 +381,39 @@ describe("RoleService", () => {
             });
             mockMoveRoles({ repositories, target: role, targetParent, currentParent: targetParent });
 
-            await expect(service.move(createMoveProps(transaction.entityManager))).rejects.toThrow(
-                "services.role.REPARENT_TARGET_ALREADY_PARENT",
-            );
+            // Act
+            const result = service.move(createMoveProps(transaction.entityManager));
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role.REPARENT_TARGET_ALREADY_PARENT");
             expect(repositories.roleClosures.move).not.toHaveBeenCalled();
         });
 
-        it("throws for subtree moves into the target subtree", async () => {
+        it("[case] - throws for subtree moves into the target subtree", async () => {
+            // Arrange
             const role = createAtomicRole();
             const { service, repositories, transaction } = createRoleServiceContext({ realm: role.realm, roles: [role] });
             mockMoveRoles({ repositories, target: role, wouldFormCycle: true });
 
-            await expect(
-                service.move(createMoveProps(transaction.entityManager, { mode: MoveMode.SUBTREE })),
-            ).rejects.toThrow("services.role.REPARENT_TARGET_IN_SUBTREE");
+            // Act
+            const result = service.move(createMoveProps(transaction.entityManager, { mode: MoveMode.SUBTREE }));
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role.REPARENT_TARGET_IN_SUBTREE");
             expect(repositories.roleClosures.move).not.toHaveBeenCalled();
         });
 
-        it("moves direct target children to the current parent before a parallel move", async () => {
+        it("[case] - moves direct target children to the current parent before a parallel move", async () => {
+            // Arrange
             const role = createAtomicRole();
             const { service, repositories, transaction } = createRoleServiceContext({ realm: role.realm, roles: [role] });
             const child = createCompositeRole({ id: CHILD_ROLE_ID });
             mockMoveRoles({ repositories, target: role, directChildren: [child] });
 
+            // Act
             const result = await service.move(createMoveProps(transaction.entityManager, { mode: MoveMode.PARALLEL }));
 
+            // Assert
             expect(repositories.roleClosures.moveSubtrees).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 children: [CHILD_ROLE_ID],
@@ -399,7 +430,8 @@ describe("RoleService", () => {
             expect(result).toEqual({ steps: [MOVE_STEP, MOVE_STEP], target: role });
         });
 
-        it("moves displaced target-parent children under the target before a linear move", async () => {
+        it("[case] - moves displaced target-parent children under the target before a linear move", async () => {
+            // Arrange
             const targetParent = createCompositeRole({ id: TARGET_PARENT_ROLE_ID });
             const role = createAtomicRole({ realm: targetParent.realm });
             const { service, repositories, transaction } = createRoleServiceContext({
@@ -415,8 +447,10 @@ describe("RoleService", () => {
                 target: role,
             });
 
+            // Act
             await service.move(createMoveProps(transaction.entityManager, { mode: MoveMode.LINEAR }));
 
+            // Assert
             expect(repositories.roleClosures.moveSubtrees).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 oldParent: TARGET_PARENT_ROLE_ID,
@@ -432,14 +466,17 @@ describe("RoleService", () => {
             });
         });
 
-        it("allows a parallel move into the target subtree because direct children are detached first", async () => {
+        it("[case] - allows a parallel move into the target subtree because direct children are detached first", async () => {
+            // Arrange
             const role = createAtomicRole();
             const { service, repositories, transaction } = createRoleServiceContext({ realm: role.realm, roles: [role] });
             const child = createCompositeRole({ id: CHILD_ROLE_ID });
             mockMoveRoles({ repositories, target: role, directChildren: [child], wouldFormCycle: true });
 
+            // Act
             const result = await service.move(createMoveProps(transaction.entityManager, { mode: MoveMode.PARALLEL }));
 
+            // Assert
             expect(repositories.roleClosures.existsTransitivePath).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 descendant: TARGET_PARENT_ROLE_ID,
@@ -457,7 +494,8 @@ describe("RoleService", () => {
             expect(result.target).toBe(role);
         });
 
-        it("allows a linear move into the target subtree because direct children are detached first", async () => {
+        it("[case] - allows a linear move into the target subtree because direct children are detached first", async () => {
+            // Arrange
             const targetParent = createCompositeRole({ id: TARGET_PARENT_ROLE_ID });
             const role = createAtomicRole({ realm: targetParent.realm });
             const { service, repositories, transaction } = createRoleServiceContext({
@@ -475,8 +513,10 @@ describe("RoleService", () => {
                 target: role,
             });
 
+            // Act
             const result = await service.move(createMoveProps(transaction.entityManager, { mode: MoveMode.LINEAR }));
 
+            // Assert
             expect(repositories.roleClosures.moveSubtrees).toHaveBeenNthCalledWith(1, {
                 transaction: transaction.entityManager,
                 newParent: PARENT_ROLE_ID,
@@ -495,7 +535,8 @@ describe("RoleService", () => {
             expect(result.target).toBe(role);
         });
 
-        it("allows a linear move to the current parent and moves siblings under the target", async () => {
+        it("[case] - allows a linear move to the current parent and moves siblings under the target", async () => {
+            // Arrange
             const targetParent = createCompositeRole({ id: TARGET_PARENT_ROLE_ID });
             const sibling = createCompositeRole({ id: DISPLACED_ROLE_ID });
             const role = createAtomicRole({ realm: targetParent.realm });
@@ -511,8 +552,10 @@ describe("RoleService", () => {
                 target: role,
             });
 
+            // Act
             await service.move(createMoveProps(transaction.entityManager, { mode: MoveMode.LINEAR }));
 
+            // Assert
             expect(repositories.roleClosures.moveSubtrees).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 oldParent: TARGET_PARENT_ROLE_ID,
@@ -523,7 +566,8 @@ describe("RoleService", () => {
             expect(repositories.roleClosures.move).toHaveBeenCalledTimes(1);
         });
 
-        it("searches the target with isSystemManaged false and propagates not-found", async () => {
+        it("[case] - searches the target with isSystemManaged false and propagates not-found", async () => {
+            // Arrange
             const { service, repositories, transaction } = createRoleServiceContext();
             repositories.roles.findUniqueOrThrow.mockImplementation(({ where }) => {
                 return typeof where === "object" && "isSystemManaged" in where && where.isSystemManaged === false
@@ -531,8 +575,11 @@ describe("RoleService", () => {
                     : Promise.resolve(createAtomicRole());
             });
 
-            await expect(service.move(createMoveProps(transaction.entityManager))).rejects.toThrow("role not found");
+            // Act
+            const result = service.move(createMoveProps(transaction.entityManager));
 
+            // Assert
+            await expect(result).rejects.toThrow("role not found");
             expect(repositories.roles.findUniqueOrThrow.mock.calls).toContainEqual([
                 {
                     where: { id: ROLE_ID, realm: REALM_ID, isSystemManaged: false },
@@ -543,45 +590,46 @@ describe("RoleService", () => {
         });
     });
 
-    describe("revoke / restore", () => {
+    describe("[Behavior] - revocation", () => {
         it.each([
             { method: "revoke", isRevoked: false, archetype: RoleArchetype.ATOMIC },
             { method: "restore", isRevoked: true, archetype: RoleArchetype.COMPOSITE },
-        ] as const)(
-            "$method processes each found entity and returns the batch",
-            async ({ method, isRevoked, archetype }) => {
-                const role = createAtomicRole({ archetype, isRevoked });
-                const secondRole = createCompositeRole({ id: TARGET_PARENT_ROLE_ID, isRevoked });
-                const { service, repositories, transaction } = createRoleServiceContext({
-                    roles: [role, secondRole],
-                    realm: role.realm,
-                });
-                repositories.roles.find.mockImplementation(() => Promise.resolve([role, secondRole]));
-                const firstOperationSpy = jest.spyOn(role, method);
-                const secondOperationSpy = jest.spyOn(secondRole, method);
+        ] as const)("[case] - processes and returns the batch ($method)", async ({ method, isRevoked, archetype }) => {
+            // Arrange
+            const role = createAtomicRole({ archetype, isRevoked });
+            const secondRole = createCompositeRole({ id: TARGET_PARENT_ROLE_ID, isRevoked });
+            const { service, repositories, transaction } = createRoleServiceContext({
+                roles: [role, secondRole],
+                realm: role.realm,
+            });
+            repositories.roles.find.mockImplementation(() => Promise.resolve([role, secondRole]));
+            const firstOperationSpy = jest.spyOn(role, method);
+            const secondOperationSpy = jest.spyOn(secondRole, method);
 
-                const result = await service[method]({
-                    identifiers: [ROLE_ID, TARGET_PARENT_ROLE_ID],
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                });
+            // Act
+            const result = await service[method]({
+                identifiers: [ROLE_ID, TARGET_PARENT_ROLE_ID],
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
-                expect(repositories.roles.find).toHaveBeenCalledWith({
-                    where: { id: { $in: [ROLE_ID, TARGET_PARENT_ROLE_ID] }, realm: REALM_ID },
-                    transaction: transaction.entityManager,
-                });
-                expect(firstOperationSpy).toHaveBeenCalledTimes(1);
-                expect(secondOperationSpy).toHaveBeenCalledTimes(1);
-                expect(result).toEqual([role, secondRole]);
-            },
-        );
+            // Assert
+            expect(repositories.roles.find).toHaveBeenCalledWith({
+                where: { id: { $in: [ROLE_ID, TARGET_PARENT_ROLE_ID] }, realm: REALM_ID },
+                transaction: transaction.entityManager,
+            });
+            expect(firstOperationSpy).toHaveBeenCalledTimes(1);
+            expect(secondOperationSpy).toHaveBeenCalledTimes(1);
+            expect(result).toEqual([role, secondRole]);
+        });
     });
 
-    describe("bulk identifiers", () => {
+    describe("[Behavior] - bulk identifiers", () => {
         it.each([
             { method: "revoke", isRevoked: false, archetype: RoleArchetype.ATOMIC },
             { method: "restore", isRevoked: true, archetype: RoleArchetype.COMPOSITE },
-        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked, archetype }) => {
+        ] as const)("[case] - deduplicates repository lookup ($method)", async ({ method, isRevoked, archetype }) => {
+            // Arrange
             const role = helpers.createRole({ id: ROLE_ID, archetype, isRevoked });
             const { service, repositories, transaction } = createRoleServiceContext({
                 realm: role.realm,
@@ -589,12 +637,14 @@ describe("RoleService", () => {
             });
             repositories.roles.find.mockImplementation(() => Promise.resolve([role]));
 
+            // Act
             const result = await service[method]({
                 transaction: transaction.entityManager,
                 identifiers: [ROLE_ID, ROLE_ID],
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(result).toEqual([role]);
             expect(repositories.roles.find).toHaveBeenCalledWith({
                 where: { id: { $in: [ROLE_ID] }, realm: REALM_ID },
@@ -603,8 +653,9 @@ describe("RoleService", () => {
         });
     });
 
-    describe("purge", () => {
-        it("checks purge eligibility, decreases closure depth, removes, and returns the role", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - checks purge eligibility, decreases closure depth, removes, and returns the role", async () => {
+            // Arrange
             const role = createCompositeRole({ id: ROLE_ID, isRevoked: true });
             const { service, repositories, transaction } = createRoleServiceContext({
                 realm: role.realm,
@@ -612,12 +663,14 @@ describe("RoleService", () => {
             });
             const canPurgeSpy = jest.spyOn(role, "canPurge");
 
+            // Act
             const result = await service.purge({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
                 id: ROLE_ID,
             });
 
+            // Assert
             expect(canPurgeSpy).toHaveBeenCalledTimes(1);
             expect(transaction.clear).not.toHaveBeenCalled();
             expect(repositories.roleClosures.decreaseTransitiveDepth).toHaveBeenCalledWith({
@@ -629,29 +682,32 @@ describe("RoleService", () => {
             expect(result).toBe(role);
         });
 
-        it("does not decrease closure depth or remove when purge eligibility fails", async () => {
+        it("[case] - does not decrease closure depth or remove when purge eligibility fails", async () => {
+            // Arrange
             const role = createCompositeRole({ id: ROLE_ID });
             const { service, repositories, transaction } = createRoleServiceContext({
                 realm: role.realm,
                 roles: [role],
             });
 
-            await expect(
-                service.purge({
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                    id: ROLE_ID,
-                }),
-            ).rejects.toThrow("entities.role.CANNOT_PURGE_ACTIVE");
+            // Act
+            const result = service.purge({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                id: ROLE_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("entities.role.CANNOT_PURGE_ACTIVE");
             expect(transaction.clear).not.toHaveBeenCalled();
             expect(repositories.roleClosures.decreaseTransitiveDepth).not.toHaveBeenCalled();
             expect(transaction.remove).not.toHaveBeenCalled();
         });
     });
 
-    describe("purgeSubtree", () => {
-        it("throws when descendants exceed the configured subtree purge limit", async () => {
+    describe("[Method] - purgeSubtree", () => {
+        it("[case] - throws when descendants exceed the configured subtree purge limit", async () => {
+            // Arrange
             const root = createCompositeRole({ id: ROLE_ID, isRevoked: true });
             const first = createCompositeRole({ id: CHILD_ROLE_ID, isRevoked: true });
             const second = createCompositeRole({ id: DISPLACED_ROLE_ID, isRevoked: true });
@@ -662,19 +718,21 @@ describe("RoleService", () => {
             });
             repositories.roles.getDescendants.mockImplementation(() => Promise.resolve([root, first, second]));
 
-            await expect(
-                service.purgeSubtree({
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                    id: ROLE_ID,
-                }),
-            ).rejects.toThrow("services.role.SUBTREE_SIZE_LIMIT_EXCEEDED");
+            // Act
+            const result = service.purgeSubtree({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                id: ROLE_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role.SUBTREE_SIZE_LIMIT_EXCEEDED");
             expect(transaction.clear).not.toHaveBeenCalled();
             expect(transaction.remove).not.toHaveBeenCalled();
         });
 
-        it("checks purge eligibility, removes descendants, and returns descendants with the root", async () => {
+        it("[case] - checks purge eligibility, removes descendants, and returns descendants with the root", async () => {
+            // Arrange
             const root = createCompositeRole({ id: ROLE_ID, isRevoked: true });
             const child = createCompositeRole({ id: CHILD_ROLE_ID, isRevoked: true });
             const { service, repositories, transaction } = createRoleServiceContext({
@@ -685,12 +743,14 @@ describe("RoleService", () => {
             const rootCanPurgeSpy = jest.spyOn(root, "canPurge");
             const childCanPurgeSpy = jest.spyOn(child, "canPurge");
 
+            // Act
             const result = await service.purgeSubtree({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
                 id: ROLE_ID,
             });
 
+            // Assert
             expect(rootCanPurgeSpy).toHaveBeenCalledTimes(1);
             expect(childCanPurgeSpy).toHaveBeenCalledTimes(1);
             expect(transaction.remove).toHaveBeenNthCalledWith(1, root);
@@ -698,7 +758,8 @@ describe("RoleService", () => {
             expect(result).toEqual({ entities: [root, child], root });
         });
 
-        it("fetches descendants without depth, so the root participates in the limit and removal set", async () => {
+        it("[case] - fetches descendants without depth, so the root participates in the limit and removal set", async () => {
+            // Arrange
             const root = createCompositeRole({ id: ROLE_ID, isRevoked: true });
             const child = createCompositeRole({ id: CHILD_ROLE_ID, isRevoked: true });
             const { service, repositories, transaction } = createRoleServiceContext({
@@ -708,12 +769,14 @@ describe("RoleService", () => {
             });
             repositories.roles.getDescendants.mockImplementation(() => Promise.resolve([root, child]));
 
+            // Act
             await service.purgeSubtree({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
                 id: ROLE_ID,
             });
 
+            // Assert
             expect(repositories.roles.getDescendants.mock.calls).toContainEqual([
                 {
                     transaction: transaction.entityManager,

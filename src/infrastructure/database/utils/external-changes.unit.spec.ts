@@ -6,15 +6,22 @@ const manager = (): ORM.FlushEventArgs["em"] => ({}) as ORM.FlushEventArgs["em"]
 const change = (id: string): ORM.ChangeSet<ORM.AnyEntity> =>
     ({ entity: { id } }) as unknown as ORM.ChangeSet<ORM.AnyEntity>;
 
-describe("ExternalChanges", () => {
-    describe("drain", () => {
-        it("returns an empty list for an unknown manager", () => {
-            expect(ExternalChanges.drain({ entityManager: manager() })).toEqual([]);
+describe("[Utility] - ExternalChanges", () => {
+    describe("[Method] - drain", () => {
+        it("[case] - returns an empty list for an unknown manager", () => {
+            // Arrange
+
+            // Act
+            const result = ExternalChanges.drain({ entityManager: manager() });
+
+            // Assert
+            expect(result).toEqual([]);
         });
     });
 
-    describe("record / drain", () => {
-        it("accumulates changes in order, isolates managers and drains only once", () => {
+    describe("[Behavior] - change collection", () => {
+        it("[case] - accumulates changes in order, isolates managers and drains only once", () => {
+            // Arrange
             const first = manager();
             const second = manager();
             const a = change("a");
@@ -23,24 +30,38 @@ describe("ExternalChanges", () => {
             ExternalChanges.record({ entityManager: first, changes: [a] });
             ExternalChanges.record({ entityManager: second, changes: [c] });
             ExternalChanges.record({ entityManager: first, changes: [b] });
+
+            // Act
             const drained = ExternalChanges.drain({ entityManager: first });
+            const result = ExternalChanges.drain({ entityManager: first });
+            const result2 = ExternalChanges.drain({ entityManager: second });
+            ExternalChanges.record({ entityManager: first, changes: [c] });
+            const result3 = ExternalChanges.drain({ entityManager: first });
+
+            // Assert
             expect(drained).toEqual([a, b]);
             expect(drained[0]).toBe(a);
-            expect(ExternalChanges.drain({ entityManager: first })).toEqual([]);
-            expect(ExternalChanges.drain({ entityManager: second })).toEqual([c]);
-            ExternalChanges.record({ entityManager: first, changes: [c] });
-            expect(ExternalChanges.drain({ entityManager: first })).toEqual([c]);
+            expect(result).toEqual([]);
+            expect(result2).toEqual([c]);
+            expect(result3).toEqual([c]);
         });
 
-        it("does not mutate or retain the caller's changes array", () => {
+        it("[case] - does not mutate or retain the caller's changes array", () => {
+            // Arrange
             const entityManager = manager();
             const a = change("a");
             const changes = [a];
             ExternalChanges.record({ entityManager, changes });
             ExternalChanges.record({ entityManager, changes: [] });
-            expect(changes).toEqual([a]);
+
+            // Act
+            const callerChanges = changes.slice();
             changes.length = 0;
-            expect(ExternalChanges.drain({ entityManager })).toEqual([a]);
+            const result = ExternalChanges.drain({ entityManager });
+
+            // Assert
+            expect(callerChanges).toEqual([a]);
+            expect(result).toEqual([a]);
         });
     });
 });

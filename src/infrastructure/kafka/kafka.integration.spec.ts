@@ -36,7 +36,7 @@ function receive<T>(consumer: Consumer, key: string, handler: (payload: EachMess
     return result.finally(() => clearTimeout(timer));
 }
 
-describe("Kafka infrastructure with broker and Schema Registry", () => {
+describe("[Infrastructure] - Kafka", () => {
     const topic = Object.values(KafkaTopic)[0];
     let kafka: Kafka;
     let producer: Producer;
@@ -97,9 +97,12 @@ describe("Kafka infrastructure with broker and Schema Registry", () => {
         await producer?.disconnect();
     });
 
-    describe("message delivery", () => {
-        it("delivers an encoded message with key and headers and decodes it using the registered schema", async () => {
+    describe("[Behavior] - message delivery", () => {
+        it("[case] - delivers an encoded message with key and headers and decodes it using the registered schema", async () => {
+            // Arrange
             const id = randomUUID();
+
+            // Act
             const result = receive(consumer, id, async ({ message, partition, topic: receivedTopic }) => {
                 const decoded = await registry.decode<{ id: string }>({ topic: receivedTopic, value: message.value });
                 registry.validate({ topic: receivedTopic, value: decoded });
@@ -115,6 +118,8 @@ describe("Kafka infrastructure with broker and Schema Registry", () => {
             );
             await producer.send({ topic, messages: [message] });
             const received = await result;
+
+            // Assert
             expect(received.decoded).toEqual({ id });
             expect(received.mapped).toMatchObject({
                 event: id,
@@ -126,17 +131,25 @@ describe("Kafka infrastructure with broker and Schema Registry", () => {
         });
     });
 
-    describe("schema validation", () => {
-        it("rejects invalid payloads against a schema fetched from the real registry", async () => {
-            expect(() => registry.validate({ topic, value: { id: 123 } })).toThrow();
-            await expect(registry.encode({ topic, value: { id: 123 } })).rejects.toMatchObject({
+    describe("[Behavior] - schema validation", () => {
+        it("[case] - rejects invalid payloads against a schema fetched from the real registry", async () => {
+            // Arrange
+
+            // Act
+            const act = (): unknown => registry.validate({ topic, value: { id: 123 } });
+            const result = registry.encode({ topic, value: { id: 123 } });
+
+            // Assert
+            expect(act).toThrow();
+            await expect(result).rejects.toMatchObject({
                 messageKey: "services.schema-registry.ENCODE_FAILED",
             });
         });
     });
 
-    describe("retry", () => {
-        it("retries processing of a consumed message with the real consumer heartbeat", async () => {
+    describe("[Method] - retry", () => {
+        it("[case] - retries processing of a consumed message with the real consumer heartbeat", async () => {
+            // Arrange
             const id = randomUUID();
             const attempts: string[] = [];
             const retries: string[] = [];
@@ -149,6 +162,8 @@ describe("Kafka infrastructure with broker and Schema Registry", () => {
                 },
                 KafkaResource.config(),
             );
+
+            // Act
             const result = receive(consumer, id, async ({ heartbeat, message }) => {
                 await retry!.execute({
                     topic,
@@ -165,7 +180,10 @@ describe("Kafka infrastructure with broker and Schema Registry", () => {
             });
             const message = await serializer.serialize({ key: id, value: { id } }, { pattern: topic });
             await producer.send({ topic, messages: [message] });
-            expect(await result).toBe(id);
+            const result2 = await result;
+
+            // Assert
+            expect(result2).toBe(id);
             expect(attempts).toHaveLength(2);
             expect(attempts[0]).toBe(attempts[1]);
             expect(retries).toEqual([topic]);

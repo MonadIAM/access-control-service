@@ -14,12 +14,12 @@ const SECOND_POLICY_ID  = "00000000-0000-4000-8000-600000000005";
 
 const helpers = new RoleDelegationPolicyUnitHelpers();
 
-describe("RoleDelegationPolicyService", () => {
+describe("[DomainService] - RoleDelegationPolicy", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
+    describe("[Method] - create", () => {
         it.each([
             {
                 found: "delegator",
@@ -33,7 +33,8 @@ describe("RoleDelegationPolicyService", () => {
                 found: "none",
                 messageKey: "services.role-delegation-policy.BOTH_ROLES_NOT_FOUND",
             },
-        ])("throws $messageKey when $found role lookup result is found", async ({ found, messageKey }) => {
+        ])("[case] - throws $messageKey when $found role lookup result is found", async ({ found, messageKey }) => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const delegator = helpers.createRole({ id: DELEGATOR_ROLE_ID, realm });
             const target = helpers.createRole({ id: TARGET_ROLE_ID, realm });
@@ -41,18 +42,19 @@ describe("RoleDelegationPolicyService", () => {
             const { service, repositories, transaction } = helpers.service({ roles: [delegator, target], realm });
             repositories.roles.find.mockImplementation(() => Promise.resolve(roleEntities));
 
-            await expect(
-                service.create({
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                    input: {
-                        justification: "temporary delegation",
-                        delegator: DELEGATOR_ROLE_ID,
-                        target: TARGET_ROLE_ID,
-                    },
-                }),
-            ).rejects.toThrow(messageKey);
+            // Act
+            const result = service.create({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                input: {
+                    justification: "temporary delegation",
+                    delegator: DELEGATOR_ROLE_ID,
+                    target: TARGET_ROLE_ID,
+                },
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow(messageKey);
             expect(repositories.roles.find).toHaveBeenCalledWith({
                 where: { id: { $in: [DELEGATOR_ROLE_ID, TARGET_ROLE_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -61,45 +63,49 @@ describe("RoleDelegationPolicyService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("throws a self-delegation error before role lookup when delegator equals target", async () => {
+        it("[case] - throws a self-delegation error before role lookup when delegator equals target", async () => {
+            // Arrange
             const { service, repositories, transaction } = helpers.service();
 
-            await expect(
-                service.create({
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                    input: {
-                        justification: "self delegation",
-                        delegator: DELEGATOR_ROLE_ID,
-                        target: DELEGATOR_ROLE_ID,
-                    },
-                }),
-            ).rejects.toThrow("services.role-delegation-policy.SELF_DELEGATION_NOT_ALLOWED");
+            // Act
+            const result = service.create({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                input: {
+                    justification: "self delegation",
+                    delegator: DELEGATOR_ROLE_ID,
+                    target: DELEGATOR_ROLE_ID,
+                },
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role-delegation-policy.SELF_DELEGATION_NOT_ALLOWED");
             expect(repositories.roles.find).not.toHaveBeenCalled();
             expect(repositories.realms.findUniqueOrThrow).not.toHaveBeenCalled();
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("throws when the delegator policy limit would be exceeded", async () => {
+        it("[case] - throws when the delegator policy limit would be exceeded", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const delegator = helpers.createRole({ id: DELEGATOR_ROLE_ID, realm });
             const target = helpers.createRole({ id: TARGET_ROLE_ID, realm });
             const { service, repositories, transaction } = helpers.service({ roles: [delegator, target], realm });
             repositories.roleDelegationPolicies.wouldExceedPolicyLimit.mockImplementation(() => Promise.resolve(true));
 
-            await expect(
-                service.create({
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                    input: {
-                        justification: "temporary delegation",
-                        delegator: DELEGATOR_ROLE_ID,
-                        target: TARGET_ROLE_ID,
-                    },
-                }),
-            ).rejects.toThrow("services.role-delegation-policy.LIMIT_EXCEEDED");
+            // Act
+            const result = service.create({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                input: {
+                    justification: "temporary delegation",
+                    delegator: DELEGATOR_ROLE_ID,
+                    target: TARGET_ROLE_ID,
+                },
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role-delegation-policy.LIMIT_EXCEEDED");
             expect(repositories.roleDelegationPolicies.wouldExceedPolicyLimit).toHaveBeenCalledWith({
                 delegator: DELEGATOR_ROLE_ID,
                 transaction: transaction.entityManager,
@@ -107,25 +113,27 @@ describe("RoleDelegationPolicyService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("throws when a transitive delegation path already exists", async () => {
+        it("[case] - throws when a transitive delegation path already exists", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const delegator = helpers.createRole({ id: DELEGATOR_ROLE_ID, realm });
             const target = helpers.createRole({ id: TARGET_ROLE_ID, realm });
             const { service, repositories, transaction } = helpers.service({ roles: [delegator, target], realm });
             repositories.roleDelegationPolicies.existsTransitivePath.mockImplementation(() => Promise.resolve(true));
 
-            await expect(
-                service.create({
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                    input: {
-                        justification: "temporary delegation",
-                        delegator: DELEGATOR_ROLE_ID,
-                        target: TARGET_ROLE_ID,
-                    },
-                }),
-            ).rejects.toThrow("services.role-delegation-policy.EXISTS_TRANSITIVE_PATH");
+            // Act
+            const result = service.create({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                input: {
+                    justification: "temporary delegation",
+                    delegator: DELEGATOR_ROLE_ID,
+                    target: TARGET_ROLE_ID,
+                },
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role-delegation-policy.EXISTS_TRANSITIVE_PATH");
             expect(repositories.roleDelegationPolicies.existsTransitivePath).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 to: DELEGATOR_ROLE_ID,
@@ -134,13 +142,15 @@ describe("RoleDelegationPolicyService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("resolves delegator and target from an unordered repository result, validates, and persists", async () => {
+        it("[case] - resolves delegator and target from an unordered repository result, validates, and persists", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const delegator = helpers.createRole({ id: DELEGATOR_ROLE_ID, realm });
             const target = helpers.createRole({ id: TARGET_ROLE_ID, realm });
             const { service, repositories, transaction } = helpers.service({ roles: [target, delegator], realm });
             const canCreateSpy = jest.spyOn(RoleDelegationPolicy.prototype, "canCreate");
 
+            // Act
             await service.create({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
@@ -152,6 +162,7 @@ describe("RoleDelegationPolicyService", () => {
                 },
             });
 
+            // Assert
             expect(repositories.roleDelegationPolicies.wouldExceedPolicyLimit).toHaveBeenCalledWith({
                 delegator: DELEGATOR_ROLE_ID,
                 transaction: transaction.entityManager,
@@ -169,13 +180,15 @@ describe("RoleDelegationPolicyService", () => {
         });
     });
 
-    describe("update", () => {
-        it("finds a policy in the realm and applies the patch", async () => {
+    describe("[Method] - update", () => {
+        it("[case] - finds a policy in the realm and applies the patch", async () => {
+            // Arrange
             const policy = helpers.createRoleDelegationPolicy({ id: POLICY_ID });
             const { service, repositories, transaction } = helpers.service({ realm: policy.realm });
             const updateSpy = jest.spyOn(policy, "update");
             repositories.roleDelegationPolicies.findUniqueOrThrow.mockImplementation(() => Promise.resolve(policy));
 
+            // Act
             await service.update({
                 patch: { justification: "Updated delegation" },
                 transaction: transaction.entityManager,
@@ -183,6 +196,7 @@ describe("RoleDelegationPolicyService", () => {
                 id: POLICY_ID,
             });
 
+            // Assert
             expect(repositories.roleDelegationPolicies.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: POLICY_ID, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -191,11 +205,12 @@ describe("RoleDelegationPolicyService", () => {
         });
     });
 
-    describe("revoke / restore", () => {
+    describe("[Behavior] - revocation", () => {
         it.each([
             { method: "revoke", isRevoked: false },
             { method: "restore", isRevoked: true },
-        ] as const)("$method processes each found entity and returns the batch", async ({ method, isRevoked }) => {
+        ] as const)("[case] - processes and returns the batch ($method)", async ({ method, isRevoked }) => {
+            // Arrange
             const first = helpers.createRoleDelegationPolicy({ id: POLICY_ID, isRevoked });
             const second = helpers.createRoleDelegationPolicy({ id: SECOND_POLICY_ID, realm: first.realm, isRevoked });
             const { service, repositories, transaction } = helpers.service({ realm: first.realm });
@@ -203,12 +218,14 @@ describe("RoleDelegationPolicyService", () => {
             const secondOperationSpy = jest.spyOn(second, method);
             repositories.roleDelegationPolicies.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service[method]({
                 identifiers: [POLICY_ID, SECOND_POLICY_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.roleDelegationPolicies.find).toHaveBeenCalledWith({
                 where: { id: { $in: [POLICY_ID, SECOND_POLICY_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -219,16 +236,19 @@ describe("RoleDelegationPolicyService", () => {
         });
     });
 
-    describe("expire", () => {
-        it("merges and revokes each provided policy", () => {
+    describe("[Method] - expire", () => {
+        it("[case] - merges and revokes each provided policy", () => {
+            // Arrange
             const { service, transaction } = helpers.service();
             const first = helpers.createRoleDelegationPolicy({ id: POLICY_ID });
             const second = helpers.createRoleDelegationPolicy({ id: SECOND_POLICY_ID });
             const firstRevokeSpy = jest.spyOn(first, "revoke");
             const secondRevokeSpy = jest.spyOn(second, "revoke");
 
+            // Act
             service.expire({ transaction: transaction.entityManager, entities: [first, second] });
 
+            // Assert
             expect(transaction.merge).toHaveBeenNthCalledWith(1, first);
             expect(transaction.merge).toHaveBeenNthCalledWith(2, second);
             expect(firstRevokeSpy).toHaveBeenCalledTimes(1);
@@ -236,8 +256,9 @@ describe("RoleDelegationPolicyService", () => {
         });
     });
 
-    describe("purge", () => {
-        it("checks purge eligibility, removes found policies, and returns them", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - checks purge eligibility, removes found policies, and returns them", async () => {
+            // Arrange
             const first = helpers.createRoleDelegationPolicy({ id: POLICY_ID, isRevoked: true });
             const second = helpers.createRoleDelegationPolicy({
                 id: SECOND_POLICY_ID,
@@ -249,12 +270,14 @@ describe("RoleDelegationPolicyService", () => {
             const secondCanPurgeSpy = jest.spyOn(second, "canPurge");
             repositories.roleDelegationPolicies.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service.purge({
                 identifiers: [POLICY_ID, SECOND_POLICY_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.roleDelegationPolicies.find).toHaveBeenCalledWith({
                 where: { id: { $in: [POLICY_ID, SECOND_POLICY_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -267,22 +290,25 @@ describe("RoleDelegationPolicyService", () => {
         });
     });
 
-    describe("bulk identifiers", () => {
+    describe("[Behavior] - bulk identifiers", () => {
         it.each([
             { method: "revoke", isRevoked: false },
             { method: "restore", isRevoked: true },
             { method: "purge", isRevoked: true },
-        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked }) => {
+        ] as const)("[case] - deduplicates repository lookup ($method)", async ({ method, isRevoked }) => {
+            // Arrange
             const policy = helpers.createRoleDelegationPolicy({ id: POLICY_ID, isRevoked });
             const { service, repositories, transaction } = helpers.service({ realm: policy.realm });
             repositories.roleDelegationPolicies.find.mockImplementation(() => Promise.resolve([policy]));
 
+            // Act
             const result = await service[method]({
                 transaction: transaction.entityManager,
                 identifiers: [POLICY_ID, POLICY_ID],
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(result).toEqual([policy]);
             expect(repositories.roleDelegationPolicies.find).toHaveBeenCalledWith({
                 where: { id: { $in: [POLICY_ID] }, realm: REALM_ID },

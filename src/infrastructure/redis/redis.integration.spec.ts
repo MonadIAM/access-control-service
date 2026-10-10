@@ -21,7 +21,7 @@ class TestConfigModule {}
 @Module({ imports: [TestConfigModule, RedisModule], providers: [HealthIndicatorService, RedisHealthIndicator] })
 class TestRedisModule {}
 
-describe("Redis infrastructure with Redis", () => {
+describe("[Infrastructure] - Redis", () => {
     let app: Optional<INestApplicationContext>;
     let clients: Redis[];
 
@@ -36,45 +36,65 @@ describe("Redis infrastructure with Redis", () => {
         app = undefined;
     });
 
-    describe("client connections", () => {
-        it("authenticates production clients and isolates cache, limiter and queue databases", async () => {
+    describe("[Behavior] - client connections", () => {
+        it("[case] - authenticates production clients and isolates cache, limiter and queue databases", async () => {
+            // Arrange
             const key = `integration:${randomUUID()}`;
-            try {
-                await Promise.all(clients.map((client, index) => client.set(key, `value-${index}`)));
-                expect(await Promise.all(clients.map((client) => client.get(key)))).toEqual([
-                    "value-0",
-                    "value-1",
-                    "value-2",
-                ]);
-                expect(await app!.get(RedisHealthIndicator).isHealthy("redis")).toEqual({ redis: { status: "up" } });
-                expect(app!.get(RedisConnectionRegistry).snapshots()).toEqual([
-                    { kind: "cache", status: "ready", connected: true, ready: true },
-                    { kind: "limiter", status: "ready", connected: true, ready: true },
-                    { kind: "queue", status: "ready", connected: true, ready: true },
-                ]);
-            } finally {
-                await Promise.all(clients.map((client) => client.del(key)));
-            }
+
+            // Act
+            const [values, health, connections] = await Promise.all(
+                clients.map((client, index) => client.set(key, `value-${index}`)),
+            )
+                .then(async () => {
+                    const values = await Promise.all(clients.map((client) => client.get(key)));
+                    const health = await app!.get(RedisHealthIndicator).isHealthy("redis");
+                    const connections = app!.get(RedisConnectionRegistry).snapshots();
+                    return [values, health, connections] as const;
+                })
+                .finally(() => Promise.all(clients.map((client) => client.del(key))));
+
+            // Assert
+            expect(values).toEqual(["value-0", "value-1", "value-2"]);
+            expect(health).toEqual({ redis: { status: "up" } });
+            expect(connections).toEqual([
+                { kind: "cache", status: "ready", connected: true, ready: true },
+                { kind: "limiter", status: "ready", connected: true, ready: true },
+                { kind: "queue", status: "ready", connected: true, ready: true },
+            ]);
         });
     });
 
-    describe("isHealthy", () => {
-        it("reports a disconnected dependency and recovers after reconnection", async () => {
+    describe("[Method] - isHealthy", () => {
+        it("[case] - reports a disconnected dependency and recovers after reconnection", async () => {
+            // Arrange
             await clients[0].quit();
-            expect(await app!.get(RedisHealthIndicator).isHealthy("redis")).toMatchObject({ redis: { status: "down" } });
+
+            // Act
+            const result = await app!.get(RedisHealthIndicator).isHealthy("redis");
             await clients[0].connect();
-            expect(await app!.get(RedisHealthIndicator).isHealthy("redis")).toEqual({ redis: { status: "up" } });
+            const result2 = await app!.get(RedisHealthIndicator).isHealthy("redis");
+
+            // Assert
+            expect(result).toMatchObject({ redis: { status: "down" } });
+            expect(result2).toEqual({ redis: { status: "up" } });
         });
     });
 
-    describe("onApplicationShutdown", () => {
-        it("runs the registered shutdown hook and closes all client connections", async () => {
+    describe("[Method] - onApplicationShutdown", () => {
+        it("[case] - runs the registered shutdown hook and closes all client connections", async () => {
+            // Arrange
             const ended = Promise.all(clients.map((client) => once(client, "end", { signal: AbortSignal.timeout(5000) })));
             await app!.close();
             await ended;
+
+            // Act
             app = undefined;
+            const pings = clients.map((client) => client.ping());
+            await Promise.allSettled(pings);
+
+            // Assert
             expect(clients.map((client) => client.status)).toEqual(["end", "end", "end"]);
-            await Promise.all(clients.map((client) => expect(client.ping()).rejects.toThrow()));
+            await Promise.all(pings.map((ping) => expect(ping).rejects.toThrow()));
         });
     });
 });

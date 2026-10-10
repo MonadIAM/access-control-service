@@ -13,7 +13,7 @@ function connection(): {
     };
 }
 
-describe("DatabaseHealthIndicator", () => {
+describe("[HealthIndicator] - Database", () => {
     let write: ReturnType<typeof connection>;
     let read: ReturnType<typeof connection>;
     let indicator: DatabaseHealthIndicator;
@@ -28,19 +28,31 @@ describe("DatabaseHealthIndicator", () => {
         );
     });
 
-    describe("isHealthy", () => {
-        it("checks both connections with SELECT 1 and preserves the indicator key", async () => {
-            expect(await indicator.isHealthy("postgres")).toEqual({ postgres: { status: "up" } });
+    describe("[Method] - isHealthy", () => {
+        it("[case] - checks both connections with SELECT 1 and preserves the indicator key", async () => {
+            // Arrange
+
+            // Act
+            const result = await indicator.isHealthy("postgres");
+
+            // Assert
+            expect(result).toEqual({ postgres: { status: "up" } });
             for (const current of [write, read]) {
                 expect(current.isConnected).toHaveBeenCalledTimes(1);
                 expect(current.execute).toHaveBeenCalledWith("SELECT 1");
             }
         });
 
-        it.each(["write", "read"])("reports a disconnected %s connection", async (kind) => {
+        it.each(["write", "read"])("[case] - reports a disconnected %s connection", async (kind) => {
+            // Arrange
             const current = kind === "write" ? write : read;
             current.isConnected.mockResolvedValue(false);
-            expect(await indicator.isHealthy("database")).toEqual({
+
+            // Act
+            const result = await indicator.isHealthy("database");
+
+            // Assert
+            expect(result).toEqual({
                 database: { status: "down", message: "connection_lost" },
             });
             expect(current.execute).not.toHaveBeenCalled();
@@ -49,16 +61,31 @@ describe("DatabaseHealthIndicator", () => {
             }
         });
 
-        it.each([new Error("driver failed"), "driver failed"])("normalizes driver errors: %s", async (error) => {
+        it.each([
+            { label: "Error", value: new Error("driver failed") },
+            { label: "string", value: "driver failed" },
+        ])("[case] - normalizes driver errors ($label)", async ({ value: error }) => {
+            // Arrange
             read.execute.mockRejectedValue(error);
-            expect(await indicator.isHealthy("database")).toEqual({
+
+            // Act
+            const result = await indicator.isHealthy("database");
+
+            // Assert
+            expect(result).toEqual({
                 database: { status: "down", message: "internal_driver_error" },
             });
         });
 
-        it("handles failure while checking connection state", async () => {
+        it("[case] - handles failure while checking connection state", async () => {
+            // Arrange
             write.isConnected.mockRejectedValue(new Error("unavailable"));
-            expect(await indicator.isHealthy("database")).toEqual({
+
+            // Act
+            const result = await indicator.isHealthy("database");
+
+            // Assert
+            expect(result).toEqual({
                 database: { status: "down", message: "internal_driver_error" },
             });
             expect(write.execute).not.toHaveBeenCalled();

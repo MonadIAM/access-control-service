@@ -55,7 +55,7 @@ class ErrorController {
 @Module({ controllers: [ErrorController] })
 class ErrorTestModule {}
 
-describe("ExceptionFilter HTTP contract", () => {
+describe("[Filter] - Exception", () => {
     let app: NestFastifyApplication;
     const translate = jest.fn((key: string, options?: TranslateOptions): string => `${options?.lang}:${key}`);
     const log = jest.spyOn(Logger.prototype, "error").mockImplementation(() => undefined);
@@ -80,10 +80,14 @@ describe("ExceptionFilter HTTP contract", () => {
         log.mockRestore();
     });
 
-    describe("catch", () => {
-        it("returns application fields and authentication headers with the default language", async () => {
+    describe("[Method] - catch", () => {
+        it("[case] - returns application fields and authentication headers with the default language", async () => {
+            // Arrange
+
+            // Act
             const response = await app.inject({ method: "GET", url: "/errors/unauthorized?trace=1" });
 
+            // Assert
             expect(response.statusCode).toBe(401);
             expect(response.headers["www-authenticate"]).toBe('Bearer error="invalid_token"');
             expect(response.json()).toEqual({
@@ -102,13 +106,17 @@ describe("ExceptionFilter HTTP contract", () => {
             expect(log).not.toHaveBeenCalled();
         });
 
-        it("translates validation details using request language and the last path segment", async () => {
+        it("[case] - translates validation details using request language and the last path segment", async () => {
+            // Arrange
+
+            // Act
             const response = await app.inject({
                 method: "GET",
                 url: "/errors/validation",
                 headers: { "x-test-language": "ru" },
             });
 
+            // Assert
             expect(response.statusCode).toBe(422);
             expect(response.json()).toMatchObject({
                 message: "ru:validator.COMMON_ERROR",
@@ -131,9 +139,13 @@ describe("ExceptionFilter HTTP contract", () => {
             expect(log).not.toHaveBeenCalled();
         });
 
-        it("preserves an explicitly empty validation detail list", async () => {
+        it("[case] - preserves an explicitly empty validation detail list", async () => {
+            // Arrange
+
+            // Act
             const response = await app.inject({ method: "GET", url: "/errors/emptyValidation" });
 
+            // Assert
             expect(response.statusCode).toBe(422);
             expect(response.json().details).toEqual([]);
         });
@@ -143,38 +155,49 @@ describe("ExceptionFilter HTTP contract", () => {
             { scenario: "unknown", status: 500 },
             { scenario: "primitive", status: 500 },
             { scenario: "httpServer", status: 503 },
-        ])("hides internal information for $scenario and logs the original error", async ({ scenario, status }) => {
-            const response = await app.inject({ method: "GET", url: `/errors/${scenario}` });
-            const body = response.json();
+        ])(
+            "[case] - hides internal information for $scenario and logs the original error",
+            async ({ scenario, status }) => {
+                // Arrange
 
-            expect(response.statusCode).toBe(status);
-            expect(body).toEqual({
-                statusCode: status,
-                error: ErrorKind.INTERNAL,
-                code: ErrorCode.INTERNAL,
-                message: "Internal Server Error",
-                path: `/errors/${scenario}`,
-                timestamp: expect.any(String),
-            });
-            expect(new Date(body.timestamp).toISOString()).toBe(body.timestamp);
-            expect(response.body).not.toContain("SECRET");
-            expect(translate).not.toHaveBeenCalled();
-            expect(log).toHaveBeenCalledTimes(1);
-            expect(log).toHaveBeenCalledWith(
-                expect.objectContaining({
+                // Act
+                const response = await app.inject({ method: "GET", url: `/errors/${scenario}` });
+                const body = response.json();
+
+                // Assert
+                expect(response.statusCode).toBe(status);
+                expect(body).toEqual({
                     statusCode: status,
-                    method: "GET",
-                    path: `/errors/${scenario}`,
+                    error: ErrorKind.INTERNAL,
                     code: ErrorCode.INTERNAL,
-                    err: failures[scenario],
-                }),
-                "Internal Error",
-            );
-        });
+                    message: "Internal Server Error",
+                    path: `/errors/${scenario}`,
+                    timestamp: expect.any(String),
+                });
+                expect(new Date(body.timestamp).toISOString()).toBe(body.timestamp);
+                expect(response.body).not.toContain("SECRET");
+                expect(translate).not.toHaveBeenCalled();
+                expect(log).toHaveBeenCalledTimes(1);
+                expect(log).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        statusCode: status,
+                        method: "GET",
+                        path: `/errors/${scenario}`,
+                        code: ErrorCode.INTERNAL,
+                        err: failures[scenario],
+                    }),
+                    "Internal Error",
+                );
+            },
+        );
 
-        it("translates a client HttpException without logging an internal error", async () => {
+        it("[case] - translates a client HttpException without logging an internal error", async () => {
+            // Arrange
+
+            // Act
             const response = await app.inject({ method: "GET", url: "/errors/httpClient" });
 
+            // Assert
             expect(response.statusCode).toBe(400);
             expect(response.json()).toMatchObject({
                 statusCode: 400,
@@ -185,11 +208,14 @@ describe("ExceptionFilter HTTP contract", () => {
             expect(log).not.toHaveBeenCalled();
         });
 
-        it("preserves throttling status and translates its message", async () => {
+        it("[case] - preserves throttling status and translates its message", async () => {
+            // Arrange
             const error = failures.throttle as ThrottlerException;
 
+            // Act
             const response = await app.inject({ method: "GET", url: "/errors/throttle" });
 
+            // Assert
             expect(response.statusCode).toBe(429);
             expect(response.json()).toMatchObject({
                 statusCode: 429,
@@ -201,9 +227,13 @@ describe("ExceptionFilter HTTP contract", () => {
             expect(log).not.toHaveBeenCalled();
         });
 
-        it("exposes the public dependency error and records its kind in the error log", async () => {
+        it("[case] - exposes the public dependency error and records its kind in the error log", async () => {
+            // Arrange
+
+            // Act
             const response = await app.inject({ method: "GET", url: "/errors/external" });
 
+            // Assert
             expect(response.statusCode).toBe(502);
             expect(response.json()).toMatchObject({
                 message: "en:vault.UNAVAILABLE",

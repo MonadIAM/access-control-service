@@ -11,14 +11,15 @@ function createRepositoryConfig(): ConfigService {
     });
 }
 
-describe("RoleDelegationPolicyRepository", () => {
+describe("[Repository] - RoleDelegationPolicy", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new RoleDelegationPolicyRepository(readManager, createRepositoryConfig()),
         fixture: (entityManager) => new RoleDelegationPolicyFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted delegation policy through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted delegation policy through the schema", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm();
             const delegator = await suite.fixtures().createDetachedRole({ realm, code: "mapping.delegator" });
             const target = await suite.fixtures().createDetachedRole({ realm, code: "mapping.target" });
@@ -33,8 +34,10 @@ describe("RoleDelegationPolicyRepository", () => {
                 realm,
             });
 
+            // Act
             const loaded = await suite.repository().findUniqueOrThrow({ where: { id: policy.id } });
 
+            // Assert
             expect(loaded).toMatchObject({
                 justification: "Mapping policy justification",
                 expiresAt: policy.expiresAt,
@@ -51,93 +54,104 @@ describe("RoleDelegationPolicyRepository", () => {
         });
     });
 
-    describe("existsTransitivePath", () => {
-        it("resolves transitive delegation paths and ignores expired policies", async () => {
+    describe("[Method] - existsTransitivePath", () => {
+        it("[case] - resolves transitive delegation paths and ignores expired policies", async () => {
+            // Arrange
             const scenario = await suite.fixtures().transitiveScenario();
 
-            await expect(
-                suite.repository().existsTransitivePath({
-                    from: scenario.from.id,
-                    to: scenario.reachableRole.id,
-                }),
-            ).resolves.toBe(true);
-            await expect(
-                suite.repository().existsTransitivePath({
-                    from: scenario.from.id,
-                    to: scenario.blockedRole.id,
-                }),
-            ).resolves.toBe(false);
-            await expect(
-                suite.repository().existsTransitivePath({
-                    from: scenario.from.id,
-                    to: scenario.realmBlockedRole.id,
-                }),
-            ).resolves.toBe(false);
+            // Act
+            const result = await suite.repository().existsTransitivePath({
+                from: scenario.from.id,
+                to: scenario.reachableRole.id,
+            });
+            const result2 = await suite.repository().existsTransitivePath({
+                from: scenario.from.id,
+                to: scenario.blockedRole.id,
+            });
+            const result3 = await suite.repository().existsTransitivePath({
+                from: scenario.from.id,
+                to: scenario.realmBlockedRole.id,
+            });
+
+            // Assert
+            expect(result).toBe(true);
+            expect(result2).toBe(false);
+            expect(result3).toBe(false);
         });
     });
 
-    describe("isDelegationAllowed", () => {
-        it("checks actor delegation permissions through active account roles", async () => {
+    describe("[Method] - isDelegationAllowed", () => {
+        it("[case] - checks actor delegation permissions through active account roles", async () => {
+            // Arrange
             const scenario = await suite.fixtures().allowedScenario();
 
-            await expect(
-                suite.repository().isDelegationAllowed({
-                    roles: scenario.allowedRoles.map(({ id }) => id),
-                    realm: scenario.realm.id,
-                    actor: scenario.actor,
-                }),
-            ).resolves.toBe(true);
-            await expect(
-                suite.repository().isDelegationAllowed({
-                    roles: scenario.deniedRoles.map(({ id }) => id),
-                    realm: scenario.realm.id,
-                    actor: scenario.actor,
-                }),
-            ).resolves.toBe(false);
-            await expect(
-                suite.repository().isDelegationAllowed({
-                    roles: scenario.foreignDeniedRoles.map(({ id }) => id),
-                    realm: scenario.realm.id,
-                    actor: scenario.actor,
-                }),
-            ).resolves.toBe(false);
+            // Act
+            const result = await suite.repository().isDelegationAllowed({
+                roles: scenario.allowedRoles.map(({ id }) => id),
+                realm: scenario.realm.id,
+                actor: scenario.actor,
+            });
+            const result2 = await suite.repository().isDelegationAllowed({
+                roles: scenario.deniedRoles.map(({ id }) => id),
+                realm: scenario.realm.id,
+                actor: scenario.actor,
+            });
+            const result3 = await suite.repository().isDelegationAllowed({
+                roles: scenario.foreignDeniedRoles.map(({ id }) => id),
+                realm: scenario.realm.id,
+                actor: scenario.actor,
+            });
+
+            // Assert
+            expect(result).toBe(true);
+            expect(result2).toBe(false);
+            expect(result3).toBe(false);
         });
 
-        it("does not allow delegation through expired actor role assignments", async () => {
+        it("[case] - does not allow delegation through expired actor role assignments", async () => {
+            // Arrange
             const scenario = await suite.fixtures().expiredActorScenario();
 
-            await expect(
-                suite.repository().isDelegationAllowed({
-                    roles: scenario.deniedRoles.map(({ id }) => id),
-                    realm: scenario.realm.id,
-                    actor: scenario.actor,
-                }),
-            ).resolves.toBe(false);
+            // Act
+            const result = await suite.repository().isDelegationAllowed({
+                roles: scenario.deniedRoles.map(({ id }) => id),
+                realm: scenario.realm.id,
+                actor: scenario.actor,
+            });
+
+            // Assert
+            expect(result).toBe(false);
         });
 
-        it("requires every requested role to be allowed despite duplicate policy matches", async () => {
+        it("[case] - requires every requested role to be allowed despite duplicate policy matches", async () => {
+            // Arrange
             const scenario = await suite.fixtures().duplicateTargetsScenario();
 
-            await expect(
-                suite.repository().isDelegationAllowed({
-                    roles: scenario.requestedRoles.map(({ id }) => id),
-                    realm: scenario.realm.id,
-                    actor: scenario.actor,
-                }),
-            ).resolves.toBe(scenario.expectedResult);
+            // Act
+            const result = await suite.repository().isDelegationAllowed({
+                roles: scenario.requestedRoles.map(({ id }) => id),
+                realm: scenario.realm.id,
+                actor: scenario.actor,
+            });
+
+            // Assert
+            expect(result).toBe(scenario.expectedResult);
         });
     });
 
-    describe("wouldExceedPolicyLimit", () => {
-        it("checks active delegation policy count limit per delegator", async () => {
+    describe("[Method] - wouldExceedPolicyLimit", () => {
+        it("[case] - checks active delegation policy count limit per delegator", async () => {
+            // Arrange
             const scenario = await suite.fixtures().limitScenario();
 
-            await expect(suite.repository().wouldExceedPolicyLimit({ delegator: scenario.delegator.id })).resolves.toBe(
-                scenario.expectedCountOneResult,
-            );
-            await expect(
-                suite.repository().wouldExceedPolicyLimit({ delegator: scenario.delegator.id, count: 2 }),
-            ).resolves.toBe(scenario.expectedCountTwoResult);
+            // Act
+            const result = await suite.repository().wouldExceedPolicyLimit({ delegator: scenario.delegator.id });
+
+            const result2 = await suite.repository().wouldExceedPolicyLimit({ delegator: scenario.delegator.id, count: 2 });
+
+            // Assert
+            expect(result).toBe(scenario.expectedCountOneResult);
+            expect(result2).toBe(scenario.expectedCountTwoResult);
         });
     });
 });

@@ -14,184 +14,278 @@ function createRealm(overrides?: Partial<Entities.Realm.ConstructorProps>): Real
     });
 }
 
-describe("Realm Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - Realm", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
+
+            // Act
             const realm = new Realm({
                 owner: OWNER_ID,
                 code: "TENANT_A",
                 name: "Tenant A",
             });
 
+            // Assert
             expect(realm.code).toBe("TENANT_A");
             expect(realm.name).toBe("Tenant A");
             expect(realm.owner).toBe(OWNER_ID);
         });
 
-        it("should default booleans to false", () => {
+        it("[case] - defaults booleans to false", () => {
+            // Arrange
+
+            // Act
             const realm = createRealm();
 
+            // Assert
             expect(realm.isSystemManaged).toBe(false);
             expect(realm.isRevoked).toBe(false);
         });
 
-        it("should respect explicit boolean overrides", () => {
+        it("[case] - respects explicit boolean overrides", () => {
+            // Arrange
+
+            // Act
             const realm = createRealm({ isSystemManaged: true, isRevoked: true });
 
+            // Assert
             expect(realm.isSystemManaged).toBe(true);
             expect(realm.isRevoked).toBe(true);
         });
 
-        it("should auto-generate id, createdAt, version", () => {
+        it("[case] - generates id, createdAt, version", () => {
+            // Arrange
+
+            // Act
             const realm = createRealm();
 
-            expect(isUUID(realm.id, "4")).toBe(true);
+            const result = isUUID(realm.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(realm.createdAt).toBeInstanceOf(Date);
             expect(realm.version).toBe(1);
             expect(realm.updatedAt).toBeUndefined();
         });
 
-        it("should assign description when provided", () => {
+        it("[case] - assigns description when provided", () => {
+            // Arrange
+
+            // Act
             const realm = createRealm({ description: "Primary realm" });
+
+            // Assert
             expect(realm.description).toBe("Primary realm");
         });
 
-        it("should leave description undefined when omitted", () => {
+        it("[case] - leaves description undefined when omitted", () => {
+            // Arrange
+
+            // Act
             const realm = createRealm();
+
+            // Assert
             expect(realm.description).toBeUndefined();
         });
     });
 
-    describe("update", () => {
-        it("should update a single field", () => {
+    describe("[Method] - update", () => {
+        it("[case] - updates a single field", () => {
+            // Arrange
             const realm = createRealm({ name: "Old" });
 
+            // Act
             realm.update({ patch: { name: "New" } });
 
+            // Assert
             expect(realm.name).toBe("New");
             expect(realm.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should update multiple fields at once", () => {
+        it("[case] - updates multiple fields at once", () => {
+            // Arrange
             const realm = createRealm({ name: "Old", description: "Old desc" });
 
+            // Act
             realm.update({ patch: { name: "New", description: "New desc" } });
 
+            // Assert
             expect(realm.name).toBe("New");
             expect(realm.description).toBe("New desc");
         });
 
-        it("should skip unchanged fields", () => {
+        it("[case] - skips unchanged fields", () => {
+            // Arrange
             const realm = createRealm({ name: "Same", description: "Old" });
 
+            // Act
             realm.update({ patch: { name: "Same", description: "New" } });
 
+            // Assert
             expect(realm.name).toBe("Same");
             expect(realm.description).toBe("New");
         });
 
-        it("should ignore undefined values in patch", () => {
+        it("[case] - ignores undefined values in patch", () => {
+            // Arrange
             const realm = createRealm({ name: "Original" });
 
+            // Act
             realm.update({ patch: { name: "Updated", description: undefined } });
 
+            // Assert
             expect(realm.name).toBe("Updated");
             expect(realm.description).toBeUndefined();
         });
 
-        it("should throw when patch is empty object", () => {
+        it("[case] - throws when patch is empty object", () => {
+            // Arrange
             const realm = createRealm();
 
-            expect(() => realm.update({ patch: {} })).toThrow("EMPTY_UPDATE_PATCH");
+            // Act
+            const act = (): unknown => realm.update({ patch: {} });
+
+            // Assert
+            expect(act).toThrow("EMPTY_UPDATE_PATCH");
         });
 
-        it("should throw when no values actually changed", () => {
+        it("[case] - throws when no values actually changed", () => {
+            // Arrange
             const realm = createRealm({ name: "Same" });
 
-            expect(() => realm.update({ patch: { name: "Same" } })).toThrow("NO_CHANGES_DETECTED");
+            // Act
+            const act = (): unknown => realm.update({ patch: { name: "Same" } });
+
+            // Assert
+            expect(act).toThrow("NO_CHANGES_DETECTED");
         });
     });
 
-    describe("revoke", () => {
-        it("should revoke an active realm", () => {
+    describe("[Method] - revoke", () => {
+        it("[case] - revokes an active realm", () => {
+            // Arrange
             const realm = createRealm();
+
+            // Act
             realm.revoke();
 
+            // Assert
             expect(realm.isRevoked).toBe(true);
             expect(realm.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already revoked", () => {
+        it("[case] - throws when already revoked", () => {
+            // Arrange
             const realm = createRealm();
             realm.revoke();
 
-            expect(() => realm.revoke()).toThrow("ALREADY_REVOKED");
+            // Act
+            const act = (): unknown => realm.revoke();
+
+            // Assert
+            expect(act).toThrow("ALREADY_REVOKED");
         });
     });
 
-    describe("restore", () => {
-        it("should restore a revoked realm", () => {
+    describe("[Method] - restore", () => {
+        it("[case] - restores a revoked realm", () => {
+            // Arrange
             const realm = createRealm();
             realm.revoke();
+
+            // Act
             realm.restore();
 
+            // Assert
             expect(realm.isRevoked).toBe(false);
             expect(realm.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already active", () => {
+        it("[case] - throws when already active", () => {
+            // Arrange
             const realm = createRealm();
 
-            expect(() => realm.restore()).toThrow("ALREADY_ACTIVE");
+            // Act
+            const act = (): unknown => realm.restore();
+
+            // Assert
+            expect(act).toThrow("ALREADY_ACTIVE");
         });
     });
 
-    describe("canPurge", () => {
-        it("should throw for active realm", () => {
+    describe("[Method] - canPurge", () => {
+        it("[case] - throws for active realm", () => {
+            // Arrange
             const realm = createRealm();
 
-            expect(() => realm.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
+            // Act
+            const act = (): unknown => realm.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_ACTIVE");
         });
 
-        it("should throw for revoked system-managed realm", () => {
+        it("[case] - throws for revoked system-managed realm", () => {
+            // Arrange
             const realm = createRealm({ isSystemManaged: true });
             realm.revoke();
 
-            expect(() => realm.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
+            // Act
+            const act = (): unknown => realm.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
-        it("should pass for revoked non-system realm", () => {
+        it("[case] - passes for revoked non-system realm", () => {
+            // Arrange
             const realm = createRealm();
             realm.revoke();
 
-            expect(() => realm.canPurge()).not.toThrow();
+            // Act
+            const act = (): unknown => realm.canPurge();
+
+            // Assert
+            expect(act).not.toThrow();
         });
     });
 
-    describe("system transitions", () => {
-        it("rejects restore of an active realm", () => {
+    describe("[Behavior] - system transitions", () => {
+        it("[case] - rejects restore of an active realm", () => {
+            // Arrange
             const realm = createRealm();
 
-            expect(() => realm.restoreBySystem()).toThrow("ALREADY_ACTIVE");
+            // Act
+            const act = (): unknown => realm.restoreBySystem();
 
+            // Assert
+            expect(act).toThrow("ALREADY_ACTIVE");
             expect(realm.isRevoked).toBe(false);
         });
 
-        it("rejects a repeated system revoke", () => {
+        it("[case] - rejects a repeated system revoke", () => {
+            // Arrange
             const realm = createRealm();
             realm.revokeBySystem();
 
-            expect(() => realm.revokeBySystem()).toThrow("ALREADY_REVOKED");
+            // Act
+            const act = (): unknown => realm.revokeBySystem();
 
+            // Assert
+            expect(act).toThrow("ALREADY_REVOKED");
             expect(realm.isSystemRevoked).toBe(true);
         });
 
-        it("preserves a manual revoke during system restore", () => {
+        it("[case] - preserves a manual revoke during system restore", () => {
+            // Arrange
             const realm = createRealm();
             realm.revoke();
 
+            // Act
             realm.restoreBySystem();
 
+            // Assert
             expect(realm.isRevoked).toBe(true);
             expect(realm.isSystemRevoked).toBe(false);
         });

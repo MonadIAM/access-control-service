@@ -95,42 +95,84 @@ const config = {
     VAULT_TOKEN: "test-only-token",
 };
 
-describe("validateEnv", () => {
-    it("returns a typed configuration with explicit number and boolean conversion", () => {
-        const result = validateEnv(config);
+describe("[Validator] - Environment", () => {
+    describe("[Function] - validateEnv", () => {
+        it("[case] - returns a typed configuration with explicit number and boolean conversion", () => {
+            // Arrange
 
-        expect(result).toBeInstanceOf(EnvironmentVariablesDTO);
-        expect(result.APP_PORT).toBe(3000);
-        expect(result.POSTGRES_LOGGING).toBe(false);
-        expect(result.SERVICE_NAME).toBe("test");
-        expect(config.APP_PORT).toBe("3000");
-    });
+            // Act
+            const result = validateEnv(config);
 
-    it("rejects missing required fields and aggregates their validation errors", () => {
-        expect(() => validateEnv({ ...config, SERVICE_NAME: undefined, APP_PORT: undefined })).toThrow(/SERVICE_NAME/);
-        expect(() => validateEnv({ ...config, SERVICE_NAME: undefined, APP_PORT: undefined })).toThrow(/APP_PORT/);
-    });
+            // Assert
+            expect(result).toBeInstanceOf(EnvironmentVariablesDTO);
+            expect(result.APP_PORT).toBe(3000);
+            expect(result.POSTGRES_LOGGING).toBe(false);
+            expect(result.SERVICE_NAME).toBe("test");
+            expect(config.APP_PORT).toBe("3000");
+        });
 
-    it.each([
-        { field: "APP_PORT", value: "65536" },
-        { field: "POSTGRES_LOGGING", value: "garbage" },
-        { field: "THROTTLE_TTL", value: "1garbage" },
-        { field: "NODE_ENV", value: "unknown" },
-        { field: "SERVICE_NAME", value: 123 },
-    ])("rejects invalid $field without implicit string coercion", ({ field, value }) => {
-        expect(() => validateEnv({ ...config, [field]: value })).toThrow(field);
-    });
+        it("[case] - rejects missing required fields and aggregates their validation errors", () => {
+            // Arrange
 
-    it("requires enabled feature settings but accepts their absence when disabled", () => {
-        expect(() => validateEnv({ ...config, LOKI_ENABLED: "false" })).not.toThrow();
-        expect(() => validateEnv({ ...config, LOKI_ENABLED: "true" })).toThrow("LOKI_URL");
-        expect(
-            validateEnv({
+            // Act
+            const act = (): unknown => validateEnv({ ...config, SERVICE_NAME: undefined, APP_PORT: undefined });
+            const act2 = (): unknown => validateEnv({ ...config, SERVICE_NAME: undefined, APP_PORT: undefined });
+
+            // Assert
+            expect(act).toThrow(/SERVICE_NAME/);
+            expect(act2).toThrow(/APP_PORT/);
+        });
+
+        it.each([
+            { field: "APP_PORT", value: "65536" },
+            { field: "POSTGRES_LOGGING", value: "garbage" },
+            { field: "THROTTLE_TTL", value: "1garbage" },
+            { field: "NODE_ENV", value: "unknown" },
+            { field: "SERVICE_NAME", value: 123 },
+        ])("[case] - rejects invalid $field without implicit string coercion", ({ field, value }) => {
+            // Arrange
+
+            // Act
+            const act = (): unknown => validateEnv({ ...config, [field]: value });
+
+            // Assert
+            expect(act).toThrow(field);
+        });
+
+        it("[case] - accepts missing settings when Loki is disabled", () => {
+            // Arrange
+            const input = { ...config, LOKI_ENABLED: "false" };
+
+            // Act
+            const act = (): unknown => validateEnv(input);
+
+            // Assert
+            expect(act).not.toThrow();
+        });
+        it("[case] - requires a URL when Loki is enabled", () => {
+            // Arrange
+            const input = { ...config, LOKI_ENABLED: "true" };
+
+            // Act
+            const act = (): unknown => validateEnv(input);
+
+            // Assert
+            expect(act).toThrow("LOKI_URL");
+        });
+        it("[case] - parses enabled Loki settings", () => {
+            // Arrange
+            const input = {
                 ...config,
                 LOKI_URL: "http://localhost:3100",
                 LOKI_BATCH_INTERVAL: "1000",
                 LOKI_ENABLED: "true",
-            }),
-        ).toMatchObject({ LOKI_ENABLED: true, LOKI_BATCH_INTERVAL: 1000 });
+            };
+
+            // Act
+            const result = validateEnv(input);
+
+            // Assert
+            expect(result).toMatchObject({ LOKI_ENABLED: true, LOKI_BATCH_INTERVAL: 1000 });
+        });
     });
 });

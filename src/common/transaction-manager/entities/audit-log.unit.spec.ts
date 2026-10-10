@@ -20,52 +20,82 @@ function createAuditLog(overrides?: Partial<SystemEntities.AuditLog.ConstructorP
     });
 }
 
-describe("AuditLog Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - AuditLog", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog();
 
+            // Assert
             expect(log.actionType).toBe("CREATE");
             expect(log.entityType).toBe("REALM");
             expect(log.actor).toBe(ACTOR_ID);
         });
 
-        it("should auto-generate id and createdAt", () => {
+        it("[case] - generates id and createdAt", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog();
 
-            expect(isUUID(log.id, "4")).toBe(true);
+            const result = isUUID(log.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(log.createdAt).toBeInstanceOf(Date);
         });
 
-        it("should assign ip and userAgent from context", () => {
+        it("[case] - assigns ip and userAgent from context", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog();
 
+            // Assert
             expect(log.ip).toBe(BASE_CONTEXT.ip);
             expect(log.userAgent).toBe(BASE_CONTEXT.userAgent);
         });
 
-        it("should assign optional realm when provided", () => {
+        it("[case] - assigns optional realm when provided", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog({ realm: "some-realm" });
 
+            // Assert
             expect(log.realm).toBe("some-realm");
         });
 
-        it("should leave realm undefined when omitted", () => {
+        it("[case] - leaves realm undefined when omitted", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog();
 
+            // Assert
             expect(log.realm).toBeUndefined();
         });
 
-        it("should assign optional input when provided", () => {
+        it("[case] - assigns optional input when provided", () => {
+            // Arrange
             const input = { name: "test" };
+
+            // Act
             const log = createAuditLog({ input });
 
+            // Assert
             expect(log.input).toBe(input);
         });
 
-        it("should leave input undefined when omitted", () => {
+        it("[case] - leaves input undefined when omitted", () => {
+            // Arrange
+
+            // Act
             const log = createAuditLog();
 
+            // Assert
             expect(log.input).toBeUndefined();
         });
     });

@@ -20,161 +20,251 @@ function createAssignment(overrides?: Partial<Entities.AccountRoleAssignment.Con
     });
 }
 
-describe("AccountRoleAssignment Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields and relations", () => {
+describe("[Entity] - AccountRoleAssignment", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields and relations", () => {
+            // Arrange
             const realm = {} as Realm;
             const role = stubRole();
 
+            // Act
             const assignment = createAssignment({ account: ACCOUNT_ID, realm, role });
 
+            // Assert
             expect(assignment.account).toBe(ACCOUNT_ID);
             expect(assignment.realm).toBe(realm);
             expect(assignment.role).toBe(role);
         });
 
-        it("should default booleans to false", () => {
+        it("[case] - defaults booleans to false", () => {
+            // Arrange
+
+            // Act
             const assignment = createAssignment();
 
+            // Assert
             expect(assignment.isSystemManaged).toBe(false);
             expect(assignment.isRevoked).toBe(false);
         });
 
-        it("should respect explicit boolean overrides", () => {
+        it("[case] - respects explicit boolean overrides", () => {
+            // Arrange
+
+            // Act
             const assignment = createAssignment({ isSystemManaged: true, isRevoked: true });
 
+            // Assert
             expect(assignment.isSystemManaged).toBe(true);
             expect(assignment.isRevoked).toBe(true);
         });
 
-        it("should normalize explicit expiration to the start of the day", () => {
+        it("[case] - normalizes explicit expiration to the start of the day", () => {
+            // Arrange
             const expiresAt = new Date(2999, 4, 15, 13, 45, 30, 123);
             const expected = new Date(expiresAt);
             expected.setHours(0, 0, 0, 0);
 
+            // Act
             const assignment = createAssignment({ expiresAt });
 
+            // Assert
             expect(assignment.expiresAt).toEqual(expected);
             expect(assignment.expiresAt).not.toBe(expiresAt);
         });
 
-        it("should leave expiration undefined when not provided", () => {
+        it("[case] - leaves expiration undefined when not provided", () => {
+            // Arrange
+
+            // Act
             const assignment = createAssignment();
 
+            // Assert
             expect(assignment.expiresAt).toBeUndefined();
         });
 
-        it("should auto-generate id, createdAt, version", () => {
+        it("[case] - generates id, createdAt, version", () => {
+            // Arrange
             const assignment = createAssignment();
 
-            expect(isUUID(assignment.id, "4")).toBe(true);
+            // Act
+            const result = isUUID(assignment.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(assignment.createdAt).toBeInstanceOf(Date);
             expect(assignment.version).toBe(1);
             expect(assignment.updatedAt).toBeUndefined();
         });
     });
 
-    describe("revoke", () => {
-        it("should revoke an active assignment", () => {
+    describe("[Method] - revoke", () => {
+        it("[case] - revokes an active assignment", () => {
+            // Arrange
             const assignment = createAssignment();
+
+            // Act
             assignment.revoke();
 
+            // Assert
             expect(assignment.isRevoked).toBe(true);
             expect(assignment.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already revoked", () => {
+        it("[case] - throws when already revoked", () => {
+            // Arrange
             const assignment = createAssignment();
             assignment.revoke();
 
-            expect(() => assignment.revoke()).toThrow("ALREADY_REVOKED");
+            // Act
+            const act = (): unknown => assignment.revoke();
+
+            // Assert
+            expect(act).toThrow("ALREADY_REVOKED");
         });
     });
 
-    describe("restore", () => {
-        it("should restore a revoked assignment", () => {
+    describe("[Method] - restore", () => {
+        it("[case] - restores a revoked assignment", () => {
+            // Arrange
             const assignment = createAssignment();
             assignment.revoke();
+
+            // Act
             assignment.restore();
 
+            // Assert
             expect(assignment.isRevoked).toBe(false);
             expect(assignment.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should restore a revoked assignment with future expiration", () => {
+        it("[case] - restores a revoked assignment with future expiration", () => {
+            // Arrange
             const assignment = createAssignment({ expiresAt: new Date(2999, 4, 15, 13, 45, 30, 123) });
             assignment.revoke();
+
+            // Act
             assignment.restore();
 
+            // Assert
             expect(assignment.isRevoked).toBe(false);
             expect(assignment.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already active", () => {
+        it("[case] - throws when already active", () => {
+            // Arrange
             const assignment = createAssignment();
 
-            expect(() => assignment.restore()).toThrow("ALREADY_ACTIVE");
+            // Act
+            const act = (): unknown => assignment.restore();
+
+            // Assert
+            expect(act).toThrow("ALREADY_ACTIVE");
         });
 
-        it("should throw when expired", () => {
+        it("[case] - throws when expired", () => {
+            // Arrange
             const assignment = createAssignment({ expiresAt: new Date(2000, 0, 1, 13, 45, 30, 123) });
             assignment.revoke();
 
-            expect(() => assignment.restore()).toThrow("CANNOT_RESTORE_EXPIRED");
+            // Act
+            const act = (): unknown => assignment.restore();
+
+            // Assert
+            expect(act).toThrow("CANNOT_RESTORE_EXPIRED");
         });
     });
 
-    describe("canPurge", () => {
-        it("should throw for active assignment", () => {
+    describe("[Method] - canPurge", () => {
+        it("[case] - throws for active assignment", () => {
+            // Arrange
             const assignment = createAssignment();
 
-            expect(() => assignment.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
+            // Act
+            const act = (): unknown => assignment.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_ACTIVE");
         });
 
-        it("should throw for revoked system-managed assignment", () => {
+        it("[case] - throws for revoked system-managed assignment", () => {
+            // Arrange
             const assignment = createAssignment({ isSystemManaged: true });
             assignment.revoke();
 
-            expect(() => assignment.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
+            // Act
+            const act = (): unknown => assignment.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
-        it("should pass for revoked non-system assignment", () => {
+        it("[case] - passes for revoked non-system assignment", () => {
+            // Arrange
             const assignment = createAssignment();
             assignment.revoke();
 
-            expect(() => assignment.canPurge()).not.toThrow();
+            // Act
+            const act = (): unknown => assignment.canPurge();
+
+            // Assert
+            expect(act).not.toThrow();
         });
     });
 
-    describe("canAssign", () => {
-        it("should pass when role is active and non-system", () => {
+    describe("[Method] - canAssign", () => {
+        it("[case] - passes when role is active and non-system", () => {
+            // Arrange
             const assignment = createAssignment();
 
-            expect(() => assignment.canAssign()).not.toThrow();
+            // Act
+            const act = (): unknown => assignment.canAssign();
+
+            // Assert
+            expect(act).not.toThrow();
         });
 
-        it("should pass when expiration is in the future", () => {
+        it("[case] - passes when expiration is in the future", () => {
+            // Arrange
             const assignment = createAssignment({ expiresAt: new Date(2999, 4, 15, 13, 45, 30, 123) });
 
-            expect(() => assignment.canAssign()).not.toThrow();
+            // Act
+            const act = (): unknown => assignment.canAssign();
+
+            // Assert
+            expect(act).not.toThrow();
         });
 
-        it("should throw for revoked role", () => {
+        it("[case] - throws for revoked role", () => {
+            // Arrange
             const assignment = createAssignment({ role: stubRole({ isRevoked: true }) });
 
-            expect(() => assignment.canAssign()).toThrow("CANNOT_ASSIGN_REVOKED_ROLE");
+            // Act
+            const act = (): unknown => assignment.canAssign();
+
+            // Assert
+            expect(act).toThrow("CANNOT_ASSIGN_REVOKED_ROLE");
         });
 
-        it("should throw for system-managed role", () => {
+        it("[case] - throws for system-managed role", () => {
+            // Arrange
             const assignment = createAssignment({ role: stubRole({ isSystemManaged: true }) });
 
-            expect(() => assignment.canAssign()).toThrow("CANNOT_ASSIGN_SYSTEM_ROLE");
+            // Act
+            const act = (): unknown => assignment.canAssign();
+
+            // Assert
+            expect(act).toThrow("CANNOT_ASSIGN_SYSTEM_ROLE");
         });
 
-        it("should throw for expired assignment", () => {
+        it("[case] - throws for expired assignment", () => {
+            // Arrange
             const assignment = createAssignment({ expiresAt: new Date(2000, 0, 1, 13, 45, 30, 123) });
 
-            expect(() => assignment.canAssign()).toThrow("CANNOT_ASSIGN_EXPIRED");
+            // Act
+            const act = (): unknown => assignment.canAssign();
+
+            // Assert
+            expect(act).toThrow("CANNOT_ASSIGN_EXPIRED");
         });
     });
 });

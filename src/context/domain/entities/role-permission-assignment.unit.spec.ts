@@ -27,38 +27,54 @@ function createAssignment(
     });
 }
 
-describe("RolePermissionAssignment Entity", () => {
-    describe("constructor", () => {
-        it("should assign required relations", () => {
+describe("[Entity] - RolePermissionAssignment", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required relations", () => {
+            // Arrange
             const role = stubRole();
             const permission = stubPermission();
             const realm = {} as Realm;
 
+            // Act
             const assignment = new RolePermissionAssignment({ permission, realm, role });
 
+            // Assert
             expect(assignment.role).toBe(role);
             expect(assignment.permission).toBe(permission);
             expect(assignment.realm).toBe(realm);
         });
 
-        it("should default booleans to false", () => {
+        it("[case] - defaults booleans to false", () => {
+            // Arrange
+
+            // Act
             const assignment = createAssignment();
 
+            // Assert
             expect(assignment.isSystemManaged).toBe(false);
             expect(assignment.isRevoked).toBe(false);
         });
 
-        it("should respect explicit boolean overrides", () => {
+        it("[case] - respects explicit boolean overrides", () => {
+            // Arrange
+
+            // Act
             const assignment = createAssignment({ isSystemManaged: true, isRevoked: true });
 
+            // Assert
             expect(assignment.isSystemManaged).toBe(true);
             expect(assignment.isRevoked).toBe(true);
         });
 
-        it("should auto-generate id, createdAt, version and set scope", () => {
+        it("[case] - generates id, createdAt, version and set scope", () => {
+            // Arrange
             const assignment = createAssignment();
 
-            expect(isUUID(assignment.id, "4")).toBe(true);
+            // Act
+            const result = isUUID(assignment.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(assignment.createdAt).toBeInstanceOf(Date);
             expect(assignment.version).toBe(1);
             expect(assignment.updatedAt).toBeUndefined();
@@ -66,91 +82,149 @@ describe("RolePermissionAssignment Entity", () => {
         });
     });
 
-    describe("revoke", () => {
-        it("should revoke an active assignment", () => {
+    describe("[Method] - revoke", () => {
+        it("[case] - revokes an active assignment", () => {
+            // Arrange
             const assignment = createAssignment();
+
+            // Act
             assignment.revoke();
 
+            // Assert
             expect(assignment.isRevoked).toBe(true);
             expect(assignment.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already revoked", () => {
+        it("[case] - throws when already revoked", () => {
+            // Arrange
             const assignment = createAssignment();
             assignment.revoke();
 
-            expect(() => assignment.revoke()).toThrow("ALREADY_REVOKED");
+            // Act
+            const act = (): unknown => assignment.revoke();
+
+            // Assert
+            expect(act).toThrow("ALREADY_REVOKED");
         });
     });
 
-    describe("restore", () => {
-        it("should restore a revoked assignment", () => {
+    describe("[Method] - restore", () => {
+        it("[case] - restores a revoked assignment", () => {
+            // Arrange
             const assignment = createAssignment();
             assignment.revoke();
+
+            // Act
             assignment.restore();
 
+            // Assert
             expect(assignment.isRevoked).toBe(false);
             expect(assignment.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already active", () => {
+        it("[case] - throws when already active", () => {
+            // Arrange
             const assignment = createAssignment();
 
-            expect(() => assignment.restore()).toThrow("ALREADY_ACTIVE");
+            // Act
+            const act = (): unknown => assignment.restore();
+
+            // Assert
+            expect(act).toThrow("ALREADY_ACTIVE");
         });
     });
 
-    describe("canPurge", () => {
-        it("should throw for active assignment", () => {
+    describe("[Method] - canPurge", () => {
+        it("[case] - throws for active assignment", () => {
+            // Arrange
             const assignment = createAssignment();
 
-            expect(() => assignment.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
+            // Act
+            const act = (): unknown => assignment.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_ACTIVE");
         });
 
-        it("should throw for revoked system-managed assignment", () => {
+        it("[case] - throws for revoked system-managed assignment", () => {
+            // Arrange
             const assignment = createAssignment({ isSystemManaged: true });
             assignment.revoke();
 
-            expect(() => assignment.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
+            // Act
+            const act = (): unknown => assignment.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
-        it("should pass for revoked non-system assignment", () => {
+        it("[case] - passes for revoked non-system assignment", () => {
+            // Arrange
             const assignment = createAssignment();
             assignment.revoke();
 
-            expect(() => assignment.canPurge()).not.toThrow();
+            // Act
+            const act = (): unknown => assignment.canPurge();
+
+            // Assert
+            expect(act).not.toThrow();
         });
     });
 
-    describe("canAssign", () => {
-        it("should pass when role and permission are active and non-system", () => {
+    describe("[Method] - canAssign", () => {
+        it("[case] - passes when role and permission are active and non-system", () => {
+            // Arrange
             const assignment = createAssignment();
 
-            expect(() => assignment.canAssign()).not.toThrow();
+            // Act
+            const act = (): unknown => assignment.canAssign();
+
+            // Assert
+            expect(act).not.toThrow();
         });
 
-        it("should throw for revoked role", () => {
+        it("[case] - throws for revoked role", () => {
+            // Arrange
             const assignment = createAssignment({ role: stubRole({ isRevoked: true }) });
 
-            expect(() => assignment.canAssign()).toThrow("CANNOT_ASSIGN_TO_REVOKED_ROLE");
+            // Act
+            const act = (): unknown => assignment.canAssign();
+
+            // Assert
+            expect(act).toThrow("CANNOT_ASSIGN_TO_REVOKED_ROLE");
         });
 
-        it("should throw for revoked permission", () => {
+        it("[case] - throws for revoked permission", () => {
+            // Arrange
             const assignment = createAssignment({ permission: stubPermission({ isRevoked: true }) });
 
-            expect(() => assignment.canAssign()).toThrow("CANNOT_ASSIGN_REVOKED_PERMISSION");
+            // Act
+            const act = (): unknown => assignment.canAssign();
+
+            // Assert
+            expect(act).toThrow("CANNOT_ASSIGN_REVOKED_PERMISSION");
         });
 
-        it("should throw for system-managed role", () => {
+        it("[case] - throws for system-managed role", () => {
+            // Arrange
             const assignment = createAssignment({ role: stubRole({ isSystemManaged: true }) });
 
-            expect(() => assignment.canAssign()).toThrow("CANNOT_ASSIGN_TO_SYSTEM_ROLE");
+            // Act
+            const act = (): unknown => assignment.canAssign();
+
+            // Assert
+            expect(act).toThrow("CANNOT_ASSIGN_TO_SYSTEM_ROLE");
         });
 
-        it("should throw for system-managed permission", () => {
+        it("[case] - throws for system-managed permission", () => {
+            // Arrange
             const assignment = createAssignment({ permission: stubPermission({ isSystemManaged: true }) });
 
-            expect(() => assignment.canAssign()).toThrow("CANNOT_ASSIGN_SYSTEM_PERMISSION");
+            // Act
+            const act = (): unknown => assignment.canAssign();
+
+            // Assert
+            expect(act).toThrow("CANNOT_ASSIGN_SYSTEM_PERMISSION");
         });
     });
 });

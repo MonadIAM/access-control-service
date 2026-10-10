@@ -37,14 +37,15 @@ async function loadOverride(
     return await suite.transaction((transaction) => transaction.findOneOrFail(PermissionOverride, { id }));
 }
 
-describe("PermissionOverrideService integration", () => {
+describe("[DomainService] - PermissionOverride", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("create", () => {
-        it("creates overrides for realm and system-realm permissions", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates overrides for realm and system-realm permissions", async () => {
+            // Arrange
             const systemRealm = await helpers.seedSystemRealm(suite);
             const realm = await suite.fixtures().createRealm({ code: "override-create" });
             const account = randomUUID();
@@ -54,6 +55,7 @@ describe("PermissionOverrideService integration", () => {
                 realm: systemRealm,
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().permissionOverrideService.create({
                     input: {
@@ -81,6 +83,7 @@ describe("PermissionOverrideService integration", () => {
 
             const overrides = await loadOverrides(suite, account);
 
+            // Assert
             expect(overrides.map(({ permission }) => permission.code).sort()).toEqual([
                 "documents.delete",
                 "system.audit.read",
@@ -88,7 +91,8 @@ describe("PermissionOverrideService integration", () => {
             expect(overrides.every(({ realm: overrideRealm }) => overrideRealm.id === realm.id)).toBe(true);
         });
 
-        it("rolls back override creation for a foreign non-system permission", async () => {
+        it("[case] - rolls back override creation for a foreign non-system permission", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm({ code: "override-foreign" });
             const foreignRealm = await suite.fixtures().createRealm({ code: "override-foreign-source" });
             const account = randomUUID();
@@ -97,25 +101,29 @@ describe("PermissionOverrideService integration", () => {
                 realm: foreignRealm,
             });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().permissionOverrideService.create({
-                        input: {
-                            effect: PermissionOverrideEffect.ALLOW,
-                            justification: "foreign",
-                            permission: foreignPermission.id,
-                            account,
-                        },
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("db.NOT_FOUND");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().permissionOverrideService.create({
+                    input: {
+                        effect: PermissionOverrideEffect.ALLOW,
+                        justification: "foreign",
+                        permission: foreignPermission.id,
+                        account,
+                    },
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await countOverrides(suite, account, realm);
 
-            await expect(countOverrides(suite, account, realm)).resolves.toBe(0);
+            // Assert
+            await expect(result).rejects.toThrow("db.NOT_FOUND");
+            expect(result2).toBe(0);
         });
 
-        it("uses the real account and realm override limit", async () => {
+        it("[case] - uses the real account and realm override limit", async () => {
+            // Arrange
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "override-limit" });
             const anotherRealm = await suite.fixtures().createRealm({ code: "override-limit-other" });
@@ -127,7 +135,6 @@ describe("PermissionOverrideService integration", () => {
                 code: "permissions.other-realm",
                 realm: anotherRealm,
             });
-
             await suite.fixtures().createPermissionOverride({
                 effect: PermissionOverrideEffect.ALLOW,
                 permission: first,
@@ -147,21 +154,20 @@ describe("PermissionOverrideService integration", () => {
                 realm,
             });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().permissionOverrideService.create({
-                        input: {
-                            effect: PermissionOverrideEffect.ALLOW,
-                            justification: "too many",
-                            permission: fourth.id,
-                            account,
-                        },
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.permission-override.LIMIT_EXCEEDED");
-
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().permissionOverrideService.create({
+                    input: {
+                        effect: PermissionOverrideEffect.ALLOW,
+                        justification: "too many",
+                        permission: fourth.id,
+                        account,
+                    },
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
             await suite.transaction((transaction) =>
                 suite.repository().permissionOverrideService.create({
                     input: {
@@ -174,14 +180,20 @@ describe("PermissionOverrideService integration", () => {
                     transaction,
                 }),
             );
+            const result2 = await countOverrides(suite, account, realm);
 
-            await expect(countOverrides(suite, account, realm)).resolves.toBe(3);
-            await expect(countOverrides(suite, account, anotherRealm)).resolves.toBe(1);
+            const result3 = await countOverrides(suite, account, anotherRealm);
+
+            // Assert
+            await expect(result).rejects.toThrow("services.permission-override.LIMIT_EXCEEDED");
+            expect(result2).toBe(3);
+            expect(result3).toBe(1);
         });
     });
 
-    describe("clean", () => {
-        it("cleans only overrides scoped to the target account and optional realm", async () => {
+    describe("[Method] - clean", () => {
+        it("[case] - cleans only overrides scoped to the target account and optional realm", async () => {
+            // Arrange
             const account = randomUUID();
             const anotherAccount = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "override-clean" });
@@ -191,7 +203,6 @@ describe("PermissionOverrideService integration", () => {
                 code: "permissions.clean-other",
                 realm: anotherRealm,
             });
-
             await suite.fixtures().createPermissionOverride({
                 effect: PermissionOverrideEffect.ALLOW,
                 account,
@@ -211,6 +222,7 @@ describe("PermissionOverrideService integration", () => {
                 realm,
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().permissionOverrideService.clean({
                     input: {
@@ -220,17 +232,18 @@ describe("PermissionOverrideService integration", () => {
                     transaction,
                 }),
             );
-
             const accountOverrides = await loadOverrides(suite, account);
             const anotherAccountOverrides = await loadOverrides(suite, anotherAccount);
 
+            // Assert
             expect(accountOverrides.map(({ realm: overrideRealm }) => overrideRealm.id)).toEqual([anotherRealm.id]);
             expect(anotherAccountOverrides).toHaveLength(1);
         });
     });
 
-    describe("expire", () => {
-        it("expires only provided overrides through persisted merge and revoke", async () => {
+    describe("[Method] - expire", () => {
+        it("[case] - expires only provided overrides through persisted merge and revoke", async () => {
+            // Arrange
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "override-expire" });
             const expiredPermission = await suite.fixtures().createPermission({ realm, code: "permissions.expired" });
@@ -250,6 +263,7 @@ describe("PermissionOverrideService integration", () => {
                 realm,
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 Promise.resolve(
                     suite.repository().permissionOverrideService.expire({
@@ -259,8 +273,13 @@ describe("PermissionOverrideService integration", () => {
                 ),
             );
 
-            await expect(loadOverride(suite, expired.id)).resolves.toEqual(expect.objectContaining({ isRevoked: true }));
-            await expect(loadOverride(suite, active.id)).resolves.toEqual(expect.objectContaining({ isRevoked: false }));
+            const result = await loadOverride(suite, expired.id);
+
+            const result2 = await loadOverride(suite, active.id);
+
+            // Assert
+            expect(result).toEqual(expect.objectContaining({ isRevoked: true }));
+            expect(result2).toEqual(expect.objectContaining({ isRevoked: false }));
         });
     });
 });

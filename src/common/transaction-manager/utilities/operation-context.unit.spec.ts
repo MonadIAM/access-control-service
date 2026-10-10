@@ -4,59 +4,80 @@ import { OperationContextUnitHelpers } from "~testing/unit/transaction-manager/o
 
 const helpers = new OperationContextUnitHelpers();
 
-describe("OperationContext", () => {
-    describe("get", () => {
-        it("returns undefined outside run", () => {
+describe("[Utility] - OperationContext", () => {
+    describe("[Method] - get", () => {
+        it("[case] - returns undefined outside run", () => {
+            // Arrange
             const context = helpers.operationContext();
 
-            expect(context.get()).toBeUndefined();
+            // Act
+            const result = context.get();
+
+            // Assert
+            expect(result).toBeUndefined();
         });
     });
 
-    describe("run", () => {
-        it("exposes context synchronously inside run", () => {
+    describe("[Method] - run", () => {
+        it("[case] - exposes context synchronously inside run", () => {
+            // Arrange
             const context = helpers.operationContext();
 
-            context.run({ changeLogEnabled: true, auditEntry: "audit-entry" }, () => {
-                expect(context.get()).toEqual({ changeLogEnabled: true, auditEntry: "audit-entry" });
-            });
+            // Act
+            const result = context.run({ changeLogEnabled: true, auditEntry: "audit-entry" }, () => context.get());
+
+            // Assert
+            expect(result).toEqual({ changeLogEnabled: true, auditEntry: "audit-entry" });
         });
 
-        it("preserves context across awaits", async () => {
+        it("[case] - preserves context across awaits", async () => {
+            // Arrange
             const context = helpers.operationContext();
 
-            await context.run({ changeLogEnabled: true, auditEntry: "audit-entry" }, async () => {
+            // Act
+            const result = await context.run({ changeLogEnabled: true, auditEntry: "audit-entry" }, async () => {
                 await Promise.resolve();
-
-                expect(context.get()).toEqual({ changeLogEnabled: true, auditEntry: "audit-entry" });
+                return context.get();
             });
+
+            // Assert
+            expect(result).toEqual({ changeLogEnabled: true, auditEntry: "audit-entry" });
         });
 
-        it("isolates parallel runs", async () => {
+        it("[case] - isolates parallel runs", async () => {
+            // Arrange
             const context = helpers.operationContext();
 
-            await Promise.all([
+            // Act
+            const [first, second] = await Promise.all([
                 context.run({ changeLogEnabled: true, auditEntry: "first-audit" }, async () => {
                     await Promise.resolve();
-                    expect(context.get()).toEqual({ changeLogEnabled: true, auditEntry: "first-audit" });
+                    return context.get();
                 }),
                 context.run({ changeLogEnabled: true, auditEntry: "second-audit" }, async () => {
                     await Promise.resolve();
-                    expect(context.get()).toEqual({ changeLogEnabled: true, auditEntry: "second-audit" });
+                    return context.get();
                 }),
             ]);
+
+            // Assert
+            expect(first).toEqual({ changeLogEnabled: true, auditEntry: "first-audit" });
+            expect(second).toEqual({ changeLogEnabled: true, auditEntry: "second-audit" });
         });
 
-        it("restores outer context after nested run", () => {
+        it("[case] - restores outer context after nested run", () => {
+            // Arrange
             const context = helpers.operationContext();
 
-            context.run({ changeLogEnabled: true, auditEntry: "outer-audit" }, () => {
-                context.run({ changeLogEnabled: false, auditEntry: "inner-audit" }, () => {
-                    expect(context.get()).toEqual({ changeLogEnabled: false, auditEntry: "inner-audit" });
-                });
-
-                expect(context.get()).toEqual({ changeLogEnabled: true, auditEntry: "outer-audit" });
+            // Act
+            const { inner, outer } = context.run({ changeLogEnabled: true, auditEntry: "outer-audit" }, () => {
+                const inner = context.run({ changeLogEnabled: false, auditEntry: "inner-audit" }, () => context.get());
+                return { inner, outer: context.get() };
             });
+
+            // Assert
+            expect(inner).toEqual({ changeLogEnabled: false, auditEntry: "inner-audit" });
+            expect(outer).toEqual({ changeLogEnabled: true, auditEntry: "outer-audit" });
         });
     });
 });

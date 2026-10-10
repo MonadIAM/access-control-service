@@ -23,7 +23,7 @@ const tls = {
     REDIS_TLS_CA_FILE: "/ca",
 };
 
-describe("RedisConfig", () => {
+describe("[Config] - Redis", () => {
     beforeAll(async () => {
         const modulePath = "./redis.config";
         ({ RedisConfig } = await import(modulePath));
@@ -33,71 +33,104 @@ describe("RedisConfig", () => {
         readFileSync.mockReset().mockImplementation((path) => `contents:${path}`);
     });
 
-    describe("connection options", () => {
+    describe("[Behavior] - connection options", () => {
         it.each([
             ["buildCacheOptions", 0, 20],
             ["buildLimiterOptions", 2, 5],
             ["buildQueueOptions", 3, null],
-        ] as const)("builds %s with its own database and request retry policy", (method, db, maxRetriesPerRequest) => {
-            const options = RedisConfig[method](new ConfigService(values));
-            expect(options).toMatchObject({
-                host: "redis.internal",
-                port: 6380,
-                password: "secret",
-                db,
-                maxRetriesPerRequest,
-                enableAutoPipelining: true,
-                lazyConnect: true,
-            });
-            expect(options).not.toHaveProperty("tls");
-            expect(readFileSync).not.toHaveBeenCalled();
-        });
+        ] as const)(
+            "[case] - builds %s with its own database and request retry policy",
+            (method, db, maxRetriesPerRequest) => {
+                // Arrange
+
+                // Act
+                const options = RedisConfig[method](new ConfigService(values));
+
+                // Assert
+                expect(options).toMatchObject({
+                    host: "redis.internal",
+                    port: 6380,
+                    password: "secret",
+                    db,
+                    maxRetriesPerRequest,
+                    enableAutoPipelining: true,
+                    lazyConnect: true,
+                });
+                expect(options).not.toHaveProperty("tls");
+                expect(readFileSync).not.toHaveBeenCalled();
+            },
+        );
 
         it.each([
             ["buildCacheOptions", "REDIS_PASSWORD"],
             ["buildLimiterOptions", "REDIS_DB_LIMITER"],
             ["buildQueueOptions", "REDIS_DB_QUEUE"],
-        ] as const)("requires configuration %s / %s", (method, key) => {
-            expect(() => RedisConfig[method](new ConfigService({ ...values, [key]: undefined }))).toThrow(key);
+        ] as const)("[case] - requires configuration %s / %s", (method, key) => {
+            // Arrange
+
+            // Act
+            const act = (): unknown => RedisConfig[method](new ConfigService({ ...values, [key]: undefined }));
+
+            // Assert
+            expect(act).toThrow(key);
         });
     });
 
-    describe("buildLimiterOptions", () => {
-        it("preserves database zero for the limiter", () => {
+    describe("[Method] - buildLimiterOptions", () => {
+        it("[case] - preserves database zero for the limiter", () => {
+            // Arrange
+
+            // Act
             const options = RedisConfig.buildLimiterOptions(new ConfigService({ ...values, REDIS_DB_LIMITER: 0 }));
+
+            // Assert
             expect(options.db).toBe(0);
         });
     });
 
-    describe("buildCacheOptions", () => {
-        it.each([true, false])("loads TLS credentials and preserves rejectUnauthorized=%s", (rejectUnauthorized) => {
-            const options = RedisConfig.buildCacheOptions(
-                new ConfigService({
-                    ...values,
-                    ...tls,
-                    REDIS_TLS_REJECT_UNAUTHORIZED: rejectUnauthorized,
-                }),
-            );
-            expect(options.tls).toEqual({
-                rejectUnauthorized,
-                servername: "redis.internal",
-                cert: "contents:/cert",
-                key: "contents:/key",
-                ca: "contents:/ca",
-            });
-            expect(readFileSync.mock.calls).toEqual([
-                ["/cert", "utf8"],
-                ["/key", "utf8"],
-                ["/ca", "utf8"],
-            ]);
-        });
+    describe("[Method] - buildCacheOptions", () => {
+        it.each([true, false])(
+            "[case] - loads TLS credentials and preserves rejectUnauthorized=%s",
+            (rejectUnauthorized) => {
+                // Arrange
 
-        it("propagates a certificate read error", () => {
+                // Act
+                const options = RedisConfig.buildCacheOptions(
+                    new ConfigService({
+                        ...values,
+                        ...tls,
+                        REDIS_TLS_REJECT_UNAUTHORIZED: rejectUnauthorized,
+                    }),
+                );
+
+                // Assert
+                expect(options.tls).toEqual({
+                    rejectUnauthorized,
+                    servername: "redis.internal",
+                    cert: "contents:/cert",
+                    key: "contents:/key",
+                    ca: "contents:/ca",
+                });
+                expect(readFileSync.mock.calls).toEqual([
+                    ["/cert", "utf8"],
+                    ["/key", "utf8"],
+                    ["/ca", "utf8"],
+                ]);
+            },
+        );
+
+        it("[case] - propagates a certificate read error", () => {
+            // Arrange
             const error = new Error("certificate unavailable");
             readFileSync.mockImplementation(() => {
                 throw error;
             });
-            expect(() => RedisConfig.buildCacheOptions(new ConfigService({ ...values, ...tls }))).toThrow(error);
+
+            // Act
+            const act = (): unknown => RedisConfig.buildCacheOptions(new ConfigService({ ...values, ...tls }));
+
+            // Assert
+            expect(act).toThrow(error);
         });
 
         it.each([
@@ -106,9 +139,16 @@ describe("RedisConfig", () => {
             [4, 1600],
             [5, 2000],
             [20, 2000],
-        ])("backs off attempt %s to %s milliseconds", (attempt, expected) => {
+        ])("[case] - backs off attempt %s to %s milliseconds", (attempt, expected) => {
+            // Arrange
+
+            // Act
             const options = RedisConfig.buildCacheOptions(new ConfigService(values));
-            expect(options.retryStrategy!(attempt)).toBe(expected);
+
+            const result = options.retryStrategy!(attempt);
+
+            // Assert
+            expect(result).toBe(expected);
         });
 
         it.each([
@@ -121,17 +161,29 @@ describe("RedisConfig", () => {
             ["WRONGPASS invalid username-password pair", false],
             ["ERR unknown command", false],
             ["", false],
-        ])("decides whether to reconnect after %s", (message, expected) => {
+        ])("[case] - decides whether to reconnect after %s", (message, expected) => {
+            // Arrange
+
+            // Act
             const options = RedisConfig.buildCacheOptions(new ConfigService(values));
-            expect(options.reconnectOnError!(new Error(message))).toBe(expected);
+
+            const result = options.reconnectOnError!(new Error(message));
+
+            // Assert
+            expect(result).toBe(expected);
         });
     });
 
-    describe("buildQueueOptions", () => {
-        it("does not read certificates when TLS is explicitly disabled", () => {
+    describe("[Method] - buildQueueOptions", () => {
+        it("[case] - does not read certificates when TLS is explicitly disabled", () => {
+            // Arrange
+
+            // Act
             const options = RedisConfig.buildQueueOptions(
                 new ConfigService({ ...values, ...tls, REDIS_TLS_ENABLED: false }),
             );
+
+            // Assert
             expect(options).not.toHaveProperty("tls");
             expect(readFileSync).not.toHaveBeenCalled();
         });

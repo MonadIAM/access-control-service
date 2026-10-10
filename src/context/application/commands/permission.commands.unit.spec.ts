@@ -9,15 +9,18 @@ const helpers = new PermissionCommandsUnitHelpers();
 const ACTOR = "acting-account";
 const REALM = "realm-a";
 
-describe("PermissionCommands", () => {
-    describe("create", () => {
-        it("creates through the transaction and records the acting user's audit context", async () => {
+describe("[Commands] - Permission", () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates through the transaction and records the acting user's audit context", async () => {
+            // Arrange
             const { commands, service, run, transaction } = helpers.commands();
             const input: Commands.Permission.Create.Props["input"] = { code: "project.read", name: "Read project" };
             service.create.mockResolvedValue(helpers.createPermission());
 
+            // Act
             await commands.create({ input, actor: ACTOR, realm: REALM, context: CONTEXT });
 
+            // Assert
             expect(service.create.mock.calls).toEqual([[{ input, transaction: transaction.entityManager, realm: REALM }]]);
             expect(run).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -28,7 +31,6 @@ describe("PermissionCommands", () => {
                     }),
                 }),
             );
-
             expect(run).toHaveBeenCalledWith(
                 expect.objectContaining({
                     audit: expect.objectContaining({
@@ -44,16 +46,19 @@ describe("PermissionCommands", () => {
         });
     });
 
-    describe("update", () => {
-        it("passes only the requested patch to the domain while retaining the reason in audit", async () => {
+    describe("[Method] - update", () => {
+        it("[case] - passes only the requested patch to the domain while retaining the reason in audit", async () => {
+            // Arrange
             const { commands, service, run, transaction } = helpers.commands();
             const input: Commands.Permission.Update.Props["input"] = {
                 patch: { name: "Updated name" },
                 reason: "Administrative correction",
             };
 
+            // Act
             await commands.update({ id: "entity-a", input, actor: ACTOR, realm: REALM, context: CONTEXT });
 
+            // Assert
             expect(service.update.mock.calls).toEqual([
                 [{ id: "entity-a", patch: input.patch, transaction: transaction.entityManager, realm: REALM }],
             ]);
@@ -65,46 +70,46 @@ describe("PermissionCommands", () => {
         });
     });
 
-    describe("revoke / restore / purge", () => {
-        it.each(["revoke", "restore", "purge"] as const)(
-            "%s scopes the mutation and audits the requested identifiers",
-            async (method) => {
-                const { commands, service, run, transaction } = helpers.commands();
-                const changed = [helpers.createPermission(), helpers.createPermission()];
-                service[method].mockResolvedValue(changed);
-                const input = { identifiers: changed.map((entity) => entity.id), reason: "Lifecycle change" };
-                const projection =
-                    method === "purge" ? ProjectionScript.PERMISSION_PURGE : ProjectionScript.PERMISSION_UPDATE;
+    describe("[Behavior] - lifecycle", () => {
+        it.each(["revoke", "restore", "purge"] as const)("[case] - scopes and audits the mutation (%s)", async (method) => {
+            // Arrange
+            const { commands, service, run, transaction } = helpers.commands();
+            const changed = [helpers.createPermission(), helpers.createPermission()];
+            service[method].mockResolvedValue(changed);
+            const input = { identifiers: changed.map((entity) => entity.id), reason: "Lifecycle change" };
+            const projection = method === "purge" ? ProjectionScript.PERMISSION_PURGE : ProjectionScript.PERMISSION_UPDATE;
 
-                await commands[method]({ input, actor: ACTOR, realm: REALM, context: CONTEXT });
+            // Act
+            await commands[method]({ input, actor: ACTOR, realm: REALM, context: CONTEXT });
+            const result = await run.mock.results[0].value;
 
-                expect(service[method].mock.calls).toEqual([
-                    [{ identifiers: input.identifiers, transaction: transaction.entityManager, realm: REALM }],
-                ]);
-                expect(run).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        outbox: expect.arrayContaining([
-                            expect.objectContaining({
-                                actionType: projection,
-                                destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
-                                payloadMapper: expect.any(Function),
-                            }),
-                            expect.objectContaining({
-                                actionType: AccessCacheTopicAction.INVALIDATE,
-                                destinationTopic: KafkaTopic.ACCESS_CACHE,
-                                payloadMapper: expect.any(Function),
-                            }),
-                        ]),
-                    }),
-                );
-                await expect(run.mock.results[0].value).resolves.toMatchObject({ permissions: changed });
-                expect(run).toHaveBeenCalledWith(
-                    expect.objectContaining({
-                        audit: expect.objectContaining({ input, actor: ACTOR, context: CONTEXT }),
-                        changeLog: true,
-                    }),
-                );
-            },
-        );
+            // Assert
+            expect(service[method].mock.calls).toEqual([
+                [{ identifiers: input.identifiers, transaction: transaction.entityManager, realm: REALM }],
+            ]);
+            expect(run).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    outbox: expect.arrayContaining([
+                        expect.objectContaining({
+                            actionType: projection,
+                            destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                            payloadMapper: expect.any(Function),
+                        }),
+                        expect.objectContaining({
+                            actionType: AccessCacheTopicAction.INVALIDATE,
+                            destinationTopic: KafkaTopic.ACCESS_CACHE,
+                            payloadMapper: expect.any(Function),
+                        }),
+                    ]),
+                }),
+            );
+            expect(result).toMatchObject({ permissions: changed });
+            expect(run).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    audit: expect.objectContaining({ input, actor: ACTOR, context: CONTEXT }),
+                    changeLog: true,
+                }),
+            );
+        });
     });
 });

@@ -51,14 +51,18 @@ function createAssignments(isRevoked = false): Entities.RolePermissionAssignment
     ];
 }
 
-describe("RolePermissionAssignmentMapper", () => {
-    describe("projectionCreatePayload", () => {
-        it("maps assignment scopes and permission owning realms", () => {
-            expect(
-                mapper.projectionCreatePayload({
-                    assignments: createAssignments(),
-                }),
-            ).toEqual({
+describe("[DataMapper] - RolePermissionAssignment", () => {
+    describe("[Method] - projectionCreatePayload", () => {
+        it("[case] - maps assignment scopes and permission owning realms", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.projectionCreatePayload({
+                assignments: createAssignments(),
+            });
+
+            // Assert
+            expect(result).toEqual({
                 assignments: [
                     {
                         permissionRealm: PERMISSION_REALM_ID,
@@ -79,13 +83,17 @@ describe("RolePermissionAssignmentMapper", () => {
         });
     });
 
-    describe("projectionUpdatePayload", () => {
-        it("maps canonical assignment identities and revocation state", () => {
-            expect(
-                mapper.projectionUpdatePayload({
-                    assignments: createAssignments(true),
-                }),
-            ).toEqual({
+    describe("[Method] - projectionUpdatePayload", () => {
+        it("[case] - maps canonical assignment identities and revocation state", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.projectionUpdatePayload({
+                assignments: createAssignments(true),
+            });
+
+            // Assert
+            expect(result).toEqual({
                 isRevoked: true,
                 realm: REALM_ID,
                 items: [
@@ -108,13 +116,17 @@ describe("RolePermissionAssignmentMapper", () => {
         });
     });
 
-    describe("projectionPurgePayload", () => {
-        it("maps relation keys without assignment identifiers", () => {
-            expect(
-                mapper.projectionPurgePayload({
-                    assignments: createAssignments(),
-                }),
-            ).toEqual({
+    describe("[Method] - projectionPurgePayload", () => {
+        it("[case] - maps relation keys without assignment identifiers", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.projectionPurgePayload({
+                assignments: createAssignments(),
+            });
+
+            // Assert
+            expect(result).toEqual({
                 realm: REALM_ID,
                 items: [
                     {
@@ -134,9 +146,15 @@ describe("RolePermissionAssignmentMapper", () => {
         });
     });
 
-    describe("accessCachePayload", () => {
-        it("maps one realm invalidation per assignment", () => {
-            expect(mapper.accessCachePayload({ assignments: createAssignments() })).toEqual({
+    describe("[Method] - accessCachePayload", () => {
+        it("[case] - maps one realm invalidation per assignment", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.accessCachePayload({ assignments: createAssignments() });
+
+            // Assert
+            expect(result).toEqual({
                 items: [
                     { scope: InvalidationScope.REALM, realm: REALM_ID },
                     { scope: InvalidationScope.REALM, realm: REALM_ID },

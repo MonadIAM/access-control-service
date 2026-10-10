@@ -31,50 +31,70 @@ const cases = [
     /* eslint-enable prettier/prettier */
 ];
 
-describe("Decorator metadata contracts", () => {
-    describe("controller and handler metadata", () => {
-        it.each(cases)("$name exposes controller metadata to consumers", ({ decorator, token, value }) => {
+describe("[Decorator] - Metadata", () => {
+    describe("[Behavior] - controller and handler metadata", () => {
+        it.each(cases)("[case] - exposes controller metadata to consumers ($name)", ({ decorator, token, value }) => {
+            // Arrange
             @decorator
             class Controller {
                 public handle(): void {}
             }
             class Unmarked {}
 
-            expect(reflector.getAllAndOverride(token, [Controller.prototype.handle, Controller])).toEqual(value);
-            expect(reflector.get(token, Unmarked)).toBeUndefined();
+            // Act
+            const result = reflector.getAllAndOverride(token, [Controller.prototype.handle, Controller]);
+            const result2 = reflector.get(token, Unmarked);
+
+            // Assert
+            expect(result).toEqual(value);
+            expect(result2).toBeUndefined();
         });
 
-        it.each(cases)("$name applies only to the decorated handler", ({ decorator, token, value }) => {
+        it.each(cases)("[case] - applies only to the decorated handler ($name)", ({ decorator, token, value }) => {
+            // Arrange
             class Controller {
                 @decorator
                 public handle(): void {}
                 public other(): void {}
             }
 
-            expect(reflector.get(token, Controller.prototype.handle)).toEqual(value);
-            expect(reflector.get(token, Controller.prototype.other)).toBeUndefined();
-            expect(reflector.get(token, Controller)).toBeUndefined();
+            // Act
+            const result = reflector.get(token, Controller.prototype.handle);
+            const result2 = reflector.get(token, Controller.prototype.other);
+            const result3 = reflector.get(token, Controller);
+
+            // Assert
+            expect(result).toEqual(value);
+            expect(result2).toBeUndefined();
+            expect(result3).toBeUndefined();
         });
     });
 
-    describe("Reauthentication", () => {
-        it("exposes the reauthentication requirement only on its handler", () => {
+    describe("[Function] - Reauthentication", () => {
+        it("[case] - exposes the reauthentication requirement only on its handler", () => {
+            // Arrange
             class Controller {
                 @Reauthentication()
                 public sensitive(): void {}
                 public ordinary(): void {}
             }
 
-            expect(reflector.get(REAUTHENTICATION, Controller.prototype.sensitive)).toBe(true);
-            expect(reflector.get(REAUTHENTICATION, Controller.prototype.ordinary)).toBeUndefined();
+            // Act
+            const result = reflector.get(REAUTHENTICATION, Controller.prototype.sensitive);
+            const result2 = reflector.get(REAUTHENTICATION, Controller.prototype.ordinary);
+
+            // Assert
+            expect(result).toBe(true);
+            expect(result2).toBeUndefined();
         });
     });
 
-    describe("RequirePermission / RequireGlobalPermission", () => {
+    describe("[Behavior] - permission metadata", () => {
         it.each([
             { name: "realm permissions", decorate: RequirePermission, token: REQUIRE_PERMISSION },
             { name: "global permissions", decorate: RequireGlobalPermission, token: REQUIRE_GLOBAL_PERMISSION },
-        ])("handler $name override controller requirements, including an empty list", ({ decorate, token }) => {
+        ])("[case] - overrides controller $name, including an empty list", ({ decorate, token }) => {
+            // Arrange
             @decorate(...permissions)
             class Controller {
                 @decorate(PermissionCode.REALM_UPDATE)
@@ -84,29 +104,38 @@ describe("Decorator metadata contracts", () => {
                 public inherited(): void {}
             }
 
-            expect(reflector.getAllAndOverride(token, [Controller.prototype.update, Controller])).toEqual([
-                PermissionCode.REALM_UPDATE,
-            ]);
-            expect(reflector.getAllAndOverride(token, [Controller.prototype.unrestricted, Controller])).toEqual([]);
-            expect(reflector.getAllAndOverride(token, [Controller.prototype.inherited, Controller])).toEqual(permissions);
+            // Act
+            const result = reflector.getAllAndOverride(token, [Controller.prototype.update, Controller]);
+            const result2 = reflector.getAllAndOverride(token, [Controller.prototype.unrestricted, Controller]);
+            const result3 = reflector.getAllAndOverride(token, [Controller.prototype.inherited, Controller]);
+
+            // Assert
+            expect(result).toEqual([PermissionCode.REALM_UPDATE]);
+            expect(result2).toEqual([]);
+            expect(result3).toEqual(permissions);
         });
 
-        it("keeps realm and global permission metadata independent", () => {
+        it("[case] - keeps realm and global permission metadata independent", () => {
+            // Arrange
             class Controller {
                 @RequirePermission(PermissionCode.REALM_UPDATE)
                 @RequireGlobalPermission(PermissionCode.REALM_READ_ABSOLUTE)
                 public handle(): void {}
             }
 
-            expect(reflector.get(REQUIRE_PERMISSION, Controller.prototype.handle)).toEqual([PermissionCode.REALM_UPDATE]);
-            expect(reflector.get(REQUIRE_GLOBAL_PERMISSION, Controller.prototype.handle)).toEqual([
-                PermissionCode.REALM_READ_ABSOLUTE,
-            ]);
+            // Act
+            const result = reflector.get(REQUIRE_PERMISSION, Controller.prototype.handle);
+            const result2 = reflector.get(REQUIRE_GLOBAL_PERMISSION, Controller.prototype.handle);
+
+            // Assert
+            expect(result).toEqual([PermissionCode.REALM_UPDATE]);
+            expect(result2).toEqual([PermissionCode.REALM_READ_ABSOLUTE]);
         });
     });
 
-    describe("FormatResponse", () => {
-        it("lets a handler select its own response DTO", () => {
+    describe("[Function] - FormatResponse", () => {
+        it("[case] - lets a handler select its own response DTO", () => {
+            // Arrange
             class HandlerDTO {}
             @FormatResponse(ResponseDTO)
             class Controller {
@@ -114,8 +143,13 @@ describe("Decorator metadata contracts", () => {
                 public handle(): void {}
             }
 
-            expect(reflector.get(FORMAT_RESPONSE_DTO, Controller.prototype.handle)).toBe(HandlerDTO);
-            expect(reflector.get(FORMAT_RESPONSE_DTO, Controller)).toBe(ResponseDTO);
+            // Act
+            const result = reflector.get(FORMAT_RESPONSE_DTO, Controller.prototype.handle);
+            const result2 = reflector.get(FORMAT_RESPONSE_DTO, Controller);
+
+            // Assert
+            expect(result).toBe(HandlerDTO);
+            expect(result2).toBe(ResponseDTO);
         });
     });
 });

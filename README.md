@@ -1,7 +1,6 @@
 # @monadiam/access-control-service
 
-Access Control Service implements HRBAC, DAC, SoD, delegation policies,
-multitenancy, audit log, and change log.
+IAM | Access Control & AuthZ: hierarchical RBAC, DAC permission overrides, separation of duties (SoD), role delegation policies and realm-scoped access control.
 
 ----
 

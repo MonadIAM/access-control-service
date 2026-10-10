@@ -8,7 +8,7 @@ import { DatabaseHealthIndicator } from "./database.health";
 import { PostgreSQLPoolRegistry } from "./pool.registry";
 import { MikroOrmConfig } from "./database.config";
 
-describe("Database infrastructure with PostgreSQL", () => {
+describe("[Infrastructure] - Database", () => {
     let write: Optional<MikroORM>;
     let read: Optional<MikroORM>;
     let registry: PostgreSQLPoolRegistry;
@@ -30,30 +30,47 @@ describe("Database infrastructure with PostgreSQL", () => {
         read = undefined;
     });
 
-    describe("isHealthy", () => {
-        it("connects with production options and registers the actual driver pools", async () => {
-            expect(await health.isHealthy("database")).toEqual({ database: { status: "up" } });
-            expect(registry.snapshots()).toEqual(
+    describe("[Method] - isHealthy", () => {
+        it("[case] - connects with production options and registers the actual driver pools", async () => {
+            // Arrange
+
+            // Act
+            const result = await health.isHealthy("database");
+            const result2 = registry.snapshots();
+            const result3 = registry.snapshots();
+
+            // Assert
+            expect(result).toEqual({ database: { status: "up" } });
+            expect(result2).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({ kind: "write", max: 3, total: expect.any(Number) }),
                     expect.objectContaining({ kind: "read", max: 2, total: expect.any(Number) }),
                 ]),
             );
-            expect(registry.snapshots()).toHaveLength(2);
+            expect(result3).toHaveLength(2);
             for (const snapshot of registry.snapshots()) {
                 expect(snapshot.total).toBeGreaterThan(0);
                 expect(snapshot.active).toBe(0);
             }
         });
 
-        it("reports a closed read connection as down and returns up after reconnecting", async () => {
+        it("[case] - reports a closed read connection as down and returns up after reconnecting", async () => {
+            // Arrange
             await read!.close(true);
-            expect(await health.isHealthy("database")).toEqual({
+
+            // Act
+            const result = await health.isHealthy("database");
+            await read!.reconnect();
+            const result2 = await health.isHealthy("database");
+
+            const result1 = registry.snapshot({ kind: "read" })?.total;
+
+            // Assert
+            expect(result).toEqual({
                 database: { status: "down", message: "connection_lost" },
             });
-            await read!.reconnect();
-            expect(await health.isHealthy("database")).toEqual({ database: { status: "up" } });
-            expect(registry.snapshot({ kind: "read" })?.total).toBeGreaterThan(0);
+            expect(result2).toEqual({ database: { status: "up" } });
+            expect(result1).toBeGreaterThan(0);
         });
     });
 });

@@ -22,24 +22,25 @@ async function loadChangeLogs(suite: Integration.Domain.ChangeLog.Suite): Promis
     return await suite.transaction((transaction) => transaction.find(ChangeLog, {}, { orderBy: { createdAt: "asc" } }));
 }
 
-describe("ChangeLogService integration", () => {
+describe("[DomainService] - ChangeLog", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("purgeExpired", () => {
-        it("purges only an expired batch and keeps fresh change logs", async () => {
+    describe("[Method] - purgeExpired", () => {
+        it("[case] - purges only an expired batch and keeps fresh change logs", async () => {
+            // Arrange
             const fresh = await suite.fixtures().createChangeLog();
             const first = await suite.fixtures().createChangeLog();
             const second = await suite.fixtures().createChangeLog();
             const third = await suite.fixtures().createChangeLog();
-
             await setCreatedAt(suite, fresh, new Date("2999-01-01T00:00:00.000Z"));
             await setCreatedAt(suite, first, new Date("2026-01-01T00:00:00.000Z"));
             await setCreatedAt(suite, second, new Date("2026-01-02T00:00:00.000Z"));
             await setCreatedAt(suite, third, new Date("2026-01-03T00:00:00.000Z"));
 
+            // Act
             const purged = await suite.transaction((transaction) =>
                 suite.repository().changeLogService.purgeExpired({
                     expirationDate: new Date("2026-02-01T00:00:00.000Z"),
@@ -50,6 +51,7 @@ describe("ChangeLogService integration", () => {
 
             const remaining = await loadChangeLogs(suite);
 
+            // Assert
             expect(purged).toHaveLength(2);
             expect(purged.every(({ createdAt }) => createdAt < new Date("2026-02-01T00:00:00.000Z"))).toBe(true);
             expect(remaining).toHaveLength(2);

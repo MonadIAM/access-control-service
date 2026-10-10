@@ -22,11 +22,15 @@ function createChangeLog(overrides?: Partial<SystemEntities.ChangeLog.Constructo
     });
 }
 
-describe("ChangeLog Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - ChangeLog", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
+
+            // Act
             const log = createChangeLog();
 
+            // Assert
             expect(log.changeType).toBe(ChangeSetType.UPDATE);
             expect(log.auditEntry).toBe(AUDIT_ENTRY_ID);
             expect(log.entityType).toBe("REALM");
@@ -34,22 +38,36 @@ describe("ChangeLog Entity", () => {
             expect(log.delta).toBe(BASE_DELTA);
         });
 
-        it("should auto-generate id and createdAt", () => {
+        it("[case] - generates id and createdAt", () => {
+            // Arrange
+
+            // Act
             const log = createChangeLog();
 
-            expect(isUUID(log.id, "4")).toBe(true);
+            const result = isUUID(log.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(log.createdAt).toBeInstanceOf(Date);
         });
 
-        it("should assign changeType CREATE", () => {
+        it("[case] - assigns changeType CREATE", () => {
+            // Arrange
+
+            // Act
             const log = createChangeLog({ changeType: ChangeSetType.CREATE });
 
+            // Assert
             expect(log.changeType).toBe(ChangeSetType.CREATE);
         });
 
-        it("should assign changeType DELETE", () => {
+        it("[case] - assigns changeType DELETE", () => {
+            // Arrange
+
+            // Act
             const log = createChangeLog({ changeType: ChangeSetType.DELETE });
 
+            // Assert
             expect(log.changeType).toBe(ChangeSetType.DELETE);
         });
     });

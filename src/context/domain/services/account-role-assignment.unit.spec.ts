@@ -63,23 +63,25 @@ function createProps(
     };
 }
 
-describe("AccountRoleAssignmentService", () => {
+describe("[DomainService] - AccountRoleAssignment", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("throws when not all roles are found in the target realm", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - throws when not all roles are found in the target realm", async () => {
+            // Arrange
             const realm = createRealm();
             const role = createRole({ realm });
             const secondRole = createSecondRole({ realm });
             const { service, repositories, transaction } = createServiceContext({ realm, roles: [role, secondRole] });
             repositories.roles.find.mockImplementation(() => Promise.resolve([role]));
 
-            await expect(service.create(createProps(transaction.entityManager))).rejects.toThrow(
-                "services.account-role-assignment.ROLES_NOT_FOUND",
-            );
+            // Act
+            const result = service.create(createProps(transaction.entityManager));
 
+            // Assert
+            await expect(result).rejects.toThrow("services.account-role-assignment.ROLES_NOT_FOUND");
             expect(repositories.roles.find).toHaveBeenCalledWith({
                 where: { id: { $in: [ROLE_ID, SECOND_ROLE_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -88,14 +90,16 @@ describe("AccountRoleAssignmentService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("throws when delegation is not allowed", async () => {
+        it("[case] - throws when delegation is not allowed", async () => {
+            // Arrange
             const { service, repositories, transaction } = createServiceContext();
             repositories.roleDelegationPolicies.isDelegationAllowed.mockImplementation(() => Promise.resolve(false));
 
-            await expect(service.create(createProps(transaction.entityManager))).rejects.toThrow(
-                "services.account-role-assignment.DELEGATION_NOT_ALLOWED",
-            );
+            // Act
+            const result = service.create(createProps(transaction.entityManager));
 
+            // Assert
+            await expect(result).rejects.toThrow("services.account-role-assignment.DELEGATION_NOT_ALLOWED");
             expect(repositories.roleDelegationPolicies.isDelegationAllowed).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 roles: [ROLE_ID, SECOND_ROLE_ID],
@@ -105,14 +109,16 @@ describe("AccountRoleAssignmentService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("throws when the account role limit would be exceeded", async () => {
+        it("[case] - throws when the account role limit would be exceeded", async () => {
+            // Arrange
             const { service, repositories, transaction } = createServiceContext();
             repositories.accountRoleAssignments.wouldExceedRoleLimit.mockImplementation(() => Promise.resolve(true));
 
-            await expect(service.create(createProps(transaction.entityManager))).rejects.toThrow(
-                "services.account-role-assignment.ACCOUNT_ROLE_LIMIT_EXCEEDED",
-            );
+            // Act
+            const result = service.create(createProps(transaction.entityManager));
 
+            // Assert
+            await expect(result).rejects.toThrow("services.account-role-assignment.ACCOUNT_ROLE_LIMIT_EXCEEDED");
             expect(repositories.accountRoleAssignments.wouldExceedRoleLimit).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 roles: [ROLE_ID, SECOND_ROLE_ID],
@@ -121,14 +127,16 @@ describe("AccountRoleAssignmentService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("throws when the account would violate separation-of-duties groups", async () => {
+        it("[case] - throws when the account would violate separation-of-duties groups", async () => {
+            // Arrange
             const { service, repositories, transaction } = createServiceContext();
             repositories.roleConflictGroups.hasGroupsViolatedByAccount.mockImplementation(() => Promise.resolve(true));
 
-            await expect(service.create(createProps(transaction.entityManager))).rejects.toThrow(
-                "services.account-role-assignment.HAS_SoD_VIOLATIONS",
-            );
+            // Act
+            const result = service.create(createProps(transaction.entityManager));
 
+            // Assert
+            await expect(result).rejects.toThrow("services.account-role-assignment.HAS_SoD_VIOLATIONS");
             expect(repositories.roleConflictGroups.hasGroupsViolatedByAccount).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 roles: [ROLE_ID, SECOND_ROLE_ID],
@@ -138,7 +146,8 @@ describe("AccountRoleAssignmentService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("creates one assignment per role, validates assignability, persists, and returns them", async () => {
+        it("[case] - creates one assignment per role, validates assignability, persists, and returns them", async () => {
+            // Arrange
             const realm = createRealm();
             const role = createRole({ realm });
             const secondRole = createSecondRole({ realm });
@@ -146,10 +155,12 @@ describe("AccountRoleAssignmentService", () => {
             const expiresAt = new Date("2999-01-02T12:00:00.000Z");
             const canAssignSpy = jest.spyOn(AccountRoleAssignment.prototype, "canAssign");
 
+            // Act
             const result = await service.create(
                 createProps(transaction.entityManager, { justification: "temporary support", expiresAt }),
             );
 
+            // Assert
             expect(result).toHaveLength(2);
             expect(result.map(({ role }) => role)).toEqual([role, secondRole]);
             expect(result).toEqual([
@@ -172,13 +183,15 @@ describe("AccountRoleAssignmentService", () => {
         });
     });
 
-    describe("ensure", () => {
-        it("returns an active existing assignment and does not call create", async () => {
+    describe("[Method] - ensure", () => {
+        it("[case] - returns an active existing assignment and does not call create", async () => {
+            // Arrange
             const { service, repositories, transaction } = createServiceContext();
             const existing = helpers.createAccountRoleAssignment({ id: ASSIGNMENT_ID });
             const createSpy = jest.spyOn(service, "create");
             repositories.accountRoleAssignments.findUnique.mockImplementation(() => Promise.resolve(existing));
 
+            // Act
             const result = await service.ensure({
                 input: { account: ACCOUNT_ID, role: ROLE_ID },
                 transaction: transaction.entityManager,
@@ -186,6 +199,7 @@ describe("AccountRoleAssignmentService", () => {
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(result).toEqual([existing]);
             expect(repositories.accountRoleAssignments.findUnique).toHaveBeenCalledWith({
                 options: { populate: ["realm", "role"] },
@@ -199,12 +213,14 @@ describe("AccountRoleAssignmentService", () => {
             expect(createSpy).not.toHaveBeenCalled();
         });
 
-        it("creates a single-role assignment when no active assignment exists", async () => {
+        it("[case] - creates a single-role assignment when no active assignment exists", async () => {
+            // Arrange
             const { service, repositories, transaction } = createServiceContext();
             const created = [helpers.createAccountRoleAssignment({ id: ASSIGNMENT_ID })];
             const createSpy = jest.spyOn(service, "create").mockImplementation(() => Promise.resolve(created));
             repositories.accountRoleAssignments.findUnique.mockImplementation(() => Promise.resolve(null));
 
+            // Act
             const result = await service.ensure({
                 input: { account: ACCOUNT_ID, role: ROLE_ID },
                 transaction: transaction.entityManager,
@@ -212,6 +228,7 @@ describe("AccountRoleAssignmentService", () => {
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(result).toBe(created);
             expect(createSpy).toHaveBeenCalledWith({
                 input: { account: ACCOUNT_ID, roles: [ROLE_ID] },
@@ -222,13 +239,15 @@ describe("AccountRoleAssignmentService", () => {
         });
     });
 
-    describe("assign", () => {
-        it("creates and persists an internal assignment without delegation, limit, or SoD checks", async () => {
+    describe("[Method] - assign", () => {
+        it("[case] - creates and persists an internal assignment without delegation, limit, or SoD checks", async () => {
+            // Arrange
             const realm = createRealm();
             const role = createRole({ realm });
             const { service, repositories, transaction } = createServiceContext({ realm, roles: [role] });
             const expiresAt = new Date("2999-01-02T12:00:00.000Z");
 
+            // Act
             const result = await service.assign({
                 transaction: transaction.entityManager,
                 input: {
@@ -239,6 +258,7 @@ describe("AccountRoleAssignmentService", () => {
                 },
             });
 
+            // Assert
             expect(repositories.realms.findUniqueOrThrow).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 where: { id: REALM_ID },
@@ -262,7 +282,8 @@ describe("AccountRoleAssignmentService", () => {
             expect(repositories.roleConflictGroups.hasGroupsViolatedByAccount).not.toHaveBeenCalled();
         });
 
-        it("does not assign a role that belongs to another realm", async () => {
+        it("[case] - does not assign a role that belongs to another realm", async () => {
+            // Arrange
             const realm = createRealm();
             const role = createRole({ realm });
             const { service, repositories, transaction } = createServiceContext({ realm, roles: [role] });
@@ -285,13 +306,14 @@ describe("AccountRoleAssignmentService", () => {
                     : Promise.reject(new Error("role not found"));
             });
 
-            await expect(
-                service.assign({
-                    input: { account: ACCOUNT_ID, realm: REALM_ID, role: ROLE_ID },
-                    transaction: transaction.entityManager,
-                }),
-            ).rejects.toThrow("role not found");
+            // Act
+            const result = service.assign({
+                input: { account: ACCOUNT_ID, realm: REALM_ID, role: ROLE_ID },
+                transaction: transaction.entityManager,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("role not found");
             expect(repositories.roles.findUniqueOrThrow.mock.calls).toContainEqual([
                 {
                     where: { id: ROLE_ID, realm: REALM_ID },
@@ -302,11 +324,12 @@ describe("AccountRoleAssignmentService", () => {
         });
     });
 
-    describe("revoke / restore", () => {
+    describe("[Behavior] - revocation", () => {
         it.each([
             { method: "revoke", isRevoked: false, options: { populate: ["realm", "role"] } },
             { method: "restore", isRevoked: true, options: undefined },
-        ] as const)("$method processes each found entity and returns the batch", async ({ method, isRevoked, options }) => {
+        ] as const)("[case] - processes and returns the batch ($method)", async ({ method, isRevoked, options }) => {
+            // Arrange
             const { service, repositories, transaction } = createServiceContext();
             const first = helpers.createAccountRoleAssignment({ id: ASSIGNMENT_ID, isRevoked });
             const second = helpers.createAccountRoleAssignment({ id: SECOND_ASSIGNMENT_ID, isRevoked });
@@ -314,12 +337,14 @@ describe("AccountRoleAssignmentService", () => {
             const secondOperationSpy = jest.spyOn(second, method);
             repositories.accountRoleAssignments.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service[method]({
                 identifiers: [ASSIGNMENT_ID, SECOND_ASSIGNMENT_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.accountRoleAssignments.find).toHaveBeenCalledWith({
                 where: { id: { $in: [ASSIGNMENT_ID, SECOND_ASSIGNMENT_ID] }, realm: REALM_ID },
                 ...(options && { options }),
@@ -331,21 +356,24 @@ describe("AccountRoleAssignmentService", () => {
         });
     });
 
-    describe("bulk identifiers", () => {
+    describe("[Behavior] - bulk identifiers", () => {
         it.each([
             { method: "revoke", isRevoked: false, options: { populate: ["realm", "role"] } },
             { method: "restore", isRevoked: true, options: undefined },
-        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked, options }) => {
+        ] as const)("[case] - deduplicates repository lookup ($method)", async ({ method, isRevoked, options }) => {
+            // Arrange
             const { service, repositories, transaction } = createServiceContext();
             const assignment = helpers.createAccountRoleAssignment({ id: ASSIGNMENT_ID, isRevoked });
             repositories.accountRoleAssignments.find.mockImplementation(() => Promise.resolve([assignment]));
 
+            // Act
             const result = await service[method]({
                 identifiers: [ASSIGNMENT_ID, ASSIGNMENT_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(result).toEqual([assignment]);
             expect(repositories.accountRoleAssignments.find).toHaveBeenCalledWith({
                 where: { id: { $in: [ASSIGNMENT_ID] }, realm: REALM_ID },
@@ -355,16 +383,19 @@ describe("AccountRoleAssignmentService", () => {
         });
     });
 
-    describe("expire", () => {
-        it("merges and revokes each provided assignment", () => {
+    describe("[Method] - expire", () => {
+        it("[case] - merges and revokes each provided assignment", () => {
+            // Arrange
             const { service, transaction } = createServiceContext();
             const first = helpers.createAccountRoleAssignment({ id: ASSIGNMENT_ID });
             const second = helpers.createAccountRoleAssignment({ id: SECOND_ASSIGNMENT_ID });
             const firstRevokeSpy = jest.spyOn(first, "revoke");
             const secondRevokeSpy = jest.spyOn(second, "revoke");
 
+            // Act
             service.expire({ transaction: transaction.entityManager, entities: [first, second] });
 
+            // Assert
             expect(transaction.merge).toHaveBeenNthCalledWith(1, first);
             expect(transaction.merge).toHaveBeenNthCalledWith(2, second);
             expect(firstRevokeSpy).toHaveBeenCalledTimes(1);
@@ -372,16 +403,19 @@ describe("AccountRoleAssignmentService", () => {
         });
     });
 
-    describe("purge", () => {
-        it("checks purge eligibility and removes each assignment", () => {
+    describe("[Method] - purge", () => {
+        it("[case] - checks purge eligibility and removes each assignment", () => {
+            // Arrange
             const { service, transaction } = createServiceContext();
             const first = helpers.createAccountRoleAssignment({ id: ASSIGNMENT_ID, isRevoked: true });
             const second = helpers.createAccountRoleAssignment({ id: SECOND_ASSIGNMENT_ID, isRevoked: true });
             const firstCanPurgeSpy = jest.spyOn(first, "canPurge");
             const secondCanPurgeSpy = jest.spyOn(second, "canPurge");
 
+            // Act
             service.purge({ transaction: transaction.entityManager, entities: [first, second] });
 
+            // Assert
             expect(firstCanPurgeSpy).toHaveBeenCalledTimes(1);
             expect(secondCanPurgeSpy).toHaveBeenCalledTimes(1);
             expect(transaction.remove).toHaveBeenNthCalledWith(1, first);
@@ -389,18 +423,21 @@ describe("AccountRoleAssignmentService", () => {
         });
     });
 
-    describe("clean", () => {
-        it("finds account assignments in an optional realm, removes them, and returns them", async () => {
+    describe("[Method] - clean", () => {
+        it("[case] - finds account assignments in an optional realm, removes them, and returns them", async () => {
+            // Arrange
             const { service, repositories, transaction } = createServiceContext();
             const first = helpers.createAccountRoleAssignment({ id: ASSIGNMENT_ID });
             const second = helpers.createAccountRoleAssignment({ id: SECOND_ASSIGNMENT_ID });
             repositories.accountRoleAssignments.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service.clean({
                 input: { account: ACCOUNT_ID, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
 
+            // Assert
             expect(repositories.accountRoleAssignments.find).toHaveBeenCalledWith({
                 where: { account: ACCOUNT_ID, realm: REALM_ID },
                 options: { populate: ["realm", "role"] },

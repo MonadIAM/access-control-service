@@ -17,33 +17,51 @@ function createOutbox(overrides?: Partial<SystemEntities.Outbox.ConstructorProps
     });
 }
 
-describe("Outbox Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields", () => {
+describe("[Entity] - Outbox", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields", () => {
+            // Arrange
+
+            // Act
             const outbox = createOutbox();
 
+            // Assert
             expect(outbox.actionType).toBe(AccessCacheTopicAction.INVALIDATE);
             expect(outbox.destinationTopic).toBe(KafkaTopic.ACCESS_CACHE);
             expect(outbox.payload).toBe(BASE_PAYLOAD);
         });
 
-        it("should auto-generate id and createdAt", () => {
+        it("[case] - generates id and createdAt", () => {
+            // Arrange
+
+            // Act
             const outbox = createOutbox();
 
-            expect(isUUID(outbox.id, "4")).toBe(true);
+            const result = isUUID(outbox.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(outbox.createdAt).toBeInstanceOf(Date);
         });
 
-        it("should assign optional metadata when provided", () => {
+        it("[case] - assigns optional metadata when provided", () => {
+            // Arrange
             const metadata = { traceId: "abc123" };
+
+            // Act
             const outbox = createOutbox({ metadata });
 
+            // Assert
             expect(outbox.metadata).toBe(metadata);
         });
 
-        it("should leave metadata undefined when omitted", () => {
+        it("[case] - leaves metadata undefined when omitted", () => {
+            // Arrange
+
+            // Act
             const outbox = createOutbox();
 
+            // Assert
             expect(outbox.metadata).toBeUndefined();
         });
     });

@@ -21,10 +21,13 @@ function createRole(overrides?: Partial<Entities.Role.ConstructorProps>): Role {
     });
 }
 
-describe("Role Entity", () => {
-    describe("constructor", () => {
-        it("should assign all required fields", () => {
+describe("[Entity] - Role", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns all required fields", () => {
+            // Arrange
             const realm = createRealm();
+
+            // Act
             const role = new Role({
                 code: "test.moderator",
                 name: "Moderator",
@@ -33,6 +36,7 @@ describe("Role Entity", () => {
                 realm,
             });
 
+            // Assert
             expect(role.code).toBe("test.moderator");
             expect(role.name).toBe("Moderator");
             expect(role.actorType).toBe(RoleActorType.HUMAN);
@@ -40,150 +44,228 @@ describe("Role Entity", () => {
             expect(role.realm).toBe(realm);
         });
 
-        it("should default isSystemManaged and isRevoked to false", () => {
+        it("[case] - defaults isSystemManaged and isRevoked to false", () => {
+            // Arrange
+
+            // Act
             const role = createRole();
 
+            // Assert
             expect(role.isSystemManaged).toBe(false);
             expect(role.isRevoked).toBe(false);
         });
 
-        it("should respect explicit boolean overrides", () => {
+        it("[case] - respects explicit boolean overrides", () => {
+            // Arrange
+
+            // Act
             const role = createRole({
                 isSystemManaged: true,
                 isRevoked: true,
             });
 
+            // Assert
             expect(role.isSystemManaged).toBe(true);
             expect(role.isRevoked).toBe(true);
         });
 
-        it("should auto-generate id (uuid v4), createdAt, version", () => {
+        it("[case] - generates id (uuid v4), createdAt, version", () => {
+            // Arrange
             const before = new Date();
+
+            // Act
             const role = createRole();
 
-            expect(isUUID(role.id, "4")).toBe(true);
+            const result = isUUID(role.id, "4");
+            const result2 = role.createdAt.getTime();
+
+            // Assert
+            expect(result).toBe(true);
             expect(role.createdAt).toBeInstanceOf(Date);
-            expect(role.createdAt.getTime()).toBeGreaterThanOrEqual(before.getTime());
+            expect(result2).toBeGreaterThanOrEqual(before.getTime());
             expect(role.updatedAt).toBeUndefined();
             expect(role.version).toBe(1);
         });
 
-        it("should assign description when provided", () => {
+        it("[case] - assigns description when provided", () => {
+            // Arrange
+
+            // Act
             const role = createRole({ description: "Full access role" });
+
+            // Assert
             expect(role.description).toBe("Full access role");
         });
 
-        it("should leave description undefined when omitted", () => {
+        it("[case] - leaves description undefined when omitted", () => {
+            // Arrange
+
+            // Act
             const role = createRole();
+
+            // Assert
             expect(role.description).toBeUndefined();
         });
     });
 
-    describe("update", () => {
-        it("should update a single field", () => {
+    describe("[Method] - update", () => {
+        it("[case] - updates a single field", () => {
+            // Arrange
             const role = createRole({ name: "Old Name" });
 
+            // Act
             role.update({ patch: { name: "New Name" } });
 
+            // Assert
             expect(role.name).toBe("New Name");
             expect(role.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should update multiple fields at once", () => {
+        it("[case] - updates multiple fields at once", () => {
+            // Arrange
             const role = createRole({ name: "Old", description: "Old desc" });
 
+            // Act
             role.update({ patch: { name: "New", description: "New desc" } });
 
+            // Assert
             expect(role.name).toBe("New");
             expect(role.description).toBe("New desc");
         });
 
-        it("should skip fields whose value matches the current one", () => {
+        it("[case] - skips fields whose value matches the current one", () => {
+            // Arrange
             const role = createRole({ name: "Same", description: "Changed old" });
 
+            // Act
             role.update({ patch: { name: "Same", description: "Changed new" } });
 
+            // Assert
             expect(role.name).toBe("Same");
             expect(role.description).toBe("Changed new");
         });
 
-        it("should ignore undefined values in patch", () => {
+        it("[case] - ignores undefined values in patch", () => {
+            // Arrange
             const role = createRole({ name: "Original" });
 
+            // Act
             role.update({ patch: { name: "Updated", description: undefined } });
 
+            // Assert
             expect(role.name).toBe("Updated");
             expect(role.description).toBeUndefined();
         });
 
-        it("should throw EMPTY_UPDATE_PATCH when patch object is empty", () => {
+        it("[case] - throws EMPTY_UPDATE_PATCH when patch object is empty", () => {
+            // Arrange
             const role = createRole();
 
-            expect(() => role.update({ patch: {} })).toThrow("EMPTY_UPDATE_PATCH");
+            // Act
+            const act = (): unknown => role.update({ patch: {} });
+
+            // Assert
+            expect(act).toThrow("EMPTY_UPDATE_PATCH");
         });
 
-        it("should throw NO_CHANGES_DETECTED when all values match current state", () => {
+        it("[case] - throws NO_CHANGES_DETECTED when all values match current state", () => {
+            // Arrange
             const role = createRole({ name: "Same" });
 
-            expect(() => role.update({ patch: { name: "Same" } })).toThrow("NO_CHANGES_DETECTED");
+            // Act
+            const act = (): unknown => role.update({ patch: { name: "Same" } });
+
+            // Assert
+            expect(act).toThrow("NO_CHANGES_DETECTED");
         });
     });
 
-    describe("revoke", () => {
-        it("should revoke an active role", () => {
+    describe("[Method] - revoke", () => {
+        it("[case] - revokes an active role", () => {
+            // Arrange
             const role = createRole();
 
+            // Act
             role.revoke();
 
+            // Assert
             expect(role.isRevoked).toBe(true);
             expect(role.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw ALREADY_REVOKED when revoking twice", () => {
+        it("[case] - throws ALREADY_REVOKED when revoking twice", () => {
+            // Arrange
             const role = createRole();
             role.revoke();
 
-            expect(() => role.revoke()).toThrow("ALREADY_REVOKED");
+            // Act
+            const act = (): unknown => role.revoke();
+
+            // Assert
+            expect(act).toThrow("ALREADY_REVOKED");
         });
     });
 
-    describe("restore", () => {
-        it("should restore a revoked role", () => {
+    describe("[Method] - restore", () => {
+        it("[case] - restores a revoked role", () => {
+            // Arrange
             const role = createRole();
             role.revoke();
 
+            // Act
             role.restore();
 
+            // Assert
             expect(role.isRevoked).toBe(false);
             expect(role.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw ALREADY_ACTIVE when restoring an active role", () => {
+        it("[case] - throws ALREADY_ACTIVE when restoring an active role", () => {
+            // Arrange
             const role = createRole();
 
-            expect(() => role.restore()).toThrow("ALREADY_ACTIVE");
+            // Act
+            const act = (): unknown => role.restore();
+
+            // Assert
+            expect(act).toThrow("ALREADY_ACTIVE");
         });
     });
 
-    describe("canPurge", () => {
-        it("should throw CANNOT_PURGE_ACTIVE for a non-revoked role", () => {
+    describe("[Method] - canPurge", () => {
+        it("[case] - throws CANNOT_PURGE_ACTIVE for a non-revoked role", () => {
+            // Arrange
             const role = createRole();
 
-            expect(() => role.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
+            // Act
+            const act = (): unknown => role.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_ACTIVE");
         });
 
-        it("should throw CANNOT_PURGE_SYSTEM for a revoked system-managed role", () => {
+        it("[case] - throws CANNOT_PURGE_SYSTEM for a revoked system-managed role", () => {
+            // Arrange
             const role = createRole({ isSystemManaged: true });
             role.revoke();
 
-            expect(() => role.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
+            // Act
+            const act = (): unknown => role.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
-        it("should pass for a revoked non-system role", () => {
+        it("[case] - passes for a revoked non-system role", () => {
+            // Arrange
             const role = createRole();
             role.revoke();
 
-            expect(() => role.canPurge()).not.toThrow();
+            // Act
+            const act = (): unknown => role.canPurge();
+
+            // Assert
+            expect(act).not.toThrow();
         });
     });
 });

@@ -16,13 +16,14 @@ const SECOND_ASSIGNMENT_ID = "00000000-0000-4000-8000-300000000006";
 
 const helpers = new RolePermissionAssignmentUnitHelpers();
 
-describe("RolePermissionAssignmentService", () => {
+describe("[DomainService] - RolePermissionAssignment", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("throws when not all permissions are found in the target or system realm", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - throws when not all permissions are found in the target or system realm", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const role = helpers.createRole({ id: ROLE_ID, realm });
             const permission = helpers.createPermission({ id: PERMISSION_ID, realm });
@@ -38,14 +39,15 @@ describe("RolePermissionAssignmentService", () => {
             });
             repositories.permissions.find.mockImplementation(() => Promise.resolve([permission]));
 
-            await expect(
-                service.create({
-                    input: { role: ROLE_ID, permissions: [PERMISSION_ID, SECOND_PERMISSION_ID] },
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                }),
-            ).rejects.toThrow("services.role-permission-assignment.PERMISSIONS_NOT_FOUND");
+            // Act
+            const result = service.create({
+                input: { role: ROLE_ID, permissions: [PERMISSION_ID, SECOND_PERMISSION_ID] },
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role-permission-assignment.PERMISSIONS_NOT_FOUND");
             expect(repositories.permissions.find).toHaveBeenCalledWith({
                 where: { id: { $in: [PERMISSION_ID, SECOND_PERMISSION_ID] }, realm: { $in: [REALM_ID, SYSTEM_REALM_ID] } },
                 transaction: transaction.entityManager,
@@ -54,7 +56,8 @@ describe("RolePermissionAssignmentService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("throws when the role permission limit would be exceeded", async () => {
+        it("[case] - throws when the role permission limit would be exceeded", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const role = helpers.createRole({ id: ROLE_ID, realm });
             const permission = helpers.createPermission({ id: PERMISSION_ID, realm });
@@ -72,14 +75,15 @@ describe("RolePermissionAssignmentService", () => {
                 Promise.resolve(true),
             );
 
-            await expect(
-                service.create({
-                    input: { role: ROLE_ID, permissions: [PERMISSION_ID, SECOND_PERMISSION_ID] },
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                }),
-            ).rejects.toThrow("services.role-permission-assignment.ROLE_PERMISSION_LIMIT_EXCEEDED");
+            // Act
+            const result = service.create({
+                input: { role: ROLE_ID, permissions: [PERMISSION_ID, SECOND_PERMISSION_ID] },
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role-permission-assignment.ROLE_PERMISSION_LIMIT_EXCEEDED");
             expect(repositories.rolePermissionAssignments.wouldExceedPermissionLimit).toHaveBeenCalledWith({
                 permissions: [PERMISSION_ID, SECOND_PERMISSION_ID],
                 transaction: transaction.entityManager,
@@ -88,7 +92,8 @@ describe("RolePermissionAssignmentService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("creates assignments for custom and system permissions, validates assignability, and persists them", async () => {
+        it("[case] - creates assignments for custom and system permissions, validates assignability, and persists them", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const systemRealm = helpers.createRealm({ id: SYSTEM_REALM_ID, code: "realm.system" });
             const role = helpers.createRole({ id: ROLE_ID, realm });
@@ -105,12 +110,14 @@ describe("RolePermissionAssignmentService", () => {
             });
             const canAssignSpy = jest.spyOn(RolePermissionAssignment.prototype, "canAssign");
 
+            // Act
             const result = await service.create({
                 input: { role: ROLE_ID, permissions: [PERMISSION_ID, SECOND_PERMISSION_ID] },
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.roles.findUniqueOrThrow.mock.calls).toContainEqual([
                 {
                     where: { id: ROLE_ID, realm: REALM_ID },
@@ -133,11 +140,12 @@ describe("RolePermissionAssignmentService", () => {
         });
     });
 
-    describe("revoke / restore", () => {
+    describe("[Behavior] - revocation", () => {
         it.each([
             { method: "revoke", isRevoked: false },
             { method: "restore", isRevoked: true },
-        ] as const)("$method processes each found entity and returns the batch", async ({ method, isRevoked }) => {
+        ] as const)("[case] - processes and returns the batch ($method)", async ({ method, isRevoked }) => {
+            // Arrange
             const { service, repositories, transaction } = helpers.service();
             const first = helpers.createRolePermissionAssignment({ id: ASSIGNMENT_ID, isRevoked });
             const second = helpers.createRolePermissionAssignment({ id: SECOND_ASSIGNMENT_ID, isRevoked });
@@ -145,12 +153,14 @@ describe("RolePermissionAssignmentService", () => {
             const secondOperationSpy = jest.spyOn(second, method);
             repositories.rolePermissionAssignments.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service[method]({
                 identifiers: [ASSIGNMENT_ID, SECOND_ASSIGNMENT_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.rolePermissionAssignments.find).toHaveBeenCalledWith({
                 where: { id: { $in: [ASSIGNMENT_ID, SECOND_ASSIGNMENT_ID] }, realm: REALM_ID },
                 options: { populate: ["permission.realm"] },
@@ -162,8 +172,9 @@ describe("RolePermissionAssignmentService", () => {
         });
     });
 
-    describe("purge", () => {
-        it("checks purge eligibility, removes found assignments, and returns them", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - checks purge eligibility, removes found assignments, and returns them", async () => {
+            // Arrange
             const { service, repositories, transaction } = helpers.service();
             const first = helpers.createRolePermissionAssignment({ id: ASSIGNMENT_ID, isRevoked: true });
             const second = helpers.createRolePermissionAssignment({ id: SECOND_ASSIGNMENT_ID, isRevoked: true });
@@ -171,12 +182,14 @@ describe("RolePermissionAssignmentService", () => {
             const secondCanPurgeSpy = jest.spyOn(second, "canPurge");
             repositories.rolePermissionAssignments.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service.purge({
                 identifiers: [ASSIGNMENT_ID, SECOND_ASSIGNMENT_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.rolePermissionAssignments.find).toHaveBeenCalledWith({
                 where: { id: { $in: [ASSIGNMENT_ID, SECOND_ASSIGNMENT_ID] }, realm: REALM_ID },
                 options: { populate: ["permission.realm"] },
@@ -190,22 +203,25 @@ describe("RolePermissionAssignmentService", () => {
         });
     });
 
-    describe("bulk identifiers", () => {
+    describe("[Behavior] - bulk identifiers", () => {
         it.each([
             { method: "revoke", isRevoked: false },
             { method: "restore", isRevoked: true },
             { method: "purge", isRevoked: true },
-        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked }) => {
+        ] as const)("[case] - deduplicates repository lookup ($method)", async ({ method, isRevoked }) => {
+            // Arrange
             const { service, repositories, transaction } = helpers.service();
             const assignment = helpers.createRolePermissionAssignment({ id: ASSIGNMENT_ID, isRevoked });
             repositories.rolePermissionAssignments.find.mockImplementation(() => Promise.resolve([assignment]));
 
+            // Act
             const result = await service[method]({
                 identifiers: [ASSIGNMENT_ID, ASSIGNMENT_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(result).toEqual([assignment]);
             expect(repositories.rolePermissionAssignments.find).toHaveBeenCalledWith({
                 where: { id: { $in: [ASSIGNMENT_ID] }, realm: REALM_ID },

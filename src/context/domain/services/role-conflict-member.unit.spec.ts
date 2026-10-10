@@ -13,27 +13,29 @@ const SECOND_MEMBER_ID = "00000000-0000-4000-8000-800000000006";
 
 const helpers = new RoleConflictMemberUnitHelpers();
 
-describe("RoleConflictMemberService", () => {
+describe("[DomainService] - RoleConflictMember", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("throws when not all roles are found in the target realm", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - throws when not all roles are found in the target realm", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const role = helpers.createRole({ id: ROLE_ID, realm });
             const group = helpers.createRoleConflictGroup({ id: GROUP_ID, realm });
             const { service, repositories, transaction } = helpers.service({ roles: [role], realm });
             repositories.roleConflictGroups.findUniqueOrThrow.mockImplementation(() => Promise.resolve(group));
 
-            await expect(
-                service.create({
-                    input: { group: GROUP_ID, roles: [ROLE_ID, SECOND_ROLE_ID] },
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                }),
-            ).rejects.toThrow("services.role-conflict-member.ROLES_NOT_FOUND");
+            // Act
+            const result = service.create({
+                input: { group: GROUP_ID, roles: [ROLE_ID, SECOND_ROLE_ID] },
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role-conflict-member.ROLES_NOT_FOUND");
             expect(repositories.roles.find).toHaveBeenCalledWith({
                 where: { id: { $in: [ROLE_ID, SECOND_ROLE_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -42,27 +44,30 @@ describe("RoleConflictMemberService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("stops before limit and violator checks when the group cannot modify members", async () => {
+        it("[case] - stops before limit and violator checks when the group cannot modify members", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const role = helpers.createRole({ id: ROLE_ID, realm });
             const group = helpers.createRoleConflictGroup({ id: GROUP_ID, isRevoked: true, realm });
             const { service, repositories, transaction } = helpers.service({ roles: [role], realm });
             repositories.roleConflictGroups.findUniqueOrThrow.mockImplementation(() => Promise.resolve(group));
 
-            await expect(
-                service.create({
-                    input: { group: GROUP_ID, roles: [ROLE_ID] },
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                }),
-            ).rejects.toThrow("entities.role-conflict-group.CANNOT_MODIFY_MEMBERS_REVOKED");
+            // Act
+            const result = service.create({
+                input: { group: GROUP_ID, roles: [ROLE_ID] },
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("entities.role-conflict-group.CANNOT_MODIFY_MEMBERS_REVOKED");
             expect(repositories.roleConflictMembers.wouldExceedMemberLimit).not.toHaveBeenCalled();
             expect(repositories.roleConflictGroups.hasAccountsViolatingRule).not.toHaveBeenCalled();
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("throws when adding roles would exceed the group member limit", async () => {
+        it("[case] - throws when adding roles would exceed the group member limit", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const role = helpers.createRole({ id: ROLE_ID, realm });
             const group = helpers.createRoleConflictGroup({ id: GROUP_ID, realm });
@@ -70,14 +75,15 @@ describe("RoleConflictMemberService", () => {
             repositories.roleConflictGroups.findUniqueOrThrow.mockImplementation(() => Promise.resolve(group));
             repositories.roleConflictMembers.wouldExceedMemberLimit.mockImplementation(() => Promise.resolve(true));
 
-            await expect(
-                service.create({
-                    input: { group: GROUP_ID, roles: [ROLE_ID] },
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                }),
-            ).rejects.toThrow("services.role-conflict-member.MEMBER_LIMIT_EXCEEDED");
+            // Act
+            const result = service.create({
+                input: { group: GROUP_ID, roles: [ROLE_ID] },
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role-conflict-member.MEMBER_LIMIT_EXCEEDED");
             expect(repositories.roleConflictMembers.wouldExceedMemberLimit).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 group: GROUP_ID,
@@ -87,7 +93,8 @@ describe("RoleConflictMemberService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("throws when the updated member set would violate existing account assignments", async () => {
+        it("[case] - throws when the updated member set would violate existing account assignments", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const role = helpers.createRole({ id: ROLE_ID, realm });
             const group = helpers.createRoleConflictGroup({ id: GROUP_ID, maxAllowed: 1, realm });
@@ -95,14 +102,15 @@ describe("RoleConflictMemberService", () => {
             repositories.roleConflictGroups.findUniqueOrThrow.mockImplementation(() => Promise.resolve(group));
             repositories.roleConflictGroups.hasAccountsViolatingRule.mockImplementation(() => Promise.resolve(true));
 
-            await expect(
-                service.create({
-                    input: { group: GROUP_ID, roles: [ROLE_ID] },
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                }),
-            ).rejects.toThrow("services.role-conflict-member.HAS_ACCOUNTS_VIOLATING_RULE");
+            // Act
+            const result = service.create({
+                input: { group: GROUP_ID, roles: [ROLE_ID] },
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.role-conflict-member.HAS_ACCOUNTS_VIOLATING_RULE");
             expect(repositories.roleConflictGroups.hasAccountsViolatingRule).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 identifiers: [ROLE_ID],
@@ -112,7 +120,8 @@ describe("RoleConflictMemberService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("checks existing and new role identifiers, then persists each new member", async () => {
+        it("[case] - checks existing and new role identifiers, then persists each new member", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const existingRole = helpers.createRole({ id: ROLE_ID, realm });
             const newRole = helpers.createRole({ id: SECOND_ROLE_ID, code: "role.second", realm });
@@ -122,12 +131,14 @@ describe("RoleConflictMemberService", () => {
             const { service, repositories, transaction } = helpers.service({ roles: [newRole], realm });
             repositories.roleConflictGroups.findUniqueOrThrow.mockImplementation(() => Promise.resolve(group));
 
+            // Act
             await service.create({
                 input: { group: GROUP_ID, roles: [SECOND_ROLE_ID] },
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.roleConflictGroups.hasAccountsViolatingRule).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 identifiers: [ROLE_ID, SECOND_ROLE_ID],
@@ -138,7 +149,8 @@ describe("RoleConflictMemberService", () => {
             expect(transaction.persist).toHaveBeenCalledWith(expect.objectContaining({ group, role: newRole }));
         });
 
-        it("does not create another member or spend member limit for a role already in the group", async () => {
+        it("[case] - does not create another member or spend member limit for a role already in the group", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const existingRole = helpers.createRole({ id: ROLE_ID, realm });
             const newRole = helpers.createRole({ id: SECOND_ROLE_ID, code: "role.second", realm });
@@ -148,12 +160,14 @@ describe("RoleConflictMemberService", () => {
             const { service, repositories, transaction } = helpers.service({ roles: [existingRole, newRole], realm });
             repositories.roleConflictGroups.findUniqueOrThrow.mockImplementation(() => Promise.resolve(group));
 
+            // Act
             await service.create({
                 input: { group: GROUP_ID, roles: [ROLE_ID, SECOND_ROLE_ID] },
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.roleConflictMembers.wouldExceedMemberLimit).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 group: GROUP_ID,
@@ -170,8 +184,9 @@ describe("RoleConflictMemberService", () => {
         });
     });
 
-    describe("purge", () => {
-        it("checks purge eligibility, removes found members, and returns them", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - checks purge eligibility, removes found members, and returns them", async () => {
+            // Arrange
             const first = helpers.createRoleConflictMember({ id: MEMBER_ID });
             const second = helpers.createRoleConflictMember({ id: SECOND_MEMBER_ID, group: first.group });
             const { service, repositories, transaction } = helpers.service({ realm: first.group.realm });
@@ -179,12 +194,14 @@ describe("RoleConflictMemberService", () => {
             const secondCanPurgeSpy = jest.spyOn(second, "canPurge");
             repositories.roleConflictMembers.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service.purge({
                 identifiers: [MEMBER_ID, SECOND_MEMBER_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.roleConflictMembers.find).toHaveBeenCalledWith({
                 where: { id: { $in: [MEMBER_ID, SECOND_MEMBER_ID] }, group: { realm: REALM_ID } },
                 transaction: transaction.entityManager,
@@ -198,20 +215,22 @@ describe("RoleConflictMemberService", () => {
         });
     });
 
-    describe("bulk identifiers", () => {
-        it("bulk identifiers: RoleConflictMemberService.purge deduplicates repository lookup", async () => {
+    describe("[Behavior] - bulk identifiers", () => {
+        it("[case] - deduplicates repository lookup", async () => {
+            // Arrange
             const member = helpers.createRoleConflictMember({ id: MEMBER_ID });
             const { service, repositories, transaction } = helpers.service({ realm: member.group.realm });
             repositories.roleConflictMembers.find.mockImplementation(() => Promise.resolve([member]));
 
-            await expect(
-                service.purge({
-                    transaction: transaction.entityManager,
-                    identifiers: [MEMBER_ID, MEMBER_ID],
-                    realm: REALM_ID,
-                }),
-            ).resolves.toEqual([member]);
+            // Act
+            const result = await service.purge({
+                transaction: transaction.entityManager,
+                identifiers: [MEMBER_ID, MEMBER_ID],
+                realm: REALM_ID,
+            });
 
+            // Assert
+            expect(result).toEqual([member]);
             expect(repositories.roleConflictMembers.find).toHaveBeenCalledWith({
                 where: { id: { $in: [MEMBER_ID] }, group: { realm: REALM_ID } },
                 transaction: transaction.entityManager,

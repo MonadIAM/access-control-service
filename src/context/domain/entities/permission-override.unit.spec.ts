@@ -19,12 +19,14 @@ function createOverride(overrides?: Partial<Entities.PermissionOverride.Construc
     });
 }
 
-describe("PermissionOverride Entity", () => {
-    describe("constructor", () => {
-        it("should assign required fields and relations", () => {
+describe("[Entity] - PermissionOverride", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required fields and relations", () => {
+            // Arrange
             const permission = {} as Permission;
             const realm = {} as Realm;
 
+            // Act
             const override = createOverride({
                 account: ACCOUNT_ID,
                 effect: PermissionOverrideEffect.DENY,
@@ -32,145 +34,226 @@ describe("PermissionOverride Entity", () => {
                 realm,
             });
 
+            // Assert
             expect(override.account).toBe(ACCOUNT_ID);
             expect(override.effect).toBe(PermissionOverrideEffect.DENY);
             expect(override.permission).toBe(permission);
             expect(override.realm).toBe(realm);
         });
 
-        it("should assign justification when provided", () => {
+        it("[case] - assigns justification when provided", () => {
+            // Arrange
+
+            // Act
             const override = createOverride({ justification: "Temporary access for incident response" });
 
+            // Assert
             expect(override.justification).toBe("Temporary access for incident response");
         });
 
-        it("should leave justification undefined when not provided", () => {
+        it("[case] - leaves justification undefined when not provided", () => {
+            // Arrange
+
+            // Act
             const override = createOverride();
 
+            // Assert
             expect(override.justification).toBeUndefined();
         });
 
-        it("should default isRevoked to false", () => {
+        it("[case] - defaults isRevoked to false", () => {
+            // Arrange
+
+            // Act
             const override = createOverride();
 
+            // Assert
             expect(override.isRevoked).toBe(false);
         });
 
-        it("should respect explicit isRevoked override", () => {
+        it("[case] - respects explicit isRevoked override", () => {
+            // Arrange
+
+            // Act
             const override = createOverride({ isRevoked: true });
 
+            // Assert
             expect(override.isRevoked).toBe(true);
         });
 
-        it("should normalize explicit expiration to the start of the day", () => {
+        it("[case] - normalizes explicit expiration to the start of the day", () => {
+            // Arrange
             const expiresAt = new Date(2999, 4, 15, 13, 45, 30, 123);
             const expected = new Date(expiresAt);
             expected.setHours(0, 0, 0, 0);
 
+            // Act
             const override = createOverride({ expiresAt });
 
+            // Assert
             expect(override.expiresAt).toEqual(expected);
             expect(override.expiresAt).not.toBe(expiresAt);
         });
 
-        it("should leave expiration undefined when not provided", () => {
+        it("[case] - leaves expiration undefined when not provided", () => {
+            // Arrange
+
+            // Act
             const override = createOverride();
 
+            // Assert
             expect(override.expiresAt).toBeUndefined();
         });
 
-        it("should auto-generate id, createdAt, version", () => {
+        it("[case] - generates id, createdAt, version", () => {
+            // Arrange
             const override = createOverride();
 
-            expect(isUUID(override.id, "4")).toBe(true);
+            // Act
+            const result = isUUID(override.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(override.createdAt).toBeInstanceOf(Date);
             expect(override.version).toBe(1);
             expect(override.updatedAt).toBeUndefined();
         });
     });
 
-    describe("revoke", () => {
-        it("should revoke an active override", () => {
+    describe("[Method] - revoke", () => {
+        it("[case] - revokes an active override", () => {
+            // Arrange
             const override = createOverride();
+
+            // Act
             override.revoke();
 
+            // Assert
             expect(override.isRevoked).toBe(true);
             expect(override.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already revoked", () => {
+        it("[case] - throws when already revoked", () => {
+            // Arrange
             const override = createOverride();
             override.revoke();
 
-            expect(() => override.revoke()).toThrow("ALREADY_REVOKED");
+            // Act
+            const act = (): unknown => override.revoke();
+
+            // Assert
+            expect(act).toThrow("ALREADY_REVOKED");
         });
     });
 
-    describe("restore", () => {
-        it("should restore a revoked override", () => {
+    describe("[Method] - restore", () => {
+        it("[case] - restores a revoked override", () => {
+            // Arrange
             const override = createOverride();
             override.revoke();
+
+            // Act
             override.restore();
 
+            // Assert
             expect(override.isRevoked).toBe(false);
             expect(override.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should restore a revoked override with future expiration", () => {
+        it("[case] - restores a revoked override with future expiration", () => {
+            // Arrange
             const override = createOverride({ expiresAt: new Date(2999, 4, 15, 13, 45, 30, 123) });
             override.revoke();
+
+            // Act
             override.restore();
 
+            // Assert
             expect(override.isRevoked).toBe(false);
             expect(override.updatedAt).toBeInstanceOf(Date);
         });
 
-        it("should throw when already active", () => {
+        it("[case] - throws when already active", () => {
+            // Arrange
             const override = createOverride();
 
-            expect(() => override.restore()).toThrow("ALREADY_ACTIVE");
+            // Act
+            const act = (): unknown => override.restore();
+
+            // Assert
+            expect(act).toThrow("ALREADY_ACTIVE");
         });
 
-        it("should throw when expired", () => {
+        it("[case] - throws when expired", () => {
+            // Arrange
             const override = createOverride({ expiresAt: new Date(2000, 0, 1, 13, 45, 30, 123) });
             override.revoke();
 
-            expect(() => override.restore()).toThrow("CANNOT_RESTORE_EXPIRED");
+            // Act
+            const act = (): unknown => override.restore();
+
+            // Assert
+            expect(act).toThrow("CANNOT_RESTORE_EXPIRED");
         });
     });
 
-    describe("canPurge", () => {
-        it("should throw for active override", () => {
+    describe("[Method] - canPurge", () => {
+        it("[case] - throws for active override", () => {
+            // Arrange
             const override = createOverride();
 
-            expect(() => override.canPurge()).toThrow("CANNOT_PURGE_ACTIVE");
+            // Act
+            const act = (): unknown => override.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_ACTIVE");
         });
 
-        it("should pass for revoked override", () => {
+        it("[case] - passes for revoked override", () => {
+            // Arrange
             const override = createOverride();
             override.revoke();
 
-            expect(() => override.canPurge()).not.toThrow();
+            // Act
+            const act = (): unknown => override.canPurge();
+
+            // Assert
+            expect(act).not.toThrow();
         });
     });
 
-    describe("canCreate", () => {
-        it("should pass when non-expiring", () => {
+    describe("[Method] - canCreate", () => {
+        it("[case] - passes when non-expiring", () => {
+            // Arrange
             const override = createOverride();
 
-            expect(() => override.canCreate()).not.toThrow();
+            // Act
+            const act = (): unknown => override.canCreate();
+
+            // Assert
+            expect(act).not.toThrow();
         });
 
-        it("should pass when expiration is in the future", () => {
+        it("[case] - passes when expiration is in the future", () => {
+            // Arrange
             const override = createOverride({ expiresAt: new Date(2999, 4, 15, 13, 45, 30, 123) });
 
-            expect(() => override.canCreate()).not.toThrow();
+            // Act
+            const act = (): unknown => override.canCreate();
+
+            // Assert
+            expect(act).not.toThrow();
         });
 
-        it("should throw for expired override", () => {
+        it("[case] - throws for expired override", () => {
+            // Arrange
             const override = createOverride({ expiresAt: new Date(2000, 0, 1, 13, 45, 30, 123) });
 
-            expect(() => override.canCreate()).toThrow("CANNOT_CREATE_EXPIRED");
+            // Act
+            const act = (): unknown => override.canCreate();
+
+            // Assert
+            expect(act).toThrow("CANNOT_CREATE_EXPIRED");
         });
     });
 });

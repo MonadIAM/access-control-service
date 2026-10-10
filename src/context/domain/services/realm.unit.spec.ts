@@ -12,24 +12,26 @@ const SECOND_REALM_ID = "00000000-0000-4000-8000-500000000003";
 
 const helpers = new RealmUnitHelpers();
 
-describe("RealmService", () => {
+describe("[DomainService] - Realm", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("throws when the actor realm limit would be exceeded", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - throws when the actor realm limit would be exceeded", async () => {
+            // Arrange
             const { service, repositories, transaction } = helpers.service();
             repositories.realms.wouldExceedRealmLimit.mockImplementation(() => Promise.resolve(true));
 
-            await expect(
-                service.create({
-                    input: { code: "realm.created", name: "Created Realm" },
-                    transaction: transaction.entityManager,
-                    actor: ACTOR_ID,
-                }),
-            ).rejects.toThrow("services.realm.LIMIT_EXCEEDED");
+            // Act
+            const result = service.create({
+                input: { code: "realm.created", name: "Created Realm" },
+                transaction: transaction.entityManager,
+                actor: ACTOR_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.realm.LIMIT_EXCEEDED");
             expect(repositories.realms.wouldExceedRealmLimit).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 account: ACTOR_ID,
@@ -37,7 +39,8 @@ describe("RealmService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("persists a realm, creates base roles, assigns permissions and admin role, and returns the bootstrap result", async () => {
+        it("[case] - persists a realm, creates base roles, assigns permissions and admin role, and returns the bootstrap result", async () => {
+            // Arrange
             const systemRealm = helpers.createRealm({ id: SYSTEM_REALM_ID, code: "realm.system" });
             const permissions = bootstrap.ADMIN_PERMISSION_CODES.map((code) =>
                 helpers.createPermission({ code, realm: systemRealm }),
@@ -47,12 +50,14 @@ describe("RealmService", () => {
             const assignBasePermissionsSpy = jest.spyOn(service, "assignBasePermissions");
             const assignBaseRolesSpy = jest.spyOn(service, "assignBaseRoles");
 
+            // Act
             const result = await service.create({
                 input: { description: "Created for tests", code: "realm.created", name: "Created Realm" },
                 transaction: transaction.entityManager,
                 actor: ACTOR_ID,
             });
 
+            // Assert
             expect(result.realm).toEqual(
                 expect.objectContaining({
                     description: "Created for tests",
@@ -74,17 +79,20 @@ describe("RealmService", () => {
         });
     });
 
-    describe("createBaseRoles", () => {
-        it("creates root, user and admin roles with expected defaults", () => {
+    describe("[Method] - createBaseRoles", () => {
+        it("[case] - creates root, user and admin roles with expected defaults", () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const { service, transaction } = helpers.service({ realm });
 
+            // Act
             const result = service.createBaseRoles({
                 input: { code: "realm.main", name: "Main Realm" },
                 transaction: transaction.entityManager,
                 realm,
             });
 
+            // Assert
             expect(result.roles.root).toEqual(
                 expect.objectContaining({
                     description: "Role not available to users",
@@ -120,16 +128,19 @@ describe("RealmService", () => {
             expect(transaction.persist).toHaveBeenNthCalledWith(3, result.roles.admin);
         });
 
-        it("creates self paths and root-to-user/root-to-admin hierarchy paths", () => {
+        it("[case] - creates self paths and root-to-user/root-to-admin hierarchy paths", () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const { service, transaction } = helpers.service({ realm });
 
+            // Act
             const { roles, paths } = service.createBaseRoles({
                 input: { code: "realm.main", name: "Main Realm" },
                 transaction: transaction.entityManager,
                 realm,
             });
 
+            // Assert
             expect(paths).toEqual([
                 expect.objectContaining({ ancestor: roles.root, descendant: roles.root, depth: 0, realm }),
                 expect.objectContaining({ ancestor: roles.user, descendant: roles.user, depth: 0, realm }),
@@ -142,8 +153,9 @@ describe("RealmService", () => {
         });
     });
 
-    describe("assignBaseRoles", () => {
-        it("creates and persists an admin role assignment for the actor", () => {
+    describe("[Method] - assignBaseRoles", () => {
+        it("[case] - creates and persists an admin role assignment for the actor", () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const roles = {
                 root: helpers.createRole({ code: "realm.root", realm }),
@@ -152,6 +164,7 @@ describe("RealmService", () => {
             };
             const { service, transaction } = helpers.service({ realm, roles: Object.values(roles) });
 
+            // Act
             const result = service.assignBaseRoles({
                 transaction: transaction.entityManager,
                 actor: ACTOR_ID,
@@ -159,14 +172,16 @@ describe("RealmService", () => {
                 roles,
             });
 
+            // Assert
             expect(result).toHaveLength(1);
             expect(result[0]).toEqual(expect.objectContaining({ account: ACTOR_ID, role: roles.admin, realm }));
             expect(transaction.persist).toHaveBeenCalledWith(result[0]);
         });
     });
 
-    describe("assignBasePermissions", () => {
-        it("throws when not all system admin permissions are found", async () => {
+    describe("[Method] - assignBasePermissions", () => {
+        it("[case] - throws when not all system admin permissions are found", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const roles = {
                 admin: helpers.createRole({ code: "realm.admin", realm }),
@@ -175,10 +190,11 @@ describe("RealmService", () => {
             };
             const { service, repositories, transaction } = helpers.service({ permissions: [], realm });
 
-            await expect(
-                service.assignBasePermissions({ transaction: transaction.entityManager, roles, realm }),
-            ).rejects.toThrow("services.realm.MISSING_SYSTEM_PERMISSIONS");
+            // Act
+            const result = service.assignBasePermissions({ transaction: transaction.entityManager, roles, realm });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.realm.MISSING_SYSTEM_PERMISSIONS");
             expect(repositories.permissions.find).toHaveBeenCalledWith({
                 where: { code: { $in: bootstrap.ADMIN_PERMISSION_CODES }, realm: SYSTEM_REALM_ID },
                 transaction: transaction.entityManager,
@@ -186,7 +202,8 @@ describe("RealmService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("creates admin assignments for all system admin permissions", async () => {
+        it("[case] - creates admin assignments for all system admin permissions", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const systemRealm = helpers.createRealm({ id: SYSTEM_REALM_ID, code: "realm.system" });
             const roles = {
@@ -199,14 +216,17 @@ describe("RealmService", () => {
             );
             const { service, transaction } = helpers.service({ permissions, realm });
 
+            // Act
             const result = await service.assignBasePermissions({ transaction: transaction.entityManager, roles, realm });
             const adminAssignments = result.filter(({ role }) => role === roles.admin);
 
+            // Assert
             expect(adminAssignments).toHaveLength(bootstrap.ADMIN_PERMISSION_CODES.length);
             expect(adminAssignments.map(({ permission }) => permission.code)).toEqual(bootstrap.ADMIN_PERMISSION_CODES);
         });
 
-        it("creates user assignments only for system user permissions", async () => {
+        it("[case] - creates user assignments only for system user permissions", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const systemRealm = helpers.createRealm({ id: SYSTEM_REALM_ID, code: "realm.system" });
             const roles = {
@@ -219,14 +239,17 @@ describe("RealmService", () => {
             );
             const { service, transaction } = helpers.service({ permissions, realm });
 
+            // Act
             const result = await service.assignBasePermissions({ transaction: transaction.entityManager, roles, realm });
             const userAssignments = result.filter(({ role }) => role === roles.user);
 
+            // Assert
             expect(userAssignments).toHaveLength(bootstrap.USER_PERMISSION_CODES.length);
             expect(userAssignments.map(({ permission }) => permission.code)).toEqual(bootstrap.USER_PERMISSION_CODES);
         });
 
-        it("ignores duplicate permission codes from foreign custom realms by querying only system realm permissions", async () => {
+        it("[case] - ignores duplicate permission codes from foreign custom realms by querying only system realm permissions", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const systemRealm = helpers.createRealm({ id: SYSTEM_REALM_ID, code: "realm.system" });
             const foreignRealm = helpers.createRealm({ id: SECOND_REALM_ID, code: "realm.foreign" });
@@ -248,8 +271,10 @@ describe("RealmService", () => {
             });
             repositories.permissions.find.mockImplementation(() => Promise.resolve(systemPermissions));
 
+            // Act
             const result = await service.assignBasePermissions({ transaction: transaction.entityManager, roles, realm });
 
+            // Assert
             expect(repositories.permissions.find).toHaveBeenCalledWith({
                 where: { code: { $in: bootstrap.ADMIN_PERMISSION_CODES }, realm: SYSTEM_REALM_ID },
                 transaction: transaction.entityManager,
@@ -260,18 +285,21 @@ describe("RealmService", () => {
         });
     });
 
-    describe("update", () => {
-        it("finds a realm and applies the patch", async () => {
+    describe("[Method] - update", () => {
+        it("[case] - finds a realm and applies the patch", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const { service, repositories, transaction } = helpers.service({ realm });
             const updateSpy = jest.spyOn(realm, "update");
 
+            // Act
             await service.update({
                 transaction: transaction.entityManager,
                 patch: { name: "Updated Realm" },
                 id: REALM_ID,
             });
 
+            // Assert
             expect(repositories.realms.findUniqueOrThrow).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 where: { id: REALM_ID },
@@ -280,11 +308,12 @@ describe("RealmService", () => {
         });
     });
 
-    describe("revoke / restore", () => {
+    describe("[Behavior] - revocation", () => {
         it.each([
             { method: "revoke", isRevoked: false },
             { method: "restore", isRevoked: true },
-        ] as const)("$method processes each found entity and returns the batch", async ({ method, isRevoked }) => {
+        ] as const)("[case] - processes and returns the batch ($method)", async ({ method, isRevoked }) => {
+            // Arrange
             const first = helpers.createRealm({ id: REALM_ID, isRevoked });
             const second = helpers.createRealm({ id: SECOND_REALM_ID, isRevoked });
             const { service, repositories, transaction } = helpers.service({ realm: first });
@@ -292,6 +321,7 @@ describe("RealmService", () => {
             const secondOperationSpy = jest.spyOn(second, method);
             repositories.realms.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service[method]({
                 identifiers: [REALM_ID, SECOND_REALM_ID],
                 transaction: transaction.entityManager,
@@ -299,6 +329,7 @@ describe("RealmService", () => {
                 global: false,
             });
 
+            // Assert
             expect(repositories.realms.find).toHaveBeenCalledWith({
                 where: { id: { $in: [REALM_ID, SECOND_REALM_ID] }, owner: ACTOR_ID },
                 options: expect.objectContaining({ refresh: true }),
@@ -310,8 +341,9 @@ describe("RealmService", () => {
         });
     });
 
-    describe("purge", () => {
-        it("checks purge eligibility, removes found realms, and returns them", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - checks purge eligibility, removes found realms, and returns them", async () => {
+            // Arrange
             const first = helpers.createRealm({ id: REALM_ID, isRevoked: true });
             const second = helpers.createRealm({ id: SECOND_REALM_ID, isRevoked: true });
             const { service, repositories, transaction } = helpers.service({ realm: first });
@@ -319,6 +351,7 @@ describe("RealmService", () => {
             const secondCanPurgeSpy = jest.spyOn(second, "canPurge");
             repositories.realms.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service.purge({
                 identifiers: [REALM_ID, SECOND_REALM_ID],
                 transaction: transaction.entityManager,
@@ -326,6 +359,7 @@ describe("RealmService", () => {
                 global: false,
             });
 
+            // Assert
             expect(repositories.realms.find).toHaveBeenCalledWith({
                 where: { id: { $in: [REALM_ID, SECOND_REALM_ID] }, owner: ACTOR_ID },
                 options: expect.objectContaining({ refresh: true }),
@@ -339,16 +373,18 @@ describe("RealmService", () => {
         });
     });
 
-    describe("bulk identifiers", () => {
+    describe("[Behavior] - bulk identifiers", () => {
         it.each([
             { method: "revoke", isRevoked: false },
             { method: "restore", isRevoked: true },
             { method: "purge", isRevoked: true },
-        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked }) => {
+        ] as const)("[case] - deduplicates repository lookup ($method)", async ({ method, isRevoked }) => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID, isRevoked });
             const { service, repositories, transaction } = helpers.service({ realm });
             repositories.realms.find.mockImplementation(() => Promise.resolve([realm]));
 
+            // Act
             const result = await service[method]({
                 transaction: transaction.entityManager,
                 identifiers: [REALM_ID, REALM_ID],
@@ -356,6 +392,7 @@ describe("RealmService", () => {
                 global: false,
             });
 
+            // Assert
             expect(result).toEqual([realm]);
             expect(repositories.realms.find).toHaveBeenCalledWith({
                 options: expect.objectContaining({ refresh: true }),

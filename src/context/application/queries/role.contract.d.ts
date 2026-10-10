@@ -1,187 +1,185 @@
 import { QueryMode, ResponseViewType } from "~context/enums";
 
 declare global {
-    namespace Queries {
-        namespace Role {
-            type DepthEntity = Entities.Role & { depth: number };
+    namespace Queries.Role {
+        type DepthEntity = Entities.Role & { depth: number };
 
-            type Graph = Repositories.Role.Graph.Data;
+        type Graph = Repositories.Role.Graph.Data;
 
-            interface Contract extends ControllerContract {}
+        interface Contract extends ControllerContract {}
 
-            interface ControllerContract {
-                findDelegableByAccount: FindDelegableByAccount.Signature;
-                findDelegableByRole: FindDelegableByRole.Signature;
-                getHierarchyGraph: GetHierarchyGraph.Signature;
-                findDescendants: FindDescendants.Signature;
-                findAncestors: FindAncestors.Signature;
-                getLookupList: GetLookupList.Signature;
-                findEffective: FindEffective.Signature;
-                findUnique: FindUnique.Signature;
-                findMany: FindMany.Signature;
-            }
+        interface ControllerContract {
+            findDelegableByAccount: FindDelegableByAccount.Signature;
+            findDelegableByRole: FindDelegableByRole.Signature;
+            getHierarchyGraph: GetHierarchyGraph.Signature;
+            findDescendants: FindDescendants.Signature;
+            findAncestors: FindAncestors.Signature;
+            getLookupList: GetLookupList.Signature;
+            findEffective: FindEffective.Signature;
+            findUnique: FindUnique.Signature;
+            findMany: FindMany.Signature;
+        }
 
-            namespace FindDelegableByAccount {
-                type DefaultProps = {
-                    mode: QueryMode.DEFAULT;
-                    filters: Repositories.Mappers.Role.DefaultFilters;
-                    sort: Repositories.Mappers.Role.Sort;
-                    pagination: Pagination;
-                    realm: string;
-                    actor: string;
-                };
+        namespace FindDelegableByAccount {
+            type DefaultProps = {
+                mode: QueryMode.DEFAULT;
+                filters: Repositories.Mappers.Role.DefaultFilters;
+                sort: Repositories.Mappers.Role.Sort;
+                pagination: Pagination;
+                realm: string;
+                actor: string;
+            };
 
-                type ManageProps = {
-                    mode: QueryMode.MANAGE;
-                    filters: Repositories.Mappers.Role.ManageFilters;
-                    sort: Repositories.Mappers.Role.Sort;
-                    pagination: Pagination;
-                    account: string;
-                };
+            type ManageProps = {
+                mode: QueryMode.MANAGE;
+                filters: Repositories.Mappers.Role.ManageFilters;
+                sort: Repositories.Mappers.Role.Sort;
+                pagination: Pagination;
+                account: string;
+            };
 
-                type Props = DefaultProps | ManageProps;
+            type Props = DefaultProps | ManageProps;
 
-                type Result = Promise<[Entities.Role[], number]>;
+            type Result = Promise<[Entities.Role[], number]>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace FindDelegableByRole {
-                type Props = {
-                    filters: Repositories.Mappers.Role.DefaultFilters;
-                    sort: Repositories.Mappers.Role.Sort;
-                    pagination: Pagination;
-                    realm: string;
-                    id: string;
-                };
+        namespace FindDelegableByRole {
+            type Props = {
+                filters: Repositories.Mappers.Role.DefaultFilters;
+                sort: Repositories.Mappers.Role.Sort;
+                pagination: Pagination;
+                realm: string;
+                id: string;
+            };
 
-                type Result = Promise<[Entities.Role[], number]>;
+            type Result = Promise<[Entities.Role[], number]>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace GetHierarchyGraph {
-                type Props = {
-                    realm: string;
-                };
+        namespace GetHierarchyGraph {
+            type Props = {
+                realm: string;
+            };
 
-                type Result = Promise<Graph>;
+            type Result = Promise<Graph>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace FindDescendants {
-                type Props = {
-                    filters: Repositories.Mappers.Role.DefaultFilters;
-                    view: ResponseViewType;
-                    pagination: Pagination;
-                    ancestor: string;
-                    realm: string;
-                };
+        namespace FindDescendants {
+            type Props = {
+                filters: Repositories.Mappers.Role.DefaultFilters;
+                view: ResponseViewType;
+                pagination: Pagination;
+                ancestor: string;
+                realm: string;
+            };
 
-                type Result = Promise<[DepthEntity[], number]>;
+            type Result = Promise<[DepthEntity[], number]>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace FindAncestors {
-                type Props = {
-                    filters: Repositories.Mappers.Role.DefaultFilters;
-                    view: ResponseViewType;
-                    pagination: Pagination;
-                    descendant: string;
-                    realm: string;
-                };
+        namespace FindAncestors {
+            type Props = {
+                filters: Repositories.Mappers.Role.DefaultFilters;
+                view: ResponseViewType;
+                pagination: Pagination;
+                descendant: string;
+                realm: string;
+            };
 
-                type Result = Promise<[DepthEntity[], number]>;
+            type Result = Promise<[DepthEntity[], number]>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace GetLookupList {
-                type DefaultProps = {
-                    mode: QueryMode.DEFAULT;
-                    options?: ORM.FindOptions<Entities.Role>;
-                    pagination: Pagination;
-                    realm: string;
-                    term: string;
-                };
+        namespace GetLookupList {
+            type DefaultProps = {
+                mode: QueryMode.DEFAULT;
+                options?: ORM.FindOptions<Entities.Role>;
+                pagination: Pagination;
+                realm: string;
+                term: string;
+            };
 
-                type ManageProps = {
-                    mode: QueryMode.MANAGE;
-                    options?: ORM.FindOptions<Entities.Role>;
-                    pagination: Pagination;
-                    term: string;
-                };
+            type ManageProps = {
+                mode: QueryMode.MANAGE;
+                options?: ORM.FindOptions<Entities.Role>;
+                pagination: Pagination;
+                term: string;
+            };
 
-                type Props = DefaultProps | ManageProps;
+            type Props = DefaultProps | ManageProps;
 
-                type Result = Promise<[Entities.Role[], number]>;
+            type Result = Promise<[Entities.Role[], number]>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace FindEffective {
-                type DefaultProps = {
-                    mode: QueryMode.DEFAULT;
-                    filters: Repositories.Mappers.Role.DefaultFilters;
-                    sort: Repositories.Mappers.Role.Sort;
-                    pagination: Pagination;
-                    realm: string;
-                    actor: string;
-                };
+        namespace FindEffective {
+            type DefaultProps = {
+                mode: QueryMode.DEFAULT;
+                filters: Repositories.Mappers.Role.DefaultFilters;
+                sort: Repositories.Mappers.Role.Sort;
+                pagination: Pagination;
+                realm: string;
+                actor: string;
+            };
 
-                type ManageProps = {
-                    mode: QueryMode.MANAGE;
-                    filters: Repositories.Mappers.Role.ManageFilters;
-                    sort: Repositories.Mappers.Role.Sort;
-                    pagination: Pagination;
-                    account: string;
-                };
+            type ManageProps = {
+                mode: QueryMode.MANAGE;
+                filters: Repositories.Mappers.Role.ManageFilters;
+                sort: Repositories.Mappers.Role.Sort;
+                pagination: Pagination;
+                account: string;
+            };
 
-                type Props = DefaultProps | ManageProps;
+            type Props = DefaultProps | ManageProps;
 
-                type Result = Promise<[Entities.Role[], number]>;
+            type Result = Promise<[Entities.Role[], number]>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace FindUnique {
-                type Props = {
-                    view: ResponseViewType;
-                    realm: string;
-                    role: string;
-                };
+        namespace FindUnique {
+            type Props = {
+                view: ResponseViewType;
+                realm: string;
+                role: string;
+            };
 
-                type Result = Promise<Entities.Role>;
+            type Result = Promise<Entities.Role>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace FindMany {
-                type DefaultProps = {
-                    mode: QueryMode.DEFAULT;
-                    filters: Repositories.Mappers.Role.DefaultFilters;
-                    sort: Repositories.Mappers.Role.Sort;
-                    view: ResponseViewType;
-                    pagination: Pagination;
-                    realm: string;
-                };
+        namespace FindMany {
+            type DefaultProps = {
+                mode: QueryMode.DEFAULT;
+                filters: Repositories.Mappers.Role.DefaultFilters;
+                sort: Repositories.Mappers.Role.Sort;
+                view: ResponseViewType;
+                pagination: Pagination;
+                realm: string;
+            };
 
-                type ManageProps = {
-                    mode: QueryMode.MANAGE;
-                    filters: Repositories.Mappers.Role.ManageFilters;
-                    sort: Repositories.Mappers.Role.Sort;
-                    view: ResponseViewType;
-                    pagination: Pagination;
-                };
+            type ManageProps = {
+                mode: QueryMode.MANAGE;
+                filters: Repositories.Mappers.Role.ManageFilters;
+                sort: Repositories.Mappers.Role.Sort;
+                view: ResponseViewType;
+                pagination: Pagination;
+            };
 
-                type Props = DefaultProps | ManageProps;
+            type Props = DefaultProps | ManageProps;
 
-                type Result = Promise<[Entities.Role[], number]>;
+            type Result = Promise<[Entities.Role[], number]>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
         }
     }
 }

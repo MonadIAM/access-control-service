@@ -11,14 +11,15 @@ function createRepositoryConfig(): ConfigService {
     });
 }
 
-describe("RoleConflictMemberRepository", () => {
+describe("[Repository] - RoleConflictMember", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new RoleConflictMemberRepository(readManager, createRepositoryConfig()),
         fixture: (entityManager) => new RoleConflictMemberFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted conflict member through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted conflict member through the schema", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm();
             const group = await suite.fixtures().createRoleConflictGroup({ realm });
             const role = await suite.fixtures().createDetachedRole({ realm });
@@ -29,8 +30,10 @@ describe("RoleConflictMemberRepository", () => {
                 role,
             });
 
+            // Act
             const loaded = await suite.repository().findUniqueOrThrow({ where: { id: member.id } });
 
+            // Assert
             expect(loaded).toMatchObject({
                 createdAt: member.createdAt,
                 version: member.version,
@@ -43,16 +46,19 @@ describe("RoleConflictMemberRepository", () => {
         });
     });
 
-    describe("wouldExceedMemberLimit", () => {
-        it("checks conflict member count limit per group", async () => {
+    describe("[Method] - wouldExceedMemberLimit", () => {
+        it("[case] - checks conflict member count limit per group", async () => {
+            // Arrange
             const scenario = await suite.fixtures().limitScenario();
 
-            await expect(suite.repository().wouldExceedMemberLimit({ group: scenario.group.id, count: 1 })).resolves.toBe(
-                scenario.expectedCountOneResult,
-            );
-            await expect(suite.repository().wouldExceedMemberLimit({ group: scenario.group.id, count: 2 })).resolves.toBe(
-                scenario.expectedCountTwoResult,
-            );
+            // Act
+            const result = await suite.repository().wouldExceedMemberLimit({ group: scenario.group.id, count: 1 });
+
+            const result2 = await suite.repository().wouldExceedMemberLimit({ group: scenario.group.id, count: 2 });
+
+            // Assert
+            expect(result).toBe(scenario.expectedCountOneResult);
+            expect(result2).toBe(scenario.expectedCountTwoResult);
         });
     });
 });

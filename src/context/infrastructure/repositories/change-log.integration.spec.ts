@@ -9,14 +9,15 @@ import { EntityType } from "~context/enums";
 
 import { ChangeLogRepository } from "./change-log.repository";
 
-describe("ChangeLogRepository", () => {
+describe("[Repository] - ChangeLog", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new ChangeLogRepository(readManager),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted change log entry through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted change log entry through the schema", async () => {
+            // Arrange
             const entity = randomUUID();
             const changeLog = await suite.fixtures().createChangeLog({
                 delta: new DeltaChanges({ name: { old: "Old Name", new: "New Name" } }),
@@ -25,7 +26,11 @@ describe("ChangeLogRepository", () => {
                 entity,
             });
 
-            await expect(suite.repository().findUniqueOrThrow({ where: { id: changeLog.id } })).resolves.toMatchObject({
+            // Act
+            const result = await suite.repository().findUniqueOrThrow({ where: { id: changeLog.id } });
+
+            // Assert
+            expect(result).toMatchObject({
                 delta: new DeltaChanges({ name: { old: "Old Name", new: "New Name" } }),
                 auditEntry: changeLog.auditEntry,
                 changeType: ChangeSetType.UPDATE,

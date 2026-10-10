@@ -29,7 +29,7 @@ function create(enabled?: boolean): SchemaRegistry {
     );
 }
 
-describe("KafkaSchemaRegistry", () => {
+describe("[InfrastructureService] - KafkaSchemaRegistry", () => {
     beforeAll(async () => {
         const modulePath = "./schema.registry";
         ({ KafkaSchemaRegistry } = await import(modulePath));
@@ -50,13 +50,21 @@ describe("KafkaSchemaRegistry", () => {
         jest.restoreAllMocks();
     });
 
-    describe("disabled registry", () => {
-        it.each([false, undefined])("passes values through when registry is disabled: %s", async (enabled) => {
+    describe("[Behavior] - disabled registry", () => {
+        it.each([false, undefined])("[case] - passes values through when registry is disabled: %s", async (enabled) => {
+            // Arrange
             const service = create(enabled);
             await service.onApplicationBootstrap();
-            expect(await service.encode({ topic, value })).toBe(value);
-            expect(await service.decode({ topic, value: framed })).toBe(framed);
-            expect(() => service.validate({ topic, value })).not.toThrow();
+
+            // Act
+            const result = await service.encode({ topic, value });
+            const result2 = await service.decode({ topic, value: framed });
+            const act = (): unknown => service.validate({ topic, value });
+
+            // Assert
+            expect(result).toBe(value);
+            expect(result2).toBe(framed);
+            expect(act).not.toThrow();
             expect(constructor).not.toHaveBeenCalled();
             expect(client.getLatestSchemaId).not.toHaveBeenCalled();
             expect(client.encode).not.toHaveBeenCalled();
@@ -65,10 +73,17 @@ describe("KafkaSchemaRegistry", () => {
         });
     });
 
-    describe("onApplicationBootstrap / encode", () => {
-        it("warms every topic and uses cached schema IDs for encoding", async () => {
+    describe("[Behavior] - schema warmup", () => {
+        it("[case] - warms every topic and uses cached schema IDs for encoding", async () => {
+            // Arrange
             const service = create(true);
+
+            // Act
             await service.onApplicationBootstrap();
+            const result = await service.encode({ topic, value });
+            service.validate({ topic, value });
+
+            // Assert
             expect(constructor).toHaveBeenCalledWith({ host: "http://registry" });
             expect(client.getLatestSchemaId.mock.calls.map(([subject]) => subject).sort()).toEqual(
                 Object.values(KafkaTopic)
@@ -76,23 +91,28 @@ describe("KafkaSchemaRegistry", () => {
                     .sort(),
             );
             expect(client.getSchema).toHaveBeenCalledWith(7);
-            expect(await service.encode({ topic, value })).toBe(framed);
+            expect(result).toBe(framed);
             expect(client.encode).toHaveBeenCalledWith(7, value);
-            service.validate({ topic, value });
             expect(isValid).toHaveBeenCalledWith(value, { errorHook: expect.any(Function) });
         });
 
-        it("accepts schema ID zero", async () => {
+        it("[case] - accepts schema ID zero", async () => {
+            // Arrange
             client.getLatestSchemaId.mockResolvedValue(0);
             const service = create(true);
             await service.onApplicationBootstrap();
+
+            // Act
             await service.encode({ topic, value });
+
+            // Assert
             expect(client.encode).toHaveBeenCalledWith(0, value);
         });
 
         it.each(["lookup", "schema"])(
-            "keeps a subject unvalidated after a %s failure and warms other topics",
+            "[case] - keeps a subject unvalidated after a %s failure and warms other topics",
             async (stage) => {
+                // Arrange
                 if (stage === "lookup") {
                     client.getLatestSchemaId.mockRejectedValueOnce(new Error("missing"));
                 } else {
@@ -100,67 +120,104 @@ describe("KafkaSchemaRegistry", () => {
                 }
                 const service = create(true);
                 await service.onApplicationBootstrap();
-                expect(await service.encode({ topic, value })).toBe(value);
+
+                // Act
+                const result = await service.encode({ topic, value });
                 service.validate({ topic, value });
-                expect(isValid).not.toHaveBeenCalled();
-                expect(client.encode).not.toHaveBeenCalled();
+                const encodesBeforeOtherTopic = client.encode.mock.calls.length;
                 const otherTopic = Object.values(KafkaTopic)[1];
-                expect(await service.encode({ topic: otherTopic, value })).toBe(framed);
+                const result2 = await service.encode({ topic: otherTopic, value });
+
+                // Assert
+                expect(result).toBe(value);
+                expect(isValid).not.toHaveBeenCalled();
+                expect(encodesBeforeOtherTopic).toBe(0);
+                expect(result2).toBe(framed);
             },
         );
     });
 
-    describe("unregistered subjects", () => {
-        it("passes unknown subjects through", async () => {
+    describe("[Behavior] - unregistered subjects", () => {
+        it("[case] - passes unknown subjects through", async () => {
+            // Arrange
             const service = create(true);
             await service.onApplicationBootstrap();
-            expect(await service.encode({ topic: "unknown-topic", value })).toBe(value);
+
+            // Act
+            const result = await service.encode({ topic: "unknown-topic", value });
             service.validate({ topic: "unknown-topic", value });
+
+            // Assert
+            expect(result).toBe(value);
             expect(client.encode).not.toHaveBeenCalled();
             expect(isValid).not.toHaveBeenCalled();
         });
     });
 
-    describe("decode", () => {
-        it("decodes framed messages even without a warmed subject", async () => {
+    describe("[Method] - decode", () => {
+        it("[case] - decodes framed messages even without a warmed subject", async () => {
+            // Arrange
             const service = create(true);
-            expect(await service.decode({ topic, value: framed })).toBe(value);
+
+            // Act
+            const result = await service.decode({ topic, value: framed });
+
+            // Assert
+            expect(result).toBe(value);
             expect(client.decode).toHaveBeenCalledWith(framed);
         });
 
-        it.each([value, null, "json", Buffer.alloc(0), Buffer.from([1, 2])])(
-            "passes unframed input through: %j",
-            async (input) => {
-                expect(await create(true).decode({ topic, value: input })).toBe(input);
-                expect(client.decode).not.toHaveBeenCalled();
-            },
-        );
+        it.each([
+            { label: "object", value: value },
+            { label: "null", value: null },
+            { label: "string", value: "json" },
+            { label: "empty buffer", value: Buffer.alloc(0) },
+            { label: "unframed buffer", value: Buffer.from([1, 2]) },
+        ])("[case] - passes unframed input through ($label)", async ({ value: input }) => {
+            // Arrange
+
+            // Act
+            const result = await create(true).decode({ topic, value: input });
+
+            // Assert
+            expect(result).toBe(input);
+            expect(client.decode).not.toHaveBeenCalled();
+        });
     });
 
-    describe("encode / decode", () => {
-        it.each([new Error("upstream failed"), "unknown failure"])(
-            "normalizes encoding and decoding errors: %s",
-            async (error) => {
-                const service = create(true);
-                await service.onApplicationBootstrap();
-                client.encode.mockRejectedValue(error);
-                client.decode.mockRejectedValue(error);
-                await expect(service.encode({ topic, value })).rejects.toMatchObject({
-                    statusCode: 502,
-                    messageKey: "services.schema-registry.ENCODE_FAILED",
-                    params: { subject: `${topic}-value`, reason: error instanceof Error ? error.message : "encode failed" },
-                });
-                await expect(service.decode({ topic, value: framed })).rejects.toMatchObject({
-                    statusCode: 502,
-                    messageKey: "services.schema-registry.DECODE_FAILED",
-                    params: { subject: `${topic}-value`, reason: error instanceof Error ? error.message : "decode failed" },
-                });
-            },
-        );
+    describe("[Behavior] - schema round trip", () => {
+        it.each([
+            { label: "Error", value: new Error("upstream failed") },
+            { label: "string", value: "unknown failure" },
+        ])("[case] - normalizes encoding and decoding errors ($label)", async ({ value: error }) => {
+            // Arrange
+            const service = create(true);
+            await service.onApplicationBootstrap();
+            client.encode.mockRejectedValue(error);
+            client.decode.mockRejectedValue(error);
+
+            // Act
+            const result = service.encode({ topic, value });
+            await Promise.allSettled([result]);
+            const result2 = service.decode({ topic, value: framed });
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
+                statusCode: 502,
+                messageKey: "services.schema-registry.ENCODE_FAILED",
+                params: { subject: `${topic}-value`, reason: error instanceof Error ? error.message : "encode failed" },
+            });
+            await expect(result2).rejects.toMatchObject({
+                statusCode: 502,
+                messageKey: "services.schema-registry.DECODE_FAILED",
+                params: { subject: `${topic}-value`, reason: error instanceof Error ? error.message : "decode failed" },
+            });
+        });
     });
 
-    describe("validate", () => {
-        it("reports all invalid field paths", async () => {
+    describe("[Method] - validate", () => {
+        it("[case] - reports all invalid field paths", async () => {
+            // Arrange
             const service = create(true);
             await service.onApplicationBootstrap();
             isValid.mockImplementation((_value, { errorHook }) => {
@@ -168,7 +225,12 @@ describe("KafkaSchemaRegistry", () => {
                 errorHook(["version"]);
                 return false;
             });
-            expect(() => service.validate({ topic, value })).toThrow(
+
+            // Act
+            const act = (): unknown => service.validate({ topic, value });
+
+            // Assert
+            expect(act).toThrow(
                 expect.objectContaining({
                     statusCode: 422,
                     messageKey: "services.schema-registry.MESSAGE_INVALID",

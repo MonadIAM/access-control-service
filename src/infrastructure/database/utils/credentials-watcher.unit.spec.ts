@@ -16,7 +16,7 @@ let CredentialsWatcher: typeof Watcher;
 const usernamePath = "/vault/secrets/postgresql_username";
 const passwordPath = "/vault/secrets/postgresql_password";
 
-describe("CredentialsWatcher", () => {
+describe("[Utility] - CredentialsWatcher", () => {
     let watcher: Watcher;
     let files: Record<string, string>;
     let change: () => void;
@@ -52,35 +52,53 @@ describe("CredentialsWatcher", () => {
         jest.restoreAllMocks();
     });
 
-    describe("onModuleInit", () => {
-        it("reads and trims initial credentials without reconnecting", async () => {
+    describe("[Method] - onModuleInit", () => {
+        it("[case] - reads and trims initial credentials without reconnecting", async () => {
+            // Arrange
+
+            // Act
             await watcher.onModuleInit();
-            expect(readFile.mock.calls).toEqual([
+
+            const initialReads = readFile.mock.calls.slice();
+            files = { [usernamePath]: "user", [passwordPath]: "password" };
+            change();
+            await jest.advanceTimersByTimeAsync(2000);
+
+            // Assert
+            expect(initialReads).toEqual([
                 [usernamePath, "utf8"],
                 [passwordPath, "utf8"],
             ]);
             expect(watch).toHaveBeenCalledWith("/vault/secrets", expect.any(Function));
-            files = { [usernamePath]: "user", [passwordPath]: "password" };
-            change();
-            await jest.advanceTimersByTimeAsync(2000);
             expect(writeReconnect).not.toHaveBeenCalled();
             expect(readReconnect).not.toHaveBeenCalled();
         });
 
-        it.each([usernamePath, passwordPath])("reconnects both pools when %s changes", async (path) => {
+        it.each([usernamePath, passwordPath])("[case] - reconnects both pools when %s changes", async (path) => {
+            // Arrange
+
+            // Act
             await watcher.onModuleInit();
             files[path] = " rotated\n";
             change();
             await jest.advanceTimersByTimeAsync(2000);
             const expected = { user: files[usernamePath].trim(), password: files[passwordPath].trim() };
-            expect(writeReconnect.mock.calls).toEqual([[expected]]);
-            expect(readReconnect.mock.calls).toEqual([[expected]]);
+
+            const firstWriteReconnects = writeReconnect.mock.calls.slice();
+            const firstReadReconnects = readReconnect.mock.calls.slice();
             change();
             await jest.advanceTimersByTimeAsync(2000);
+
+            // Assert
+            expect(firstWriteReconnects).toEqual([[expected]]);
+            expect(firstReadReconnects).toEqual([[expected]]);
             expect(writeReconnect).toHaveBeenCalledTimes(1);
         });
 
-        it("debounces repeated notifications and uses the latest pair of credentials", async () => {
+        it("[case] - debounces repeated notifications and uses the latest pair of credentials", async () => {
+            // Arrange
+
+            // Act
             await watcher.onModuleInit();
             files[usernamePath] = "new-user";
             change();
@@ -88,65 +106,98 @@ describe("CredentialsWatcher", () => {
             files[passwordPath] = "new-password";
             change();
             await jest.advanceTimersByTimeAsync(1999);
-            expect(writeReconnect).not.toHaveBeenCalled();
+
+            const reconnectsBeforeDeadline = writeReconnect.mock.calls.length;
             await jest.advanceTimersByTimeAsync(1);
+
+            // Assert
+            expect(reconnectsBeforeDeadline).toBe(0);
             expect(writeReconnect.mock.calls).toEqual([[{ user: "new-user", password: "new-password" }]]);
             expect(readReconnect.mock.calls).toEqual(writeReconnect.mock.calls);
         });
 
-        it("waits for the write reconnect before reconnecting the read pool", async () => {
+        it("[case] - waits for the write reconnect before reconnecting the read pool", async () => {
+            // Arrange
             let resolve!: () => void;
             const pending = new Promise<void>((done) => {
                 resolve = done;
             });
             writeReconnect.mockReturnValue(pending);
+
+            // Act
             await watcher.onModuleInit();
             files[passwordPath] = "new-password";
             change();
             await jest.advanceTimersByTimeAsync(2000);
-            expect(writeReconnect).toHaveBeenCalledTimes(1);
-            expect(readReconnect).not.toHaveBeenCalled();
+
+            const writeCallsBeforeCompletion = writeReconnect.mock.calls.length;
+            const readCallsBeforeCompletion = readReconnect.mock.calls.length;
             resolve();
             await jest.advanceTimersByTimeAsync(0);
+
+            // Assert
+            expect(writeCallsBeforeCompletion).toBe(1);
+            expect(readCallsBeforeCompletion).toBe(0);
             expect(readReconnect).toHaveBeenCalledTimes(1);
         });
 
-        it("propagates initial read errors without installing a watcher", async () => {
+        it("[case] - propagates initial read errors without installing a watcher", async () => {
+            // Arrange
             const error = new Error("secrets unavailable");
             readFile.mockRejectedValueOnce(error);
-            await expect(watcher.onModuleInit()).rejects.toBe(error);
+
+            // Act
+            const result = watcher.onModuleInit();
+
+            // Assert
+            await expect(result).rejects.toBe(error);
             expect(watch).not.toHaveBeenCalled();
         });
 
-        it("logs reload errors and accepts a later notification", async () => {
+        it("[case] - logs reload errors and accepts a later notification", async () => {
+            // Arrange
+
+            // Act
             await watcher.onModuleInit();
             readFile.mockRejectedValueOnce(new Error("read failed"));
             change();
+
             await jest.advanceTimersByTimeAsync(2000);
-            expect(Logger.prototype.error).toHaveBeenCalledWith(expect.stringContaining("read failed"));
-            expect(writeReconnect).not.toHaveBeenCalled();
+            const reconnectsAfterFailure = writeReconnect.mock.calls.length;
             files[passwordPath] = "new-password";
             change();
             await jest.advanceTimersByTimeAsync(2000);
+
+            // Assert
+            expect(Logger.prototype.error).toHaveBeenCalledWith(expect.stringContaining("read failed"));
+            expect(reconnectsAfterFailure).toBe(0);
             expect(readReconnect).toHaveBeenCalledWith({ user: "user", password: "new-password" });
         });
 
         it.each(["write", "read"])(
-            "retries the same credentials on a later notification after %s reconnect fails",
+            "[case] - retries the same credentials on a later notification after %s reconnect fails",
             async (kind) => {
+                // Arrange
+
+                // Act
                 await watcher.onModuleInit();
                 const reconnect = kind === "write" ? writeReconnect : readReconnect;
                 reconnect.mockRejectedValueOnce(new Error("reconnect failed"));
                 files[passwordPath] = "new-password";
                 change();
+
                 await jest.advanceTimersByTimeAsync(2000);
-                expect(Logger.prototype.error).toHaveBeenCalledWith(expect.stringContaining("reconnect failed"));
-                expect(Logger.prototype.log).not.toHaveBeenCalled();
-                if (kind === "write") {
-                    expect(readReconnect).not.toHaveBeenCalled();
-                }
+                const loggedBeforeRetry = jest.mocked(Logger.prototype.log).mock.calls.length;
+                const readCallsBeforeRetry = readReconnect.mock.calls.length;
                 change();
                 await jest.advanceTimersByTimeAsync(2000);
+
+                // Assert
+                expect(Logger.prototype.error).toHaveBeenCalledWith(expect.stringContaining("reconnect failed"));
+                expect(loggedBeforeRetry).toBe(0);
+                if (kind === "write") {
+                    expect(readCallsBeforeRetry).toBe(0);
+                }
                 expect(reconnect).toHaveBeenCalledTimes(2);
                 expect(readReconnect).toHaveBeenLastCalledWith({ user: "user", password: "new-password" });
                 expect(Logger.prototype.log).toHaveBeenCalledTimes(1);
@@ -154,20 +205,32 @@ describe("CredentialsWatcher", () => {
         );
     });
 
-    describe("onModuleDestroy", () => {
-        it("closes the watcher and cancels a pending reload on shutdown", async () => {
+    describe("[Method] - onModuleDestroy", () => {
+        it("[case] - closes the watcher and cancels a pending reload on shutdown", async () => {
+            // Arrange
             await watcher.onModuleInit();
             files[passwordPath] = "new-password";
             change();
+
+            // Act
             watcher.onModuleDestroy();
-            expect(close).toHaveBeenCalledTimes(1);
-            expect(jest.getTimerCount()).toBe(0);
+            const result = jest.getTimerCount();
             await jest.advanceTimersByTimeAsync(2000);
+
+            // Assert
+            expect(close).toHaveBeenCalledTimes(1);
+            expect(result).toBe(0);
             expect(writeReconnect).not.toHaveBeenCalled();
         });
 
-        it("allows shutdown before initialization", () => {
-            expect(() => watcher.onModuleDestroy()).not.toThrow();
+        it("[case] - allows shutdown before initialization", () => {
+            // Arrange
+
+            // Act
+            const act = (): unknown => watcher.onModuleDestroy();
+
+            // Assert
+            expect(act).not.toThrow();
             expect(close).not.toHaveBeenCalled();
         });
     });

@@ -59,9 +59,10 @@ function createAssignments(): Entities.AccountRoleAssignment[] {
     ];
 }
 
-describe("AccountRoleAssignmentMapper", () => {
-    describe("groupByRealm", () => {
-        it("groups assignments by owning realm and preserves their order", () => {
+describe("[DataMapper] - AccountRoleAssignment", () => {
+    describe("[Method] - groupByRealm", () => {
+        it("[case] - groups assignments by owning realm and preserves their order", () => {
+            // Arrange
             const [first, second] = createAssignments();
             const secondRealm = helpers.createRealm({ id: SECOND_REALM_ID });
             const third = helpers.createAccountRoleAssignment({
@@ -74,23 +75,31 @@ describe("AccountRoleAssignmentMapper", () => {
                 realm: secondRealm,
             });
 
+            // Act
             const result = mapper.groupByRealm({
                 assignments: [first, third, second],
             });
+            const result2 = result.get(REALM_ID);
+            const result3 = result.get(SECOND_REALM_ID);
 
+            // Assert
             expect([...result.keys()]).toEqual([REALM_ID, SECOND_REALM_ID]);
-            expect(result.get(REALM_ID)).toEqual([first, second]);
-            expect(result.get(SECOND_REALM_ID)).toEqual([third]);
+            expect(result2).toEqual([first, second]);
+            expect(result3).toEqual([third]);
         });
     });
 
-    describe("projectionCreatePayload", () => {
-        it("maps all assignments for one account and realm", () => {
-            expect(
-                mapper.projectionCreatePayload({
-                    assignments: createAssignments(),
-                }),
-            ).toEqual({
+    describe("[Method] - projectionCreatePayload", () => {
+        it("[case] - maps all assignments for one account and realm", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.projectionCreatePayload({
+                assignments: createAssignments(),
+            });
+
+            // Assert
+            expect(result).toEqual({
                 assignments: [
                     { assignment: FIRST_ASSIGNMENT_ID, role: FIRST_ROLE_ID },
                     { assignment: SECOND_ASSIGNMENT_ID, role: SECOND_ROLE_ID },
@@ -101,11 +110,16 @@ describe("AccountRoleAssignmentMapper", () => {
         });
     });
 
-    describe("projectionAssignPayload", () => {
-        it("maps the direct assignment entity", () => {
+    describe("[Method] - projectionAssignPayload", () => {
+        it("[case] - maps the direct assignment entity", () => {
+            // Arrange
             const [assignment] = createAssignments();
 
-            expect(mapper.projectionAssignPayload({ assignments: [assignment] })).toEqual({
+            // Act
+            const result = mapper.projectionAssignPayload({ assignments: [assignment] });
+
+            // Assert
+            expect(result).toEqual({
                 assignments: [{ assignment: FIRST_ASSIGNMENT_ID, role: FIRST_ROLE_ID }],
                 account: FIRST_ACCOUNT_ID,
                 realm: REALM_ID,
@@ -113,8 +127,9 @@ describe("AccountRoleAssignmentMapper", () => {
         });
     });
 
-    describe("projectionUpdatePayload", () => {
-        it("splits updates by realm and uses each group revocation state", () => {
+    describe("[Method] - projectionUpdatePayload", () => {
+        it("[case] - splits updates by realm and uses each group revocation state", () => {
+            // Arrange
             const [first, second] = createAssignments();
             first.isRevoked = true;
             second.isRevoked = true;
@@ -130,11 +145,13 @@ describe("AccountRoleAssignmentMapper", () => {
                 isRevoked: false,
             });
 
-            expect(
-                mapper.projectionUpdatePayload({
-                    assignments: [first, third, second],
-                }),
-            ).toEqual([
+            // Act
+            const result = mapper.projectionUpdatePayload({
+                assignments: [first, third, second],
+            });
+
+            // Assert
+            expect(result).toEqual([
                 {
                     isRevoked: true,
                     realm: REALM_ID,
@@ -169,8 +186,9 @@ describe("AccountRoleAssignmentMapper", () => {
         });
     });
 
-    describe("projectionPurgePayload", () => {
-        it("splits relation cleanup by realm", () => {
+    describe("[Method] - projectionPurgePayload", () => {
+        it("[case] - splits relation cleanup by realm", () => {
+            // Arrange
             const [first, second] = createAssignments();
             const secondRealm = helpers.createRealm({ id: SECOND_REALM_ID });
             const third = helpers.createAccountRoleAssignment({
@@ -182,11 +200,13 @@ describe("AccountRoleAssignmentMapper", () => {
                 }),
             });
 
-            expect(
-                mapper.projectionPurgePayload({
-                    assignments: [first, third, second],
-                }),
-            ).toEqual([
+            // Act
+            const result = mapper.projectionPurgePayload({
+                assignments: [first, third, second],
+            });
+
+            // Assert
+            expect(result).toEqual([
                 {
                     realm: REALM_ID,
                     items: [
@@ -216,14 +236,18 @@ describe("AccountRoleAssignmentMapper", () => {
         });
     });
 
-    describe("notificationGrantPayload", () => {
-        it("maps a grouped grant notification", () => {
-            expect(
-                mapper.notificationGrantPayload({
-                    actor: ACTOR_ID,
-                    assignments: createAssignments(),
-                }),
-            ).toEqual({
+    describe("[Method] - notificationGrantPayload", () => {
+        it("[case] - maps a grouped grant notification", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.notificationGrantPayload({
+                actor: ACTOR_ID,
+                assignments: createAssignments(),
+            });
+
+            // Assert
+            expect(result).toEqual({
                 actor: ACTOR_ID,
                 realm: REALM_ID,
                 input: {
@@ -242,8 +266,9 @@ describe("AccountRoleAssignmentMapper", () => {
         });
     });
 
-    describe("notificationRevokePayload", () => {
-        it("groups revoke notifications by account", () => {
+    describe("[Method] - notificationRevokePayload", () => {
+        it("[case] - groups revoke notifications by account", () => {
+            // Arrange
             const [first, second] = createAssignments();
             const realm = first.realm;
             const third = helpers.createAccountRoleAssignment({
@@ -256,12 +281,14 @@ describe("AccountRoleAssignmentMapper", () => {
                 }),
             });
 
-            expect(
-                mapper.notificationRevokePayload({
-                    assignments: [first, third, second],
-                    actor: ACTOR_ID,
-                }),
-            ).toEqual([
+            // Act
+            const result = mapper.notificationRevokePayload({
+                assignments: [first, third, second],
+                actor: ACTOR_ID,
+            });
+
+            // Assert
+            expect(result).toEqual([
                 {
                     actor: ACTOR_ID,
                     realm: REALM_ID,
@@ -298,9 +325,15 @@ describe("AccountRoleAssignmentMapper", () => {
         });
     });
 
-    describe("accessCachePayload", () => {
-        it("maps account-realm invalidations", () => {
-            expect(mapper.accessCachePayload({ assignments: createAssignments() })).toEqual({
+    describe("[Method] - accessCachePayload", () => {
+        it("[case] - maps account-realm invalidations", () => {
+            // Arrange
+
+            // Act
+            const result = mapper.accessCachePayload({ assignments: createAssignments() });
+
+            // Assert
+            expect(result).toEqual({
                 items: [
                     {
                         scope: InvalidationScope.ACCOUNT_REALM,
@@ -317,8 +350,9 @@ describe("AccountRoleAssignmentMapper", () => {
         });
     });
 
-    describe("cleanAccessCachePayload", () => {
-        it("deduplicates invalidations shared by assignments and overrides", () => {
+    describe("[Method] - cleanAccessCachePayload", () => {
+        it("[case] - deduplicates invalidations shared by assignments and overrides", () => {
+            // Arrange
             const [first] = createAssignments();
             const realm = first.realm;
             const permission = helpers.createPermission({
@@ -339,12 +373,14 @@ describe("AccountRoleAssignmentMapper", () => {
                 realm: secondRealm,
             });
 
-            expect(
-                mapper.cleanAccessCachePayload({
-                    overrides: [duplicate, distinct],
-                    assignments: [first],
-                }),
-            ).toEqual({
+            // Act
+            const result = mapper.cleanAccessCachePayload({
+                overrides: [duplicate, distinct],
+                assignments: [first],
+            });
+
+            // Assert
+            expect(result).toEqual({
                 items: [
                     {
                         scope: InvalidationScope.ACCOUNT_REALM,
@@ -360,148 +396,163 @@ describe("AccountRoleAssignmentMapper", () => {
             });
         });
     });
-});
 
-describe("AccountRoleAssignmentMapper membership workflow", () => {
-    /* eslint-disable prettier/prettier */
-    const REALM_ID             = "00000000-0000-4000-8000-600000000001";
-    const ROLE_ID              = "00000000-0000-4000-8000-600000000002";
-    const SECOND_ROLE_ID       = "00000000-0000-4000-8000-600000000003";
-    const FIRST_ASSIGNMENT_ID  = "00000000-0000-4000-8000-600000000006";
-    const SECOND_ASSIGNMENT_ID = "00000000-0000-4000-8000-600000000007";
-    const ACCOUNT_ID           = "00000000-0000-4000-8000-600000000008";
-    const ACTOR_ID             = "00000000-0000-4000-8000-600000000009";
-    const INVITE_ID            = "00000000-0000-4000-8000-600000000010";
-    const PROCESS_ID           = "00000000-0000-4000-8000-600000000011";
-    const COMMAND_ID           = "00000000-0000-4000-8000-600000000012";
-    /* eslint-enable prettier/prettier */
+    describe("[Behavior] - membership workflow", () => {
+        /* eslint-disable prettier/prettier */
+        const REALM_ID             = "00000000-0000-4000-8000-600000000001";
+        const ROLE_ID              = "00000000-0000-4000-8000-600000000002";
+        const SECOND_ROLE_ID       = "00000000-0000-4000-8000-600000000003";
+        const FIRST_ASSIGNMENT_ID  = "00000000-0000-4000-8000-600000000006";
+        const SECOND_ASSIGNMENT_ID = "00000000-0000-4000-8000-600000000007";
+        const ACCOUNT_ID           = "00000000-0000-4000-8000-600000000008";
+        const ACTOR_ID             = "00000000-0000-4000-8000-600000000009";
+        const INVITE_ID            = "00000000-0000-4000-8000-600000000010";
+        const PROCESS_ID           = "00000000-0000-4000-8000-600000000011";
+        const COMMAND_ID           = "00000000-0000-4000-8000-600000000012";
+        /* eslint-enable prettier/prettier */
 
-    const helpers = new EntityFactoryRegistry();
-    const mapper = new AccountRoleAssignmentMapper();
+        const helpers = new EntityFactoryRegistry();
+        const mapper = new AccountRoleAssignmentMapper();
 
-    function createAssignments(): Entities.AccountRoleAssignment[] {
-        const realm = helpers.createRealm({ id: REALM_ID, name: "Primary Realm" });
+        function createAssignments(): Entities.AccountRoleAssignment[] {
+            const realm = helpers.createRealm({ id: REALM_ID, name: "Primary Realm" });
 
-        return [
-            helpers.createAccountRoleAssignment({
-                id: FIRST_ASSIGNMENT_ID,
-                account: ACCOUNT_ID,
-                realm,
-                role: helpers.createRole({ id: ROLE_ID, realm }),
-            }),
-            helpers.createAccountRoleAssignment({
-                id: SECOND_ASSIGNMENT_ID,
-                account: ACCOUNT_ID,
-                realm,
-                role: helpers.createRole({ id: SECOND_ROLE_ID, realm }),
-            }),
-        ];
-    }
-
-    const joinRequest: Topics.Realm.MembershipJoinRequestedMessage["payload"]["input"] = {
-        membership: INVITE_ID,
-        process: PROCESS_ID,
-        command: COMMAND_ID,
-        account: ACCOUNT_ID,
-        invite: INVITE_ID,
-        role: ROLE_ID,
-    };
-
-    afterEach(() => {
-        jest.restoreAllMocks();
-    });
-
-    describe("joinAssignmentProjectionPayload", () => {
-        it("maps all created assignments for the joined account", () => {
-            expect(
-                mapper.joinAssignmentProjectionPayload({
-                    assignments: createAssignments(),
-                    request: joinRequest,
-                    actor: ACTOR_ID,
-                    realm: REALM_ID,
-                }),
-            ).toEqual({
-                assignments: [
-                    { assignment: FIRST_ASSIGNMENT_ID, role: ROLE_ID },
-                    { assignment: SECOND_ASSIGNMENT_ID, role: SECOND_ROLE_ID },
-                ],
-                account: ACCOUNT_ID,
-                realm: REALM_ID,
-            });
-        });
-    });
-
-    describe("joinAccessCachePayload", () => {
-        it("maps the joined account-realm invalidation", () => {
-            expect(
-                mapper.joinAccessCachePayload({
-                    assignments: createAssignments(),
-                    request: joinRequest,
-                    actor: ACTOR_ID,
-                    realm: REALM_ID,
-                }),
-            ).toEqual({
-                items: [
-                    {
-                        scope: InvalidationScope.ACCOUNT_REALM,
-                        account: ACCOUNT_ID,
-                        realm: REALM_ID,
-                    },
-                ],
-            });
-        });
-    });
-
-    describe("joinConfirmedPayload", () => {
-        it("maps the first assignment and current timestamp", () => {
-            jest.spyOn(Date, "now").mockReturnValue(1_789_000_000_000);
-
-            expect(
-                mapper.joinConfirmedPayload({
-                    assignments: createAssignments(),
-                    request: joinRequest,
-                    actor: ACTOR_ID,
-                    realm: REALM_ID,
-                }),
-            ).toEqual({
-                actor: ACTOR_ID,
-                realm: REALM_ID,
-                input: {
-                    membership: INVITE_ID,
-                    assignment: FIRST_ASSIGNMENT_ID,
-                    joinedAt: 1_789_000_000_000,
-                    process: PROCESS_ID,
-                    command: COMMAND_ID,
+            return [
+                helpers.createAccountRoleAssignment({
+                    id: FIRST_ASSIGNMENT_ID,
                     account: ACCOUNT_ID,
-                    invite: INVITE_ID,
-                    role: ROLE_ID,
-                },
+                    realm,
+                    role: helpers.createRole({ id: ROLE_ID, realm }),
+                }),
+                helpers.createAccountRoleAssignment({
+                    id: SECOND_ASSIGNMENT_ID,
+                    account: ACCOUNT_ID,
+                    realm,
+                    role: helpers.createRole({ id: SECOND_ROLE_ID, realm }),
+                }),
+            ];
+        }
+
+        const joinRequest: Topics.Realm.MembershipJoinRequestedMessage["payload"]["input"] = {
+            membership: INVITE_ID,
+            process: PROCESS_ID,
+            command: COMMAND_ID,
+            account: ACCOUNT_ID,
+            invite: INVITE_ID,
+            role: ROLE_ID,
+        };
+
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        describe("[Method] - joinAssignmentProjectionPayload", () => {
+            it("[case] - maps all created assignments for the joined account", () => {
+                // Arrange
+
+                // Act
+                const result = mapper.joinAssignmentProjectionPayload({
+                    assignments: createAssignments(),
+                    request: joinRequest,
+                    actor: ACTOR_ID,
+                    realm: REALM_ID,
+                });
+
+                // Assert
+                expect(result).toEqual({
+                    assignments: [
+                        { assignment: FIRST_ASSIGNMENT_ID, role: ROLE_ID },
+                        { assignment: SECOND_ASSIGNMENT_ID, role: SECOND_ROLE_ID },
+                    ],
+                    account: ACCOUNT_ID,
+                    realm: REALM_ID,
+                });
             });
         });
-    });
 
-    describe("joinRejectedPayload", () => {
-        it("maps rejection context from the original request", () => {
-            expect(
-                mapper.joinRejectedPayload({
+        describe("[Method] - joinAccessCachePayload", () => {
+            it("[case] - maps the joined account-realm invalidation", () => {
+                // Arrange
+
+                // Act
+                const result = mapper.joinAccessCachePayload({
+                    assignments: createAssignments(),
+                    request: joinRequest,
+                    actor: ACTOR_ID,
+                    realm: REALM_ID,
+                });
+
+                // Assert
+                expect(result).toEqual({
+                    items: [
+                        {
+                            scope: InvalidationScope.ACCOUNT_REALM,
+                            account: ACCOUNT_ID,
+                            realm: REALM_ID,
+                        },
+                    ],
+                });
+            });
+        });
+
+        describe("[Method] - joinConfirmedPayload", () => {
+            it("[case] - maps the first assignment and current timestamp", () => {
+                // Arrange
+                jest.spyOn(Date, "now").mockReturnValue(1_789_000_000_000);
+
+                // Act
+                const result = mapper.joinConfirmedPayload({
+                    assignments: createAssignments(),
+                    request: joinRequest,
+                    actor: ACTOR_ID,
+                    realm: REALM_ID,
+                });
+
+                // Assert
+                expect(result).toEqual({
+                    actor: ACTOR_ID,
+                    realm: REALM_ID,
+                    input: {
+                        membership: INVITE_ID,
+                        assignment: FIRST_ASSIGNMENT_ID,
+                        joinedAt: 1_789_000_000_000,
+                        process: PROCESS_ID,
+                        command: COMMAND_ID,
+                        account: ACCOUNT_ID,
+                        invite: INVITE_ID,
+                        role: ROLE_ID,
+                    },
+                });
+            });
+        });
+
+        describe("[Method] - joinRejectedPayload", () => {
+            it("[case] - maps rejection context from the original request", () => {
+                // Arrange
+
+                // Act
+                const result = mapper.joinRejectedPayload({
                     request: {
                         actor: ACTOR_ID,
                         realm: REALM_ID,
                         input: joinRequest,
                     },
                     reason: "role is unavailable",
-                }),
-            ).toEqual({
-                actor: ACTOR_ID,
-                realm: REALM_ID,
-                input: {
-                    account: ACCOUNT_ID,
-                    membership: INVITE_ID,
-                    process: PROCESS_ID,
-                    command: COMMAND_ID,
-                    invite: INVITE_ID,
-                    reason: "role is unavailable",
-                },
+                });
+
+                // Assert
+                expect(result).toEqual({
+                    actor: ACTOR_ID,
+                    realm: REALM_ID,
+                    input: {
+                        account: ACCOUNT_ID,
+                        membership: INVITE_ID,
+                        process: PROCESS_ID,
+                        command: COMMAND_ID,
+                        invite: INVITE_ID,
+                        reason: "role is unavailable",
+                    },
+                });
             });
         });
     });

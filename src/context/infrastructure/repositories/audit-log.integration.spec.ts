@@ -7,14 +7,15 @@ import { ActionType, EntityType } from "~context/enums";
 
 import { AuditLogRepository } from "./audit-log.repository";
 
-describe("AuditLogRepository", () => {
+describe("[Repository] - AuditLog", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new AuditLogRepository(readManager),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted audit log entry through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted audit log entry through the schema", async () => {
+            // Arrange
             const realm = randomUUID();
             const actor = randomUUID();
             const auditLog = await suite.fixtures().createAuditLog({
@@ -26,7 +27,11 @@ describe("AuditLogRepository", () => {
                 realm,
             });
 
-            await expect(suite.repository().findUniqueOrThrow({ where: { id: auditLog.id } })).resolves.toMatchObject({
+            // Act
+            const result = await suite.repository().findUniqueOrThrow({ where: { id: auditLog.id } });
+
+            // Assert
+            expect(result).toMatchObject({
                 input: { field: "mapping-input" },
                 keyVersion: auditLog.keyVersion,
                 signature: auditLog.signature,

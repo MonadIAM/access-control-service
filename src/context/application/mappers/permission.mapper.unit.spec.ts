@@ -15,9 +15,10 @@ const SECOND_PERMISSION_ID = "00000000-0000-4000-8000-200000000004";
 const helpers = new EntityFactoryRegistry();
 const mapper = new PermissionMapper();
 
-describe("PermissionMapper", () => {
-    describe("projectionCreatePayload", () => {
-        it("maps the permission identity, code and owning realm", () => {
+describe("[DataMapper] - Permission", () => {
+    describe("[Method] - projectionCreatePayload", () => {
+        it("[case] - maps the permission identity, code and owning realm", () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const permission = helpers.createPermission({
                 id: PERMISSION_ID,
@@ -25,7 +26,11 @@ describe("PermissionMapper", () => {
                 realm,
             });
 
-            expect(mapper.projectionCreatePayload({ permission })).toEqual({
+            // Act
+            const result = mapper.projectionCreatePayload({ permission });
+
+            // Assert
+            expect(result).toEqual({
                 permission: PERMISSION_ID,
                 code: "documents.read",
                 realm: REALM_ID,
@@ -33,8 +38,9 @@ describe("PermissionMapper", () => {
         });
     });
 
-    describe("projectionUpdatePayload", () => {
-        it("maps permission identifiers and shared revocation state", () => {
+    describe("[Method] - projectionUpdatePayload", () => {
+        it("[case] - maps permission identifiers and shared revocation state", () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const first = helpers.createPermission({
                 id: PERMISSION_ID,
@@ -47,11 +53,13 @@ describe("PermissionMapper", () => {
                 realm,
             });
 
-            expect(
-                mapper.projectionUpdatePayload({
-                    permissions: [first, second],
-                }),
-            ).toEqual({
+            // Act
+            const result = mapper.projectionUpdatePayload({
+                permissions: [first, second],
+            });
+
+            // Assert
+            expect(result).toEqual({
                 permissions: [PERMISSION_ID, SECOND_PERMISSION_ID],
                 isRevoked: true,
                 realm: REALM_ID,
@@ -59,8 +67,9 @@ describe("PermissionMapper", () => {
         });
     });
 
-    describe("projectionPurgePayload", () => {
-        it("maps permission identifiers and their owning realm", () => {
+    describe("[Method] - projectionPurgePayload", () => {
+        it("[case] - maps permission identifiers and their owning realm", () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const first = helpers.createPermission({
                 id: PERMISSION_ID,
@@ -71,15 +80,20 @@ describe("PermissionMapper", () => {
                 realm,
             });
 
-            expect(mapper.projectionPurgePayload({ permissions: [first, second] })).toEqual({
+            // Act
+            const result = mapper.projectionPurgePayload({ permissions: [first, second] });
+
+            // Assert
+            expect(result).toEqual({
                 permissions: [PERMISSION_ID, SECOND_PERMISSION_ID],
                 realm: REALM_ID,
             });
         });
     });
 
-    describe("accessCachePayload", () => {
-        it("uses each permission owning realm", () => {
+    describe("[Method] - accessCachePayload", () => {
+        it("[case] - uses each permission owning realm", () => {
+            // Arrange
             const firstRealm = helpers.createRealm({ id: REALM_ID });
             const secondRealm = helpers.createRealm({ id: SECOND_REALM_ID });
             const first = helpers.createPermission({
@@ -91,7 +105,11 @@ describe("PermissionMapper", () => {
                 realm: secondRealm,
             });
 
-            expect(mapper.accessCachePayload({ permissions: [first, second] })).toEqual({
+            // Act
+            const result = mapper.accessCachePayload({ permissions: [first, second] });
+
+            // Assert
+            expect(result).toEqual({
                 items: [
                     { scope: InvalidationScope.REALM, realm: REALM_ID },
                     { scope: InvalidationScope.REALM, realm: SECOND_REALM_ID },

@@ -41,24 +41,26 @@ function createServiceContext(props: Unit.Domain.Permission.Service.Props = {}):
     });
 }
 
-describe("PermissionService", () => {
+describe("[DomainService] - Permission", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("throws when the realm permission limit would be exceeded", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - throws when the realm permission limit would be exceeded", async () => {
+            // Arrange
             const { service, repositories, transaction } = createServiceContext();
             repositories.permissions.wouldExceedPermissionLimit.mockImplementation(() => Promise.resolve(true));
 
-            await expect(
-                service.create({
-                    input: { code: "permission.new", name: "New Permission" },
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                }),
-            ).rejects.toThrow("services.permission.LIMIT_EXCEEDED");
+            // Act
+            const result = service.create({
+                input: { code: "permission.new", name: "New Permission" },
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.permission.LIMIT_EXCEEDED");
             expect(repositories.permissions.wouldExceedPermissionLimit).toHaveBeenCalledWith({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
@@ -66,10 +68,12 @@ describe("PermissionService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("creates a permission in the realm and persists it", async () => {
+        it("[case] - creates a permission in the realm and persists it", async () => {
+            // Arrange
             const realm = createRealm();
             const { service, transaction } = createServiceContext({ realm });
 
+            // Act
             const result = await service.create({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
@@ -80,6 +84,7 @@ describe("PermissionService", () => {
                 },
             });
 
+            // Assert
             expect(result).toEqual(
                 expect.objectContaining({
                     description: "Allows a new action",
@@ -92,8 +97,9 @@ describe("PermissionService", () => {
         });
     });
 
-    describe("update", () => {
-        it("finds a permission in the realm and applies the patch", async () => {
+    describe("[Method] - update", () => {
+        it("[case] - finds a permission in the realm and applies the patch", async () => {
+            // Arrange
             const permission = createPermission();
             const { service, repositories, transaction } = createServiceContext({
                 permissions: [permission],
@@ -101,6 +107,7 @@ describe("PermissionService", () => {
             });
             const updateSpy = jest.spyOn(permission, "update");
 
+            // Act
             await service.update({
                 transaction: transaction.entityManager,
                 patch: { name: "Updated Permission" },
@@ -108,6 +115,7 @@ describe("PermissionService", () => {
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.permissions.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: PERMISSION_ID, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -116,11 +124,12 @@ describe("PermissionService", () => {
         });
     });
 
-    describe("revoke / restore", () => {
+    describe("[Behavior] - revocation", () => {
         it.each([
             { method: "revoke", isRevoked: false },
             { method: "restore", isRevoked: true },
-        ] as const)("$method processes each found entity and returns the batch", async ({ method, isRevoked }) => {
+        ] as const)("[case] - processes and returns the batch ($method)", async ({ method, isRevoked }) => {
+            // Arrange
             const realm = createRealm();
             const permission = createPermission({ realm, isRevoked });
             const secondPermission = createSecondPermission({ realm, isRevoked });
@@ -131,12 +140,14 @@ describe("PermissionService", () => {
             const firstOperationSpy = jest.spyOn(permission, method);
             const secondOperationSpy = jest.spyOn(secondPermission, method);
 
+            // Act
             const result = await service[method]({
                 identifiers: [PERMISSION_ID, SECOND_PERMISSION_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.permissions.find).toHaveBeenCalledWith({
                 where: { id: { $in: [PERMISSION_ID, SECOND_PERMISSION_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -147,8 +158,9 @@ describe("PermissionService", () => {
         });
     });
 
-    describe("purge", () => {
-        it("checks purge eligibility, removes permissions, and returns them", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - checks purge eligibility, removes permissions, and returns them", async () => {
+            // Arrange
             const realm = createRealm();
             const permission = createPermission({ realm });
             const secondPermission = createSecondPermission({ realm });
@@ -161,12 +173,14 @@ describe("PermissionService", () => {
             const firstCanPurgeSpy = jest.spyOn(permission, "canPurge");
             const secondCanPurgeSpy = jest.spyOn(secondPermission, "canPurge");
 
+            // Act
             const result = await service.purge({
                 identifiers: [PERMISSION_ID, SECOND_PERMISSION_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.permissions.find).toHaveBeenCalledWith({
                 where: { id: { $in: [PERMISSION_ID, SECOND_PERMISSION_ID] }, realm: REALM_ID },
                 transaction: transaction.entityManager,
@@ -180,12 +194,13 @@ describe("PermissionService", () => {
         });
     });
 
-    describe("bulk identifiers", () => {
+    describe("[Behavior] - bulk identifiers", () => {
         it.each([
             { method: "revoke", isRevoked: false },
             { method: "restore", isRevoked: true },
             { method: "purge", isRevoked: true },
-        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked }) => {
+        ] as const)("[case] - deduplicates repository lookup ($method)", async ({ method, isRevoked }) => {
+            // Arrange
             const realm = createRealm();
             const permission = createPermission({ realm, isRevoked });
             const { service, repositories, transaction } = createServiceContext({
@@ -193,12 +208,14 @@ describe("PermissionService", () => {
                 realm,
             });
 
+            // Act
             const result = await service[method]({
                 identifiers: [PERMISSION_ID, PERMISSION_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(result).toEqual([permission]);
             expect(repositories.permissions.find).toHaveBeenCalledWith({
                 where: { id: { $in: [PERMISSION_ID] }, realm: REALM_ID },

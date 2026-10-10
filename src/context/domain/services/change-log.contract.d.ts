@@ -1,21 +1,19 @@
-declare namespace Services {
-    namespace ChangeLog {
-        interface Contract extends ProcessorContract {}
+declare namespace Services.ChangeLog {
+    interface Contract extends ProcessorContract {}
 
-        interface ProcessorContract {
-            purgeExpired: PurgeExpired.Signature;
-        }
+    interface ProcessorContract {
+        purgeExpired: PurgeExpired.Signature;
+    }
 
-        namespace PurgeExpired {
-            type Props = {
-                transaction: ORM.EntityManager;
-                expirationDate: Date;
-                batchSize: number;
-            };
+    namespace PurgeExpired {
+        type Props = {
+            transaction: ORM.EntityManager;
+            expirationDate: Date;
+            batchSize: number;
+        };
 
-            type Result = Promise<SystemEntities.ChangeLog[]>;
+        type Result = Promise<SystemEntities.ChangeLog[]>;
 
-            type Signature = (props: Props) => Result;
-        }
+        type Signature = (props: Props) => Result;
     }
 }

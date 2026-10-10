@@ -12,14 +12,15 @@ function createRepositoryConfig(): ConfigService {
     });
 }
 
-describe("PermissionOverrideRepository", () => {
+describe("[Repository] - PermissionOverride", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new PermissionOverrideRepository(readManager, createRepositoryConfig()),
         fixture: (entityManager) => new PermissionOverrideFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted override through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted override through the schema", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm();
             const permission = await suite.fixtures().createPermission({ realm });
             const override = await suite.fixtures().createPermissionOverride({
@@ -32,8 +33,10 @@ describe("PermissionOverrideRepository", () => {
                 realm,
             });
 
+            // Act
             const loaded = await suite.repository().findUniqueOrThrow({ where: { id: override.id } });
 
+            // Assert
             expect(loaded).toMatchObject({
                 justification: "Mapping override justification",
                 account: "6f1c9d64-9f4c-4d4a-9d0c-9a5f0a6a1b21",
@@ -49,20 +52,24 @@ describe("PermissionOverrideRepository", () => {
         });
     });
 
-    describe("wouldExceedOverrideLimit", () => {
-        it("checks active permission override count limit per account and realm", async () => {
+    describe("[Method] - wouldExceedOverrideLimit", () => {
+        it("[case] - checks active permission override count limit per account and realm", async () => {
+            // Arrange
             const scenario = await suite.fixtures().limitScenario();
 
-            await expect(
-                suite.repository().wouldExceedOverrideLimit({ account: scenario.account, realm: scenario.realm.id }),
-            ).resolves.toBe(scenario.expectedCountOneResult);
-            await expect(
-                suite.repository().wouldExceedOverrideLimit({
-                    account: scenario.account,
-                    realm: scenario.realm.id,
-                    count: 2,
-                }),
-            ).resolves.toBe(scenario.expectedCountTwoResult);
+            // Act
+            const result = await suite
+                .repository()
+                .wouldExceedOverrideLimit({ account: scenario.account, realm: scenario.realm.id });
+            const result2 = await suite.repository().wouldExceedOverrideLimit({
+                account: scenario.account,
+                realm: scenario.realm.id,
+                count: 2,
+            });
+
+            // Assert
+            expect(result).toBe(scenario.expectedCountOneResult);
+            expect(result2).toBe(scenario.expectedCountTwoResult);
         });
     });
 });

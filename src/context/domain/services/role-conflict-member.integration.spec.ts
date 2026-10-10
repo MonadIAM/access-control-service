@@ -21,14 +21,15 @@ async function loadMembers(
     );
 }
 
-describe("RoleConflictMemberService integration", () => {
+describe("[DomainService] - RoleConflictMember", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("create", () => {
-        it("adds only new members to an active group", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - adds only new members to an active group", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm({ code: "conflict-member-create" });
             const existing = await suite.fixtures().createRole({ realm, code: "roles.existing" });
             const candidate = await suite.fixtures().createRole({ realm, code: "roles.candidate" });
@@ -38,9 +39,9 @@ describe("RoleConflictMemberService integration", () => {
                 maxAllowed: 1,
                 realm,
             });
-
             await suite.fixtures().createRoleConflictMember({ group, role: existing });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().roleConflictMemberService.create({
                     input: {
@@ -51,13 +52,14 @@ describe("RoleConflictMemberService integration", () => {
                     transaction,
                 }),
             );
-
             const members = await loadMembers(suite, group);
 
+            // Assert
             expect(members.map(({ role }) => role.code)).toEqual(["roles.candidate", "roles.existing"]);
         });
 
-        it("rolls back member creation when the resulting group has violators", async () => {
+        it("[case] - rolls back member creation when the resulting group has violators", async () => {
+            // Arrange
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "conflict-member-rollback" });
             const existing = await suite.fixtures().createRole({ realm, code: "roles.existing" });
@@ -68,30 +70,33 @@ describe("RoleConflictMemberService integration", () => {
                 maxAllowed: 1,
                 realm,
             });
-
             await suite.fixtures().createRoleConflictMember({ group, role: existing });
             await suite.fixtures().createAccountRoleAssignment({ realm, role: existing, account });
             await suite.fixtures().createAccountRoleAssignment({ realm, role: candidate, account });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().roleConflictMemberService.create({
-                        input: {
-                            roles: [candidate.id],
-                            group: group.id,
-                        },
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.role-conflict-member.HAS_ACCOUNTS_VIOLATING_RULE");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().roleConflictMemberService.create({
+                    input: {
+                        roles: [candidate.id],
+                        group: group.id,
+                    },
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await loadMembers(suite, group);
 
-            await expect(loadMembers(suite, group)).resolves.toHaveLength(1);
+            // Assert
+            await expect(result).rejects.toThrow("services.role-conflict-member.HAS_ACCOUNTS_VIOLATING_RULE");
+            expect(result2).toHaveLength(1);
         });
     });
 
-    describe("purge", () => {
-        it("purges revoked members without removing the group", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - purges revoked members without removing the group", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm({ code: "conflict-member-purge" });
             const role = await suite.fixtures().createRole({ realm, code: "roles.revoked" });
             const group = await suite.fixtures().createRoleConflictGroup({
@@ -102,6 +107,7 @@ describe("RoleConflictMemberService integration", () => {
             });
             const member = await suite.fixtures().createRoleConflictMember({ group, role, isRevoked: true });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().roleConflictMemberService.purge({
                     identifiers: [member.id],
@@ -110,7 +116,10 @@ describe("RoleConflictMemberService integration", () => {
                 }),
             );
 
-            await expect(loadMembers(suite, group)).resolves.toHaveLength(0);
+            const result = await loadMembers(suite, group);
+
+            // Assert
+            expect(result).toHaveLength(0);
         });
     });
 });

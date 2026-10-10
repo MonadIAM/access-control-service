@@ -18,9 +18,10 @@ const helpers = new GuardUnitHelpers();
 
 beforeAll(() => helpers.initialize());
 
-describe("PermissionGuard", () => {
-    describe("canActivate", () => {
-        it("allows public handlers and handlers without required permissions", async () => {
+describe("[Guard] - Permission", () => {
+    describe("[Method] - canActivate", () => {
+        it("[case] - allows public handlers and handlers without required permissions", async () => {
+            // Arrange
             const { guard, checkPermissions } = helpers.permission();
             const publicHandler = helpers.context({
                 request: helpers.request(),
@@ -36,24 +37,38 @@ describe("PermissionGuard", () => {
             });
             const unrestricted = helpers.context({ request: helpers.request() });
 
-            await expect(guard.canActivate(publicHandler)).resolves.toBe(true);
-            await expect(guard.canActivate(publicController)).resolves.toBe(true);
-            await expect(guard.canActivate(unrestricted)).resolves.toBe(true);
+            // Act
+            const result = await guard.canActivate(publicHandler);
+
+            const result2 = await guard.canActivate(publicController);
+
+            const result3 = await guard.canActivate(unrestricted);
+
+            // Assert
+            expect(result).toBe(true);
+            expect(result2).toBe(true);
+            expect(result3).toBe(true);
             expect(checkPermissions).not.toHaveBeenCalled();
         });
 
-        it("requires an authenticated account", async () => {
+        it("[case] - requires an authenticated account", async () => {
+            // Arrange
             const { guard } = helpers.permission();
             const request = helpers.request({ session: { realms: [REALM_ID] } });
             const context = helpers.context({ request, handlerMetadata: [[REQUIRE_PERMISSION, [PERMISSION]]] });
 
-            await expect(guard.canActivate(context)).rejects.toMatchObject({
+            // Act
+            const result = guard.canActivate(context);
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
                 message: "guard.permission.ACCOUNT_REQUIRED",
                 statusCode: HttpStatus.FORBIDDEN,
             });
         });
 
-        it("rejects an empty requested realm", async () => {
+        it("[case] - rejects an empty requested realm", async () => {
+            // Arrange
             const { guard } = helpers.permission();
             const request = helpers.request({
                 query: { realm: "" },
@@ -61,24 +76,34 @@ describe("PermissionGuard", () => {
             });
             const context = helpers.context({ request, handlerMetadata: [[REQUIRE_PERMISSION, [PERMISSION]]] });
 
-            await expect(guard.canActivate(context)).rejects.toMatchObject({
+            // Act
+            const result = guard.canActivate(context);
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
                 message: "guard.permission.REALM_REQUIRED",
                 statusCode: HttpStatus.FORBIDDEN,
             });
         });
 
-        it("requires realm scope in the session", async () => {
+        it("[case] - requires realm scope in the session", async () => {
+            // Arrange
             const { guard } = helpers.permission();
             const request = helpers.request({ session: { account: ACCOUNT_ID } });
             const context = helpers.context({ request, handlerMetadata: [[REQUIRE_PERMISSION, [PERMISSION]]] });
 
-            await expect(guard.canActivate(context)).rejects.toMatchObject({
+            // Act
+            const result = guard.canActivate(context);
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
                 message: "guard.permission.REALM_SCOPE_MISSING",
                 statusCode: HttpStatus.FORBIDDEN,
             });
         });
 
-        it("rejects a realm outside the session scope", async () => {
+        it("[case] - rejects a realm outside the session scope", async () => {
+            // Arrange
             const { guard } = helpers.permission();
             const request = helpers.request({
                 query: { realm: REALM_ID },
@@ -86,26 +111,36 @@ describe("PermissionGuard", () => {
             });
             const context = helpers.context({ request, handlerMetadata: [[REQUIRE_PERMISSION, [PERMISSION]]] });
 
-            await expect(guard.canActivate(context)).rejects.toMatchObject({
+            // Act
+            const result = guard.canActivate(context);
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
                 message: "guard.permission.REALM_OUT_OF_SESSION_SCOPE",
                 statusCode: HttpStatus.FORBIDDEN,
             });
         });
 
-        it("requires a direct system login for global permissions", async () => {
+        it("[case] - requires a direct system login for global permissions", async () => {
+            // Arrange
             const { guard } = helpers.permission();
             const request = helpers.request({
                 session: { account: ACCOUNT_ID, realms: [SYSTEM_REALM_ID, REALM_ID] },
             });
             const context = helpers.context({ request, handlerMetadata: [[REQUIRE_GLOBAL_PERMISSION, [PERMISSION]]] });
 
-            await expect(guard.canActivate(context)).rejects.toMatchObject({
+            // Act
+            const result = guard.canActivate(context);
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
                 message: "guard.permission.GLOBAL_SCOPE_REQUIRES_DIRECT_LOGIN",
                 statusCode: HttpStatus.FORBIDDEN,
             });
         });
 
-        it("rejects an account without a matched permission", async () => {
+        it("[case] - rejects an account without a matched permission", async () => {
+            // Arrange
             const { guard } = helpers.permission({ matched: {} });
             const request = helpers.request({
                 query: { realm: REALM_ID },
@@ -113,13 +148,18 @@ describe("PermissionGuard", () => {
             });
             const context = helpers.context({ request, handlerMetadata: [[REQUIRE_PERMISSION, [PERMISSION]]] });
 
-            await expect(guard.canActivate(context)).rejects.toMatchObject({
+            // Act
+            const result = guard.canActivate(context);
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
                 message: "guard.permission.INSUFFICIENT_PERMISSIONS",
                 statusCode: HttpStatus.FORBIDDEN,
             });
         });
 
-        it("fails closed when the permission lookup fails", async () => {
+        it("[case] - fails closed when the permission lookup fails", async () => {
+            // Arrange
             const error = new Error("permission cache unavailable");
             const request = helpers.request({
                 query: { realm: REALM_ID },
@@ -129,13 +169,18 @@ describe("PermissionGuard", () => {
             checkPermissions.mockRejectedValueOnce(error);
             const context = helpers.context({ request, handlerMetadata: [[REQUIRE_PERMISSION, [PERMISSION]]] });
 
-            await expect(guard.canActivate(context)).rejects.toBe(error);
+            // Act
+            const result = guard.canActivate(context);
+
+            // Assert
+            await expect(result).rejects.toBe(error);
             expect(request.metadata).toEqual({});
         });
 
         it.each([PrivilegeScope.REALM, PrivilegeScope.GLOBAL])(
-            "preserves the matched %s scope in metadata",
+            "[case] - preserves the matched %s scope in metadata",
             async (scope) => {
+                // Arrange
                 const request = helpers.request({
                     query: { realm: REALM_ID },
                     session: { account: ACCOUNT_ID, realms: [REALM_ID] },
@@ -143,8 +188,10 @@ describe("PermissionGuard", () => {
                 const { guard, checkPermissions } = helpers.permission({ matched: { [PERMISSION]: scope } });
                 const context = helpers.context({ request, handlerMetadata: [[REQUIRE_PERMISSION, [PERMISSION]]] });
 
+                // Act
                 const result = await guard.canActivate(context);
 
+                // Assert
                 expect(result).toBe(true);
                 expect(checkPermissions).toHaveBeenCalledWith({
                     globalOnly: false,
@@ -157,7 +204,8 @@ describe("PermissionGuard", () => {
             },
         );
 
-        it("reads required permissions from controller metadata", async () => {
+        it("[case] - reads required permissions from controller metadata", async () => {
+            // Arrange
             const request = helpers.request({
                 query: { realm: REALM_ID },
                 session: { account: ACCOUNT_ID, realms: [REALM_ID] },
@@ -165,7 +213,11 @@ describe("PermissionGuard", () => {
             const { guard, checkPermissions } = helpers.permission({ matched: { [PERMISSION]: PrivilegeScope.REALM } });
             const context = helpers.context({ request, classMetadata: [[REQUIRE_PERMISSION, [PERMISSION]]] });
 
-            await expect(guard.canActivate(context)).resolves.toBe(true);
+            // Act
+            const result = await guard.canActivate(context);
+
+            // Assert
+            expect(result).toBe(true);
             expect(checkPermissions).toHaveBeenCalledWith({
                 globalOnly: false,
                 permissions: [PERMISSION],
@@ -174,12 +226,17 @@ describe("PermissionGuard", () => {
             });
         });
 
-        it("checks global permissions against the default system realm", async () => {
+        it("[case] - checks global permissions against the default system realm", async () => {
+            // Arrange
             const request = helpers.request({ session: { account: ACCOUNT_ID, realms: [SYSTEM_REALM_ID] } });
             const { guard, checkPermissions } = helpers.permission({ matched: { [PERMISSION]: PrivilegeScope.GLOBAL } });
             const context = helpers.context({ request, classMetadata: [[REQUIRE_GLOBAL_PERMISSION, [PERMISSION]]] });
 
-            await expect(guard.canActivate(context)).resolves.toBe(true);
+            // Act
+            const result = await guard.canActivate(context);
+
+            // Assert
+            expect(result).toBe(true);
             expect(checkPermissions).toHaveBeenCalledWith({
                 globalOnly: true,
                 permissions: [PERMISSION],
@@ -188,7 +245,8 @@ describe("PermissionGuard", () => {
             });
         });
 
-        it("gives global permission metadata precedence over realm permission metadata", async () => {
+        it("[case] - gives global permission metadata precedence over realm permission metadata", async () => {
+            // Arrange
             const request = helpers.request({ session: { account: ACCOUNT_ID, realms: [SYSTEM_REALM_ID] } });
             const { guard, checkPermissions } = helpers.permission({
                 matched: { [SECOND_PERMISSION]: PrivilegeScope.GLOBAL },
@@ -201,7 +259,11 @@ describe("PermissionGuard", () => {
                 ],
             });
 
-            await expect(guard.canActivate(context)).resolves.toBe(true);
+            // Act
+            const result = await guard.canActivate(context);
+
+            // Assert
+            expect(result).toBe(true);
             expect(checkPermissions).toHaveBeenCalledWith({
                 globalOnly: true,
                 permissions: [SECOND_PERMISSION],

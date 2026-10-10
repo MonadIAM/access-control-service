@@ -9,22 +9,36 @@ function client(status: RedisConnection.Status): Redis {
     return { status } as Redis;
 }
 
-describe("RedisConnectionRegistry", () => {
+describe("[InfrastructureService] - RedisConnectionRegistry", () => {
     let registry: RedisConnectionRegistry;
 
     beforeEach(() => {
         registry = new RedisConnectionRegistry();
     });
 
-    describe("snapshots / statusValues", () => {
-        it("returns no snapshots or metric values before registration", () => {
-            expect(registry.snapshots()).toEqual([]);
-            expect(registry.statusValues()).toEqual([]);
+    describe("[Behavior] - connection state", () => {
+        it("[case] - returns no snapshots or metric values before registration", () => {
+            // Arrange
+
+            // Act
+            const result = registry.snapshots();
+            const result2 = registry.statusValues();
+
+            // Assert
+            expect(result).toEqual([]);
+            expect(result2).toEqual([]);
         });
 
-        it.each(statuses)("maps status %s to connection flags and one-hot metric values", (status) => {
+        it.each(statuses)("[case] - maps status %s to connection flags and one-hot metric values", (status) => {
+            // Arrange
             registry.register({ kind: "cache", client: client(status) });
-            expect(registry.snapshots()).toEqual([
+
+            // Act
+            const result = registry.snapshots();
+            const result2 = registry.statusValues();
+
+            // Assert
+            expect(result).toEqual([
                 {
                     kind: "cache",
                     status,
@@ -32,7 +46,7 @@ describe("RedisConnectionRegistry", () => {
                     ready: status === "ready",
                 },
             ]);
-            expect(registry.statusValues()).toEqual(
+            expect(result2).toEqual(
                 statuses.map((candidate) => ({
                     kind: "cache",
                     status: candidate,
@@ -41,24 +55,32 @@ describe("RedisConnectionRegistry", () => {
             );
         });
 
-        it("reads live client state independently for every connection kind", () => {
+        it("[case] - reads live client state independently for every connection kind", () => {
+            // Arrange
             const cache = client("ready");
             registry.register({ kind: "cache", client: cache });
             registry.register({ kind: "limiter", client: client("connect") });
             registry.register({ kind: "queue", client: client("wait") });
-            expect(registry.snapshots()).toEqual([
+
+            // Act
+            const result = registry.snapshots();
+            cache.status = "reconnecting";
+            const values = registry.statusValues();
+
+            const result1 = registry.snapshots()[0];
+
+            // Assert
+            expect(result).toEqual([
                 { kind: "cache", status: "ready", connected: true, ready: true },
                 { kind: "limiter", status: "connect", connected: true, ready: false },
                 { kind: "queue", status: "wait", connected: false, ready: false },
             ]);
-            cache.status = "reconnecting";
-            expect(registry.snapshots()[0]).toEqual({
+            expect(result1).toEqual({
                 kind: "cache",
                 status: "reconnecting",
                 connected: false,
                 ready: false,
             });
-            const values = registry.statusValues();
             expect(values).toHaveLength(21);
             expect(values.filter(({ value }) => value === 1)).toEqual([
                 { kind: "cache", status: "reconnecting", value: 1 },
@@ -69,12 +91,20 @@ describe("RedisConnectionRegistry", () => {
         });
     });
 
-    describe("register", () => {
-        it("replaces a client registered under the same kind", () => {
+    describe("[Method] - register", () => {
+        it("[case] - replaces a client registered under the same kind", () => {
+            // Arrange
             registry.register({ kind: "cache", client: client("end") });
+
+            // Act
             registry.register({ kind: "cache", client: client("ready") });
-            expect(registry.snapshots()).toEqual([{ kind: "cache", status: "ready", connected: true, ready: true }]);
-            expect(registry.statusValues()).toHaveLength(7);
+
+            const result = registry.snapshots();
+            const result2 = registry.statusValues();
+
+            // Assert
+            expect(result).toEqual([{ kind: "cache", status: "ready", connected: true, ready: true }]);
+            expect(result2).toHaveLength(7);
         });
     });
 });

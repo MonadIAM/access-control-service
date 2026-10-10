@@ -13,7 +13,7 @@ function client(): { quit: Jest.Mock<() => Promise<string>>; disconnect: Jest.Mo
 
 const kinds = ["cache", "limiter", "queue"] as const;
 
-describe("RedisLifecycle", () => {
+describe("[InfrastructureService] - RedisLifecycle", () => {
     let clients: Record<(typeof kinds)[number], ReturnType<typeof client>>;
     let lifecycle: RedisLifecycle;
 
@@ -32,9 +32,14 @@ describe("RedisLifecycle", () => {
         jest.restoreAllMocks();
     });
 
-    describe("onApplicationShutdown", () => {
-        it("gracefully quits every client without forcing disconnect", async () => {
+    describe("[Method] - onApplicationShutdown", () => {
+        it("[case] - quits every client without forcing disconnect", async () => {
+            // Arrange
+
+            // Act
             await lifecycle.onApplicationShutdown();
+
+            // Assert
             for (const current of Object.values(clients)) {
                 expect(current.quit).toHaveBeenCalledTimes(1);
                 expect(current.disconnect).not.toHaveBeenCalled();
@@ -42,9 +47,14 @@ describe("RedisLifecycle", () => {
             expect(Logger.prototype.warn).not.toHaveBeenCalled();
         });
 
-        it.each(kinds)("forces only the failed %s connection to disconnect without reconnecting", async (kind) => {
+        it.each(kinds)("[case] - forces only the failed %s connection to disconnect without reconnecting", async (kind) => {
+            // Arrange
             clients[kind].quit.mockRejectedValue(new Error("quit failed"));
+
+            // Act
             await lifecycle.onApplicationShutdown();
+
+            // Assert
             for (const currentKind of kinds) {
                 expect(clients[currentKind].quit).toHaveBeenCalledTimes(1);
                 expect(clients[currentKind].disconnect.mock.calls).toEqual(currentKind === kind ? [[false]] : []);
@@ -52,18 +62,24 @@ describe("RedisLifecycle", () => {
             expect(Logger.prototype.warn).toHaveBeenCalledWith(expect.stringContaining("quit failed"));
         });
 
-        it("closes every connection even when all quit calls reject", async () => {
+        it("[case] - closes every connection even when all quit calls reject", async () => {
+            // Arrange
             for (const current of Object.values(clients)) {
                 current.quit.mockRejectedValue("connection closed");
             }
+
+            // Act
             await lifecycle.onApplicationShutdown();
+
+            // Assert
             for (const current of Object.values(clients)) {
                 expect(current.disconnect.mock.calls).toEqual([[false]]);
             }
             expect(Logger.prototype.log).not.toHaveBeenCalled();
         });
 
-        it("starts all quit calls concurrently and waits for the last one", async () => {
+        it("[case] - starts all quit calls concurrently and waits for the last one", async () => {
+            // Arrange
             let resolve!: (value: string) => void;
             clients.cache.quit.mockReturnValue(
                 new Promise<string>((done) => {
@@ -71,16 +87,20 @@ describe("RedisLifecycle", () => {
                 }),
             );
             let settled = false;
+
+            // Act
             const result = lifecycle.onApplicationShutdown().then(() => {
                 settled = true;
             });
-            for (const current of Object.values(clients)) {
-                expect(current.quit).toHaveBeenCalledTimes(1);
-            }
+            const callsBeforeCompletion = Object.values(clients).map((current) => current.quit.mock.calls.length);
             await Promise.resolve();
-            expect(settled).toBe(false);
+            const settledBeforeCompletion = settled;
             resolve("OK");
             await result;
+
+            // Assert
+            expect(callsBeforeCompletion).toEqual([1, 1, 1]);
+            expect(settledBeforeCompletion).toBe(false);
             expect(settled).toBe(true);
         });
     });

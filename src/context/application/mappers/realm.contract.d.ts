@@ -1,26 +1,48 @@
 declare namespace Commands {
     namespace Mappers {
         namespace Realm {
+            type BootstrapRequest =
+                | Topics.Realm.BootstrapOrganizationRequestedMessage["payload"]
+                | Topics.Realm.BootstrapProjectRequestedMessage["payload"];
+
+            type BootstrapResult = Awaited<Services.Realm.Create.Result> & { request: BootstrapRequest };
+
+            type BootstrapFailure = {
+                request: BootstrapRequest;
+                reason: string;
+            };
+
+            type TransferResult = Awaited<Services.Realm.TransferOwnership.Result> & {
+                request: Topics.Realm.TransferOwnershipRequestedMessage["payload"];
+            };
+
+            type TransferFailure = {
+                request: Topics.Realm.TransferOwnershipRequestedMessage["payload"];
+                reason: string;
+            };
+
+            type AccessResult = Awaited<Services.Realm.PurgeAccountAccess.Result>;
+
             interface Contract extends PublicContract {}
 
             interface PublicContract {
+                transferAssignmentCreate: TransferAssignmentCreate.Signature;
+                transferAssignmentPurge: TransferAssignmentPurge.Signature;
+                projectionUpdatePayload: ProjectionUpdatePayload.Signature;
+                projectionCreatePayload: ProjectionCreatePayload.Signature;
+                projectionPurgePayload: ProjectionPurgePayload.Signature;
+                accessAssignmentUpdate: AccessAssignmentUpdate.Signature;
+                accessAssignmentPurge: AccessAssignmentPurge.Signature;
+                realmLifecyclePayload: RealmLifecyclePayload.Signature;
+                accessOverrideUpdate: AccessOverrideUpdate.Signature;
+                transferAccessCache: TransferAccessCache.Signature;
+                accessOverridePurge: AccessOverridePurge.Signature;
+                accessCachePayload: AccessCachePayload.Signature;
                 bootstrapConfirmed: BootstrapConfirmed.Signature;
                 bootstrapRejected: BootstrapRejected.Signature;
                 transferConfirmed: TransferConfirmed.Signature;
                 transferRejected: TransferRejected.Signature;
-                transferAssignmentPurge: TransferAssignmentPurge.Signature;
-                transferAssignmentCreate: TransferAssignmentCreate.Signature;
-                transferAccessCache: TransferAccessCache.Signature;
-                accessAssignmentPurge: AccessAssignmentPurge.Signature;
-                accessOverridePurge: AccessOverridePurge.Signature;
-                accessAssignmentUpdate: AccessAssignmentUpdate.Signature;
-                accessOverrideUpdate: AccessOverrideUpdate.Signature;
                 accessCache: AccessCache.Signature;
-                projectionUpdatePayload: ProjectionUpdatePayload.Signature;
-                projectionCreatePayload: ProjectionCreatePayload.Signature;
-                projectionPurgePayload: ProjectionPurgePayload.Signature;
-                realmLifecyclePayload: RealmLifecyclePayload.Signature;
-                accessCachePayload: AccessCachePayload.Signature;
             }
 
             namespace ProjectionUpdatePayload {
@@ -71,22 +93,6 @@ declare namespace Commands {
 
                 type Signature = (props: Props) => Result;
             }
-
-            type BootstrapRequest =
-                | Topics.Realm.BootstrapOrganizationRequestedMessage["payload"]
-                | Topics.Realm.BootstrapProjectRequestedMessage["payload"];
-
-            type BootstrapResult = Awaited<Services.Realm.Create.Result> & { request: BootstrapRequest };
-
-            type BootstrapFailure = { request: BootstrapRequest; reason: string };
-
-            type TransferResult = Awaited<Services.Realm.TransferOwnership.Result> & {
-                request: Topics.Realm.TransferOwnershipRequestedMessage["payload"];
-            };
-
-            type TransferFailure = { request: Topics.Realm.TransferOwnershipRequestedMessage["payload"]; reason: string };
-
-            type AccessResult = Awaited<Services.Realm.PurgeAccountAccess.Result>;
 
             namespace BootstrapConfirmed {
                 type Props = BootstrapResult;

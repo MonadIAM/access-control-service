@@ -11,14 +11,15 @@ function createRepositoryConfig(): ConfigService {
     });
 }
 
-describe("AccountRoleAssignmentRepository", () => {
+describe("[Repository] - AccountRoleAssignment", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new AccountRoleAssignmentRepository(readManager, createRepositoryConfig()),
         fixture: (entityManager) => new AccountRoleAssignmentFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted assignment through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted assignment through the schema", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm();
             const role = await suite.fixtures().createDetachedRole({ realm });
             const assignment = await suite.fixtures().createAccountRoleAssignment({
@@ -31,8 +32,10 @@ describe("AccountRoleAssignmentRepository", () => {
                 role,
             });
 
+            // Act
             const loaded = await suite.repository().findUniqueOrThrow({ where: { id: assignment.id } });
 
+            // Assert
             expect(loaded).toMatchObject({
                 justification: "Mapping assignment justification",
                 account: "6f1c9d64-9f4c-4d4a-9d0c-9a5f0a6a1b21",
@@ -48,22 +51,24 @@ describe("AccountRoleAssignmentRepository", () => {
         });
     });
 
-    describe("wouldExceedRoleLimit", () => {
-        it("checks account role limit using active assignments and overlaps", async () => {
+    describe("[Method] - wouldExceedRoleLimit", () => {
+        it("[case] - checks account role limit using active assignments and overlaps", async () => {
+            // Arrange
             const scenario = await suite.fixtures().limitScenario();
 
-            await expect(
-                suite.repository().wouldExceedRoleLimit({
-                    roles: [scenario.roles.overlapping.id, scenario.roles.revoked.id],
-                    account: scenario.account,
-                }),
-            ).resolves.toBe(scenario.expectedOverlappingResult);
-            await expect(
-                suite.repository().wouldExceedRoleLimit({
-                    roles: [scenario.roles.revoked.id, scenario.roles.additional.id],
-                    account: scenario.account,
-                }),
-            ).resolves.toBe(scenario.expectedAdditionalResult);
+            // Act
+            const result = await suite.repository().wouldExceedRoleLimit({
+                roles: [scenario.roles.overlapping.id, scenario.roles.revoked.id],
+                account: scenario.account,
+            });
+            const result2 = await suite.repository().wouldExceedRoleLimit({
+                roles: [scenario.roles.revoked.id, scenario.roles.additional.id],
+                account: scenario.account,
+            });
+
+            // Assert
+            expect(result).toBe(scenario.expectedOverlappingResult);
+            expect(result2).toBe(scenario.expectedAdditionalResult);
         });
     });
 });

@@ -18,7 +18,7 @@ const claims: jose.JWTPayload = {
     exp: Math.floor(Date.now() / 1000) + 3600,
 };
 
-describe("JWTService", () => {
+describe("[CommonService] - JWT", () => {
     let service: InstanceType<typeof JWTService>;
     let keys: Awaited<ReturnType<typeof jose.generateKeyPair>>;
 
@@ -47,20 +47,15 @@ describe("JWTService", () => {
         return new jose.SignJWT(payload).setProtectedHeader({ alg: "ES256", kid: "test-key", typ }).sign(keys.privateKey);
     }
 
-    async function expectInvalid(token: string): Promise<void> {
-        await expect(service.verifyAccess({ token })).rejects.toMatchObject({
-            statusCode: 401,
-            messageKey: "services.jwt.INVALID_ACCESS_TOKEN",
-            headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
-        });
-    }
-
-    describe("verifyAccess", () => {
-        it("configures key discovery durations in milliseconds and returns verified claims", async () => {
+    describe("[Method] - verifyAccess", () => {
+        it("[case] - configures key discovery durations in milliseconds and returns verified claims", async () => {
+            // Arrange
             const token = await sign(claims);
 
+            // Act
             const result = await service.verifyAccess({ token });
 
+            // Assert
             expect(remoteKeys).toHaveBeenCalledWith(new URL(`${issuer}/jwks`), {
                 cooldownDuration: 5000,
                 timeoutDuration: 2000,
@@ -69,54 +64,128 @@ describe("JWTService", () => {
             expect(result).toEqual(claims);
         });
 
-        it.each(["client_id", "sub", "sid", "exp", "iat", "jti"])("requires the %s claim", async (claim) => {
+        it.each(["client_id", "sub", "sid", "exp", "iat", "jti"])("[case] - requires the %s claim", async (claim) => {
+            // Arrange
             const payload = { ...claims };
             delete payload[claim];
+            const invalidToken = await sign(payload);
 
-            await expectInvalid(await sign(payload));
+            // Act
+            const result = service.verifyAccess({ token: invalidToken });
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
+                statusCode: 401,
+                messageKey: "services.jwt.INVALID_ACCESS_TOKEN",
+                headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+            });
         });
 
         it.each([
-            { iss: "https://other.example" },
-            { aud: "other-api" },
-            { exp: 1 },
-            { nbf: Math.floor(Date.now() / 1000) + 3600 },
-        ])("rejects invalid token claims %j", async (override) => {
-            await expectInvalid(await sign({ ...claims, ...override }));
+            { label: "issuer", value: { iss: "https://other.example" } },
+            { label: "audience", value: { aud: "other-api" } },
+            { label: "expiration", value: { exp: 1 } },
+            { label: "not before", value: { nbf: Math.floor(Date.now() / 1000) + 3600 } },
+        ])("[case] - rejects invalid token claims ($label)", async ({ value: override }) => {
+            // Arrange
+            const invalidToken = await sign({ ...claims, ...override });
+
+            // Act
+            const result = service.verifyAccess({ token: invalidToken });
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
+                statusCode: 401,
+                messageKey: "services.jwt.INVALID_ACCESS_TOKEN",
+                headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+            });
         });
 
-        it("rejects a token with a different type", async () => {
-            await expectInvalid(await sign(claims, "JWT"));
+        it("[case] - rejects a token with a different type", async () => {
+            // Arrange
+            const invalidToken = await sign(claims, "JWT");
+
+            // Act
+            const result = service.verifyAccess({ token: invalidToken });
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
+                statusCode: 401,
+                messageKey: "services.jwt.INVALID_ACCESS_TOKEN",
+                headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+            });
         });
 
-        it("rejects a signature from an untrusted key", async () => {
+        it("[case] - rejects a signature from an untrusted key", async () => {
+            // Arrange
             const other = await jose.generateKeyPair("ES256");
             const token = await new jose.SignJWT(claims)
                 .setProtectedHeader({ alg: "ES256", kid: "test-key", typ: "at+jwt" })
                 .sign(other.privateKey);
+            const invalidToken = token;
 
-            await expectInvalid(token);
+            // Act
+            const result = service.verifyAccess({ token: invalidToken });
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
+                statusCode: 401,
+                messageKey: "services.jwt.INVALID_ACCESS_TOKEN",
+                headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+            });
         });
 
-        it("rejects an otherwise correctly signed token using a different algorithm", async () => {
+        it("[case] - rejects an otherwise correctly signed token using a different algorithm", async () => {
+            // Arrange
             const token = await new jose.SignJWT(claims)
                 .setProtectedHeader({ alg: "HS256", typ: "at+jwt" })
                 .sign(new Uint8Array(32));
+            const invalidToken = token;
 
-            await expectInvalid(token);
+            // Act
+            const result = service.verifyAccess({ token: invalidToken });
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
+                statusCode: 401,
+                messageKey: "services.jwt.INVALID_ACCESS_TOKEN",
+                headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+            });
         });
 
-        it("normalizes malformed tokens", async () => {
-            await expectInvalid("not.a.jwt");
+        it("[case] - normalizes malformed tokens", async () => {
+            // Arrange
+            const invalidToken = "not.a.jwt";
+
+            // Act
+            const result = service.verifyAccess({ token: invalidToken });
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
+                statusCode: 401,
+                messageKey: "services.jwt.INVALID_ACCESS_TOKEN",
+                headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+            });
         });
     });
 
-    describe("onModuleInit", () => {
-        it("normalizes key resolution failures", async () => {
+    describe("[Method] - onModuleInit", () => {
+        it("[case] - normalizes key resolution failures", async () => {
+            // Arrange
             remoteKeys.mockReturnValueOnce(() => Promise.reject(new Error("private network failure")));
-            service.onModuleInit();
 
-            await expectInvalid(await sign(claims));
+            // Act
+            service.onModuleInit();
+            const invalidToken = await sign(claims);
+
+            const result = service.verifyAccess({ token: invalidToken });
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
+                statusCode: 401,
+                messageKey: "services.jwt.INVALID_ACCESS_TOKEN",
+                headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+            });
         });
     });
 });

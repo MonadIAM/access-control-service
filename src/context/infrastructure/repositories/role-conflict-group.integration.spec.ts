@@ -11,14 +11,15 @@ function createRepositoryConfig(): ConfigService {
     });
 }
 
-describe("RoleConflictGroupRepository", () => {
+describe("[Repository] - RoleConflictGroup", () => {
     const suite = postgresSuite({
         repository: ({ readManager }) => new RoleConflictGroupRepository(readManager, createRepositoryConfig()),
         fixture: (entityManager) => new RoleConflictGroupFixture(entityManager),
     });
 
-    describe("findUniqueOrThrow", () => {
-        it("maps the persisted conflict group through the schema", async () => {
+    describe("[Method] - findUniqueOrThrow", () => {
+        it("[case] - maps the persisted conflict group through the schema", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm();
             const group = await suite.fixtures().createRoleConflictGroup({
                 description: "Mapping conflict group description",
@@ -30,8 +31,10 @@ describe("RoleConflictGroupRepository", () => {
                 realm,
             });
 
+            // Act
             const loaded = await suite.repository().findUniqueOrThrow({ where: { id: group.id } });
 
+            // Assert
             expect(loaded).toMatchObject({
                 description: "Mapping conflict group description",
                 name: "Mapping Conflict Group",
@@ -47,112 +50,130 @@ describe("RoleConflictGroupRepository", () => {
         });
     });
 
-    describe("findGroupsViolatedByAccount / hasGroupsViolatedByAccount", () => {
-        it("finds active groups violated by account assignments and candidate roles", async () => {
+    describe("[Behavior] - group violations", () => {
+        it("[case] - finds active groups violated by account assignments and candidate roles", async () => {
+            // Arrange
             const scenario = await suite.fixtures().violatedGroupsScenario();
-
             const groups = await suite.repository().findGroupsViolatedByAccount({
                 roles: scenario.candidateRoles.map(({ id }) => id),
                 account: scenario.account,
                 realm: scenario.realm.id,
             });
 
-            await expect(
-                suite.repository().hasGroupsViolatedByAccount({
-                    roles: scenario.candidateRoles.map(({ id }) => id),
-                    account: scenario.account,
-                    realm: scenario.realm.id,
-                }),
-            ).resolves.toBe(true);
+            // Act
+            const result = await suite.repository().hasGroupsViolatedByAccount({
+                roles: scenario.candidateRoles.map(({ id }) => id),
+                account: scenario.account,
+                realm: scenario.realm.id,
+            });
+
+            // Assert
+            expect(result).toBe(true);
             expect(groups.map(({ code }) => code).sort()).toEqual(scenario.expectedGroupCodes);
         });
 
-        it("does not find groups violated through expired account assignments", async () => {
+        it("[case] - does not find groups violated through expired account assignments", async () => {
+            // Arrange
             const scenario = await suite.fixtures().violatedExpiredScenario();
-
             const groups = await suite.repository().findGroupsViolatedByAccount({
                 roles: scenario.candidateRoles.map(({ id }) => id),
                 account: scenario.account,
                 realm: scenario.realm.id,
             });
 
-            await expect(
-                suite.repository().hasGroupsViolatedByAccount({
-                    roles: scenario.candidateRoles.map(({ id }) => id),
-                    account: scenario.account,
-                    realm: scenario.realm.id,
-                }),
-            ).resolves.toBe(false);
+            // Act
+            const result = await suite.repository().hasGroupsViolatedByAccount({
+                roles: scenario.candidateRoles.map(({ id }) => id),
+                account: scenario.account,
+                realm: scenario.realm.id,
+            });
+
+            // Assert
+            expect(result).toBe(false);
             expect(groups.map(({ code }) => code).sort()).toEqual(scenario.expectedGroupCodes);
         });
     });
 
-    describe("findAccountsViolatingRule / hasAccountsViolatingRule", () => {
-        it("finds accounts violating a role conflict rule", async () => {
+    describe("[Behavior] - account violations", () => {
+        it("[case] - finds accounts violating a role conflict rule", async () => {
+            // Arrange
             const scenario = await suite.fixtures().violatingAccountsScenario();
-
             const accounts = await suite.repository().findAccountsViolatingRule({
                 identifiers: scenario.roles.map(({ id }) => id),
                 maxAllowed: scenario.maxAllowed,
                 realm: scenario.realm.id,
             });
 
-            await expect(
-                suite.repository().hasAccountsViolatingRule({
-                    identifiers: scenario.roles.map(({ id }) => id),
-                    maxAllowed: scenario.maxAllowed,
-                    realm: scenario.realm.id,
-                }),
-            ).resolves.toBe(true);
+            // Act
+            const result = await suite.repository().hasAccountsViolatingRule({
+                identifiers: scenario.roles.map(({ id }) => id),
+                maxAllowed: scenario.maxAllowed,
+                realm: scenario.realm.id,
+            });
+
+            // Assert
+            expect(result).toBe(true);
             expect(accounts.map(({ account }) => account).sort()).toEqual(scenario.expectedAccounts);
         });
     });
 
-    describe("hasGroupsWithViolatingAccounts", () => {
-        it("detects configured groups with violating accounts", async () => {
+    describe("[Method] - hasGroupsWithViolatingAccounts", () => {
+        it("[case] - detects configured groups with violating accounts", async () => {
+            // Arrange
             const scenario = await suite.fixtures().violatingGroupsScenario();
 
-            await expect(
-                suite.repository().hasGroupsWithViolatingAccounts({
-                    groups: scenario.groups.map(({ id }) => id),
-                    realm: scenario.realm.id,
-                }),
-            ).resolves.toBe(scenario.expectedResult);
+            // Act
+            const result = await suite.repository().hasGroupsWithViolatingAccounts({
+                groups: scenario.groups.map(({ id }) => id),
+                realm: scenario.realm.id,
+            });
+
+            // Assert
+            expect(result).toBe(scenario.expectedResult);
         });
 
-        it("does not detect configured groups violated only by expired account assignments", async () => {
+        it("[case] - does not detect configured groups violated only by expired account assignments", async () => {
+            // Arrange
             const scenario = await suite.fixtures().violatingGroupsExpiredScenario();
 
-            await expect(
-                suite.repository().hasGroupsWithViolatingAccounts({
-                    groups: scenario.groups.map(({ id }) => id),
-                    realm: scenario.realm.id,
-                }),
-            ).resolves.toBe(scenario.expectedResult);
+            // Act
+            const result = await suite.repository().hasGroupsWithViolatingAccounts({
+                groups: scenario.groups.map(({ id }) => id),
+                realm: scenario.realm.id,
+            });
+
+            // Assert
+            expect(result).toBe(scenario.expectedResult);
         });
 
-        it("does not detect configured groups violated only by foreign-realm roles", async () => {
+        it("[case] - does not detect configured groups violated only by foreign-realm roles", async () => {
+            // Arrange
             const scenario = await suite.fixtures().violatingGroupsRealmScenario();
 
-            await expect(
-                suite.repository().hasGroupsWithViolatingAccounts({
-                    groups: scenario.groups.map(({ id }) => id),
-                    realm: scenario.realm.id,
-                }),
-            ).resolves.toBe(scenario.expectedResult);
+            // Act
+            const result = await suite.repository().hasGroupsWithViolatingAccounts({
+                groups: scenario.groups.map(({ id }) => id),
+                realm: scenario.realm.id,
+            });
+
+            // Assert
+            expect(result).toBe(scenario.expectedResult);
         });
     });
 
-    describe("wouldExceedGroupLimit", () => {
-        it("checks active conflict group count limit per realm", async () => {
+    describe("[Method] - wouldExceedGroupLimit", () => {
+        it("[case] - checks active conflict group count limit per realm", async () => {
+            // Arrange
             const scenario = await suite.fixtures().limitScenario();
 
-            await expect(suite.repository().wouldExceedGroupLimit({ realm: scenario.realm.id })).resolves.toBe(
-                scenario.expectedCountOneResult,
-            );
-            await expect(suite.repository().wouldExceedGroupLimit({ realm: scenario.realm.id, count: 2 })).resolves.toBe(
-                scenario.expectedCountTwoResult,
-            );
+            // Act
+            const result = await suite.repository().wouldExceedGroupLimit({ realm: scenario.realm.id });
+
+            const result2 = await suite.repository().wouldExceedGroupLimit({ realm: scenario.realm.id, count: 2 });
+
+            // Assert
+            expect(result).toBe(scenario.expectedCountOneResult);
+            expect(result2).toBe(scenario.expectedCountTwoResult);
         });
     });
 });

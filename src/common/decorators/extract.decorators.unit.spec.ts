@@ -31,7 +31,7 @@ class ExtractController {
 @Module({ controllers: [ExtractController] })
 class ExtractTestModule {}
 
-describe("Extract decorators", () => {
+describe("[Decorator] - Extract", () => {
     let app: NestFastifyApplication;
 
     beforeAll(async () => {
@@ -55,8 +55,11 @@ describe("Extract decorators", () => {
         await app?.close();
     });
 
-    describe("request parameters", () => {
-        it("passes request metadata, authenticated session and permissions to controller parameters", async () => {
+    describe("[Behavior] - request parameters", () => {
+        it("[case] - passes request metadata, authenticated session and permissions to controller parameters", async () => {
+            // Arrange
+
+            // Act
             const response = await app.inject({
                 method: "GET",
                 url: "/extract",
@@ -64,6 +67,7 @@ describe("Extract decorators", () => {
                 headers: { "user-agent": "decorator-contract-test", "x-test-authenticated": "true" },
             });
 
+            // Assert
             expect(response.statusCode).toBe(200);
             expect(response.json()).toEqual({
                 meta: { userAgent: "decorator-contract-test", ip: "192.0.2.10" },
@@ -73,7 +77,10 @@ describe("Extract decorators", () => {
             });
         });
 
-        it("uses unknown for a missing user agent and an empty array for absent permissions", async () => {
+        it("[case] - uses unknown for a missing user agent and an empty array for absent permissions", async () => {
+            // Arrange
+
+            // Act
             const response = await app.inject({
                 headers: { "user-agent": undefined },
                 remoteAddress: "192.0.2.11",
@@ -81,6 +88,7 @@ describe("Extract decorators", () => {
                 method: "GET",
             });
 
+            // Assert
             expect(response.statusCode).toBe(200);
             expect(response.json()).toEqual({
                 meta: { userAgent: "unknown", ip: "192.0.2.11" },
@@ -90,21 +98,29 @@ describe("Extract decorators", () => {
             });
         });
 
-        it("preserves an explicitly empty user agent", async () => {
+        it("[case] - preserves an explicitly empty user agent", async () => {
+            // Arrange
+
+            // Act
             const response = await app.inject({ method: "GET", url: "/extract", headers: { "user-agent": "" } });
 
+            // Assert
             expect(response.statusCode).toBe(200);
             expect(response.json().meta.userAgent).toBe("");
         });
     });
 
-    describe("request isolation", () => {
-        it("keeps authenticated context isolated from another request", async () => {
+    describe("[Behavior] - request isolation", () => {
+        it("[case] - keeps authenticated context isolated from another request", async () => {
+            // Arrange
+
+            // Act
             const [authenticated, anonymous] = await Promise.all([
                 app.inject({ method: "GET", url: "/extract", headers: { "x-test-authenticated": "true" } }),
                 app.inject({ method: "GET", url: "/extract" }),
             ]);
 
+            // Assert
             expect(authenticated.statusCode).toBe(200);
             expect(anonymous.statusCode).toBe(200);
             expect(authenticated.json()).toMatchObject({ session, permissions });

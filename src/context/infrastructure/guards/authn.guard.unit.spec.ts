@@ -18,45 +18,65 @@ const helpers = new GuardUnitHelpers();
 
 beforeAll(() => helpers.initialize());
 
-describe("AuthnGuard", () => {
-    describe("canActivate", () => {
-        it("allows public handlers without authentication", async () => {
+describe("[Guard] - Authn", () => {
+    describe("[Method] - canActivate", () => {
+        it("[case] - allows public handlers without authentication", async () => {
+            // Arrange
             const { guard, verifyAccess, exists } = helpers.authn();
             const request = helpers.request();
             const context = helpers.context({ request, handlerMetadata: [[IS_PUBLIC, true]] });
 
-            await expect(guard.canActivate(context)).resolves.toBe(true);
+            // Act
+            const result = await guard.canActivate(context);
+
+            // Assert
+            expect(result).toBe(true);
             expect(verifyAccess).not.toHaveBeenCalled();
             expect(exists).not.toHaveBeenCalled();
         });
 
-        it("allows controllers marked as public without authentication", async () => {
+        it("[case] - allows controllers marked as public without authentication", async () => {
+            // Arrange
             const { guard, verifyAccess, exists } = helpers.authn();
             const request = helpers.request();
             const context = helpers.context({ request, classMetadata: [[IS_PUBLIC, true]] });
 
-            await expect(guard.canActivate(context)).resolves.toBe(true);
+            // Act
+            const result = await guard.canActivate(context);
+
+            // Assert
+            expect(result).toBe(true);
             expect(verifyAccess).not.toHaveBeenCalled();
             expect(exists).not.toHaveBeenCalled();
         });
 
-        it("rejects a missing bearer token", async () => {
+        it("[case] - rejects a missing bearer token", async () => {
+            // Arrange
             const { guard } = helpers.authn();
             const context = helpers.context({ request: helpers.request() });
 
-            await expect(guard.canActivate(context)).rejects.toMatchObject({
+            // Act
+            const result = guard.canActivate(context);
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
                 message: "guard.authn.TOKEN_MISSING",
                 statusCode: HttpStatus.UNAUTHORIZED,
                 headers: { "WWW-Authenticate": 'Bearer realm="system"' },
             });
         });
 
-        it("rejects a malformed authorization header", async () => {
+        it("[case] - rejects a malformed authorization header", async () => {
+            // Arrange
             const { guard } = helpers.authn();
             const request = helpers.request({ headers: { authorization: "Basic token" } });
             const context = helpers.context({ request });
 
-            await expect(guard.canActivate(context)).rejects.toMatchObject({
+            // Act
+            const result = guard.canActivate(context);
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
                 message: "guard.authn.MALFORMED_AUTHORIZATION",
                 statusCode: HttpStatus.BAD_REQUEST,
                 headers: {
@@ -66,21 +86,30 @@ describe("AuthnGuard", () => {
             });
         });
 
-        it("accepts a case-insensitive bearer scheme and multiple spaces", async () => {
+        it("[case] - accepts a case-insensitive bearer scheme and multiple spaces", async () => {
+            // Arrange
             const { guard, verifyAccess } = helpers.authn();
             const request = helpers.request({ headers: { authorization: `bearer   ${TOKEN}` } });
             const context = helpers.context({ request });
 
-            await expect(guard.canActivate(context)).resolves.toBe(true);
+            // Act
+            const result = await guard.canActivate(context);
+
+            // Assert
+            expect(result).toBe(true);
             expect(verifyAccess).toHaveBeenCalledWith({ token: TOKEN });
         });
 
-        it("verifies an active session and assigns request session data", async () => {
+        it("[case] - verifies an active session and assigns request session data", async () => {
+            // Arrange
             const request = helpers.request({ headers: { authorization: `Bearer ${TOKEN}` } });
             const { guard, verifyAccess, exists } = helpers.authn({ scope: "openid profile" });
 
-            await expect(guard.canActivate(helpers.context({ request }))).resolves.toBe(true);
+            // Act
+            const result = await guard.canActivate(helpers.context({ request }));
 
+            // Assert
+            expect(result).toBe(true);
             expect(verifyAccess).toHaveBeenCalledWith({ token: TOKEN });
             expect(exists).toHaveBeenCalledWith({ session: SESSION_ID });
             expect(request.session).toEqual({
@@ -92,40 +121,58 @@ describe("AuthnGuard", () => {
             });
         });
 
-        it("uses the default scope when the token has no scope", async () => {
+        it("[case] - uses the default scope when the token has no scope", async () => {
+            // Arrange
             const request = helpers.request({ headers: { authorization: `Bearer ${TOKEN}` } });
             const { guard } = helpers.authn();
 
+            // Act
             await guard.canActivate(helpers.context({ request }));
 
+            // Assert
             expect(request.session.scope).toBe(DEFAULT_OAUTH_SCOPE);
         });
 
-        it("propagates token verification failures without querying the blacklist", async () => {
+        it("[case] - propagates token verification failures without querying the blacklist", async () => {
+            // Arrange
             const error = new Error("verification failed");
             const { guard, verifyAccess, exists } = helpers.authn();
             const request = helpers.request({ headers: { authorization: `Bearer ${TOKEN}` } });
             verifyAccess.mockRejectedValueOnce(error);
 
-            await expect(guard.canActivate(helpers.context({ request }))).rejects.toBe(error);
+            // Act
+            const result = guard.canActivate(helpers.context({ request }));
+
+            // Assert
+            await expect(result).rejects.toBe(error);
             expect(exists).not.toHaveBeenCalled();
         });
 
-        it("fails closed when the blacklist lookup fails", async () => {
+        it("[case] - fails closed when the blacklist lookup fails", async () => {
+            // Arrange
             const error = new Error("blacklist unavailable");
             const request = helpers.request({ headers: { authorization: `Bearer ${TOKEN}` } });
             const { guard, exists } = helpers.authn();
             exists.mockRejectedValueOnce(error);
 
-            await expect(guard.canActivate(helpers.context({ request }))).rejects.toBe(error);
+            // Act
+            const result = guard.canActivate(helpers.context({ request }));
+
+            // Assert
+            await expect(result).rejects.toBe(error);
             expect(request.session).toEqual({});
         });
 
-        it("rejects a blacklisted session", async () => {
+        it("[case] - rejects a blacklisted session", async () => {
+            // Arrange
             const { guard } = helpers.authn({ blacklisted: true });
             const request = helpers.request({ headers: { authorization: `Bearer ${TOKEN}` } });
 
-            await expect(guard.canActivate(helpers.context({ request }))).rejects.toMatchObject({
+            // Act
+            const result = guard.canActivate(helpers.context({ request }));
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
                 message: "guard.authn.SESSION_REVOKED",
                 statusCode: HttpStatus.UNAUTHORIZED,
                 headers: {

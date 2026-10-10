@@ -63,14 +63,15 @@ async function countRoleAssignments(
     return await suite.transaction((transaction) => transaction.count(AccountRoleAssignment, { account, realm: realm.id }));
 }
 
-describe("AccountRoleAssignmentService integration", () => {
+describe("[DomainService] - AccountRoleAssignment", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("create", () => {
-        it("creates assignments allowed by an active delegation policy", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates assignments allowed by an active delegation policy", async () => {
+            // Arrange
             const actor = randomUUID();
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "assignment-delegated" });
@@ -82,7 +83,6 @@ describe("AccountRoleAssignmentService integration", () => {
                 realm,
             });
             const child = await suite.fixtures().createRole({ code: "roles.child", name: "Child", realm });
-
             await createHierarchy(suite, realm, parent, child, 1);
             await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
             await suite.fixtures().createRoleDelegationPolicy({
@@ -92,6 +92,7 @@ describe("AccountRoleAssignmentService integration", () => {
                 realm,
             });
 
+            // Act
             const result = await suite.transaction((transaction) =>
                 suite.repository().accountRoleAssignmentService.create({
                     input: {
@@ -104,10 +105,10 @@ describe("AccountRoleAssignmentService integration", () => {
                     transaction,
                 }),
             );
-
             const assignments = await loadAssignments(suite, account, realm);
             const effectiveRoleCodes = await loadEffectiveRoleCodes(suite, account, realm);
 
+            // Assert
             expect(result).toHaveLength(1);
             expect(assignments).toHaveLength(1);
             expect(assignments[0]).toMatchObject({
@@ -118,30 +119,35 @@ describe("AccountRoleAssignmentService integration", () => {
             expect(effectiveRoleCodes).toEqual(["roles.child", "roles.parent"]);
         });
 
-        it("rolls back assignment creation when delegation is not allowed", async () => {
+        it("[case] - rolls back assignment creation when delegation is not allowed", async () => {
+            // Arrange
             const actor = randomUUID();
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "assignment-delegation-denied" });
             const role = await suite.fixtures().createRole({ code: "roles.denied", name: "Denied", realm });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().accountRoleAssignmentService.create({
-                        input: {
-                            roles: [role.id],
-                            account,
-                        },
-                        actor,
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.account-role-assignment.DELEGATION_NOT_ALLOWED");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().accountRoleAssignmentService.create({
+                    input: {
+                        roles: [role.id],
+                        account,
+                    },
+                    actor,
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await countRoleAssignments(suite, account, realm);
 
-            await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(0);
+            // Assert
+            await expect(result).rejects.toThrow("services.account-role-assignment.DELEGATION_NOT_ALLOWED");
+            expect(result2).toBe(0);
         });
 
-        it("rolls back assignment creation when the account role limit is exceeded", async () => {
+        it("[case] - rolls back assignment creation when the account role limit is exceeded", async () => {
+            // Arrange
             const actor = randomUUID();
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "assignment-limit" });
@@ -150,7 +156,6 @@ describe("AccountRoleAssignmentService integration", () => {
             const second = await suite.fixtures().createRole({ code: "roles.second", name: "Second", realm });
             const third = await suite.fixtures().createRole({ code: "roles.third", name: "Third", realm });
             const candidate = await suite.fixtures().createRole({ code: "roles.candidate", name: "Candidate", realm });
-
             await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
             await suite.fixtures().createAccountRoleAssignment({ realm, role: first, account });
             await suite.fixtures().createAccountRoleAssignment({ realm, role: second, account });
@@ -161,24 +166,28 @@ describe("AccountRoleAssignmentService integration", () => {
                 realm,
             });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().accountRoleAssignmentService.create({
-                        input: {
-                            roles: [candidate.id],
-                            account,
-                        },
-                        actor,
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.account-role-assignment.ACCOUNT_ROLE_LIMIT_EXCEEDED");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().accountRoleAssignmentService.create({
+                    input: {
+                        roles: [candidate.id],
+                        account,
+                    },
+                    actor,
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await countRoleAssignments(suite, account, realm);
 
-            await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(3);
+            // Assert
+            await expect(result).rejects.toThrow("services.account-role-assignment.ACCOUNT_ROLE_LIMIT_EXCEEDED");
+            expect(result2).toBe(3);
         });
 
-        it("rolls back assignment creation when the target roles violate SoD", async () => {
+        it("[case] - rolls back assignment creation when the target roles violate SoD", async () => {
+            // Arrange
             const actor = randomUUID();
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "assignment-sod" });
@@ -191,7 +200,6 @@ describe("AccountRoleAssignmentService integration", () => {
                 maxAllowed: 1,
                 realm,
             });
-
             await suite.fixtures().createRoleConflictMember({ group, role: existing });
             await suite.fixtures().createRoleConflictMember({ group, role: candidate });
             await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
@@ -202,33 +210,36 @@ describe("AccountRoleAssignmentService integration", () => {
                 realm,
             });
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().accountRoleAssignmentService.create({
-                        input: {
-                            roles: [candidate.id],
-                            account,
-                        },
-                        actor,
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.account-role-assignment.HAS_SoD_VIOLATIONS");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().accountRoleAssignmentService.create({
+                    input: {
+                        roles: [candidate.id],
+                        account,
+                    },
+                    actor,
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await loadAssignments(suite, account, realm);
 
-            await expect(loadAssignments(suite, account, realm)).resolves.toHaveLength(1);
+            // Assert
+            await expect(result).rejects.toThrow("services.account-role-assignment.HAS_SoD_VIOLATIONS");
+            expect(result2).toHaveLength(1);
         });
     });
 
-    describe("ensure", () => {
-        it("ensures an existing active assignment without creating a duplicate", async () => {
+    describe("[Method] - ensure", () => {
+        it("[case] - ensures an existing active assignment without creating a duplicate", async () => {
+            // Arrange
             const actor = randomUUID();
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "assignment-ensure" });
             const delegator = await suite.fixtures().createRole({ code: "roles.delegator", name: "Delegator", realm });
             const role = await suite.fixtures().createRole({ code: "roles.existing", name: "Existing", realm });
             const existing = await suite.fixtures().createAccountRoleAssignment({ realm, role, account });
-
             await suite.fixtures().createAccountRoleAssignment({ realm, role: delegator, account: actor });
             await suite.fixtures().createRoleDelegationPolicy({
                 delegator,
@@ -236,6 +247,7 @@ describe("AccountRoleAssignmentService integration", () => {
                 realm,
             });
 
+            // Act
             const result = await suite.transaction((transaction) =>
                 suite.repository().accountRoleAssignmentService.ensure({
                     input: {
@@ -247,20 +259,22 @@ describe("AccountRoleAssignmentService integration", () => {
                     transaction,
                 }),
             );
+            const result2 = await countRoleAssignments(suite, account, realm);
 
+            // Assert
             expect(result).toHaveLength(1);
             expect(result[0].id).toBe(existing.id);
-            await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(1);
+            expect(result2).toBe(1);
         });
     });
 
-    describe("assign", () => {
-        it("assigns a role directly only inside its own realm", async () => {
+    describe("[Method] - assign", () => {
+        it("[case] - assigns a role directly only inside its own realm", async () => {
+            // Arrange
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "assignment-direct" });
             const foreignRealm = await suite.fixtures().createRealm({ code: "assignment-direct-foreign" });
             const role = await suite.fixtures().createRole({ code: "roles.direct", name: "Direct", realm });
-
             const created = await suite.transaction((transaction) =>
                 suite.repository().accountRoleAssignmentService.assign({
                     input: {
@@ -272,27 +286,33 @@ describe("AccountRoleAssignmentService integration", () => {
                 }),
             );
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().accountRoleAssignmentService.assign({
-                        input: {
-                            realm: foreignRealm.id,
-                            role: role.id,
-                            account,
-                        },
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("db.NOT_FOUND");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().accountRoleAssignmentService.assign({
+                    input: {
+                        realm: foreignRealm.id,
+                        role: role.id,
+                        account,
+                    },
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await countRoleAssignments(suite, account, realm);
 
+            const result3 = await countRoleAssignments(suite, account, foreignRealm);
+
+            // Assert
+            await expect(result).rejects.toThrow("db.NOT_FOUND");
             expect(created.role.id).toBe(role.id);
-            await expect(countRoleAssignments(suite, account, realm)).resolves.toBe(1);
-            await expect(countRoleAssignments(suite, account, foreignRealm)).resolves.toBe(0);
+            expect(result2).toBe(1);
+            expect(result3).toBe(0);
         });
     });
 
-    describe("expire", () => {
-        it("expires only provided assignments through persisted merge and revoke", async () => {
+    describe("[Method] - expire", () => {
+        it("[case] - expires only provided assignments through persisted merge and revoke", async () => {
+            // Arrange
             const account = randomUUID();
             const realm = await suite.fixtures().createRealm({ code: "assignment-expire" });
             const expiredRole = await suite.fixtures().createRole({ code: "roles.expired", name: "Expired", realm });
@@ -310,6 +330,7 @@ describe("AccountRoleAssignmentService integration", () => {
                 realm,
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 Promise.resolve(
                     suite.repository().accountRoleAssignmentService.expire({
@@ -319,8 +340,13 @@ describe("AccountRoleAssignmentService integration", () => {
                 ),
             );
 
-            await expect(loadAssignment(suite, expired.id)).resolves.toEqual(expect.objectContaining({ isRevoked: true }));
-            await expect(loadAssignment(suite, active.id)).resolves.toEqual(expect.objectContaining({ isRevoked: false }));
+            const result = await loadAssignment(suite, expired.id);
+
+            const result2 = await loadAssignment(suite, active.id);
+
+            // Assert
+            expect(result).toEqual(expect.objectContaining({ isRevoked: true }));
+            expect(result2).toEqual(expect.objectContaining({ isRevoked: false }));
         });
     });
 });

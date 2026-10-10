@@ -16,31 +16,33 @@ const SECOND_OVERRIDE_ID = "00000000-0000-4000-8000-400000000006";
 
 const helpers = new PermissionOverrideUnitHelpers();
 
-describe("PermissionOverrideService", () => {
+describe("[DomainService] - PermissionOverride", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("throws when the account override limit would be exceeded", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - throws when the account override limit would be exceeded", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const permission = helpers.createPermission({ id: PERMISSION_ID, realm });
             const { service, repositories, transaction } = helpers.service({ permissions: [permission], realm });
             repositories.permissionOverrides.wouldExceedOverrideLimit.mockImplementation(() => Promise.resolve(true));
 
-            await expect(
-                service.create({
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                    input: {
-                        effect: PermissionOverrideEffect.ALLOW,
-                        justification: "temporary override",
-                        permission: PERMISSION_ID,
-                        account: ACCOUNT_ID,
-                    },
-                }),
-            ).rejects.toThrow("services.permission-override.LIMIT_EXCEEDED");
+            // Act
+            const result = service.create({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                input: {
+                    effect: PermissionOverrideEffect.ALLOW,
+                    justification: "temporary override",
+                    permission: PERMISSION_ID,
+                    account: ACCOUNT_ID,
+                },
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("services.permission-override.LIMIT_EXCEEDED");
             expect(repositories.permissions.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: PERMISSION_ID, realm: { $in: [REALM_ID, SYSTEM_REALM_ID] } },
                 transaction: transaction.entityManager,
@@ -53,12 +55,14 @@ describe("PermissionOverrideService", () => {
             expect(transaction.persist).not.toHaveBeenCalled();
         });
 
-        it("creates an override, validates create eligibility, persists it, and returns it", async () => {
+        it("[case] - creates an override, validates create eligibility, persists it, and returns it", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const permission = helpers.createPermission({ id: PERMISSION_ID, realm });
             const { service, transaction } = helpers.service({ permissions: [permission], realm });
             const canCreateSpy = jest.spyOn(PermissionOverride.prototype, "canCreate");
 
+            // Act
             const result = await service.create({
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
@@ -70,6 +74,7 @@ describe("PermissionOverrideService", () => {
                 },
             });
 
+            // Assert
             expect(result).toEqual(
                 expect.objectContaining({
                     justification: "deny for investigation",
@@ -83,7 +88,8 @@ describe("PermissionOverrideService", () => {
             expect(transaction.persist).toHaveBeenCalledWith(result);
         });
 
-        it("looks up permission only in the target and system realms", async () => {
+        it("[case] - looks up permission only in the target and system realms", async () => {
+            // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const foreignRealm = helpers.createRealm({ id: FOREIGN_REALM_ID, code: "realm.foreign" });
             const foreignPermission = helpers.createPermission({ id: PERMISSION_ID, realm: foreignRealm });
@@ -92,19 +98,20 @@ describe("PermissionOverrideService", () => {
                 Promise.reject(new Error("permission out of scope")),
             );
 
-            await expect(
-                service.create({
-                    transaction: transaction.entityManager,
-                    realm: REALM_ID,
-                    input: {
-                        effect: PermissionOverrideEffect.ALLOW,
-                        justification: "foreign permission",
-                        permission: PERMISSION_ID,
-                        account: ACCOUNT_ID,
-                    },
-                }),
-            ).rejects.toThrow("permission out of scope");
+            // Act
+            const result = service.create({
+                transaction: transaction.entityManager,
+                realm: REALM_ID,
+                input: {
+                    effect: PermissionOverrideEffect.ALLOW,
+                    justification: "foreign permission",
+                    permission: PERMISSION_ID,
+                    account: ACCOUNT_ID,
+                },
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("permission out of scope");
             expect(repositories.permissions.findUniqueOrThrow).toHaveBeenCalledWith({
                 where: { id: PERMISSION_ID, realm: { $in: [REALM_ID, SYSTEM_REALM_ID] } },
                 transaction: transaction.entityManager,
@@ -114,11 +121,12 @@ describe("PermissionOverrideService", () => {
         });
     });
 
-    describe("revoke / restore", () => {
+    describe("[Behavior] - revocation", () => {
         it.each([
             { method: "revoke", isRevoked: false },
             { method: "restore", isRevoked: true },
-        ] as const)("$method processes each found entity and returns the batch", async ({ method, isRevoked }) => {
+        ] as const)("[case] - processes and returns the batch ($method)", async ({ method, isRevoked }) => {
+            // Arrange
             const { service, repositories, transaction } = helpers.service();
             const first = helpers.createPermissionOverride({ id: OVERRIDE_ID, isRevoked });
             const second = helpers.createPermissionOverride({ id: SECOND_OVERRIDE_ID, isRevoked });
@@ -126,12 +134,14 @@ describe("PermissionOverrideService", () => {
             const secondOperationSpy = jest.spyOn(second, method);
             repositories.permissionOverrides.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service[method]({
                 identifiers: [OVERRIDE_ID, SECOND_OVERRIDE_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.permissionOverrides.find).toHaveBeenCalledWith({
                 where: { id: { $in: [OVERRIDE_ID, SECOND_OVERRIDE_ID] }, realm: REALM_ID },
                 options: { populate: ["permission.realm"] },
@@ -143,16 +153,19 @@ describe("PermissionOverrideService", () => {
         });
     });
 
-    describe("expire", () => {
-        it("merges and revokes each provided override", () => {
+    describe("[Method] - expire", () => {
+        it("[case] - merges and revokes each provided override", () => {
+            // Arrange
             const { service, transaction } = helpers.service();
             const first = helpers.createPermissionOverride({ id: OVERRIDE_ID });
             const second = helpers.createPermissionOverride({ id: SECOND_OVERRIDE_ID });
             const firstRevokeSpy = jest.spyOn(first, "revoke");
             const secondRevokeSpy = jest.spyOn(second, "revoke");
 
+            // Act
             service.expire({ transaction: transaction.entityManager, entities: [first, second] });
 
+            // Assert
             expect(transaction.merge).toHaveBeenNthCalledWith(1, first);
             expect(transaction.merge).toHaveBeenNthCalledWith(2, second);
             expect(firstRevokeSpy).toHaveBeenCalledTimes(1);
@@ -160,8 +173,9 @@ describe("PermissionOverrideService", () => {
         });
     });
 
-    describe("purge", () => {
-        it("checks purge eligibility, removes found overrides, and returns them", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - checks purge eligibility, removes found overrides, and returns them", async () => {
+            // Arrange
             const { service, repositories, transaction } = helpers.service();
             const first = helpers.createPermissionOverride({ id: OVERRIDE_ID, isRevoked: true });
             const second = helpers.createPermissionOverride({ id: SECOND_OVERRIDE_ID, isRevoked: true });
@@ -169,12 +183,14 @@ describe("PermissionOverrideService", () => {
             const secondCanPurgeSpy = jest.spyOn(second, "canPurge");
             repositories.permissionOverrides.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service.purge({
                 identifiers: [OVERRIDE_ID, SECOND_OVERRIDE_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(repositories.permissionOverrides.find).toHaveBeenCalledWith({
                 where: { id: { $in: [OVERRIDE_ID, SECOND_OVERRIDE_ID] }, realm: REALM_ID },
                 options: { populate: ["permission.realm"] },
@@ -188,18 +204,21 @@ describe("PermissionOverrideService", () => {
         });
     });
 
-    describe("clean", () => {
-        it("finds account overrides in an optional realm, removes them, and returns them", async () => {
+    describe("[Method] - clean", () => {
+        it("[case] - finds account overrides in an optional realm, removes them, and returns them", async () => {
+            // Arrange
             const { service, repositories, transaction } = helpers.service();
             const first = helpers.createPermissionOverride({ id: OVERRIDE_ID });
             const second = helpers.createPermissionOverride({ id: SECOND_OVERRIDE_ID });
             repositories.permissionOverrides.find.mockImplementation(() => Promise.resolve([first, second]));
 
+            // Act
             const result = await service.clean({
                 input: { account: ACCOUNT_ID, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
 
+            // Assert
             expect(repositories.permissionOverrides.find).toHaveBeenCalledWith({
                 options: { populate: ["permission.realm", "realm"] },
                 where: { account: ACCOUNT_ID, realm: REALM_ID },
@@ -211,22 +230,25 @@ describe("PermissionOverrideService", () => {
         });
     });
 
-    describe("bulk identifiers", () => {
+    describe("[Behavior] - bulk identifiers", () => {
         it.each([
             { method: "revoke", isRevoked: false },
             { method: "restore", isRevoked: true },
             { method: "purge", isRevoked: true },
-        ] as const)("$method deduplicates repository lookup", async ({ method, isRevoked }) => {
+        ] as const)("[case] - deduplicates repository lookup ($method)", async ({ method, isRevoked }) => {
+            // Arrange
             const { service, repositories, transaction } = helpers.service();
             const override = helpers.createPermissionOverride({ id: OVERRIDE_ID, isRevoked });
             repositories.permissionOverrides.find.mockImplementation(() => Promise.resolve([override]));
 
+            // Act
             const result = await service[method]({
                 identifiers: [OVERRIDE_ID, OVERRIDE_ID],
                 transaction: transaction.entityManager,
                 realm: REALM_ID,
             });
 
+            // Assert
             expect(result).toEqual([override]);
             expect(repositories.permissionOverrides.find).toHaveBeenCalledWith({
                 where: { id: { $in: [OVERRIDE_ID] }, realm: REALM_ID },

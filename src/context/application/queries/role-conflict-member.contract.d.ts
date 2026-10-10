@@ -1,42 +1,40 @@
 import { ResponseViewType } from "~context/enums";
 
 declare global {
-    namespace Queries {
-        namespace RoleConflictMember {
-            interface Contract extends ControllerContract {}
+    namespace Queries.RoleConflictMember {
+        interface Contract extends ControllerContract {}
 
-            interface ControllerContract {
-                findUnique: FindUnique.Signature;
-                findMany: FindMany.Signature;
-            }
+        interface ControllerContract {
+            findUnique: FindUnique.Signature;
+            findMany: FindMany.Signature;
+        }
 
-            namespace FindUnique {
-                type Props = {
-                    view: ResponseViewType;
-                    member: string;
-                    realm: string;
-                    group: string;
-                };
+        namespace FindUnique {
+            type Props = {
+                view: ResponseViewType;
+                member: string;
+                realm: string;
+                group: string;
+            };
 
-                type Result = Promise<Entities.RoleConflictMember>;
+            type Result = Promise<Entities.RoleConflictMember>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
+        }
 
-            namespace FindMany {
-                type Props = {
-                    filters: Repositories.Mappers.RoleConflictMember.Filters;
-                    sort: Repositories.Mappers.RoleConflictMember.Sort;
-                    view: ResponseViewType;
-                    pagination: Pagination;
-                    realm: string;
-                    group: string;
-                };
+        namespace FindMany {
+            type Props = {
+                filters: Repositories.Mappers.RoleConflictMember.Filters;
+                sort: Repositories.Mappers.RoleConflictMember.Sort;
+                view: ResponseViewType;
+                pagination: Pagination;
+                realm: string;
+                group: string;
+            };
 
-                type Result = Promise<[Entities.RoleConflictMember[], number]>;
+            type Result = Promise<[Entities.RoleConflictMember[], number]>;
 
-                type Signature = (props: Props) => Result;
-            }
+            type Signature = (props: Props) => Result;
         }
     }
 }

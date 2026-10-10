@@ -61,14 +61,15 @@ function closureKey(ancestor: Entities.Role, descendant: Entities.Role, depth: n
     return `${ancestor.id}:${descendant.id}:${depth}`;
 }
 
-describe("RoleService integration", () => {
+describe("[DomainService] - Role", () => {
     const suite = postgresSuite({
         repository: (context) => helpers.service(context),
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
-    describe("create", () => {
-        it("creates a role under parent with persisted closure paths", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - creates a role under parent with persisted closure paths", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm({ code: "role-create" });
             const root = await suite.fixtures().createRole({
                 archetype: RoleArchetype.COMPOSITE,
@@ -77,6 +78,7 @@ describe("RoleService integration", () => {
                 realm,
             });
 
+            // Act
             const result = await suite.transaction((transaction) =>
                 suite.repository().roleService.create({
                     input: {
@@ -90,11 +92,11 @@ describe("RoleService integration", () => {
                     transaction,
                 }),
             );
-
             const child = await loadRoleByCode(suite, realm, "roles.child");
             const parent = await loadDirectParent(suite, child);
             const closure = await loadClosureKeys(suite, realm);
 
+            // Assert
             expect(result.parent.id).toBe(root.id);
             expect(result.entity.id).toBe(child.id);
             expect(parent?.id).toBe(root.id);
@@ -107,7 +109,8 @@ describe("RoleService integration", () => {
             );
         });
 
-        it("creates a role and moves direct children under it", async () => {
+        it("[case] - creates a role and moves direct children under it", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm({ code: "role-create-children" });
             const root = await suite.fixtures().createRole({
                 archetype: RoleArchetype.COMPOSITE,
@@ -117,7 +120,6 @@ describe("RoleService integration", () => {
             });
             const first = await suite.fixtures().createRole({ code: "roles.first", name: "First", realm });
             const second = await suite.fixtures().createRole({ code: "roles.second", name: "Second", realm });
-
             await helpers.createHierarchy({
                 fixtures: suite.fixtures(),
                 realm,
@@ -133,6 +135,7 @@ describe("RoleService integration", () => {
                 depth: 1,
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().roleService.create({
                     input: {
@@ -153,6 +156,7 @@ describe("RoleService integration", () => {
             const secondParent = await loadDirectParent(suite, second);
             const closure = await loadClosureKeys(suite, realm);
 
+            // Assert
             expect(firstParent?.id).toBe(branch.id);
             expect(secondParent?.id).toBe(branch.id);
             expect(closure).toEqual(
@@ -166,7 +170,8 @@ describe("RoleService integration", () => {
             );
         });
 
-        it("rolls back role and closure when a requested child is not direct", async () => {
+        it("[case] - rolls back role and closure when a requested child is not direct", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm({ code: "role-create-rollback" });
             const root = await suite.fixtures().createRole({
                 archetype: RoleArchetype.COMPOSITE,
@@ -176,7 +181,6 @@ describe("RoleService integration", () => {
             });
             const child = await suite.fixtures().createRole({ code: "roles.child", name: "Child", realm });
             const grandchild = await suite.fixtures().createRole({ code: "roles.grandchild", name: "Grandchild", realm });
-
             await helpers.createHierarchy({
                 fixtures: suite.fixtures(),
                 realm,
@@ -198,37 +202,45 @@ describe("RoleService integration", () => {
                 descendant: grandchild,
                 depth: 2,
             });
-
             const roleCount = await countRoleRows(suite, realm);
             const closure = await loadClosureKeys(suite, realm);
 
-            await expect(
-                suite.transaction((transaction) =>
-                    suite.repository().roleService.create({
-                        input: {
-                            children: [grandchild.id],
-                            archetype: RoleArchetype.COMPOSITE,
-                            actorType: RoleActorType.HUMAN,
-                            code: "roles.invalid",
-                            name: "Invalid",
-                            parent: root.id,
-                        },
-                        realm: realm.id,
-                        transaction,
-                    }),
-                ),
-            ).rejects.toThrow("services.role.CREATE_CHILD_NOT_DIRECT_DESCENDANT");
+            // Act
+            const result = suite.transaction((transaction) =>
+                suite.repository().roleService.create({
+                    input: {
+                        children: [grandchild.id],
+                        archetype: RoleArchetype.COMPOSITE,
+                        actorType: RoleActorType.HUMAN,
+                        code: "roles.invalid",
+                        name: "Invalid",
+                        parent: root.id,
+                    },
+                    realm: realm.id,
+                    transaction,
+                }),
+            );
+            await Promise.allSettled([result]);
+            const result2 = await countRolesByCode(suite, realm, "roles.invalid");
 
-            await expect(countRolesByCode(suite, realm, "roles.invalid")).resolves.toBe(0);
-            await expect(countRoleRows(suite, realm)).resolves.toBe(roleCount);
-            await expect(loadClosureKeys(suite, realm)).resolves.toEqual(closure);
+            const result3 = await countRoleRows(suite, realm);
+
+            const result4 = await loadClosureKeys(suite, realm);
+
+            // Assert
+            await expect(result).rejects.toThrow("services.role.CREATE_CHILD_NOT_DIRECT_DESCENDANT");
+            expect(result2).toBe(0);
+            expect(result3).toBe(roleCount);
+            expect(result4).toEqual(closure);
         });
     });
 
-    describe("move", () => {
-        it("moves a subtree under a new parent", async () => {
+    describe("[Method] - move", () => {
+        it("[case] - moves a subtree under a new parent", async () => {
+            // Arrange
             const tree = await helpers.createDeepRoleTree({ fixtures: suite.fixtures(), code: "role-move-subtree" });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().roleService.move({
                     targetParent: tree.roles.detached.id,
@@ -243,6 +255,7 @@ describe("RoleService integration", () => {
             const grandchildParent = await loadDirectParent(suite, tree.roles.grandchild);
             const closure = await loadClosureKeys(suite, tree.realm);
 
+            // Assert
             expect(childParent?.id).toBe(tree.roles.detached.id);
             expect(grandchildParent?.id).toBe(tree.roles.child.id);
             expect(closure).toEqual(
@@ -253,9 +266,11 @@ describe("RoleService integration", () => {
             );
         });
 
-        it("moves a role in parallel and leaves its children under the old parent", async () => {
+        it("[case] - moves a role in parallel and leaves its children under the old parent", async () => {
+            // Arrange
             const tree = await helpers.createDeepRoleTree({ fixtures: suite.fixtures(), code: "role-move-parallel" });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().roleService.move({
                     targetParent: tree.roles.detached.id,
@@ -265,7 +280,6 @@ describe("RoleService integration", () => {
                     transaction,
                 }),
             );
-
             const expectedClosure = [
                 closureKey(tree.roles.child, tree.roles.child, 0),
                 closureKey(tree.roles.detached, tree.roles.child, 1),
@@ -280,10 +294,14 @@ describe("RoleService integration", () => {
                 closureKey(tree.roles.root, tree.roles.root, 0),
             ].sort();
 
-            await expect(loadClosureKeys(suite, tree.realm)).resolves.toEqual(expectedClosure);
+            const result = await loadClosureKeys(suite, tree.realm);
+
+            // Assert
+            expect(result).toEqual(expectedClosure);
         });
 
-        it("moves a role linearly and places displaced children under the target", async () => {
+        it("[case] - moves a role linearly and places displaced children under the target", async () => {
+            // Arrange
             const realm = await suite.fixtures().createRealm({ code: "role-move-linear" });
             const root = await suite.fixtures().createRole({
                 archetype: RoleArchetype.COMPOSITE,
@@ -299,7 +317,6 @@ describe("RoleService integration", () => {
             });
             const displaced = await suite.fixtures().createRole({ code: "roles.displaced", name: "Displaced", realm });
             const target = await suite.fixtures().createRole({ code: "roles.target", name: "Target", realm });
-
             await helpers.createHierarchy({
                 fixtures: suite.fixtures(),
                 realm,
@@ -329,6 +346,7 @@ describe("RoleService integration", () => {
                 depth: 2,
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().roleService.move({
                     targetParent: parent.id,
@@ -338,7 +356,6 @@ describe("RoleService integration", () => {
                     transaction,
                 }),
             );
-
             const expectedClosure = [
                 closureKey(displaced, displaced, 0),
                 closureKey(parent, displaced, 2),
@@ -352,12 +369,17 @@ describe("RoleService integration", () => {
                 closureKey(target, target, 0),
             ].sort();
 
-            await expect(loadClosureKeys(suite, realm)).resolves.toEqual(expectedClosure);
+            const result = await loadClosureKeys(suite, realm);
+
+            // Assert
+            expect(result).toEqual(expectedClosure);
         });
 
-        it("moves a role in parallel under its former child without creating closure cycles", async () => {
+        it("[case] - moves a role in parallel under its former child without creating closure cycles", async () => {
+            // Arrange
             const tree = await helpers.createDeepRoleTree({ fixtures: suite.fixtures(), code: "role-move-parallel-cycle" });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().roleService.move({
                     targetParent: tree.roles.child.id,
@@ -367,7 +389,6 @@ describe("RoleService integration", () => {
                     transaction,
                 }),
             );
-
             const expectedClosure = [
                 closureKey(tree.roles.child, tree.roles.child, 0),
                 closureKey(tree.roles.child, tree.roles.grandchild, 1),
@@ -382,12 +403,17 @@ describe("RoleService integration", () => {
                 closureKey(tree.roles.root, tree.roles.root, 0),
             ].sort();
 
-            await expect(loadClosureKeys(suite, tree.realm)).resolves.toEqual(expectedClosure);
+            const result = await loadClosureKeys(suite, tree.realm);
+
+            // Assert
+            expect(result).toEqual(expectedClosure);
         });
 
-        it("moves a role linearly under its former child without creating closure cycles", async () => {
+        it("[case] - moves a role linearly under its former child without creating closure cycles", async () => {
+            // Arrange
             const tree = await helpers.createDeepRoleTree({ fixtures: suite.fixtures(), code: "role-move-linear-cycle" });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().roleService.move({
                     targetParent: tree.roles.child.id,
@@ -397,7 +423,6 @@ describe("RoleService integration", () => {
                     transaction,
                 }),
             );
-
             const expectedClosure = [
                 closureKey(tree.roles.child, tree.roles.child, 0),
                 closureKey(tree.roles.child, tree.roles.grandchild, 2),
@@ -413,20 +438,24 @@ describe("RoleService integration", () => {
                 closureKey(tree.roles.root, tree.roles.root, 0),
             ].sort();
 
-            await expect(loadClosureKeys(suite, tree.realm)).resolves.toEqual(expectedClosure);
+            const result = await loadClosureKeys(suite, tree.realm);
+
+            // Assert
+            expect(result).toEqual(expectedClosure);
         });
     });
 
-    describe("purge", () => {
-        it("purges a revoked middle role and decreases transitive closure depth", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - purges a revoked middle role and decreases transitive closure depth", async () => {
+            // Arrange
             const tree = await helpers.createDeepRoleTree({ fixtures: suite.fixtures(), code: "role-purge-single" });
-
             await suite.transaction(async (transaction) => {
                 const role = await transaction.findOneOrFail(Role, { id: tree.roles.child.id }, { populate: ["realm"] });
 
                 role.revoke();
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().roleService.purge({
                     id: tree.roles.child.id,
@@ -434,7 +463,6 @@ describe("RoleService integration", () => {
                     transaction,
                 }),
             );
-
             const expectedClosure = [
                 closureKey(tree.roles.detached, tree.roles.detached, 0),
                 closureKey(tree.roles.grandchild, tree.roles.grandchild, 0),
@@ -446,19 +474,25 @@ describe("RoleService integration", () => {
                 closureKey(tree.roles.root, tree.roles.root, 0),
             ].sort();
 
-            await expect(countRolesByCode(suite, tree.realm, "roles.child")).resolves.toBe(0);
-            await expect(loadClosureKeys(suite, tree.realm)).resolves.toEqual(expectedClosure);
+            const result = await countRolesByCode(suite, tree.realm, "roles.child");
+
+            const result2 = await loadClosureKeys(suite, tree.realm);
+
+            // Assert
+            expect(result).toBe(0);
+            expect(result2).toEqual(expectedClosure);
         });
 
-        it("records the closure depth decrease in change log during single role purge", async () => {
+        it("[case] - records the closure depth decrease in change log during single role purge", async () => {
+            // Arrange
             const tree = await helpers.createDeepRoleTree({ fixtures: suite.fixtures(), code: "role-purge-change-log" });
-
             await suite.transaction(async (transaction) => {
                 const role = await transaction.findOneOrFail(Role, { id: tree.roles.child.id }, { populate: ["realm"] });
 
                 role.revoke();
             });
 
+            // Act
             await suite.repository().transactional.service.run({
                 audit: {
                     context: {
@@ -478,7 +512,6 @@ describe("RoleService integration", () => {
                         transaction,
                     }),
             });
-
             const readManager = suite.repository().transactional.readManager;
             readManager.clear();
             const [auditLog] = await readManager.find(AuditLog, {});
@@ -486,6 +519,7 @@ describe("RoleService integration", () => {
 
             const closureLogs = changeLogs.filter(({ entityType }) => entityType === "RoleClosure");
 
+            // Assert
             expect(changeLogs).toEqual(
                 expect.arrayContaining([
                     expect.objectContaining({
@@ -516,10 +550,10 @@ describe("RoleService integration", () => {
         });
     });
 
-    describe("purgeSubtree", () => {
-        it("purges a revoked role subtree and all closure rows", async () => {
+    describe("[Method] - purgeSubtree", () => {
+        it("[case] - purges a revoked role subtree and all closure rows", async () => {
+            // Arrange
             const tree = await helpers.createDeepRoleTree({ fixtures: suite.fixtures(), code: "role-purge-subtree" });
-
             await suite.transaction(async (transaction) => {
                 const roles = await transaction.find(
                     Role,
@@ -532,6 +566,7 @@ describe("RoleService integration", () => {
                 }
             });
 
+            // Act
             await suite.transaction((transaction) =>
                 suite.repository().roleService.purgeSubtree({
                     id: tree.roles.parent.id,
@@ -540,16 +575,24 @@ describe("RoleService integration", () => {
                 }),
             );
 
-            await expect(countRolesByCode(suite, tree.realm, "roles.parent")).resolves.toBe(0);
-            await expect(countRolesByCode(suite, tree.realm, "roles.child")).resolves.toBe(0);
-            await expect(countRolesByCode(suite, tree.realm, "roles.grandchild")).resolves.toBe(0);
+            const result = await countRolesByCode(suite, tree.realm, "roles.parent");
+
+            const result2 = await countRolesByCode(suite, tree.realm, "roles.child");
+
+            const result3 = await countRolesByCode(suite, tree.realm, "roles.grandchild");
+
             const expectedClosure = [
                 closureKey(tree.roles.detached, tree.roles.detached, 0),
                 closureKey(tree.roles.root, tree.roles.detached, 1),
                 closureKey(tree.roles.root, tree.roles.root, 0),
             ].sort();
+            const result4 = await loadClosureKeys(suite, tree.realm);
 
-            await expect(loadClosureKeys(suite, tree.realm)).resolves.toEqual(expectedClosure);
+            // Assert
+            expect(result).toBe(0);
+            expect(result2).toBe(0);
+            expect(result3).toBe(0);
+            expect(result4).toEqual(expectedClosure);
         });
     });
 });

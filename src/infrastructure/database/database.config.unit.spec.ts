@@ -33,7 +33,7 @@ const tls = {
     POSTGRES_SSL_CA_FILE: "/ca",
 };
 
-describe("MikroOrmConfig", () => {
+describe("[Config] - MikroOrm", () => {
     let registry: PostgreSQLPoolRegistry;
     let builder: DatabaseConfig;
 
@@ -48,41 +48,63 @@ describe("MikroOrmConfig", () => {
         readFileSync.mockReset().mockImplementation((file) => `contents:${file}`);
     });
 
-    describe("buildOptions", () => {
+    describe("[Method] - buildOptions", () => {
         it.each([
             { kind: "read" as const, host: "replica", port: 5433, max: 5, idleTimeoutMillis: 2000 },
             { kind: "write" as const, host: "primary", port: 5432, max: 10, idleTimeoutMillis: 60000 },
-        ])("builds $kind options and registers the corresponding pool", ({ kind, host, port, max, idleTimeoutMillis }) => {
-            const options = builder.buildOptions({ config: new ConfigService(values), kind });
-            expect(options).toMatchObject({
-                driver: PostgreSqlDriver,
-                host,
-                port,
-                user: "service",
-                password: "secret",
-                dbName: "access_control",
-                pool: { max, idleTimeoutMillis },
-                entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
-                entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],
-            });
-            expect(options.driverOptions).not.toHaveProperty("ssl");
-            expect(readFileSync).not.toHaveBeenCalled();
-            options.driverOptions!.onPoolCreated(new Pool({ max }));
-            expect(registry.snapshot({ kind })).toMatchObject({ kind, max });
-        });
+        ])(
+            "[case] - builds $kind options and registers the corresponding pool",
+            ({ kind, host, port, max, idleTimeoutMillis }) => {
+                // Arrange
 
-        it("uses the write connection by default", () => {
-            expect(builder.buildOptions({ config: new ConfigService(values) })).toMatchObject({
+                // Act
+                const options = builder.buildOptions({ config: new ConfigService(values), kind });
+                options.driverOptions!.onPoolCreated(new Pool({ max }));
+                const result = registry.snapshot({ kind });
+
+                // Assert
+                expect(options).toMatchObject({
+                    driver: PostgreSqlDriver,
+                    host,
+                    port,
+                    user: "service",
+                    password: "secret",
+                    dbName: "access_control",
+                    pool: { max, idleTimeoutMillis },
+                    entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
+                    entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],
+                });
+                expect(options.driverOptions).not.toHaveProperty("ssl");
+                expect(readFileSync).not.toHaveBeenCalled();
+                expect(result).toMatchObject({ kind, max });
+            },
+        );
+
+        it("[case] - uses the write connection by default", () => {
+            // Arrange
+
+            // Act
+            const result = builder.buildOptions({ config: new ConfigService(values) });
+
+            // Assert
+            expect(result).toMatchObject({
                 host: "primary",
                 port: 5432,
             });
         });
 
-        it.each([true, false])("preserves TLS verification=%s and certificate contents", (rejectUnauthorized) => {
+        it.each([true, false])("[case] - preserves TLS verification=%s and certificate contents", (rejectUnauthorized) => {
+            // Arrange
+
+            // Act
             const options = builder.buildOptions({
                 config: new ConfigService({ ...values, ...tls, POSTGRES_SSL_REJECT_UNAUTHORIZED: rejectUnauthorized }),
                 kind: "read",
             });
+            options.driverOptions!.onPoolCreated(new Pool({ max: 7 }));
+            const result = registry.snapshot({ kind: "read" });
+
+            // Assert
             expect(options.driverOptions!.ssl).toEqual({
                 rejectUnauthorized,
                 servername: "replica",
@@ -95,22 +117,32 @@ describe("MikroOrmConfig", () => {
                 ["/key", "utf8"],
                 ["/ca", "utf8"],
             ]);
-            options.driverOptions!.onPoolCreated(new Pool({ max: 7 }));
-            expect(registry.snapshot({ kind: "read" })).toMatchObject({ max: 7 });
+            expect(result).toMatchObject({ max: 7 });
         });
 
-        it("propagates certificate read failures", () => {
+        it("[case] - propagates certificate read failures", () => {
+            // Arrange
             const error = new Error("certificate unavailable");
             readFileSync.mockImplementation(() => {
                 throw error;
             });
-            expect(() => builder.buildOptions({ config: new ConfigService({ ...values, ...tls }) })).toThrow(error);
+
+            // Act
+            const act = (): unknown => builder.buildOptions({ config: new ConfigService({ ...values, ...tls }) });
+
+            // Assert
+            expect(act).toThrow(error);
         });
 
-        it("requires the credentials", () => {
-            expect(() =>
-                builder.buildOptions({ config: new ConfigService({ ...values, POSTGRES_PASSWORD: undefined }) }),
-            ).toThrow("POSTGRES_PASSWORD");
+        it("[case] - requires the credentials", () => {
+            // Arrange
+
+            // Act
+            const act = (): unknown =>
+                builder.buildOptions({ config: new ConfigService({ ...values, POSTGRES_PASSWORD: undefined }) });
+
+            // Assert
+            expect(act).toThrow("POSTGRES_PASSWORD");
         });
     });
 });

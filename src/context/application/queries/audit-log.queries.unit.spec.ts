@@ -8,46 +8,61 @@ const helpers = new AuditLogQueriesUnitHelpers();
 const ID = "requested-entity";
 const REALM = "realm-a";
 
-describe("AuditLogQueries", () => {
-    describe("findUnique", () => {
-        it("scopes a single entity lookup to the requested identity and realm", async () => {
+describe("[Queries] - AuditLog", () => {
+    describe("[Method] - findUnique", () => {
+        it("[case] - scopes a single entity lookup to the requested identity and realm", async () => {
+            // Arrange
             const { queries, repository } = helpers.queries();
             const entity = helpers.createAuditLog();
             repository.findUniqueOrThrow.mockResolvedValue(entity);
 
-            await expect(queries.findUnique({ log: ID, realm: REALM, mode: QueryMode.DEFAULT })).resolves.toBe(entity);
+            // Act
+            const result = await queries.findUnique({ log: ID, realm: REALM, mode: QueryMode.DEFAULT });
 
+            // Assert
+            expect(result).toBe(entity);
             expect(repository.findUniqueOrThrow).toHaveBeenCalledWith(
                 expect.objectContaining({ where: { id: ID, realm: REALM } }),
             );
         });
     });
 
-    describe("findMany", () => {
-        it("keeps the list within its scope and preserves the repository page", async () => {
+    describe("[Method] - findMany", () => {
+        it("[case] - keeps the list within its scope and preserves the repository page", async () => {
+            // Arrange
             const { queries, repository } = helpers.queries();
             const page: [SystemEntities.AuditLog[], number] = [[helpers.createAuditLog()], 31];
             repository.findMany.mockResolvedValue(page);
 
-            await expect(
-                queries.findMany({ mode: QueryMode.DEFAULT, realm: REALM, pagination: PAGINATION, filters: {}, sort: {} }),
-            ).resolves.toBe(page);
+            // Act
+            const result = await queries.findMany({
+                mode: QueryMode.DEFAULT,
+                realm: REALM,
+                pagination: PAGINATION,
+                filters: {},
+                sort: {},
+            });
 
+            // Assert
+            expect(result).toBe(page);
             expect(repository.findMany).toHaveBeenCalledWith(
                 expect.objectContaining({ prefilter: { realm: REALM }, pagination: PAGINATION }),
             );
         });
     });
 
-    describe("findUnique / findMany", () => {
-        it("allows management queries across realms for both single logs and lists", async () => {
+    describe("[Behavior] - query scope", () => {
+        it("[case] - allows management queries across realms for both single logs and lists", async () => {
+            // Arrange
             const { queries, repository } = helpers.queries();
             repository.findMany.mockResolvedValue([[], 0]);
             repository.findUniqueOrThrow.mockResolvedValue(helpers.createAuditLog());
 
+            // Act
             await queries.findUnique({ mode: QueryMode.MANAGE, log: ID });
             await queries.findMany({ mode: QueryMode.MANAGE, pagination: PAGINATION, filters: {}, sort: {} });
 
+            // Assert
             expect(repository.findUniqueOrThrow.mock.calls).toEqual([[{ where: { id: ID } }]]);
             expect(repository.findMany).toHaveBeenCalledWith(expect.objectContaining({ prefilter: {} }));
         });

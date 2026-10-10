@@ -28,30 +28,37 @@ const JOIN: Commands.AccountRoleAssignment.Join.Props = {
     realm: REALM,
 };
 
-describe("AccountRoleAssignmentCommands decisions", () => {
+describe("[Commands] - AccountRoleAssignment", () => {
     afterEach(() => {
         jest.restoreAllMocks();
     });
 
-    describe("create", () => {
-        it("rejects granting a role to an account outside the realm without starting a transaction", async () => {
+    describe("[Method] - create", () => {
+        it("[case] - rejects granting a role to an account outside the realm without starting a transaction", async () => {
+            // Arrange
             const { commands, cache, assignments, run } = helpers.commands();
             cache.checkRealm.mockResolvedValue(false);
 
-            await expect(commands.create(CREATE)).rejects.toThrow("commands.account-role-assignment.ACCOUNT_NOT_MEMBER");
+            // Act
+            const result = commands.create(CREATE);
 
+            // Assert
+            await expect(result).rejects.toThrow("commands.account-role-assignment.ACCOUNT_NOT_MEMBER");
             expect(cache.checkRealm).toHaveBeenCalledWith({ account: ACCOUNT, realm: REALM });
             expect(run).not.toHaveBeenCalled();
             expect(assignments.create).not.toHaveBeenCalled();
         });
 
-        it("grants roles to a realm member using the requested account and acting user", async () => {
+        it("[case] - grants roles to a realm member using the requested account and acting user", async () => {
+            // Arrange
             const { commands, cache, assignments, transaction } = helpers.commands();
             cache.checkRealm.mockResolvedValue(true);
             assignments.create.mockResolvedValue([]);
 
+            // Act
             await commands.create(CREATE);
 
+            // Assert
             expect(cache.checkRealm).toHaveBeenCalledWith({ account: ACCOUNT, realm: REALM });
             expect(assignments.create).toHaveBeenCalledWith({
                 input: { ...CREATE.input, expiresAt: undefined },
@@ -62,8 +69,9 @@ describe("AccountRoleAssignmentCommands decisions", () => {
         });
     });
 
-    describe("purge", () => {
-        it("rejects a batch that would remove the last assignment from any account", async () => {
+    describe("[Method] - purge", () => {
+        it("[case] - rejects a batch that would remove the last assignment from any account", async () => {
+            // Arrange
             const { commands, repository, cache, assignments, run } = helpers.commands();
             const realm = helpers.createRealm({ id: REALM });
             const role = helpers.createRole({ realm, id: ROLE });
@@ -78,15 +86,16 @@ describe("AccountRoleAssignmentCommands decisions", () => {
                 ],
             });
 
-            await expect(
-                commands.purge({
-                    actor: ACTOR,
-                    realm: REALM,
-                    context: CONTEXT,
-                    input: { identifiers: [first.id, second.id], reason: "Remove assignments" },
-                }),
-            ).rejects.toThrow("commands.account-role-assignment.CANNOT_PURGE_LAST_ASSIGNMENT");
+            // Act
+            const result = commands.purge({
+                actor: ACTOR,
+                realm: REALM,
+                context: CONTEXT,
+                input: { identifiers: [first.id, second.id], reason: "Remove assignments" },
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("commands.account-role-assignment.CANNOT_PURGE_LAST_ASSIGNMENT");
             expect(cache.validateAssignments).toHaveBeenCalledWith({
                 items: [
                     { account: ACCOUNT, realm: REALM, role: ROLE },
@@ -97,7 +106,8 @@ describe("AccountRoleAssignmentCommands decisions", () => {
             expect(assignments.purge).not.toHaveBeenCalled();
         });
 
-        it("allows removal when another assignment remains for the account", async () => {
+        it("[case] - allows removal when another assignment remains for the account", async () => {
+            // Arrange
             const { commands, repository, cache, assignments, transaction } = helpers.commands();
             const realm = helpers.createRealm({ id: REALM });
             const assignment = helpers.createAccountRoleAssignment({ realm, account: ACCOUNT, isRevoked: true });
@@ -107,6 +117,7 @@ describe("AccountRoleAssignmentCommands decisions", () => {
                 groups: [{ account: ACCOUNT, realm: REALM, remaining: 1 }],
             });
 
+            // Act
             await commands.purge({
                 actor: ACTOR,
                 realm: REALM,
@@ -114,24 +125,27 @@ describe("AccountRoleAssignmentCommands decisions", () => {
                 input: { identifiers: [assignment.id], reason: "Remove assignment" },
             });
 
+            // Assert
             expect(assignments.purge.mock.calls).toEqual([
                 [{ transaction: transaction.entityManager, entities: [assignment] }],
             ]);
         });
 
-        it("rejects an incomplete purge selection before consulting the projection", async () => {
+        it("[case] - rejects an incomplete purge selection before consulting the projection", async () => {
+            // Arrange
             const { commands, repository, cache, run } = helpers.commands();
             repository.find.mockResolvedValue([]);
 
-            await expect(
-                commands.purge({
-                    actor: ACTOR,
-                    realm: REALM,
-                    context: CONTEXT,
-                    input: { identifiers: ["missing-assignment"], reason: "Remove access" },
-                }),
-            ).rejects.toThrow("commands.account-role-assignment.ASSIGNMENTS_NOT_FOUND");
+            // Act
+            const result = commands.purge({
+                actor: ACTOR,
+                realm: REALM,
+                context: CONTEXT,
+                input: { identifiers: ["missing-assignment"], reason: "Remove access" },
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("commands.account-role-assignment.ASSIGNMENTS_NOT_FOUND");
             expect(repository.find).toHaveBeenCalledWith(
                 expect.objectContaining({ where: { id: { $in: ["missing-assignment"] }, realm: REALM } }),
             );
@@ -139,28 +153,31 @@ describe("AccountRoleAssignmentCommands decisions", () => {
             expect(run).not.toHaveBeenCalled();
         });
 
-        it("refuses to purge when the projection cannot validate all selected assignments", async () => {
+        it("[case] - refuses to purge when the projection cannot validate all selected assignments", async () => {
+            // Arrange
             const { commands, repository, cache, assignments, run } = helpers.commands();
             const entity = helpers.createAccountRoleAssignment();
             repository.find.mockResolvedValue([entity]);
             cache.validateAssignments.mockResolvedValue({ missing: [entity.id], groups: [] });
 
-            await expect(
-                commands.purge({
-                    actor: ACTOR,
-                    realm: REALM,
-                    context: CONTEXT,
-                    input: { identifiers: [entity.id], reason: "Remove access" },
-                }),
-            ).rejects.toThrow("commands.account-role-assignment.ASSIGNMENTS_NOT_FOUND");
+            // Act
+            const result = commands.purge({
+                actor: ACTOR,
+                realm: REALM,
+                context: CONTEXT,
+                input: { identifiers: [entity.id], reason: "Remove access" },
+            });
 
+            // Assert
+            await expect(result).rejects.toThrow("commands.account-role-assignment.ASSIGNMENTS_NOT_FOUND");
             expect(assignments.purge).not.toHaveBeenCalled();
             expect(run).not.toHaveBeenCalled();
         });
     });
 
-    describe("join", () => {
-        it("turns a business refusal to join into a join rejection", async () => {
+    describe("[Method] - join", () => {
+        it("[case] - turns a business refusal to join into a join rejection", async () => {
+            // Arrange
             const { commands, assignments, transaction } = helpers.commands();
             const error = Exception.invariantViolation({
                 messageKey: "services.account-role-assignment.HAS_SoD_VIOLATIONS",
@@ -168,8 +185,10 @@ describe("AccountRoleAssignmentCommands decisions", () => {
             assignments.ensure.mockRejectedValue(error);
             const reject = jest.spyOn(commands, "rejectJoin").mockResolvedValue();
 
+            // Act
             await commands.join(JOIN);
 
+            // Assert
             expect(assignments.ensure).toHaveBeenCalledWith({
                 input: JOIN.input,
                 actor: ACTOR,
@@ -189,23 +208,31 @@ describe("AccountRoleAssignmentCommands decisions", () => {
                 error: Exception.externalServiceFailed({ messageKey: "dependency unavailable" }),
             },
             { name: "unexpected error", error: new Error("unexpected failure") },
-        ])("propagates $name instead of rejecting the join request", async ({ error }) => {
+        ])("[case] - propagates $name instead of rejecting the join request", async ({ error }) => {
+            // Arrange
             const { commands, assignments } = helpers.commands();
             assignments.ensure.mockRejectedValue(error);
             const reject = jest.spyOn(commands, "rejectJoin").mockResolvedValue();
 
-            await expect(commands.join(JOIN)).rejects.toBe(error);
+            // Act
+            const result = commands.join(JOIN);
 
+            // Assert
+            await expect(result).rejects.toBe(error);
             expect(reject).not.toHaveBeenCalled();
         });
 
-        it("ensures assignments for a join and schedules a correlated confirmation", async () => {
+        it("[case] - ensures assignments for a join and schedules a correlated confirmation", async () => {
+            // Arrange
             const { commands, assignments, consume, transaction } = helpers.commands();
             const entities = [helpers.createAccountRoleAssignment()];
             assignments.ensure.mockResolvedValue(entities);
 
+            // Act
             await commands.join(JOIN);
+            const result = await consume.mock.results[0].value;
 
+            // Assert
             expect(assignments.ensure.mock.calls).toEqual([
                 [{ input: JOIN.input, actor: ACTOR, realm: REALM, transaction: transaction.entityManager }],
             ]);
@@ -220,20 +247,24 @@ describe("AccountRoleAssignmentCommands decisions", () => {
                     ]),
                 }),
             );
-            await expect(consume.mock.results[0].value).resolves.toMatchObject({
+            expect(result).toMatchObject({
                 value: { request: JOIN.input, actor: ACTOR, realm: REALM, assignments: entities },
             });
         });
     });
 
-    describe("expire", () => {
-        it("does not start a transaction when no expirable entities remain", async () => {
+    describe("[Method] - expire", () => {
+        it("[case] - does not start a transaction when no expirable entities remain", async () => {
+            // Arrange
             const { commands, repository, assignments, run } = helpers.commands();
             const now = new Date("2026-01-15T12:00:00.000Z");
             repository.find.mockResolvedValue([]);
 
-            await expect(commands.expire({ now, batchSize: 50 })).resolves.toBe(0);
+            // Act
+            const result = await commands.expire({ now, batchSize: 50 });
 
+            // Assert
+            expect(result).toBe(0);
             expect(repository.find).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: { isRevoked: false, expiresAt: { $lte: now } },
@@ -244,14 +275,18 @@ describe("AccountRoleAssignmentCommands decisions", () => {
             expect(assignments.expire).not.toHaveBeenCalled();
         });
 
-        it("expires the selected batch in one transaction and audits its actual identifiers", async () => {
+        it("[case] - expires the selected batch in one transaction and audits its actual identifiers", async () => {
+            // Arrange
             const { commands, repository, assignments, run, transaction } = helpers.commands();
             const now = new Date("2026-01-15T12:00:00.000Z");
             const entities = [helpers.createAccountRoleAssignment(), helpers.createAccountRoleAssignment()];
             repository.find.mockResolvedValue(entities);
 
-            await expect(commands.expire({ now, batchSize: 50 })).resolves.toBe(2);
+            // Act
+            const result = await commands.expire({ now, batchSize: 50 });
 
+            // Assert
+            expect(result).toBe(2);
             expect(assignments.expire.mock.calls).toEqual([[{ transaction: transaction.entityManager, entities }]]);
             expect(run).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -268,16 +303,19 @@ describe("AccountRoleAssignmentCommands decisions", () => {
         });
     });
 
-    describe("rejectJoin", () => {
-        it("preserves join correlation when publishing a business rejection", async () => {
+    describe("[Method] - rejectJoin", () => {
+        it("[case] - preserves join correlation when publishing a business rejection", async () => {
+            // Arrange
             const { commands, consume } = helpers.commands();
 
+            // Act
             await commands.rejectJoin({
                 incoming: JOIN.incoming,
                 request: { input: JOIN.input, actor: ACTOR, realm: REALM },
                 reason: "Role conflict",
             });
 
+            // Assert
             expect(consume).toHaveBeenCalledWith(
                 expect.objectContaining({
                     incoming: JOIN.incoming,
@@ -299,14 +337,18 @@ describe("AccountRoleAssignmentCommands decisions", () => {
         });
     });
 
-    describe("assign", () => {
-        it("assigns the system user role to the incoming account", async () => {
+    describe("[Method] - assign", () => {
+        it("[case] - assigns the system user role to the incoming account", async () => {
+            // Arrange
             const { commands, assignments, consume, transaction } = helpers.commands();
             const assignment = helpers.createAccountRoleAssignment();
             assignments.assign.mockResolvedValue(assignment);
 
+            // Act
             await commands.assign({ incoming: JOIN.incoming, account: ACCOUNT });
+            const result = await consume.mock.results[0].value;
 
+            // Assert
             expect(assignments.assign.mock.calls).toEqual([
                 [
                     {
@@ -315,24 +357,28 @@ describe("AccountRoleAssignmentCommands decisions", () => {
                     },
                 ],
             ]);
-            await expect(consume.mock.results[0].value).resolves.toMatchObject({ value: { assignments: [assignment] } });
+            expect(result).toMatchObject({ value: { assignments: [assignment] } });
         });
     });
 
-    describe("clean", () => {
-        it("cleans assignments and overrides for the same deleted account in one transaction", async () => {
+    describe("[Method] - clean", () => {
+        it("[case] - cleans assignments and overrides for the same deleted account in one transaction", async () => {
+            // Arrange
             const { commands, assignments, overrides, consume, transaction } = helpers.commands();
             const removedAssignments = [helpers.createAccountRoleAssignment()];
             const removedOverrides = [helpers.createPermissionOverride()];
             assignments.clean.mockResolvedValue(removedAssignments);
             overrides.clean.mockResolvedValue(removedOverrides);
 
+            // Act
             await commands.clean({ incoming: JOIN.incoming, account: ACCOUNT });
-
             const expected = { transaction: transaction.entityManager, input: { account: ACCOUNT } };
+            const result = await consume.mock.results[0].value;
+
+            // Assert
             expect(assignments.clean.mock.calls).toEqual([[expected]]);
             expect(overrides.clean.mock.calls).toEqual([[expected]]);
-            await expect(consume.mock.results[0].value).resolves.toMatchObject({
+            expect(result).toMatchObject({
                 value: { assignments: removedAssignments, overrides: removedOverrides },
             });
             expect(consume).toHaveBeenCalledWith(
@@ -347,32 +393,38 @@ describe("AccountRoleAssignmentCommands decisions", () => {
         });
     });
 
-    describe("revoke / restore", () => {
-        it.each(["revoke", "restore"] as const)("%s scopes assignment changes to the requested realm", async (method) => {
-            const { commands, assignments, run, transaction } = helpers.commands();
-            const entities = [helpers.createAccountRoleAssignment(), helpers.createAccountRoleAssignment()];
-            assignments[method].mockResolvedValue(entities);
-            const input = { identifiers: entities.map((entity) => entity.id), reason: "Change access" };
+    describe("[Behavior] - revocation", () => {
+        it.each(["revoke", "restore"] as const)(
+            "[case] - scopes assignment changes to the requested realm (%s)",
+            async (method) => {
+                // Arrange
+                const { commands, assignments, run, transaction } = helpers.commands();
+                const entities = [helpers.createAccountRoleAssignment(), helpers.createAccountRoleAssignment()];
+                assignments[method].mockResolvedValue(entities);
+                const input = { identifiers: entities.map((entity) => entity.id), reason: "Change access" };
 
-            await commands[method]({ actor: ACTOR, realm: REALM, context: CONTEXT, input });
+                // Act
+                await commands[method]({ actor: ACTOR, realm: REALM, context: CONTEXT, input });
 
-            expect(assignments[method].mock.calls).toEqual([
-                [{ transaction: transaction.entityManager, realm: REALM, identifiers: input.identifiers }],
-            ]);
-            expect(run).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    outbox: expect.arrayContaining([
-                        expect.objectContaining({
-                            actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
-                            destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
-                        }),
-                        expect.objectContaining({
-                            actionType: AccessCacheTopicAction.INVALIDATE,
-                            destinationTopic: KafkaTopic.ACCESS_CACHE,
-                        }),
-                    ]),
-                }),
-            );
-        });
+                // Assert
+                expect(assignments[method].mock.calls).toEqual([
+                    [{ transaction: transaction.entityManager, realm: REALM, identifiers: input.identifiers }],
+                ]);
+                expect(run).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        outbox: expect.arrayContaining([
+                            expect.objectContaining({
+                                actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_UPDATE,
+                                destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                            }),
+                            expect.objectContaining({
+                                actionType: AccessCacheTopicAction.INVALIDATE,
+                                destinationTopic: KafkaTopic.ACCESS_CACHE,
+                            }),
+                        ]),
+                    }),
+                );
+            },
+        );
     });
 });

@@ -24,61 +24,92 @@ function createMember(overrides?: Partial<Entities.RoleConflictMember.Constructo
     });
 }
 
-describe("RoleConflictMember Entity", () => {
-    describe("constructor", () => {
-        it("should assign required relations", () => {
+describe("[Entity] - RoleConflictMember", () => {
+    describe("[Method] - constructor", () => {
+        it("[case] - assigns required relations", () => {
+            // Arrange
             const group = {} as RoleConflictGroup;
             const role = {} as Role;
 
+            // Act
             const member = new RoleConflictMember({ group, role });
 
+            // Assert
             expect(member.group).toBe(group);
             expect(member.role).toBe(role);
         });
 
-        it("should default booleans to false", () => {
+        it("[case] - defaults booleans to false", () => {
+            // Arrange
+
+            // Act
             const member = createMember();
 
+            // Assert
             expect(member.isSystemManaged).toBe(false);
             expect(member.isRevoked).toBe(false);
         });
 
-        it("should respect explicit boolean overrides", () => {
+        it("[case] - respects explicit boolean overrides", () => {
+            // Arrange
+
+            // Act
             const member = createMember({ isSystemManaged: true, isRevoked: true });
 
+            // Assert
             expect(member.isSystemManaged).toBe(true);
             expect(member.isRevoked).toBe(true);
         });
 
-        it("should auto-generate id, createdAt, version", () => {
+        it("[case] - generates id, createdAt, version", () => {
+            // Arrange
             const member = createMember();
 
-            expect(isUUID(member.id, "4")).toBe(true);
+            // Act
+            const result = isUUID(member.id, "4");
+
+            // Assert
+            expect(result).toBe(true);
             expect(member.createdAt).toBeInstanceOf(Date);
             expect(member.version).toBe(1);
             expect(member.updatedAt).toBeUndefined();
         });
     });
 
-    describe("canPurge", () => {
-        it("should throw for system-managed member", () => {
+    describe("[Method] - canPurge", () => {
+        it("[case] - throws for system-managed member", () => {
+            // Arrange
             const member = createMember({ isSystemManaged: true });
 
-            expect(() => member.canPurge()).toThrow("CANNOT_PURGE_SYSTEM");
+            // Act
+            const act = (): unknown => member.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_PURGE_SYSTEM");
         });
 
-        it("should pass for non-system member", () => {
+        it("[case] - passes for non-system member", () => {
+            // Arrange
             const member = createMember();
 
-            expect(() => member.canPurge()).not.toThrow();
+            // Act
+            const act = (): unknown => member.canPurge();
+
+            // Assert
+            expect(act).not.toThrow();
         });
 
-        it("should throw when the owning group is revoked", () => {
+        it("[case] - throws when the owning group is revoked", () => {
+            // Arrange
             const group = createGroup();
             group.revoke();
             const member = createMember({ group });
 
-            expect(() => member.canPurge()).toThrow("CANNOT_MODIFY_MEMBERS_REVOKED");
+            // Act
+            const act = (): unknown => member.canPurge();
+
+            // Assert
+            expect(act).toThrow("CANNOT_MODIFY_MEMBERS_REVOKED");
         });
     });
 });
