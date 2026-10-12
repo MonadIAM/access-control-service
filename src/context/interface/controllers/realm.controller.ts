@@ -1,7 +1,14 @@
 import { Controller, HttpStatus, HttpCode, Delete, Inject, Patch, Query, Body, Post, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
-import { RequirePermission, FormatResponse, Swagger, Extract, Reauthentication } from "~common/decorators";
+import {
+    RequireGlobalPermission,
+    RequirePermission,
+    FormatResponse,
+    Swagger,
+    Extract,
+    Reauthentication,
+} from "~common/decorators";
 import { PermissionCode, PrivilegeScope } from "~context/enums";
 import { REALM_COMMANDS } from "~context/application/commands";
 import { REALM_QUERIES } from "~context/application/queries";
@@ -126,11 +133,12 @@ export class RealmController {
 
     @Post("create")
     @HttpCode(CREATED)
-    @RequirePermission(REALM_CREATE)
+    @RequireGlobalPermission(REALM_CREATE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: CREATED, type: SuccessMessageDTO })
     @ApiOperation({
         summary: "Creates a new realm",
+        description: "Platform administrator operation for manual realm reconciliation; requires a global permission.",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -181,11 +189,12 @@ export class RealmController {
 
     @HttpCode(OK)
     @Patch("revoke")
-    @RequirePermission(REALM_REVOKE)
+    @RequireGlobalPermission(REALM_REVOKE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({
         summary: "Revokes a non-system realm(s)",
+        description: "Platform administrator operation for manual realm reconciliation; requires a global permission.",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -209,11 +218,12 @@ export class RealmController {
 
     @HttpCode(OK)
     @Patch("restore")
-    @RequirePermission(REALM_RESTORE)
+    @RequireGlobalPermission(REALM_RESTORE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({
         summary: "Restores a non-system realm(s)",
+        description: "Platform administrator operation for manual realm reconciliation; requires a global permission.",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
@@ -238,11 +248,12 @@ export class RealmController {
     @HttpCode(OK)
     @Delete("purge")
     @Reauthentication()
-    @RequirePermission(REALM_PURGE)
+    @RequireGlobalPermission(REALM_PURGE)
     @FormatResponse(SuccessMessageDTO)
     @ApiResponse({ status: OK, type: SuccessMessageDTO })
     @ApiOperation({
         summary: "Permanently deletes a revoked non-system realm(s)",
+        description: "Platform administrator operation for manual realm reconciliation; requires a global permission.",
         security: [{ identity: [] }],
     })
     @Swagger.Exceptions(
