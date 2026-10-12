@@ -51,9 +51,7 @@ git config core.hooksPath .githooks
  8. `Integration tests` — the complete integration suite in Jest CI mode.
 
 The hook rejects the commit if Docker is unavailable or a test fails. Checks run
-against the working tree, including unstaged changes. CI validates the committed
-snapshot. Run `make test` (or `pnpm test`) to run both suites explicitly;
-`make utest` and `make itest` run them individually.
+against the working tree, including unstaged changes. CI checks PR to `dev`.
 
 #### Allowed prefixes for commits and branches:
 `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
