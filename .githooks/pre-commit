@@ -2,11 +2,10 @@
 
 source "$(dirname -- "${BASH_SOURCE[0]}")/../scripts/logger.sh"
 
-FILES_FOR_CHECK=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.ts$" | grep -v "node_modules")
 OUTPUT_FILE=""
 
-STEP_FUNCTIONS=(step_gitleaks step_env step_intl step_tsc step_knip step_eslint)
-STEP_TITLES=("Gitleaks" "Env" "Intl" "TSC" "Knip" "ESLint")
+STEP_FUNCTIONS=(step_gitleaks step_env step_intl step_tsc step_knip step_eslint step_unit_tests step_integration_tests)
+STEP_TITLES=("Secret scan" "Environment" "Translations" "Type check" "Unused code" "Lint" "Unit tests" "Integration tests")
 
 remove_output_file() {
     if [ -n "$OUTPUT_FILE" ] && [ -f "$OUTPUT_FILE" ]; then
@@ -65,9 +64,31 @@ step_knip() {
 }
 
 step_eslint() {
-    [ -n "$FILES_FOR_CHECK" ] || return 0
+    if pnpm run lint >"$OUTPUT_FILE" 2>&1; then
+        return 0
+    fi
 
-    if echo "$FILES_FOR_CHECK" | xargs pnpm --silent run lint --quiet >"$OUTPUT_FILE" 2>&1; then
+    log_output "$OUTPUT_FILE"
+    return 1
+}
+
+step_unit_tests() {
+    if pnpm run test:unit --ci >"$OUTPUT_FILE" 2>&1; then
+        return 0
+    fi
+
+    log_output "$OUTPUT_FILE"
+    return 1
+}
+
+step_integration_tests() {
+    if ! docker info >"$OUTPUT_FILE" 2>&1; then
+        log_finding "Docker is required for integration tests; start Docker and retry (see CONTRIBUTING.md)"
+        log_output "$OUTPUT_FILE"
+        return 1
+    fi
+
+    if pnpm run test:integration --ci >"$OUTPUT_FILE" 2>&1; then
         return 0
     fi
 
@@ -95,12 +116,8 @@ run_step() {
 main() {
     local index number failed=""
 
-    OUTPUT_FILE="$(mktemp)"
+    OUTPUT_FILE="$(mktemp)" || exit 1
     trap remove_output_file EXIT
-
-    if [ -n "$FILES_FOR_CHECK" ]; then
-        log_context "Files to be linted:" $FILES_FOR_CHECK
-    fi
 
     for index in "${!STEP_TITLES[@]}"; do
         number=$((index + 1))

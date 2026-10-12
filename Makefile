@@ -45,7 +45,8 @@ seed:
 	$(SERVICE_EXEC_WITH_SECRETS) pnpm run db:seed
 
 # Test
-test: utest
+test:
+	pnpm run test
 utest:
 	pnpm run utest
 itest:

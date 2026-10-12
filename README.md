@@ -129,8 +129,10 @@ Shared Docker networks are created by the infra repository:
 | `make empty-migration name="..."` | Generate a blank MikroORM migration.                                |
 | `make seed`                       | Run PostgreSQL seeder, then Redis projection seeder.                |
 | **Test**                          |                                                                     |
-| `make test`                       | Run unit tests.                                                     |
-| `make make coverage-unit`         | Run unit tests with coverage in `coverage/unit`.                    |
+| `make test`                       | Run unit and integration tests (Docker required).                   |
+| `make utest`                      | Run the complete unit suite.                                        |
+| `make itest`                      | Run integration tests (Docker required).                            |
+| `make coverage-unit`              | Run unit tests with coverage in `coverage/unit`.                    |
 | `make coverage-integration`       | Run integration tests with coverage in `coverage/integration`.      |
 | `make coverage`                   | Run both suites with combined coverage in `coverage/all`.           |
 

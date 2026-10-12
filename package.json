@@ -29,6 +29,7 @@
     "db:seed:postgresql": "mikro-orm seeder:run",
     "utest": "NODE_OPTIONS=--experimental-vm-modules jest --config ./jest.unit.config.mjs",
     "itest": "NODE_OPTIONS='--import tsx --experimental-vm-modules' jest --config ./jest.integration.config.mjs",
+    "test": "pnpm run test:unit && pnpm run test:integration",
     "test:unit": "pnpm run utest",
     "test:integration": "pnpm run itest",
     "start:prod": "node dist/index.js",
