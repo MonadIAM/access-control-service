@@ -26,6 +26,7 @@ import {
     CreateBodyDTO,
     LookupListDTO,
     PermissionDTO,
+    PrivilegesDTO,
     PurgeBodyDTO,
     ListDTO,
 } from "../dto/permission";
@@ -157,6 +158,27 @@ export class PermissionController {
         @Extract.Session() { account: actor }: Extract.Session.Auth,
     ): Queries.Permission.FindEffective.Result {
         return this.permissionQueries.findEffective({ mode, pagination, filters, realm, actor, sort });
+    }
+
+    @HttpCode(OK)
+    @Get("privileges")
+    @FormatResponse(PrivilegesDTO)
+    @ApiResponse({ status: OK, type: PrivilegesDTO })
+    @RequirePermission(PERMISSION_READ_PERSONAL)
+    @ApiOperation({
+        summary: "Returns effective privileges for the current session",
+        security: [{ identity: [] }],
+    })
+    @Swagger.Exceptions(
+        INTERNAL_SERVER_ERROR,
+        UNPROCESSABLE_ENTITY,
+        SERVICE_UNAVAILABLE,
+        REQUEST_TIMEOUT,
+        UNAUTHORIZED,
+        FORBIDDEN,
+    )
+    public async getPrivileges(@Extract.Session() { account, realms }: Extract.Session.Auth): Promise<PrivilegesDTO> {
+        return { data: await this.permissionQueries.getPrivileges({ account, realms }) };
     }
 
     @Post("create")

@@ -38,7 +38,7 @@ export class ProjectionCacheService implements InfrastructureServices.Projection
             permissionRealm: SYSTEM_REALM_ID,
             systemRealm: SYSTEM_REALM_ID,
             account: props.account,
-            realm: props.realm,
+            realms: props.realms,
         };
 
         return JSON.parse(

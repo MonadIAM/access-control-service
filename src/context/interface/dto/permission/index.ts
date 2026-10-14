@@ -15,6 +15,7 @@ export {
 
 export { PermissionLookupDTO } from "./res/lookup-entity.dto";
 export { LookupListDTO } from "./res/lookup-list.dto";
+export { PrivilegesDTO } from "./res/privileges.dto";
 export { PermissionDTO } from "./res/entity.dto";
 export { ListDTO } from "./res/list.dto";
 

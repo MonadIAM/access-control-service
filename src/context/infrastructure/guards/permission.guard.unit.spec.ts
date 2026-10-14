@@ -86,7 +86,7 @@ describe("[Guard] - Permission", () => {
             });
         });
 
-        it("[case] - requires realm scope in the session", async () => {
+        it("[case] - rejects a session without realm scope when no global grant matches", async () => {
             // Arrange
             const { guard } = helpers.permission();
             const request = helpers.request({ session: { account: ACCOUNT_ID } });
@@ -97,12 +97,12 @@ describe("[Guard] - Permission", () => {
 
             // Assert
             await expect(result).rejects.toMatchObject({
-                message: "guard.permission.REALM_SCOPE_MISSING",
+                message: "guard.permission.INSUFFICIENT_PERMISSIONS",
                 statusCode: HttpStatus.FORBIDDEN,
             });
         });
 
-        it("[case] - rejects a realm outside the session scope", async () => {
+        it("[case] - rejects a realm outside the session scope when no global grant matches", async () => {
             // Arrange
             const { guard } = helpers.permission();
             const request = helpers.request({
@@ -116,28 +116,41 @@ describe("[Guard] - Permission", () => {
 
             // Assert
             await expect(result).rejects.toMatchObject({
-                message: "guard.permission.REALM_OUT_OF_SESSION_SCOPE",
+                message: "guard.permission.INSUFFICIENT_PERMISSIONS",
                 statusCode: HttpStatus.FORBIDDEN,
             });
         });
 
-        it("[case] - requires a direct system login for global permissions", async () => {
-            // Arrange
-            const { guard } = helpers.permission();
-            const request = helpers.request({
-                session: { account: ACCOUNT_ID, realms: [SYSTEM_REALM_ID, REALM_ID] },
-            });
-            const context = helpers.context({ request, handlerMetadata: [[REQUIRE_GLOBAL_PERMISSION, [PERMISSION]]] });
+        it.each([
+            { realms: [], globalOnly: false },
+            { realms: [SYSTEM_REALM_ID], globalOnly: false },
+            { realms: [SYSTEM_REALM_ID, REALM_ID], globalOnly: true },
+        ])(
+            "[case] - permits a global grant independently of session realms ($globalOnly)",
+            async ({ realms, globalOnly }) => {
+                // Arrange
+                const { guard, checkPermissions } = helpers.permission({
+                    matched: { [PERMISSION]: PrivilegeScope.GLOBAL },
+                });
+                const request = helpers.request({ query: { realm: REALM_ID }, session: { account: ACCOUNT_ID, realms } });
+                const metadata = globalOnly ? REQUIRE_GLOBAL_PERMISSION : REQUIRE_PERMISSION;
+                const context = helpers.context({ request, handlerMetadata: [[metadata, [PERMISSION]]] });
 
-            // Act
-            const result = guard.canActivate(context);
+                // Act
+                const result = await guard.canActivate(context);
 
-            // Assert
-            await expect(result).rejects.toMatchObject({
-                message: "guard.permission.GLOBAL_SCOPE_REQUIRES_DIRECT_LOGIN",
-                statusCode: HttpStatus.FORBIDDEN,
-            });
-        });
+                // Assert
+                expect(result).toBe(true);
+                expect(checkPermissions).toHaveBeenCalledTimes(1);
+                expect(checkPermissions).toHaveBeenCalledWith({
+                    globalOnly: true,
+                    permissions: [PERMISSION],
+                    account: ACCOUNT_ID,
+                    realm: globalOnly ? SYSTEM_REALM_ID : REALM_ID,
+                });
+                expect(request.metadata.permissions).toEqual({ [PERMISSION]: PrivilegeScope.GLOBAL });
+            },
+        );
 
         it("[case] - rejects an account without a matched permission", async () => {
             // Arrange

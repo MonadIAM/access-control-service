@@ -1,7 +1,8 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
 import { PERMISSION_REPOSITORY } from "~context/infrastructure/repositories";
-import { QueryMode } from "~context/enums";
+import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
+import { PrivilegeScope, QueryMode } from "~context/enums";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PermissionQueries implements Queries.Permission.Contract {
@@ -11,9 +12,44 @@ export class PermissionQueries implements Queries.Permission.Contract {
     };
 
     public constructor(
+        @Inject(PROJECTION_CACHE_SERVICE)
+        private readonly projectionCacheService: InfrastructureServices.ProjectionCache.PublicContract,
         @Inject(PERMISSION_REPOSITORY)
         private readonly permissionRepository: Repositories.Permission.QueryContract,
     ) {}
+
+    public async getPrivileges(props: Queries.Permission.GetPrivileges.Props): Queries.Permission.GetPrivileges.Result {
+        const realms = [...new Set(props.realms)];
+        if (realms.length) {
+            const permissions = await this.projectionCacheService.collectPermissions({
+                account: props.account,
+                realms,
+            });
+
+            const result: Record<string, Queries.Permission.GetPrivileges.Access[]> = Object.create(null);
+
+            for (const code in permissions.global) {
+                result[code] = [{ scope: PrivilegeScope.GLOBAL }];
+            }
+
+            for (const realm of realms) {
+                for (const code in permissions.realms[realm]) {
+                    const access = result[code] ?? [];
+                    const scoped = access[access.length - 1];
+                    if (scoped?.scope === PrivilegeScope.REALM) {
+                        scoped.realms.push(realm);
+                    } else {
+                        access.push({ scope: PrivilegeScope.REALM, realms: [realm] });
+                        result[code] = access;
+                    }
+                }
+            }
+
+            return result;
+        } else {
+            return {};
+        }
+    }
 
     public findUnique(props: Queries.Permission.FindUnique.Props): Queries.Permission.FindUnique.Result {
         return this.permissionRepository.findUniqueOrThrow({

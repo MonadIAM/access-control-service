@@ -42,7 +42,7 @@ export class PermissionGuard implements CanActivate {
         }
 
         const request = context.switchToHttp().getRequest<Req<{ Querystring: { realm?: string } }>>();
-        const realm = request.query?.realm ?? SYSTEM_REALM_ID;
+        const realm = globalPermissions ? SYSTEM_REALM_ID : (request.query?.realm ?? SYSTEM_REALM_ID);
         const account = request.session?.account;
         const realms = request.session?.realms;
 
@@ -54,18 +54,8 @@ export class PermissionGuard implements CanActivate {
             throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REALM_REQUIRED` });
         }
 
-        if (!realms?.length) {
-            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REALM_SCOPE_MISSING` });
-        }
-
-        if (globalPermissions && !(realms.length === 1 && realms[0] === SYSTEM_REALM_ID)) {
-            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.GLOBAL_SCOPE_REQUIRES_DIRECT_LOGIN` });
-        } else if (!realms.includes(realm)) {
-            throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REALM_OUT_OF_SESSION_SCOPE` });
-        }
-
         const matched = await this.projectionCacheService.checkPermissions({
-            globalOnly: Boolean(globalPermissions),
+            globalOnly: Boolean(globalPermissions) || !realms?.includes(realm),
             permissions,
             account,
             realm,
