@@ -14,6 +14,7 @@ declare namespace Unit.Queries.Permission {
 
     namespace Queries {
         type Result = {
+            cache: Jest.Mocked<Pick<InfrastructureServices.ProjectionCache.PublicContract, "collectPermissions">>;
             queries: globalThis.Queries.Permission.Contract;
             repository: Repository.Contract;
         };

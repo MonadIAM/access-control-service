@@ -205,10 +205,13 @@ declare global {
                     permissionRealm: string;
                     systemRealm: string;
                     account: string;
-                    realm: string;
+                    realms: string[];
                 };
 
-                type Result = Record<string, string>;
+                type Result = {
+                    realms: Record<string, Record<string, PrivilegeScope.REALM>>;
+                    global: Record<string, PrivilegeScope.GLOBAL>;
+                };
             }
         }
 

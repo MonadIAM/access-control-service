@@ -15,7 +15,7 @@ export class AccessControlController {
         props: GRPC.AccessControl.ListEffectivePrivileges.Request,
     ): Promise<GRPC.AccessControl.ListEffectivePrivileges.Response> {
         const { account, realm } = props;
-        const privileges = await this.projectionCacheService.collectPermissions({ account, realm });
-        return { privileges };
+        const snapshot = await this.projectionCacheService.collectPermissions({ account, realms: [realm] });
+        return { privileges: snapshot.realms[realm], global: snapshot.global };
     }
 }

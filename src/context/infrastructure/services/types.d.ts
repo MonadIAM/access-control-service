@@ -49,8 +49,8 @@ declare global {
             interface Contract extends PublicContract {}
 
             interface PublicContract {
-                validateAssignments: ValidateAssignments.Signature;
                 collectPermissions: CollectPermissions.Signature;
+                validateAssignments: ValidateAssignments.Signature;
                 checkPermissions: CheckPermissions.Signature;
                 collectRealms: CollectRealms.Signature;
                 checkRealm: CheckRealm.Signature;
@@ -80,10 +80,13 @@ declare global {
             namespace CollectPermissions {
                 type Props = {
                     account: string;
-                    realm: string;
+                    realms: string[];
                 };
 
-                type Result = Promise<Record<string, PrivilegeScope>>;
+                type Result = Promise<{
+                    realms: Record<string, Record<string, PrivilegeScope.REALM>>;
+                    global: Record<string, PrivilegeScope.GLOBAL>;
+                }>;
 
                 type Signature = (props: Props) => Result;
             }

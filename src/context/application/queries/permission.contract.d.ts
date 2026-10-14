@@ -1,14 +1,28 @@
-import { QueryMode, ResponseViewType } from "~context/enums";
+import { PrivilegeScope, QueryMode, ResponseViewType } from "~context/enums";
 
 declare global {
     namespace Queries.Permission {
         interface Contract extends ControllerContract {}
 
         interface ControllerContract {
+            getPrivileges: GetPrivileges.Signature;
             findEffective: FindEffective.Signature;
             getLookupList: GetLookupList.Signature;
             findUnique: FindUnique.Signature;
             findMany: FindMany.Signature;
+        }
+
+        namespace GetPrivileges {
+            type Props = {
+                account: string;
+                realms: string[];
+            };
+
+            type Access = { scope: PrivilegeScope.GLOBAL } | { scope: PrivilegeScope.REALM; realms: string[] };
+
+            type Result = Promise<Record<string, Access[]>>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace FindEffective {

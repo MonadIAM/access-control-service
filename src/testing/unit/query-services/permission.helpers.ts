@@ -12,10 +12,17 @@ export class PermissionQueriesUnitHelpers extends DomainServiceCoreUnitHelpers i
             findEffective: jest.fn<Repositories.Permission.QueryContract["findEffective"]>(),
             getLookupList: jest.fn<Repositories.Permission.QueryContract["getLookupList"]>(),
         };
+        const cache = {
+            collectPermissions: jest.fn<InfrastructureServices.ProjectionCache.CollectPermissions.Signature>(),
+        };
 
         return {
-            queries: new PermissionQueries(this.contract<Repositories.Permission.QueryContract>(repository)),
+            queries: new PermissionQueries(
+                this.contract<InfrastructureServices.ProjectionCache.PublicContract>(cache),
+                this.contract<Repositories.Permission.QueryContract>(repository),
+            ),
             repository,
+            cache,
         };
     }
 }
