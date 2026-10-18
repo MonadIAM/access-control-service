@@ -29,13 +29,22 @@ importers:
       '@libpg-query/parser':
         specifier: 17.6.10
         version: 17.6.10
+      '@mikro-orm/cli':
+        specifier: 7.1.13
+        version: 7.1.13
       '@mikro-orm/core':
         specifier: 7.1.13
         version: 7.1.13
+      '@mikro-orm/migrations':
+        specifier: 7.1.13
+        version: 7.1.13(@mikro-orm/core@7.1.13)
       '@mikro-orm/nestjs':
         specifier: 7.0.2
         version: 7.0.2(@mikro-orm/core@7.1.13)(@nestjs/common@11.2.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.1)(reflect-metadata@0.2.2)
       '@mikro-orm/postgresql':
+        specifier: 7.1.13
+        version: 7.1.13(@mikro-orm/core@7.1.13)
+      '@mikro-orm/seeder':
         specifier: 7.1.13
         version: 7.1.13(@mikro-orm/core@7.1.13)
       '@monadiam/shared':
@@ -116,6 +125,9 @@ importers:
       class-validator:
         specifier: 0.15.1
         version: 0.15.1
+      dotenv:
+        specifier: 17.4.2
+        version: 17.4.2
       fastify:
         specifier: 5.11.3
         version: 5.11.3
@@ -164,6 +176,9 @@ importers:
       rxjs:
         specifier: 7.8.2
         version: 7.8.2
+      tsx:
+        specifier: 4.23.12
+        version: 4.23.12
       undici:
         specifier: 8.10.0
         version: 8.10.0
@@ -174,16 +189,7 @@ importers:
       '@jest/globals':
         specifier: 30.4.1
         version: 30.4.1(supports-color@8.1.1)
-      '@mikro-orm/cli':
-        specifier: 7.1.13
-        version: 7.1.13
       '@mikro-orm/entity-generator':
-        specifier: 7.1.13
-        version: 7.1.13(@mikro-orm/core@7.1.13)
-      '@mikro-orm/migrations':
-        specifier: 7.1.13
-        version: 7.1.13(@mikro-orm/core@7.1.13)
-      '@mikro-orm/seeder':
         specifier: 7.1.13
         version: 7.1.13(@mikro-orm/core@7.1.13)
       '@mizchi/lsmcp':
@@ -210,9 +216,6 @@ importers:
       '@typescript-eslint/parser':
         specifier: 8.67.0
         version: 8.67.0(eslint@10.9.0(jiti@2.7.0)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
-      dotenv:
-        specifier: 17.4.2
-        version: 17.4.2
       eslint:
         specifier: 10.9.0
         version: 10.9.0(jiti@2.7.0)(supports-color@8.1.1)
@@ -243,9 +246,6 @@ importers:
       ts-jest:
         specifier: 29.4.12
         version: 29.4.12(@babel/core@7.29.7(supports-color@8.1.1))(@jest/transform@30.4.1(supports-color@8.1.1))(@jest/types@30.4.1)(babel-jest@30.4.1(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1))(esbuild@0.28.2)(jest-util@30.4.1)(jest@30.4.2(@types/node@24.13.3)(supports-color@8.1.1))(typescript@6.0.3)
-      tsx:
-        specifier: 4.23.12
-        version: 4.23.12
       typescript:
         specifier: 6.0.3
         version: 6.0.3

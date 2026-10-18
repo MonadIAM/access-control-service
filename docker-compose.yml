@@ -53,6 +53,7 @@ services:
     build:
       context: .
       dockerfile: docker/app/Dockerfile
+      target: development
       args:
         BASE_IMAGE: ${APP_BASE_IMAGE:?}
     image: ${SERVICE_NAME:?}:latest

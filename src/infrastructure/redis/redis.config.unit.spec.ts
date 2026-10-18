@@ -76,6 +76,61 @@ describe("[Config] - Redis", () => {
         });
     });
 
+    describe("[Behavior] - Sentinel discovery", () => {
+        it.each(["buildCacheOptions", "buildLimiterOptions", "buildQueueOptions"] as const)(
+            "[case] - configures authenticated TLS discovery for %s without a direct port",
+            (method) => {
+                // Arrange
+                const config = new ConfigService({
+                    ...values,
+                    ...tls,
+                    REDIS_PORT: undefined,
+                    REDIS_SENTINEL_ENABLED: true,
+                    REDIS_SENTINEL_PORT: 26379,
+                    REDIS_SENTINEL_MASTER: "access-control-redis",
+                });
+
+                // Act
+                const options = RedisConfig[method](config);
+
+                // Assert
+                expect(options).toMatchObject({
+                    sentinels: [{ host: "redis.internal", port: 26379 }],
+                    name: "access-control-redis",
+                    role: "master",
+                    password: "secret",
+                    sentinelPassword: "secret",
+                    enableTLSForSentinelMode: true,
+                });
+                expect(options.sentinelTLS).toBe(options.tls);
+                expect(options.tls).toMatchObject({ servername: "redis.internal", rejectUnauthorized: true });
+                expect(options).not.toHaveProperty("host");
+                expect(options).not.toHaveProperty("port");
+                expect(readFileSync).toHaveBeenCalledTimes(3);
+            },
+        );
+
+        it("[case] - supports plaintext Sentinel without reading certificates", () => {
+            // Arrange
+            const config = new ConfigService({
+                ...values,
+                REDIS_SENTINEL_ENABLED: true,
+                REDIS_SENTINEL_PORT: 26379,
+                REDIS_SENTINEL_MASTER: "access-control-redis",
+            });
+
+            // Act
+            const options = RedisConfig.buildCacheOptions(config);
+
+            // Assert
+            expect(options.sentinels).toEqual([{ host: "redis.internal", port: 26379 }]);
+            expect(options).not.toHaveProperty("tls");
+            expect(options).not.toHaveProperty("sentinelTLS");
+            expect(options).not.toHaveProperty("enableTLSForSentinelMode");
+            expect(readFileSync).not.toHaveBeenCalled();
+        });
+    });
+
     describe("[Method] - buildLimiterOptions", () => {
         it("[case] - preserves database zero for the limiter", () => {
             // Arrange

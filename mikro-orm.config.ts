@@ -53,7 +53,8 @@ const config: Options = {
     },
 
     seeder: {
-        path: "./src/infrastructure/database",
+        path: "./dist/src/infrastructure/database",
+        pathTs: "./src/infrastructure/database",
         defaultSeeder: "System",
         glob: "seeder.{js,ts}",
     },
@@ -67,8 +68,6 @@ const config: Options = {
     driverOptions: sslEnabled
         ? {
               ssl: {
-                  cert: readFileSync(process.env.POSTGRES_SSL_CERT_FILE!, "utf8"),
-                  key: readFileSync(process.env.POSTGRES_SSL_KEY_FILE!, "utf8"),
                   ca: readFileSync(process.env.POSTGRES_SSL_CA_FILE!, "utf8"),
                   rejectUnauthorized,
                   servername: host,

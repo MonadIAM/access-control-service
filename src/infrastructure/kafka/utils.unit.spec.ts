@@ -11,8 +11,6 @@ const base = { SERVICE_NAME: "access-control", KAFKA_BROKER: "broker:9093" };
 const ssl = {
     KAFKA_SSL_ENABLED: true,
     KAFKA_SSL_REJECT_UNAUTHORIZED: true,
-    KAFKA_SSL_CERT_FILE: "/cert",
-    KAFKA_SSL_KEY_FILE: "/key",
     KAFKA_SSL_CA_FILE: "/ca",
 };
 const sasl = {
@@ -67,18 +65,11 @@ describe("[Utility] - KafkaUtils", () => {
             expect(result).toEqual({
                 brokers: ["broker:9093"],
                 ssl: {
-                    servername: "broker",
-                    cert: "contents:/cert",
-                    key: "contents:/key",
                     ca: ["contents:/ca"],
                     rejectUnauthorized,
                 },
             });
-            expect(readFileSync.mock.calls).toEqual([
-                ["/cert", "utf8"],
-                ["/ca", "utf8"],
-                ["/key", "utf8"],
-            ]);
+            expect(readFileSync.mock.calls).toEqual([["/ca", "utf8"]]);
         });
 
         it("[case] - combines TLS and SASL and trims the password file", () => {
@@ -89,9 +80,29 @@ describe("[Utility] - KafkaUtils", () => {
             const result = KafkaUtils.buildClientConfig(new ConfigService({ ...base, ...ssl, ...sasl }));
 
             // Assert
-            expect(result.ssl).toMatchObject({ servername: "broker" });
+            expect(result.ssl).not.toHaveProperty("servername");
             expect(result.sasl).toEqual({ mechanism: "scram-sha-512", username: "service", password: "secret" });
             expect(readFileSync).toHaveBeenCalledWith("/password", "utf8");
+        });
+
+        it("[case] - authenticates with SCRAM over CA-only TLS and lets KafkaJS select each broker hostname", () => {
+            // Arrange
+            const config = new ConfigService({
+                ...base,
+                ...ssl,
+                ...sasl,
+            });
+
+            // Act
+            const result = KafkaUtils.buildClientConfig(config);
+
+            // Assert
+            expect(result.ssl).toEqual({ ca: ["contents:/ca"], rejectUnauthorized: true });
+            expect(result.sasl).toMatchObject({ mechanism: "scram-sha-512", username: "service" });
+            expect(readFileSync.mock.calls).toEqual([
+                ["/ca", "utf8"],
+                ["/password", "utf8"],
+            ]);
         });
 
         it("[case] - supports SASL without TLS", () => {

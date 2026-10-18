@@ -20,7 +20,8 @@ export class EnvironmentVariablesDTO {
     declare public API_VERSION: number;
 
     @Validator.IsString()
-    declare public APP_BASE_IMAGE: string;
+    @Validator.IsOptional()
+    declare public APP_BASE_IMAGE?: string;
 
     @Validator.IsString()
     declare public APP_HOST: string;
@@ -144,16 +145,9 @@ export class EnvironmentVariablesDTO {
     declare public POSTGRES_SSL_REJECT_UNAUTHORIZED?: boolean;
 
     @Validator.IsString()
+    @Validator.MinLength(1)
     @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
     declare public POSTGRES_SSL_CA_FILE?: string;
-
-    @Validator.IsString()
-    @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
-    declare public POSTGRES_SSL_CERT_FILE?: string;
-
-    @Validator.IsString()
-    @ValidateIf((o) => o.POSTGRES_SSL_ENABLED)
-    declare public POSTGRES_SSL_KEY_FILE?: string;
 
     @Validator.IsBoolean()
     declare public POSTGRES_LOGGING: boolean;
@@ -201,7 +195,22 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsPositiveInt()
     @Validator.Max(65535)
-    declare public REDIS_PORT: number;
+    @ValidateIf((o) => !o.REDIS_SENTINEL_ENABLED)
+    declare public REDIS_PORT?: number;
+
+    @Validator.IsBoolean()
+    @Validator.IsOptional()
+    declare public REDIS_SENTINEL_ENABLED?: boolean;
+
+    @Validator.IsPositiveInt()
+    @Validator.Max(65535)
+    @ValidateIf((o) => o.REDIS_SENTINEL_ENABLED)
+    declare public REDIS_SENTINEL_PORT?: number;
+
+    @Validator.IsString()
+    @Validator.MinLength(1)
+    @ValidateIf((o) => o.REDIS_SENTINEL_ENABLED)
+    declare public REDIS_SENTINEL_MASTER?: string;
 
     @Validator.IsString()
     declare public REDIS_PASSWORD: string;
@@ -215,14 +224,17 @@ export class EnvironmentVariablesDTO {
     declare public REDIS_TLS_REJECT_UNAUTHORIZED?: boolean;
 
     @Validator.IsString()
+    @Validator.MinLength(1)
     @ValidateIf((o) => o.REDIS_TLS_ENABLED)
     declare public REDIS_TLS_CA_FILE?: string;
 
     @Validator.IsString()
+    @Validator.MinLength(1)
     @ValidateIf((o) => o.REDIS_TLS_ENABLED)
     declare public REDIS_TLS_CERT_FILE?: string;
 
     @Validator.IsString()
+    @Validator.MinLength(1)
     @ValidateIf((o) => o.REDIS_TLS_ENABLED)
     declare public REDIS_TLS_KEY_FILE?: string;
 
@@ -258,16 +270,9 @@ export class EnvironmentVariablesDTO {
     declare public KAFKA_SSL_REJECT_UNAUTHORIZED?: boolean;
 
     @Validator.IsString()
+    @Validator.MinLength(1)
     @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
     declare public KAFKA_SSL_CA_FILE?: string;
-
-    @Validator.IsString()
-    @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
-    declare public KAFKA_SSL_CERT_FILE?: string;
-
-    @Validator.IsString()
-    @ValidateIf((o) => o.KAFKA_SSL_ENABLED)
-    declare public KAFKA_SSL_KEY_FILE?: string;
 
     @Validator.IsString()
     @ValidateIf((o) => o.KAFKA_SASL_ENABLED)
@@ -340,54 +345,47 @@ export class EnvironmentVariablesDTO {
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.STAND)
+    @Validator.IsOptional()
     declare public DOCKER_NETWORK_MONITORING?: string;
 
     @Validator.IsString()
-    declare public DOCKER_NETWORK_KAFKA: string;
+    @Validator.IsOptional()
+    declare public DOCKER_NETWORK_KAFKA?: string;
 
     @Validator.IsString()
-    declare public DOCKER_NETWORK_POSTGRES: string;
+    @Validator.IsOptional()
+    declare public DOCKER_NETWORK_POSTGRES?: string;
 
     @Validator.IsString()
-    declare public DOCKER_NETWORK_REDIS: string;
+    @Validator.IsOptional()
+    declare public DOCKER_NETWORK_REDIS?: string;
 
     @Validator.IsString()
-    declare public DOCKER_NETWORK_VAULT: string;
-
-    @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.STAND)
-    declare public DOCKER_VOLUME_VAULT_CA?: string;
-
-    @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.STAND)
-    declare public DOCKER_VOLUME_SERVICE_TLS?: string;
+    @Validator.IsOptional()
+    declare public DOCKER_NETWORK_VAULT?: string;
 
     // ---------------------------------------------------------------------------
     // Vault
     // ---------------------------------------------------------------------------
 
     @Validator.IsString()
-    declare public VAULT_IMAGE: string;
+    @Validator.IsOptional()
+    declare public VAULT_IMAGE?: string;
 
     @Validator.IsString()
     declare public VAULT_AGENT_SOCKET_PATH: string;
 
-    @Validator.IsPositiveInt()
-    @Validator.Max(65535)
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.STAND)
-    declare public VAULT_PORT?: number;
-
     @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
+    @Validator.IsOptional()
     declare public VAULT_ADDR?: string;
 
     @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.LOCAL)
+    @Validator.IsOptional()
     declare public VAULT_TOKEN?: string;
 
     @Validator.IsString()
-    declare public VAULT_APPROLE_NAME: string;
+    @Validator.IsOptional()
+    declare public VAULT_APPROLE_NAME?: string;
 
     @Validator.IsString()
     declare public VAULT_TRANSIT_MOUNT: string;
@@ -397,14 +395,6 @@ export class EnvironmentVariablesDTO {
 
     @Validator.IsString()
     declare public VAULT_TRANSIT_AUDIT_LOG_KEY: string;
-
-    // ---------------------------------------------------------------------------
-    // Vault (bootstrap)
-    // ---------------------------------------------------------------------------
-
-    @Validator.IsString()
-    @ValidateIf((o) => o.NODE_ENV === NodeEnv.STAND)
-    declare public VAULT_PROVISIONER_TOKEN?: string;
 
     // ---------------------------------------------------------------------------
     // Domain-specific limits

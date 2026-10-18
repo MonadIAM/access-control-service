@@ -1,36 +1,19 @@
 import { dataset } from "@monadiam/shared/datasets/access-control";
+import { ConfigService } from "@nestjs/config";
 import { readFile } from "node:fs/promises";
 import { isString } from "class-validator";
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import dotenv from "dotenv";
 import Redis from "ioredis";
 
+import { validateEnv } from "~common/validator/env.validator";
+
+import { RedisConfig } from "./redis.config";
+
 dotenv.config();
 
-const tlsEnabled: boolean = process.env.REDIS_TLS_ENABLED === "true";
-
 class ProjectionSeed {
-    private static readonly redis = new Redis({
-        port: Number(process.env.REDIS_PORT),
-        host: process.env.REDIS_HOST,
-        db: Number(process.env.REDIS_DB_CACHE),
-        password: process.env.REDIS_PASSWORD,
-        ...(tlsEnabled
-            ? {
-                  tls: {
-                      rejectUnauthorized: process.env.REDIS_TLS_REJECT_UNAUTHORIZED === "true",
-                      cert: readFileSync(process.env.REDIS_TLS_CERT_FILE!, "utf8"),
-                      key: readFileSync(process.env.REDIS_TLS_KEY_FILE!, "utf8"),
-                      ca: readFileSync(process.env.REDIS_TLS_CA_FILE!, "utf8"),
-                      servername: process.env.REDIS_HOST,
-                  },
-              }
-            : {}),
-        enableAutoPipelining: true,
-        maxRetriesPerRequest: 20,
-        lazyConnect: true,
-    });
+    private static readonly redis = new Redis(RedisConfig.buildCacheOptions(new ConfigService(validateEnv(process.env))));
 
     public static async run(): Promise<void> {
         try {

@@ -7,10 +7,8 @@ export class RedisConfig {
 
     private static getBaseOptions(config: ConfigService): RedisOptions {
         return {
-            ...this.buildTlsOptions(config),
+            ...this.buildConnectionOptions(config),
             password: config.getOrThrow<string>("REDIS_PASSWORD"),
-            port: config.getOrThrow<number>("REDIS_PORT"),
-            host: config.getOrThrow<string>("REDIS_HOST"),
             enableAutoPipelining: true,
             lazyConnect: true,
             retryStrategy: (attempt): number => {
@@ -34,7 +32,7 @@ export class RedisConfig {
     public static buildLimiterOptions(config: ConfigService): RedisOptions {
         return {
             ...this.getBaseOptions(config),
-            db: config.getOrThrow<number>("REDIS_DB_LIMITER") ?? 1,
+            db: config.getOrThrow<number>("REDIS_DB_LIMITER"),
             maxRetriesPerRequest: 5,
         };
     }
@@ -45,6 +43,23 @@ export class RedisConfig {
             db: config.getOrThrow<number>("REDIS_DB_QUEUE"),
             maxRetriesPerRequest: null,
         };
+    }
+
+    private static buildConnectionOptions(config: ConfigService): RedisOptions {
+        const host = config.getOrThrow<string>("REDIS_HOST");
+        const { tls } = this.buildTlsOptions(config);
+
+        if (config.get<boolean>("REDIS_SENTINEL_ENABLED")) {
+            return {
+                sentinels: [{ host, port: config.getOrThrow<number>("REDIS_SENTINEL_PORT") }],
+                sentinelPassword: config.getOrThrow<string>("REDIS_PASSWORD"),
+                name: config.getOrThrow<string>("REDIS_SENTINEL_MASTER"),
+                role: "master",
+                ...(tls ? { tls, sentinelTLS: tls, enableTLSForSentinelMode: true } : {}),
+            };
+        } else {
+            return { host, port: config.getOrThrow<number>("REDIS_PORT"), ...(tls ? { tls } : {}) };
+        }
     }
 
     private static buildTlsOptions(config: ConfigService): Pick<RedisOptions, "tls"> {
