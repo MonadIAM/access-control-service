@@ -1,7 +1,10 @@
-.PHONY: env build up down restart lint lint-fix tsc knip secrets-check env-check intl-types intl-check lsp migrate migration empty-migration seed test utest itest coverage coverage-unit coverage-integration coverage-all graphify graphify-rebuild graphify-html
+.PHONY: env build up down restart lint lint-fix tsc knip secrets-check env-check intl-types intl-check lsp migrate migration empty-migration seed test utest itest coverage coverage-unit coverage-integration coverage-all graphify graphify-rebuild graphify-html image image-publish image-release image-cleanup
 
 SERVICE_EXEC_WITH_SECRETS := docker-compose exec service sh /usr/local/bin/with-vault-secrets.sh
 GRAPHIFY ?= graphify
+IMAGE ?= monadiam/access-control-service:local
+BASE_IMAGE ?= node:24.18.0-alpine3.24
+VCS_REF ?= $(shell git rev-parse HEAD)
 
 # Infrastructure
 env:
@@ -43,6 +46,16 @@ empty-migration:
 	$(SERVICE_EXEC_WITH_SECRETS) pnpm exec mikro-orm migration:create --blank --name=$(name)
 seed:
 	$(SERVICE_EXEC_WITH_SECRETS) pnpm run db:seed
+
+# Container / GHCR
+image:
+	docker build --file docker/app/Dockerfile --target runner --build-arg BASE_IMAGE="$(BASE_IMAGE)" --build-arg VCS_REF="$(VCS_REF)" --tag "$(IMAGE)" .
+image-publish:
+	bash .github/scripts/packages.sh sha
+image-release:
+	bash .github/scripts/packages.sh release
+image-cleanup:
+	bash .github/scripts/packages.sh cleanup
 
 # Test
 test:

@@ -1,0 +1,49 @@
+name: Publish service image
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publish:
+    name: Publish service image
+    if: ${{ github.ref == 'refs/heads/dev' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    concurrency:
+      group: access-control-service-package
+      cancel-in-progress: false
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build image from merged commit
+        run: make image IMAGE=monadiam/access-control-service:ci VCS_REF="$GITHUB_SHA"
+
+      - name: Log in to GHCR
+        run: printf '%s' "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Publish commit image
+        run: make image-publish
+
+      - name: Prune intermediate images
+        run: make image-cleanup
+
+      - name: Log out of GHCR
+        if: ${{ always() }}
+        run: docker logout ghcr.io

@@ -12,6 +12,9 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.env.*
+**/.env
+**/.env.*
 *.pem
 *.key
 
@@ -25,6 +28,7 @@ kafka_data/
 .git
 .gitignore
 .gitattributes
+.github
 
 # IDE configs and system files
 .vscode
@@ -38,3 +42,9 @@ Thumbs.db
 README.md
 Makefile
 scripts/
+coverage/
+graphify-out/
+.lsmcp/
+.codex/
+.agents/
+AGENTS.md
