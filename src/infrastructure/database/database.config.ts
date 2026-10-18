@@ -47,14 +47,13 @@ export class MikroOrmConfig implements ORM.Config.Contract {
         };
 
         if (config.get<boolean>("POSTGRES_SSL_ENABLED")) {
-            const rejectUnauthorized = config.getOrThrow<boolean>("POSTGRES_SSL_REJECT_UNAUTHORIZED");
-            const cert = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_CERT_FILE"), "utf8");
-            const key = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_KEY_FILE"), "utf8");
-            const ca = readFileSync(config.getOrThrow<string>("POSTGRES_SSL_CA_FILE"), "utf8");
-
             return {
                 ...baseOptions,
-                ssl: { rejectUnauthorized, servername: host, cert, key, ca },
+                ssl: {
+                    rejectUnauthorized: config.getOrThrow<boolean>("POSTGRES_SSL_REJECT_UNAUTHORIZED"),
+                    ca: readFileSync(config.getOrThrow<string>("POSTGRES_SSL_CA_FILE"), "utf8"),
+                    servername: host,
+                },
             };
         } else {
             return baseOptions;

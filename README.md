@@ -68,7 +68,7 @@ make up
 The local service container depends on:
 
 | Dependency    | Address inside Docker network    |
-|:--------------|:---------------------------------|
+| :------------ | :------------------------------- |
 | PostgreSQL    | `access-control-postgresql:5432` |
 | Redis         | `access-control-redis:6379`      |
 | Kafka         | `kafka:29092`                    |
@@ -83,10 +83,34 @@ Shared Docker networks are created by the infra repository:
 ----
 
 <details>
+<summary><strong>Stand Configuration</strong></summary>
+
+Runtime settings: [.env.stand.example](.env.stand.example). Compose settings are
+optional for the application; Kubernetes supplies env and mounted Secrets.
+
+| Connection | Stand mode                            | Mounted files / credentials                                    |
+| :--------- | :------------------------------------ | :------------------------------------------------------------- |
+| PostgreSQL | CNPG `rw` / `ro`, TLS, password       | `/tls/postgresql/ca.crt`; `POSTGRES_USER`, `POSTGRES_PASSWORD` |
+| Redis      | Sentinel, master discovery, mTLS      | `/tls/redis/{ca.crt,tls.crt,tls.key}`; `REDIS_PASSWORD`        |
+| Kafka      | TLS + SCRAM-SHA-512                   | `/tls/kafka/ca.crt`; `/secrets/kafka/password`                 |
+| Vault      | Transit through the Agent Unix socket | `/vault/proxy/agent.sock`, shared with the Agent sidecar       |
+
+**Migrations and seeding**
+
+```sh
+kubectl exec -n monadiam-apps <pod> -c service -- make migrate
+kubectl exec -n monadiam-apps <pod> -c service -- make seed
+```
+
+</details>
+
+----
+
+<details>
 <summary><strong>Local Ports</strong></summary>
 
 | Resource   | Port                                 |
-|:-----------|:-------------------------------------|
+| :--------- | :----------------------------------- |
 | HTTP API   | `4001`                               |
 | gRPC       | `50051` inside service container     |
 | PostgreSQL | `6001` on host, `5432` inside Docker |
@@ -127,6 +151,8 @@ Shared Docker networks are created by the infra repository:
 | `make migrate`                    | Apply pending MikroORM migrations in the running service container.           |
 | `make migration name="..."`       | Generate a MikroORM migration in the running service container.               |
 | `make empty-migration name="..."` | Generate a blank MikroORM migration.                                          |
+| `make seed-postgresql`            | Replace the PostgreSQL dataset.                                               |
+| `make seed-redis`                 | Replace Redis projections.                                                    |
 | `make seed`                       | Run PostgreSQL seeder, then Redis projection seeder.                          |
 | **Container / GHCR**              |                                                                               |
 | `make image`                      | Build the production image; accepts `IMAGE`, `BASE_IMAGE`, `VCS_REF`.         |
@@ -164,8 +190,10 @@ The seed command executes `db:seed:postgresql` first and `db:seed:redis` second.
 [release](.github/workflows/release.yml), [package operations](.github/scripts/packages.sh).
 
 [Dockerfile](docker/app/Dockerfile) targets: `development` for Compose and migration tooling;
-`runner` for GHCR, with production dependencies, compiled application and non-root user.
-Migrations and seeding are separate deployment steps; the runtime starts the service only.
+`runner` for GHCR, with production dependencies, compiled application, TypeScript sources
+for CLI commands, and a non-root user. The pinned `pnpm` is cached during image build;
+CLI commands use `pnpm` and `tsx` in both targets. Both targets include `make`; database commands run directly inside
+the container and through Compose when called from the host. Startup runs the service only.
 
 </details>
 

@@ -1,4 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
+import { readFileSync } from "fs";
+import { parse } from "dotenv";
 
 import { EnvironmentVariablesDTO } from "~common/dto";
 
@@ -97,6 +99,76 @@ const config = {
 
 describe("[Validator] - Environment", () => {
     describe("[Function] - validateEnv", () => {
+        it.each(["local", "stand"])(
+            "[case] - validates the actual %s template with injected credentials",
+            (environment) => {
+                // Arrange
+                const template = parse(readFileSync(`.env.${environment}.example`, "utf8"));
+                const input = {
+                    ...template,
+                    POSTGRES_USER: "service",
+                    POSTGRES_PASSWORD: "secret",
+                    REDIS_PASSWORD: "secret",
+                };
+
+                // Act
+                const result = validateEnv(input);
+
+                // Assert
+                expect(result.NODE_ENV).toBe(environment);
+                expect(result.REDIS_SENTINEL_ENABLED).toBe(environment === "stand");
+                expect(result.POSTGRES_WRITE_PORT).toBe(5432);
+            },
+        );
+
+        it.each([
+            { REDIS_SENTINEL_PORT: undefined },
+            { REDIS_SENTINEL_PORT: "65536" },
+            { REDIS_SENTINEL_MASTER: undefined },
+            { REDIS_SENTINEL_MASTER: "" },
+        ])("[case] - rejects incomplete or invalid Sentinel settings: %j", (override) => {
+            // Arrange
+            const input = {
+                ...config,
+                REDIS_SENTINEL_ENABLED: "true",
+                REDIS_SENTINEL_PORT: "26379",
+                REDIS_SENTINEL_MASTER: "access-control-redis",
+                ...override,
+            };
+
+            // Act
+            const act = (): unknown => validateEnv(input);
+
+            // Assert
+            expect(act).toThrow("REDIS_SENTINEL_");
+        });
+
+        it.each(["POSTGRES_SSL", "KAFKA_SSL"])("[case] - requires a CA file when %s is enabled", (prefix) => {
+            // Arrange
+            const input = {
+                ...config,
+                [`${prefix}_ENABLED`]: "true",
+                [`${prefix}_REJECT_UNAUTHORIZED`]: "true",
+            };
+
+            // Act
+            const act = (): unknown => validateEnv(input);
+
+            // Assert
+            expect(act).toThrow(`${prefix}_CA_FILE`);
+        });
+
+        it("[case] - requires a direct Redis port when Sentinel is disabled", () => {
+            // Arrange
+            const input = { ...config, REDIS_PORT: undefined, REDIS_SENTINEL_ENABLED: "false" };
+
+            // Act
+            const act = (): unknown => validateEnv(input);
+
+            // Assert
+            expect(act).toThrow("REDIS_PORT");
+        });
+
         it("[case] - returns a typed configuration with explicit number and boolean conversion", () => {
             // Arrange
 

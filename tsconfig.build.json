@@ -17,16 +17,13 @@
     },
   },
   "include": [
+    "./mikro-orm.config.ts",
     "./env.d.ts",
     "src/**/*",
   ],
   "exclude": [
-    "src/infrastructure/database/migrations/*",
-    "src/infrastructure/database/datasets/*",
-    "src/infrastructure/database/seeders/*",
     "src/**/*.integration.spec.ts",
     "src/**/*.unit.spec.ts",
-    "mikro-orm.config.ts",
     "jest.e2e.config.ts",
     "src/testing/**/*",
     "node_modules",

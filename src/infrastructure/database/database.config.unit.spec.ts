@@ -28,8 +28,6 @@ const values = {
 const tls = {
     POSTGRES_SSL_ENABLED: true,
     POSTGRES_SSL_REJECT_UNAUTHORIZED: true,
-    POSTGRES_SSL_CERT_FILE: "/cert",
-    POSTGRES_SSL_KEY_FILE: "/key",
     POSTGRES_SSL_CA_FILE: "/ca",
 };
 
@@ -108,17 +106,33 @@ describe("[Config] - MikroOrm", () => {
             expect(options.driverOptions!.ssl).toEqual({
                 rejectUnauthorized,
                 servername: "replica",
-                cert: "contents:/cert",
-                key: "contents:/key",
                 ca: "contents:/ca",
             });
-            expect(readFileSync.mock.calls).toEqual([
-                ["/cert", "utf8"],
-                ["/key", "utf8"],
-                ["/ca", "utf8"],
-            ]);
+            expect(readFileSync.mock.calls).toEqual([["/ca", "utf8"]]);
             expect(result).toMatchObject({ max: 7 });
         });
+
+        it.each(["read", "write"] as const)(
+            "[case] - supports CNPG password authentication with CA-only TLS for %s",
+            (kind) => {
+                // Arrange
+                const config = new ConfigService({
+                    ...values,
+                    ...tls,
+                });
+
+                // Act
+                const options = builder.buildOptions({ config, kind });
+
+                // Assert
+                expect(options.driverOptions!.ssl).toEqual({
+                    ca: "contents:/ca",
+                    rejectUnauthorized: true,
+                    servername: kind === "read" ? "replica" : "primary",
+                });
+                expect(readFileSync.mock.calls).toEqual([["/ca", "utf8"]]);
+            },
+        );
 
         it("[case] - propagates certificate read failures", () => {
             // Arrange

@@ -12,20 +12,17 @@ export abstract class KafkaUtils {
         return {
             ...(options.withClientId ? { clientId } : {}),
             brokers: [broker],
-            ...this.buildSslConfig(config, broker),
+            ...this.buildSslConfig(config),
             ...this.buildSaslConfig(config),
         };
     }
 
-    private static buildSslConfig(config: ConfigService, broker: string): Pick<KafkaConfig, "ssl"> {
+    private static buildSslConfig(config: ConfigService): Pick<KafkaConfig, "ssl"> {
         if (config.get<boolean>("KAFKA_SSL_ENABLED")) {
             return {
                 ssl: {
                     rejectUnauthorized: config.getOrThrow<boolean>("KAFKA_SSL_REJECT_UNAUTHORIZED"),
-                    cert: readFileSync(config.getOrThrow<string>("KAFKA_SSL_CERT_FILE"), "utf8"),
                     ca: [readFileSync(config.getOrThrow<string>("KAFKA_SSL_CA_FILE"), "utf8")],
-                    key: readFileSync(config.getOrThrow<string>("KAFKA_SSL_KEY_FILE"), "utf8"),
-                    servername: broker.split(":")[0],
                 },
             };
         } else {

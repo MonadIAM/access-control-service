@@ -7,6 +7,11 @@
         "watch": true
       },
       {
+        "include": "infrastructure/redis/scripts/**/*.lua",
+        "outDir": "dist/src",
+        "watch": true
+      },
+      {
         "include": "common/dictionaries/**/*.json",
         "outDir": "dist/src",
         "watch": true

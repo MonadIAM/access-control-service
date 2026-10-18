@@ -8,6 +8,10 @@ pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Test sources
+**/*.spec.ts
+src/testing/
+
 # Environment variables and secrets
 .env
 .env.local
@@ -40,7 +44,6 @@ Thumbs.db
 
 # Documentation and management scripts
 README.md
-Makefile
 scripts/
 coverage/
 graphify-out/
