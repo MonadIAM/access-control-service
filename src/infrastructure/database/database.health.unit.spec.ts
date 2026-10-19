@@ -38,12 +38,12 @@ describe("[HealthIndicator] - Database", () => {
             // Assert
             expect(result).toEqual({ postgres: { status: "up" } });
             for (const current of [write, read]) {
-                expect(current.isConnected).toHaveBeenCalledTimes(1);
+                expect(current.isConnected).not.toHaveBeenCalled();
                 expect(current.execute).toHaveBeenCalledWith("SELECT 1");
             }
         });
 
-        it.each(["write", "read"])("[case] - reports a disconnected %s connection", async (kind) => {
+        it.each(["write", "read"])("[case] - probes a lazy %s connection even when isConnected is false", async (kind) => {
             // Arrange
             const current = kind === "write" ? write : read;
             current.isConnected.mockResolvedValue(false);
@@ -53,12 +53,10 @@ describe("[HealthIndicator] - Database", () => {
 
             // Assert
             expect(result).toEqual({
-                database: { status: "down", message: "connection_lost" },
+                database: { status: "up" },
             });
-            expect(current.execute).not.toHaveBeenCalled();
-            if (kind === "write") {
-                expect(read.isConnected).not.toHaveBeenCalled();
-            }
+            expect(current.execute).toHaveBeenCalledWith("SELECT 1");
+            expect(current.isConnected).not.toHaveBeenCalled();
         });
 
         it.each([
@@ -77,9 +75,9 @@ describe("[HealthIndicator] - Database", () => {
             });
         });
 
-        it("[case] - handles failure while checking connection state", async () => {
+        it("[case] - stops after the write connection query fails", async () => {
             // Arrange
-            write.isConnected.mockRejectedValue(new Error("unavailable"));
+            write.execute.mockRejectedValue(new Error("unavailable"));
 
             // Act
             const result = await indicator.isHealthy("database");
@@ -88,8 +86,8 @@ describe("[HealthIndicator] - Database", () => {
             expect(result).toEqual({
                 database: { status: "down", message: "internal_driver_error" },
             });
-            expect(write.execute).not.toHaveBeenCalled();
-            expect(read.isConnected).not.toHaveBeenCalled();
+            expect(write.execute).toHaveBeenCalledWith("SELECT 1");
+            expect(read.execute).not.toHaveBeenCalled();
         });
     });
 });

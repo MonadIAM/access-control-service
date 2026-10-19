@@ -32,8 +32,8 @@ void (async function (): Promise<void> {
 
     BootstrapPipes.applyGlobalPipes(application);
     BootstrapMetrics.registerMetricsHooks(application);
-    await BootstrapReference.registerReference(application);
     await BootstrapSecurity.registerSecurityPlugins(application);
+    await BootstrapReference.registerReference(application);
 
     const kafkaConfig = application.get<MicroserviceOptions>(KAFKA_CONFIG);
     const grpcConfig = application.get<MicroserviceOptions>(GRPC_CONFIG);

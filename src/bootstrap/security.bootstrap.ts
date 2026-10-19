@@ -107,20 +107,37 @@ export abstract class BootstrapSecurity {
         const serviceOrigins: string[] = JSON.parse(process.env.ALLOWED_SERVICE_ORIGINS);
         const reference = serviceOrigins.map((url) => [`${url}/docs/openapi.json`, `${url}/docs`, `${url}/api/`]).flat();
         const isLocal = process.env.NODE_ENV === NodeEnv.LOCAL;
+        const directives = {
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'"],
+            connectSrc: ["'self'"],
+            imgSrc: ["'self'"],
+            upgradeInsecureRequests: [],
+            defaultSrc: ["'self'"],
+        };
+        const referenceDirectives = {
+            ...directives,
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            connectSrc: ["'self'", ...reference],
+            imgSrc: ["'self'", "data:"],
+        };
+
+        application
+            .getHttpAdapter()
+            .getInstance()
+            .addHook("onRoute", (route) => {
+                if (route.url === "/docs" || route.url.startsWith("/docs/")) {
+                    route.helmet = { contentSecurityPolicy: { directives: referenceDirectives } };
+                }
+            });
 
         await application.register(fastifyHelmet, {
             crossOriginEmbedderPolicy: true,
             crossOriginOpenerPolicy: { policy: "same-origin" },
             crossOriginResourcePolicy: { policy: "same-origin" },
             contentSecurityPolicy: {
-                directives: {
-                    scriptSrc: isLocal ? ["'self'", "'unsafe-inline'"] : ["'self'"],
-                    styleSrc: isLocal ? ["'self'", "'unsafe-inline'"] : ["'self'"],
-                    connectSrc: isLocal ? ["'self'", ...reference] : ["'self'"],
-                    imgSrc: isLocal ? ["'self'", "data:"] : ["'self'"],
-                    upgradeInsecureRequests: [],
-                    defaultSrc: ["'self'"],
-                },
+                directives: isLocal ? referenceDirectives : directives,
             },
             hsts: {
                 maxAge: hstsMaxAge,
