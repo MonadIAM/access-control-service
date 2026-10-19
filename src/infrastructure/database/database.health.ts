@@ -15,26 +15,12 @@ export class DatabaseHealthIndicator {
     public async isHealthy<T extends string>(key: T): Promise<HealthIndicatorResult<T>> {
         const indicator = this.healthIndicatorService.check(key);
         try {
-            await this.assertConnection(this.writeEntityManager);
-            await this.assertConnection(this.readEntityManager);
+            await this.writeEntityManager.getConnection().execute("SELECT 1");
+            await this.readEntityManager.getConnection().execute("SELECT 1");
 
             return indicator.up();
-        } catch (error) {
-            return indicator.down({
-                message:
-                    error instanceof Error && error.message === "connection_lost"
-                        ? "connection_lost"
-                        : "internal_driver_error",
-            });
-        }
-    }
-
-    private async assertConnection(entityManager: ORM.EntityManager): Promise<void> {
-        const isConnected = await entityManager.getConnection().isConnected();
-        if (isConnected) {
-            await entityManager.getConnection().execute("SELECT 1");
-        } else {
-            throw new Error("connection_lost");
+        } catch {
+            return indicator.down({ message: "internal_driver_error" });
         }
     }
 }

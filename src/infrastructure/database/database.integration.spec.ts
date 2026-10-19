@@ -54,23 +54,51 @@ describe("[Infrastructure] - Database", () => {
             }
         });
 
-        it("[case] - reports a closed read connection as down and returns up after reconnecting", async () => {
+        it("[case] - reopens a closed read connection while checking readiness", async () => {
             // Arrange
             await read!.close(true);
 
             // Act
             const result = await health.isHealthy("database");
-            await read!.reconnect();
-            const result2 = await health.isHealthy("database");
-
-            const result1 = registry.snapshot({ kind: "read" })?.total;
+            const result2 = registry.snapshot({ kind: "read" })?.total;
 
             // Assert
-            expect(result).toEqual({
-                database: { status: "down", message: "connection_lost" },
-            });
-            expect(result2).toEqual({ database: { status: "up" } });
-            expect(result1).toBeGreaterThan(0);
+            expect(result).toEqual({ database: { status: "up" } });
+            expect(result2).toBeGreaterThan(0);
         });
+
+        it.each(["write", "read"] as const)(
+            "[case] - reports an unavailable %s database as down and recovers after restoration",
+            async (kind) => {
+                // Arrange
+                const config = PostgresResource.config();
+                config.set("POSTGRES_DB", "health_check");
+                const builder = new MikroOrmConfig(registry);
+                const unavailable = await MikroORM.init({
+                    ...builder.buildOptions({ config, kind }),
+                    ensureDatabase: false,
+                    debug: false,
+                });
+                const indicator = new DatabaseHealthIndicator(
+                    kind === "write" ? unavailable.em : write!.em,
+                    kind === "read" ? unavailable.em : read!.em,
+                    new HealthIndicatorService(),
+                );
+
+                try {
+                    // Act
+                    const result = await indicator.isHealthy("database");
+                    await write!.em.getConnection().execute("CREATE DATABASE health_check");
+                    const result2 = await indicator.isHealthy("database");
+
+                    // Assert
+                    expect(result).toEqual({ database: { status: "down", message: "internal_driver_error" } });
+                    expect(result2).toEqual({ database: { status: "up" } });
+                } finally {
+                    await unavailable.close(true);
+                    await write!.em.getConnection().execute("DROP DATABASE IF EXISTS health_check WITH (FORCE)");
+                }
+            },
+        );
     });
 });
