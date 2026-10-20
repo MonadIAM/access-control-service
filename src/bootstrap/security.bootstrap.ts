@@ -128,7 +128,10 @@ export abstract class BootstrapSecurity {
             .getInstance()
             .addHook("onRoute", (route) => {
                 if (route.url === "/docs" || route.url.startsWith("/docs/")) {
-                    route.helmet = { contentSecurityPolicy: { directives: referenceDirectives } };
+                    route.helmet = {
+                        contentSecurityPolicy: { directives: referenceDirectives },
+                        crossOriginOpenerPolicy: { policy: "unsafe-none" },
+                    };
                 }
             });
 

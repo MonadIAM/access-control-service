@@ -3,7 +3,7 @@
   "description": "IAM | Access Control & AuthZ: hierarchical RBAC, DAC permission overrides, separation of duties (SoD), role delegation policies and realm-scoped access control.",
   "author": "Daniil Egorov (https://github.com/Lambdius)",
   "license": "SEE LICENSE IN LICENSE",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/index.js",
   "engines": {
     "node": "24.18.0"
@@ -69,7 +69,7 @@
     "@mikro-orm/nestjs": "7.0.2",
     "@mikro-orm/postgresql": "7.1.13",
     "@mikro-orm/seeder": "7.1.13",
-    "@monadiam/shared": "github:MonadIAM/shared#v3.0.1",
+    "@monadiam/shared": "github:MonadIAM/shared#v3.0.3",
     "@nest-lab/throttler-storage-redis": "1.2.0",
     "@nestjs/bullmq": "11.0.5",
     "@nestjs/common": "11.2.1",
