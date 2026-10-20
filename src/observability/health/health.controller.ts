@@ -1,11 +1,13 @@
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Controller, Get } from "@nestjs/common";
+import { SkipThrottle } from "@nestjs/throttler";
 import { HealthCheck } from "@nestjs/terminus";
 
 import { SkipInterceptors, Public } from "~common/decorators";
 
 import { HealthService } from "./health.service";
 
+@SkipThrottle()
 @ApiTags("Health")
 @SkipInterceptors()
 @Controller("health")
