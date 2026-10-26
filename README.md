@@ -82,7 +82,8 @@ Shared Docker networks are created by the infrastructure repository:
 | `make empty-migration name="..."` | Generate a blank MikroORM migration.                                                       |
 | `make seed-postgresql`            | Replace the PostgreSQL dataset.                                                            |
 | `make seed-redis`                 | Replace Redis projections.                                                                 |
-| `make seed`                       | Run PostgreSQL seeder, then Redis projection seeder.                                       |
+| `make seed`                       | Replace PostgreSQL data and Redis projections with the `system` dataset.                   |
+| `make seed-demo`                  | Replace PostgreSQL data and Redis projections with the `demo` dataset.                     |
 | **Test**                          |                                                                                            |
 | `make test`                       | Run unit and integration tests (Docker required).                                          |
 | `make utest`                      | Run unit tests.                                                                            |

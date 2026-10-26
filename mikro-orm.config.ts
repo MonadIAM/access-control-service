@@ -56,7 +56,7 @@ const config: Options = {
         path: "./dist/src/infrastructure/database",
         pathTs: "./src/infrastructure/database",
         defaultSeeder: "System",
-        glob: "seeder.{js,ts}",
+        glob: "*.seeder.{js,ts}",
     },
 
     pool: {

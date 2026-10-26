@@ -1,4 +1,4 @@
-.PHONY: env build up down restart lint lint-fix tsc knip secrets-check env-check intl-types intl-check lsp migrate migration empty-migration seed seed-postgresql seed-redis test utest itest coverage coverage-unit coverage-integration coverage-all graphify graphify-rebuild graphify-html image image-publish image-release image-cleanup
+.PHONY: env build up down restart lint lint-fix tsc knip secrets-check env-check intl-types intl-check lsp migrate migration empty-migration seed seed-demo seed-postgresql seed-redis test utest itest coverage coverage-unit coverage-integration coverage-all graphify graphify-rebuild graphify-html image image-publish image-release image-cleanup
 
 SERVICE_EXEC_WITH_SECRETS ?= docker-compose exec service sh /usr/local/bin/with-vault-secrets.sh
 GRAPHIFY ?= graphify
@@ -45,12 +45,11 @@ migration:
 empty-migration:
 	$(SERVICE_EXEC_WITH_SECRETS) pnpm exec mikro-orm migration:create --blank --name=$(name)
 seed:
-	$(MAKE) seed-postgresql
-	$(MAKE) seed-redis
-seed-postgresql:
-	$(SERVICE_EXEC_WITH_SECRETS) pnpm run db:seed:postgresql
-seed-redis:
+	$(SERVICE_EXEC_WITH_SECRETS) pnpm run db:seed:postgresql --class System
 	$(SERVICE_EXEC_WITH_SECRETS) pnpm run db:seed:redis
+seed-demo:
+	$(SERVICE_EXEC_WITH_SECRETS) pnpm run db:seed:postgresql --class Demo
+	$(SERVICE_EXEC_WITH_SECRETS) pnpm run db:seed:redis:demo
 
 # Container / GHCR
 image:

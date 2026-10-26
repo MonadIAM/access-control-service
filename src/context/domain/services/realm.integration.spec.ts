@@ -1,4 +1,4 @@
-import { bootstrap } from "@monadiam/shared/datasets/access-control";
+import { bootstrap } from "@monadiam/shared/datasets/system/access-control";
 import { describe, expect, it } from "@jest/globals";
 import { randomUUID } from "node:crypto";
 

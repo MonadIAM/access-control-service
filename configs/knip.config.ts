@@ -13,7 +13,7 @@ const config: KnipConfig = {
         "src/main.ts",
         // Standalone scripts - run directly, not via import
         "src/infrastructure/database/migrations/*.ts",
-        "src/infrastructure/database/seeder.ts",
+        "src/infrastructure/database/*.seeder.ts",
         // MikroORM entity schemas - loaded via glob in mikro-orm.config.ts, not imported
         "src/common/transaction-manager/schemas/*.ts",
         "src/context/infrastructure/schemas/*.ts",

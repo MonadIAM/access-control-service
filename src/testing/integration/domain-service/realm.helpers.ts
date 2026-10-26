@@ -1,4 +1,4 @@
-import { bootstrap } from "@monadiam/shared/datasets/access-control";
+import { bootstrap } from "@monadiam/shared/datasets/system/access-control";
 import { SYSTEM_REALM_ID } from "@monadiam/shared";
 import { ConfigService } from "@nestjs/config";
 

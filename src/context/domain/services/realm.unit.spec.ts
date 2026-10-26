@@ -1,5 +1,5 @@
+import { bootstrap } from "@monadiam/shared/datasets/system/access-control";
 import { afterEach, describe, expect, it, jest } from "@jest/globals";
-import { bootstrap } from "@monadiam/shared/datasets/access-control";
 
 import { RoleActorType, RoleArchetype, SYSTEM_REALM_ID } from "~context/enums";
 import { RealmUnitHelpers } from "~testing/unit/domain-service/realm.helpers";
