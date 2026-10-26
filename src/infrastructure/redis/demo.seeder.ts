@@ -1,4 +1,4 @@
-import { dataset } from "@monadiam/shared/datasets/access-control";
+import { dataset } from "@monadiam/shared/datasets/demo/access-control";
 import { ConfigService } from "@nestjs/config";
 import { readFile } from "node:fs/promises";
 import { isString } from "class-validator";
@@ -12,10 +12,12 @@ import { RedisConfig } from "./redis.config";
 
 dotenv.config();
 
-class ProjectionSeed {
+class Demo {
     private static readonly redis = new Redis(RedisConfig.buildCacheOptions(new ConfigService(validateEnv(process.env))));
 
     public static async run(): Promise<void> {
+        const payload = this.getPayload();
+
         try {
             await this.redis.connect();
 
@@ -23,7 +25,7 @@ class ProjectionSeed {
             const seedScript = await this.loadScript("seed.lua");
 
             await this.redis.evalsha(cleanScript, 0);
-            await this.redis.evalsha(seedScript, 0, this.getPayload());
+            await this.redis.evalsha(seedScript, 0, payload);
         } catch (_error) {
             process.exit(1);
         } finally {
@@ -46,6 +48,7 @@ class ProjectionSeed {
         return JSON.stringify({
             rolePermissionAssignments: dataset.RolePermissionAssignments.redis,
             accountRoleAssignments: dataset.AccountRoleAssignments.redis,
+            permissionOverrides: dataset.PermissionOverrides.redis,
             roleClosures: dataset.RoleClosures.redis,
             permissions: dataset.Permissions.redis,
             realms: dataset.Realms.redis,
@@ -54,4 +57,4 @@ class ProjectionSeed {
     }
 }
 
-ProjectionSeed.run().catch(() => process.exit(1));
+Demo.run().catch(() => process.exit(1));
