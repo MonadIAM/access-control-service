@@ -26,9 +26,9 @@ declare global {
         }
 
         namespace RequestFactory {
-            type Result = Req<{ Querystring: { realm?: string } }>;
+            type Result = Req<{ Querystring: { realm?: string; factor?: unknown } }>;
 
-            type Props = Partial<Pick<Result, "headers" | "metadata" | "query" | "session">>;
+            type Props = Partial<Pick<Result, "headers" | "metadata" | "query" | "session" | "body" | "params">>;
 
             type Signature = (props?: Props) => Result;
         }
@@ -93,11 +93,13 @@ declare global {
             ) => ReauthenticationGuard;
 
             type Props = {
+                proof?: Nullable<InfrastructureServices.ReauthenticationCache.Proof>;
                 active?: boolean;
             };
 
             type Result = {
                 exists: Jest.MockedFunction<InfrastructureServices.ReauthenticationCache.Exists.Signature>;
+                get: Jest.MockedFunction<InfrastructureServices.ReauthenticationCache.Get.Signature>;
                 guard: ReauthenticationGuard;
             };
 

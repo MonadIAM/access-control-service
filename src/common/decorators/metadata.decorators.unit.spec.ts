@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import { Reflector } from "@nestjs/core";
 
-import { PermissionCode } from "~context/enums";
+import { PermissionCode, ReauthenticationMethod } from "~context/enums";
 
 import { RequireGlobalPermission } from "./require-global-permission.decorator";
 import { RequirePermission } from "./require-permission.decorator";
@@ -71,6 +71,45 @@ describe("[Decorator] - Metadata", () => {
     });
 
     describe("[Function] - Reauthentication", () => {
+        it("[case] - exposes the allowed methods and the requirement to use the same factor", () => {
+            // Arrange
+            const options: Reauthentication.Options = {
+                methods: [ReauthenticationMethod.TOTP],
+                sameFactor: true,
+            };
+            class Controller {
+                @Reauthentication(options)
+                public remove(): void {}
+                public ordinary(): void {}
+            }
+
+            // Act
+            const result = reflector.get(REAUTHENTICATION, Controller.prototype.remove);
+            const result2 = reflector.get(REAUTHENTICATION, Controller.prototype.ordinary);
+
+            // Assert
+            expect(result).toEqual(options);
+            expect(result2).toBeUndefined();
+        });
+
+        it("[case] - exposes only the allowed methods without affecting another handler", () => {
+            // Arrange
+            class Controller {
+                @Reauthentication({ methods: [ReauthenticationMethod.OTP, ReauthenticationMethod.TOTP] })
+                public restricted(): void {}
+                @Reauthentication()
+                public unrestricted(): void {}
+            }
+
+            // Act
+            const result = reflector.get(REAUTHENTICATION, Controller.prototype.restricted);
+            const result2 = reflector.get(REAUTHENTICATION, Controller.prototype.unrestricted);
+
+            // Assert
+            expect(result).toEqual({ methods: [ReauthenticationMethod.OTP, ReauthenticationMethod.TOTP] });
+            expect(result2).toEqual({});
+        });
+
         it("[case] - exposes the reauthentication requirement only on its handler", () => {
             // Arrange
             class Controller {
@@ -84,7 +123,7 @@ describe("[Decorator] - Metadata", () => {
             const result2 = reflector.get(REAUTHENTICATION, Controller.prototype.ordinary);
 
             // Assert
-            expect(result).toBe(true);
+            expect(result).toEqual({});
             expect(result2).toBeUndefined();
         });
     });
