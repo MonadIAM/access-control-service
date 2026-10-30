@@ -58,7 +58,11 @@ export class ReauthenticationConsumer implements Consumers.Reauthentication.Cont
         this.schemaRegistry.validate({ topic: KafkaTopic.REAUTHENTICATION, value: message });
         const ttl = Math.floor((message.payload.expiresAt - Date.now()) / 1e3);
         if (ttl > 0) {
-            await this.reauthenticationCacheService.set({ session: message.payload.session, ttl });
+            await this.reauthenticationCacheService.set({
+                session: message.payload.session,
+                proof: message.payload.proof,
+                ttl,
+            });
         }
     }
 

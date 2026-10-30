@@ -109,12 +109,16 @@ export class GuardUnitHelpers extends DomainServiceCoreUnitHelpers implements Un
         const exists = jest.fn<InfrastructureServices.ReauthenticationCache.Exists.Signature>(() =>
             Promise.resolve(props.active ?? false),
         );
+        const get = jest.fn<InfrastructureServices.ReauthenticationCache.Get.Signature>(() =>
+            Promise.resolve(props.proof ?? null),
+        );
         const cache = this.contract<InfrastructureServices.ReauthenticationCache.PublicContract>({
             delete: jest.fn(() => Promise.resolve()),
             set: jest.fn(() => Promise.resolve()),
             exists,
+            get,
         });
 
-        return { guard: new this.ReauthenticationGuard(cache, new Reflector()), exists };
+        return { guard: new this.ReauthenticationGuard(cache, new Reflector()), exists, get };
     }
 }

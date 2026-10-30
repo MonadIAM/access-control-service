@@ -1,24 +1,35 @@
-declare namespace Extract {
-    type Meta = {
-        userAgent: string;
-        ip: string;
-    };
+import type { ReauthenticationMethod } from "~context/enums";
 
-    namespace Session {
-        type Public = {
-            realms?: string[];
-            account?: string;
-            session?: string;
-            client?: string;
-            scope?: string;
+declare global {
+    namespace Reauthentication {
+        type Options = {
+            methods?: ReauthenticationMethod[];
+            sameFactor?: boolean;
+        };
+    }
+
+    namespace Extract {
+        type Meta = {
+            userAgent: string;
+            ip: string;
         };
 
-        type Auth = {
-            realms: string[];
-            account: string;
-            session: string;
-            client: string;
-            scope: string;
-        };
+        namespace Session {
+            type Public = {
+                realms?: string[];
+                account?: string;
+                session?: string;
+                client?: string;
+                scope?: string;
+            };
+
+            type Auth = {
+                realms: string[];
+                account: string;
+                session: string;
+                client: string;
+                scope: string;
+            };
+        }
     }
 }
