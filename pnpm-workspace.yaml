@@ -8,6 +8,7 @@ savePrefix: ""
 overrides:
   "schema-utils@^4": "4.7.0"
 allowBuilds:
+  "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/d5a554bb492aa532296e762b50b42bb2c00d295b": true
   "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/333656b96e8ae042d0a8b2723db5872efb0ba2f5": true
   "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/5448773658ab60255d6757a5b60b47c4970666ed": true
   "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/a1007441a939e7029b32895aa5b6076d1b83c888": true

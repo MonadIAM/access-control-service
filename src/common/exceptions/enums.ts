@@ -19,6 +19,7 @@ export enum ErrorKind {
 }
 
 export enum ErrorCode {
+    REAUTHENTICATION_REQUIRED = "reauthentication_required",
     FOREIGN_KEY_VIOLATION = "foreign_key_violation",
     CONNECTION_ERROR = "database_connection_error",
     NOT_NULL_VIOLATION = "not_null_violation",
