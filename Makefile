@@ -1,7 +1,6 @@
-.PHONY: env build up down restart lint lint-fix tsc knip secrets-check env-check intl-types intl-check lsp migrate migration empty-migration seed seed-demo seed-postgresql seed-redis test utest itest coverage coverage-unit coverage-integration coverage-all graphify graphify-rebuild graphify-html image image-publish image-release image-cleanup
+.PHONY: env build up down restart lint lint-fix tsc knip secrets-check env-check intl-types intl-check migrate migration empty-migration seed seed-demo seed-postgresql seed-redis test utest itest coverage coverage-unit coverage-integration coverage-all image image-publish image-release image-cleanup
 
 SERVICE_EXEC_WITH_SECRETS ?= docker-compose exec service sh /usr/local/bin/with-vault-secrets.sh
-GRAPHIFY ?= graphify
 IMAGE ?= monadiam/access-control-service:local
 BASE_IMAGE ?= node:24.18.0-alpine3.24
 VCS_REF ?= $(shell git rev-parse HEAD)
@@ -34,8 +33,6 @@ intl-types:
 	pnpm run intl:types
 intl-check:
 	pnpm run intl:check
-lsp:
-	@pnpm --silent run lsp
 
 # Database
 migrate:
@@ -74,15 +71,3 @@ coverage-unit:
 	pnpm run coverage:unit
 coverage-integration:
 	pnpm run coverage:integration
-
-# Local code graph
-graphify:
-	$(GRAPHIFY) extract . --code-only
-	$(GRAPHIFY) cluster-only . --no-viz --no-label
-
-graphify-rebuild:
-	$(GRAPHIFY) extract . --code-only --force
-	$(GRAPHIFY) cluster-only . --no-viz --no-label
-
-graphify-html: graphify
-	$(GRAPHIFY) export html

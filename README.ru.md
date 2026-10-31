@@ -95,11 +95,6 @@ make up
 | `make image-publish`                    | Опубликовать образ с SHA коммита (GitHub Actions).                             |
 | `make image-release`                    | Добавить опубликованному SHA-образу тег версии пакета (GitHub Actions).        |
 | `make image-cleanup`                    | Оставить последние 10 промежуточных SHA-образов и все релизы (GitHub Actions). |
-| **LLM-инструменты (экспериментальные)** |                                                                                |
-| `make lsp`                              | Запустить MCP-сервер для навигации по TypeScript через stdio.                  |
-| `make graphify`                         | Создать или обновить локальный граф кода и отчёт Markdown.                     |
-| `make graphify-rebuild`                 | Пересоздать граф кода и отчёт с полным сканированием проекта.                  |
-| `make graphify-html`                    | Обновить граф и отчёт, затем экспортировать визуализацию HTML.                 |
 
 </details>
 
