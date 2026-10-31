@@ -2,9 +2,9 @@ import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/commo
 import { isObject, isString } from "class-validator";
 import { Reflector } from "@nestjs/core";
 
+import { ErrorCode, Exception } from "~common/exceptions";
 import { ReauthenticationMethod } from "~context/enums";
 import { REAUTHENTICATION } from "~common/decorators";
-import { Exception } from "~common/exceptions";
 
 import { REAUTHENTICATION_CACHE_SERVICE } from "../services";
 
@@ -54,7 +54,10 @@ export class ReauthenticationGuard implements CanActivate {
                 if (active) {
                     return true;
                 } else {
-                    throw Exception.forbidden({ messageKey: `${this.dictionaryPath}.REAUTHENTICATION_REQUIRED` });
+                    throw Exception.forbidden({
+                        messageKey: `${this.dictionaryPath}.REAUTHENTICATION_REQUIRED`,
+                        code: ErrorCode.REAUTHENTICATION_REQUIRED,
+                    });
                 }
             } else {
                 throw Exception.unauthorized({

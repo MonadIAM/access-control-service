@@ -21,6 +21,15 @@ const details: Exception.ValidationDetail[] = [
 ];
 
 const failures: Record<string, unknown> = {
+    forbidden: Exception.forbidden({ messageKey: "auth.FORBIDDEN" }),
+    cors: Exception.forbidden({
+        messageKey: "cors.FORBIDDEN",
+        code: ErrorCode.CORS_ORIGIN_FORBIDDEN,
+    }),
+    reauthentication: Exception.forbidden({
+        messageKey: "guard.reauthentication.REAUTHENTICATION_REQUIRED",
+        code: ErrorCode.REAUTHENTICATION_REQUIRED,
+    }),
     external: Exception.externalServiceFailed({ messageKey: "vault.UNAVAILABLE" }),
     httpServer: new HttpException("SECRET: upstream failure", 503),
     httpClient: new HttpException("request.INVALID", 400),
@@ -104,6 +113,35 @@ describe("[Filter] - Exception", () => {
                 args: { resource: "session" },
             });
             expect(log).not.toHaveBeenCalled();
+        });
+
+        it("[case] - preserves the reauthentication code independently of the translated message", async () => {
+            // Arrange
+
+            // Act
+            const response = await app.inject({ method: "GET", url: "/errors/reauthentication" });
+
+            // Assert
+            expect(response.statusCode).toBe(403);
+            expect(response.json()).toMatchObject({
+                error: ErrorKind.FORBIDDEN,
+                code: ErrorCode.REAUTHENTICATION_REQUIRED,
+                message: "en:guard.reauthentication.REAUTHENTICATION_REQUIRED",
+            });
+        });
+
+        it.each([
+            { scenario: "forbidden", code: ErrorCode.FORBIDDEN },
+            { scenario: "cors", code: ErrorCode.CORS_ORIGIN_FORBIDDEN },
+        ])("[case] - preserves the error kind and specific code for $scenario", async ({ scenario, code }) => {
+            // Arrange
+
+            // Act
+            const response = await app.inject({ method: "GET", url: `/errors/${scenario}` });
+
+            // Assert
+            expect(response.statusCode).toBe(403);
+            expect(response.json()).toMatchObject({ error: ErrorKind.FORBIDDEN, code });
         });
 
         it("[case] - translates validation details using request language and the last path segment", async () => {

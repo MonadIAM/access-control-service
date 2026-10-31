@@ -4,6 +4,7 @@ import { HttpStatus } from "@nestjs/common";
 import { GuardUnitHelpers } from "~testing/unit/guards/guard.helpers";
 import { REAUTHENTICATION } from "~common/decorators/tokens";
 import { ReauthenticationMethod } from "~context/enums";
+import { ErrorCode } from "~common/exceptions";
 
 const SESSION_ID = "00000000-0000-4000-8000-200000000001";
 const FACTOR_ID = "00000000-0000-4000-8000-200000000002";
@@ -52,6 +53,7 @@ describe("[Guard] - Reauthentication", () => {
             // Assert
             await expect(result).rejects.toMatchObject({
                 message: "guard.reauthentication.REAUTHENTICATION_REQUIRED",
+                code: ErrorCode.REAUTHENTICATION_REQUIRED,
                 statusCode: HttpStatus.FORBIDDEN,
             });
             expect(exists).not.toHaveBeenCalled();
@@ -217,6 +219,7 @@ describe("[Guard] - Reauthentication", () => {
             } else {
                 await expect(result).rejects.toMatchObject({
                     message: "guard.reauthentication.REAUTHENTICATION_REQUIRED",
+                    code: ErrorCode.REAUTHENTICATION_REQUIRED,
                     statusCode: HttpStatus.FORBIDDEN,
                 });
             }
@@ -283,6 +286,7 @@ describe("[Guard] - Reauthentication", () => {
             // Assert
             await expect(result).rejects.toMatchObject({
                 message: "guard.reauthentication.REAUTHENTICATION_REQUIRED",
+                code: ErrorCode.REAUTHENTICATION_REQUIRED,
                 statusCode: HttpStatus.FORBIDDEN,
             });
             expect(exists).toHaveBeenCalledWith({ session: SESSION_ID, methods: [] });

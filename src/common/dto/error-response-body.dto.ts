@@ -42,6 +42,11 @@ export class ErrorResponseBodyDTO {
     @Expose()
     @Validator.IsString()
     @ApiProperty({ required: true, type: String })
+    declare public code: string;
+
+    @Expose()
+    @Validator.IsString()
+    @ApiProperty({ required: true, type: String })
     declare public error: string;
 
     @Expose()
