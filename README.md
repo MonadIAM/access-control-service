@@ -96,11 +96,6 @@ Shared Docker networks are created by the infrastructure repository:
 | `make image-publish`              | Publish the commit SHA image (GitHub Actions).                                             |
 | `make image-release`              | Tag the published SHA image with the package version (GitHub Actions).                     |
 | `make image-cleanup`              | Keep the last 10 intermediate SHA images; preserve releases (GitHub Actions).              |
-| **LLM Tools (experimental)**      |                                                                                            |
-| `make lsp`                        | Start the local TypeScript MCP server over stdio.                                          |
-| `make graphify`                   | Create or update the local code graph and Markdown report.                                 |
-| `make graphify-rebuild`           | Rebuild the code graph and report with a full project scan.                                |
-| `make graphify-html`              | Update the graph and report, then export HTML visualization.                               |
 
 </details>
 
