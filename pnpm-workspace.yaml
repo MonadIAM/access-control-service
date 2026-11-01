@@ -7,6 +7,9 @@ loglevel: info
 savePrefix: ""
 overrides:
   "schema-utils@^4": "4.7.0"
+  "@nestjs/platform-fastify>fastify": "5.12.7"
+  "@nestjs/swagger>js-yaml": "5.4.1"
+  "glob": "14.0.2"
 allowBuilds:
   "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/d5a554bb492aa532296e762b50b42bb2c00d295b": true
   "@launchql/protobufjs": true
