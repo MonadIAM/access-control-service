@@ -54,8 +54,8 @@ importers:
         specifier: 7.1.13
         version: 7.1.13(@mikro-orm/core@7.1.13)
       '@monadiam/shared':
-        specifier: github:MonadIAM/shared#v3.4.0
-        version: https://codeload.github.com/MonadIAM/shared/tar.gz/d5a554bb492aa532296e762b50b42bb2c00d295b
+        specifier: github:MonadIAM/shared#v3.4.1
+        version: https://codeload.github.com/MonadIAM/shared/tar.gz/2f12914ce10f28699b3837e42a1a2e523fb46fce
       '@nest-lab/throttler-storage-redis':
         specifier: 1.2.0
         version: 1.2.0(@nestjs/common@11.2.8(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.8)(@nestjs/throttler@6.5.0(@nestjs/common@11.2.8(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.2.8)(reflect-metadata@0.2.2))(ioredis@6.0.0(supports-color@8.1.1))(reflect-metadata@0.2.2)
@@ -1106,9 +1106,9 @@ packages:
     peerDependencies:
       '@mikro-orm/core': 7.1.13
 
-  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/d5a554bb492aa532296e762b50b42bb2c00d295b':
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/MonadIAM/shared/tar.gz/d5a554bb492aa532296e762b50b42bb2c00d295b}
-    version: 3.4.0
+  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/2f12914ce10f28699b3837e42a1a2e523fb46fce':
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/MonadIAM/shared/tar.gz/2f12914ce10f28699b3837e42a1a2e523fb46fce}
+    version: 3.4.1
     engines: {node: 24.18.0}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
@@ -6000,7 +6000,7 @@ snapshots:
       '@mikro-orm/core': 7.1.13
       kysely: 0.29.5
 
-  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/d5a554bb492aa532296e762b50b42bb2c00d295b': {}
+  '@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/2f12914ce10f28699b3837e42a1a2e523fb46fce': {}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
     optional: true
