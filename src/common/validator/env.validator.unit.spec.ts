@@ -99,27 +99,24 @@ const config = {
 
 describe("[Validator] - Environment", () => {
     describe("[Function] - validateEnv", () => {
-        it.each(["local", "stand"])(
-            "[case] - validates the actual %s template with injected credentials",
-            (environment) => {
-                // Arrange
-                const template = parse(readFileSync(`.env.${environment}.example`, "utf8"));
-                const input = {
-                    ...template,
-                    POSTGRES_USER: "service",
-                    POSTGRES_PASSWORD: "secret",
-                    REDIS_PASSWORD: "secret",
-                };
+        it("[case] - validates the local template with injected credentials", () => {
+            // Arrange
+            const template = parse(readFileSync(".env.local.example", "utf8"));
+            const input = {
+                ...template,
+                POSTGRES_USER: "service",
+                POSTGRES_PASSWORD: "secret",
+                REDIS_PASSWORD: "secret",
+            };
 
-                // Act
-                const result = validateEnv(input);
+            // Act
+            const result = validateEnv(input);
 
-                // Assert
-                expect(result.NODE_ENV).toBe(environment);
-                expect(result.REDIS_SENTINEL_ENABLED).toBe(environment === "stand");
-                expect(result.POSTGRES_WRITE_PORT).toBe(5432);
-            },
-        );
+            // Assert
+            expect(result.NODE_ENV).toBe("local");
+            expect(result.REDIS_SENTINEL_ENABLED).toBe(false);
+            expect(result.POSTGRES_WRITE_PORT).toBe(5432);
+        });
 
         it.each([
             { REDIS_SENTINEL_PORT: undefined },

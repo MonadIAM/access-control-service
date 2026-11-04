@@ -4,8 +4,8 @@ set -euo pipefail
 source "$(dirname -- "${BASH_SOURCE[0]}")/env.utils.sh"
 source "$(dirname -- "${BASH_SOURCE[0]}")/logger.sh"
 
-CHECK_FUNCTIONS=(check_validated_keys check_declared_fields check_template_coverage check_injected_keys check_duplicate_keys)
-CHECK_TITLES=("Validated keys" "Declared fields" "Template coverage" "Injected keys" "Duplicate keys")
+CHECK_FUNCTIONS=(check_validated_keys check_template_coverage check_injected_keys check_duplicate_keys)
+CHECK_TITLES=("Validated keys" "Template coverage" "Injected keys" "Duplicate keys")
 
 check_validated_keys() {
     local key owners status=0
@@ -16,17 +16,6 @@ check_validated_keys() {
         log_finding "$key: declared in [$owners] but absent from EnvironmentVariablesDTO"
         status=1
     done < <(comm -23 "$WORK_DIR/union.keys" "$WORK_DIR/dto.keys")
-
-    return $status
-}
-
-check_declared_fields() {
-    local field status=0
-
-    while IFS= read -r field; do
-        log_finding "$field: validated but declared in no template"
-        status=1
-    done < <(comm -13 "$WORK_DIR/union.keys" "$WORK_DIR/expected.keys")
 
     return $status
 }

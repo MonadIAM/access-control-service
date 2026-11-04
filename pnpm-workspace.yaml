@@ -6,12 +6,13 @@ color: true
 loglevel: info
 savePrefix: ""
 overrides:
-  "schema-utils@^4": "4.7.0"
   "@nestjs/platform-fastify>fastify": "5.12.7"
   "@nestjs/swagger>js-yaml": "5.4.1"
-  "glob": "14.0.2"
+  "glob@>=9 <14.0.2": "14.0.2"
+  "@fastify/otel>minimatch": "11.0.3"
+  "schema-utils@^4": "4.7.0"
 allowBuilds:
-  "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/d5a554bb492aa532296e762b50b42bb2c00d295b": true
+  "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/2f12914ce10f28699b3837e42a1a2e523fb46fce": true
   "@launchql/protobufjs": true
   "msgpackr-extract": true
   "unrs-resolver": true
