@@ -101,3 +101,23 @@ targetRules = [
 paths = [
   '''tests/fixtures/.*''',
 ]
+
+
+
+[[allowlists]]
+description = "Allow public OAuth client UUID in local environment example"
+
+targetRules = [
+  "generic-api-key",
+]
+
+condition = "AND"
+regexTarget = "line"
+
+paths = [
+  '''^\.env\.local\.example$''',
+]
+
+regexes = [
+  '''^DOCS_OAUTH_CLIENT_ID="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"\s*$''',
+]

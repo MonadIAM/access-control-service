@@ -12,7 +12,7 @@ overrides:
   "@fastify/otel>minimatch": "11.0.3"
   "schema-utils@^4": "4.7.0"
 allowBuilds:
-  "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/2f12914ce10f28699b3837e42a1a2e523fb46fce": true
+  "@monadiam/shared@https://codeload.github.com/MonadIAM/shared/tar.gz/b542dfe2156af6646c8c66087dda613a17455018": true
   "@launchql/protobufjs": true
   "msgpackr-extract": true
   "unrs-resolver": true

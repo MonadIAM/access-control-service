@@ -38,7 +38,20 @@ export class PermissionOverrideMapper implements Commands.Mappers.PermissionOver
     public projectionPurgePayload(
         props: Commands.Mappers.PermissionOverride.ProjectionPurgePayload.Props,
     ): Commands.Mappers.PermissionOverride.ProjectionPurgePayload.Result {
-        return Array.from(this.groupByRealm({ overrides: props.overrides }), ([realm, overrides]) => ({
+        const groups = new Map<string, Entities.PermissionOverride[]>();
+
+        for (const override of props.overrides) {
+            const realm = override.realm.id;
+            const group = groups.get(realm);
+
+            if (group) {
+                group.push(override);
+            } else {
+                groups.set(realm, [override]);
+            }
+        }
+
+        return Array.from(groups, ([realm, overrides]) => ({
             items: overrides.map(({ account, permission }) => ({
                 permissionRealm: permission.realm.id,
                 permission: permission.id,
@@ -52,7 +65,20 @@ export class PermissionOverrideMapper implements Commands.Mappers.PermissionOver
     public projectionUpdatePayload(
         props: Commands.Mappers.PermissionOverride.ProjectionUpdatePayload.Props,
     ): Commands.Mappers.PermissionOverride.ProjectionUpdatePayload.Result {
-        return Array.from(this.groupByRealm({ overrides: props.overrides }), ([realm, overrides]) => ({
+        const groups = new Map<string, Entities.PermissionOverride[]>();
+
+        for (const override of props.overrides) {
+            const realm = override.realm.id;
+            const group = groups.get(realm);
+
+            if (group) {
+                group.push(override);
+            } else {
+                groups.set(realm, [override]);
+            }
+        }
+
+        return Array.from(groups, ([realm, overrides]) => ({
             items: overrides.map(({ id, account, permission, effect }) => ({
                 permissionRealm: permission.realm.id,
                 permission: permission.id,
