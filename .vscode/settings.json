@@ -1,0 +1,15 @@
+{
+  "Lua.workspace.useGitIgnore": true,
+  "Lua.workspace.ignoreDir": [
+    ".git",
+    ".vscode",
+    "node_modules",
+    "dist",
+    "build",
+    "coverage",
+    ".nyc_output",
+    "logs",
+    ".temp",
+    ".tmp"
+  ]
+}
