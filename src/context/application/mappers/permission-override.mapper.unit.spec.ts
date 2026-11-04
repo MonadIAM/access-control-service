@@ -115,7 +115,8 @@ describe("[DataMapper] - PermissionOverride", () => {
             });
 
             // Act
-            const result = mapper.projectionUpdatePayload({ overrides: [first, second] });
+            const payloadMapper = mapper.projectionUpdatePayload;
+            const result = payloadMapper({ overrides: [first, second] });
 
             // Assert
             expect(result).toEqual([
@@ -164,7 +165,8 @@ describe("[DataMapper] - PermissionOverride", () => {
             });
 
             // Act
-            const result = mapper.projectionPurgePayload({ overrides: [first, second] });
+            const payloadMapper = mapper.projectionPurgePayload;
+            const result = payloadMapper({ overrides: [first, second] });
 
             // Assert
             expect(result).toEqual([

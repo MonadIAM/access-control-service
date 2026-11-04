@@ -146,7 +146,8 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
             });
 
             // Act
-            const result = mapper.projectionUpdatePayload({
+            const payloadMapper = mapper.projectionUpdatePayload;
+            const result = payloadMapper({
                 assignments: [first, third, second],
             });
 
@@ -201,7 +202,8 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
             });
 
             // Act
-            const result = mapper.projectionPurgePayload({
+            const payloadMapper = mapper.projectionPurgePayload;
+            const result = payloadMapper({
                 assignments: [first, third, second],
             });
 

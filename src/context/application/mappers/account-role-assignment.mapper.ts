@@ -59,7 +59,20 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
     public projectionPurgePayload(
         props: Commands.Mappers.AccountRoleAssignment.ProjectionPurgePayload.Props,
     ): Commands.Mappers.AccountRoleAssignment.ProjectionPurgePayload.Result {
-        return Array.from(this.groupByRealm({ assignments: props.assignments }), ([realm, assignments]) => ({
+        const groups = new Map<string, Entities.AccountRoleAssignment[]>();
+
+        for (const assignment of props.assignments) {
+            const realm = assignment.realm.id;
+            const group = groups.get(realm);
+
+            if (group) {
+                group.push(assignment);
+            } else {
+                groups.set(realm, [assignment]);
+            }
+        }
+
+        return Array.from(groups, ([realm, assignments]) => ({
             items: assignments.map(({ account, role }) => ({
                 role: role.id,
                 account,
@@ -72,7 +85,20 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
     public projectionUpdatePayload(
         props: Commands.Mappers.AccountRoleAssignment.ProjectionUpdatePayload.Props,
     ): Commands.Mappers.AccountRoleAssignment.ProjectionUpdatePayload.Result {
-        return Array.from(this.groupByRealm({ assignments: props.assignments }), ([realm, assignments]) => ({
+        const groups = new Map<string, Entities.AccountRoleAssignment[]>();
+
+        for (const assignment of props.assignments) {
+            const realm = assignment.realm.id;
+            const group = groups.get(realm);
+
+            if (group) {
+                group.push(assignment);
+            } else {
+                groups.set(realm, [assignment]);
+            }
+        }
+
+        return Array.from(groups, ([realm, assignments]) => ({
             isRevoked: assignments[0].isRevoked,
             items: assignments.map(({ id, account, role }) => ({
                 assignment: id,
