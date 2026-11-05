@@ -118,7 +118,6 @@ export class AccountRoleAssignmentService implements Services.AccountRoleAssignm
             return this.create({ input: { account: input.account, roles: [role.id] }, transaction, realm, actor });
         } else {
             const assignment = new AccountRoleAssignment({ account: input.account, realm: realmEntity, role });
-            assignment.canAssign();
             transaction.persist(assignment);
 
             return [assignment];

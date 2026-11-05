@@ -69,6 +69,38 @@ describe("[DomainService] - AccountRoleAssignment", () => {
         fixture: (entityManager) => new CoreFixture(entityManager),
     });
 
+    describe("[Method] - ensure", () => {
+        it("[case] - assigns the system default role once when membership is confirmed", async () => {
+            // Arrange
+            const account = randomUUID();
+            const realm = await suite.fixtures().createRealm({ code: "membership-default" });
+            const role = await suite.fixtures().createRole({
+                isSystemManaged: true,
+                code: `${realm.code}.user`,
+                name: "Member",
+                realm,
+            });
+            const input = { account };
+            const actor = randomUUID();
+
+            // Act
+            const first = await suite.transaction((transaction) =>
+                suite.repository().accountRoleAssignmentService.ensure({ realm: realm.id, transaction, actor, input }),
+            );
+            const second = await suite.transaction((transaction) =>
+                suite.repository().accountRoleAssignmentService.ensure({ realm: realm.id, transaction, actor, input }),
+            );
+            const assignments = await loadAssignments(suite, account, realm);
+
+            // Assert
+            expect(first).toHaveLength(1);
+            expect(second).toHaveLength(1);
+            expect(second[0].id).toBe(first[0].id);
+            expect(assignments).toHaveLength(1);
+            expect(assignments[0]).toMatchObject({ role: { id: role.id }, account });
+        });
+    });
+
     describe("[Method] - create", () => {
         it("[case] - creates assignments allowed by an active delegation policy", async () => {
             // Arrange

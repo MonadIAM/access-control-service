@@ -498,14 +498,14 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
         });
 
         describe("[Method] - joinConfirmedPayload", () => {
-            it("[case] - maps the first assignment and current timestamp", () => {
+            it.each([undefined, PROCESS_ID])("[case] - maps confirmation with HR request %s", (hrRequest) => {
                 // Arrange
                 jest.spyOn(Date, "now").mockReturnValue(1_789_000_000_000);
 
                 // Act
                 const result = mapper.joinConfirmedPayload({
                     assignments: createAssignments(),
-                    request: joinRequest,
+                    request: { ...joinRequest, hrRequest },
                     actor: ACTOR_ID,
                     realm: REALM_ID,
                 });
@@ -516,6 +516,7 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
                     realm: REALM_ID,
                     input: {
                         membership: INVITE_ID,
+                        hrRequest,
                         assignment: FIRST_ASSIGNMENT_ID,
                         joinedAt: 1_789_000_000_000,
                         process: PROCESS_ID,
@@ -529,7 +530,7 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
         });
 
         describe("[Method] - joinRejectedPayload", () => {
-            it("[case] - maps rejection context from the original request", () => {
+            it.each([undefined, PROCESS_ID])("[case] - maps rejection with HR request %s", (hrRequest) => {
                 // Arrange
 
                 // Act
@@ -537,7 +538,7 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
                     request: {
                         actor: ACTOR_ID,
                         realm: REALM_ID,
-                        input: joinRequest,
+                        input: { ...joinRequest, hrRequest },
                     },
                     reason: "role is unavailable",
                 });
@@ -549,6 +550,7 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
                     input: {
                         account: ACCOUNT_ID,
                         membership: INVITE_ID,
+                        hrRequest,
                         process: PROCESS_ID,
                         command: COMMAND_ID,
                         invite: INVITE_ID,
