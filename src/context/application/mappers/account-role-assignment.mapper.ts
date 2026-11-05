@@ -219,6 +219,7 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
             realm: props.realm,
             input: {
                 membership: props.request.membership,
+                hrRequest: props.request.hrRequest,
                 process: props.request.process,
                 command: props.request.command,
                 account: props.request.account,
@@ -238,6 +239,7 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
             realm: props.request.realm,
             input: {
                 membership: props.request.input.membership,
+                hrRequest: props.request.input.hrRequest,
                 account: props.request.input.account,
                 process: props.request.input.process,
                 command: props.request.input.command,
