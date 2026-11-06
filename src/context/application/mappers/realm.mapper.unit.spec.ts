@@ -73,6 +73,7 @@ describe("[DataMapper] - Realm", () => {
                 accountRoleAssignments: [
                     {
                         assignment: ACCOUNT_ASSIGNMENT_ID,
+                        expiresAt: null,
                         role: USER_ROLE_ID,
                         account: ACCOUNT_ID,
                     },

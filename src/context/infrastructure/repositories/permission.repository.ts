@@ -1,3 +1,4 @@
+import { SYSTEM_REALM_ID } from "@monadiam/shared";
 import { InjectEntityManager } from "@mikro-orm/nestjs";
 import { Injectable, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -74,11 +75,17 @@ export class PermissionRepository
             const accountRolesSubquery = kysely
                 .selectFrom("access_control.account_role_assignment as arm")
                 .innerJoin("access_control.role_closure as rc", "arm.role_id", "rc.descendant_id")
+                .innerJoin("access_control.role as assigned", "assigned.id", "arm.role_id")
+                .innerJoin("access_control.role as ancestor", "ancestor.id", "rc.ancestor_id")
                 .select("rc.ancestor_id")
                 .distinct()
                 .where("arm.account", "=", where.account)
                 .where("arm.realm_id", "=", where.realm)
                 .where("arm.is_revoked", "=", false)
+                .where("assigned.is_revoked", "=", false)
+                .where("ancestor.is_revoked", "=", false)
+                .whereRef("assigned.realm_id", "=", "arm.realm_id")
+                .whereRef("ancestor.realm_id", "=", "arm.realm_id")
                 .where(sql<boolean>`(arm.expires_at is null or arm.expires_at > now())`)
                 .whereRef("rc.realm_id", "=", "arm.realm_id");
 
@@ -88,7 +95,10 @@ export class PermissionRepository
                 .distinct()
                 .where("rpm.role_id", "in", accountRolesSubquery)
                 .where("rpm.is_revoked", "=", false)
-                .where("rpm.realm_id", "=", where.realm);
+                .where("rpm.realm_id", "=", where.realm)
+                .where((eb) =>
+                    eb.or([eb("rpm.scope", "=", AssignmentScope.REALM), eb("rpm.realm_id", "=", SYSTEM_REALM_ID)]),
+                );
 
             const deniedPermissions = kysely
                 .selectFrom("access_control.permission_override as po")
@@ -128,22 +138,30 @@ export class PermissionRepository
                 .union(kysely.selectFrom(allowedOverrides.as("ao")).select("ao.permission_id"))
                 .distinct();
 
-            const dataQuery = kysely
+            const activeRealm = kysely.selectFrom("access_control.realm").select("id").where("is_revoked", "=", false);
+
+            const effectivePermissions = kysely
                 .selectFrom(effectivePermissionIds.as("effective"))
                 .innerJoin("access_control.permission as p", "p.id", "effective.permission_id")
+                .where("p.is_revoked", "=", false)
+                .where((eb) => eb.exists(activeRealm.where("id", "=", where.realm)))
+                .where((eb) =>
+                    eb.or([
+                        eb("p.realm_id", "=", where.realm),
+                        eb.and([
+                            eb("p.realm_id", "=", SYSTEM_REALM_ID),
+                            eb.exists(activeRealm.where("id", "=", SYSTEM_REALM_ID)),
+                        ]),
+                    ]),
+                )
+                .$call((query) => super.buildWhereKysely(query, filters, "p"));
+
+            const dataQuery = effectivePermissions
                 .selectAll("p")
-                .where("p.realm_id", "=", where.realm)
-                .$call((query) => super.buildWhereKysely(query, filters, "p"))
                 .$call((query) => super.buildOptionsKysely(query, sort, pagination, "p"))
                 .compile();
 
-            const countQuery = kysely
-                .selectFrom(effectivePermissionIds.as("effective"))
-                .innerJoin("access_control.permission as p", "p.id", "effective.permission_id")
-                .select((eb) => eb.fn.countAll().as("total"))
-                .where("p.realm_id", "=", where.realm)
-                .$call((query) => super.buildWhereKysely(query, filters, "p"))
-                .compile();
+            const countQuery = effectivePermissions.select((eb) => eb.fn.countAll().as("total")).compile();
 
             const [rawPermissions, countRow] = await Promise.all([
                 entityManager.execute<Repositories.Permission.Row[]>(dataQuery.sql, [...dataQuery.parameters], "all"),
@@ -173,10 +191,16 @@ export class PermissionRepository
             const expandedRoles = kysely
                 .selectFrom("access_control.account_role_assignment as arm")
                 .innerJoin("access_control.role_closure as rc", "arm.role_id", "rc.descendant_id")
+                .innerJoin("access_control.role as assigned", "assigned.id", "arm.role_id")
+                .innerJoin("access_control.role as ancestor", "ancestor.id", "rc.ancestor_id")
                 .select(["arm.realm_id", "rc.ancestor_id as role_id"])
                 .distinct()
                 .where("arm.account", "=", props.account)
                 .where("arm.is_revoked", "=", false)
+                .where("assigned.is_revoked", "=", false)
+                .where("ancestor.is_revoked", "=", false)
+                .whereRef("assigned.realm_id", "=", "arm.realm_id")
+                .whereRef("ancestor.realm_id", "=", "arm.realm_id")
                 .where(sql<boolean>`(arm.expires_at is null or arm.expires_at > now())`)
                 .whereRef("rc.realm_id", "=", "arm.realm_id");
 
@@ -186,7 +210,10 @@ export class PermissionRepository
                 .select(["er.realm_id", "rpa.permission_id", "rpa.scope"])
                 .distinct()
                 .where("rpa.is_revoked", "=", false)
-                .whereRef("rpa.realm_id", "=", "er.realm_id");
+                .whereRef("rpa.realm_id", "=", "er.realm_id")
+                .where((eb) =>
+                    eb.or([eb("rpa.scope", "=", AssignmentScope.REALM), eb("rpa.realm_id", "=", SYSTEM_REALM_ID)]),
+                );
 
             const deniedPermissions = kysely
                 .selectFrom("access_control.permission_override as po")
@@ -233,8 +260,26 @@ export class PermissionRepository
             const query = kysely
                 .selectFrom(combined.as("eff"))
                 .innerJoin("access_control.permission as p", "p.id", "eff.permission_id")
-                .select(["eff.realm_id as realm", "p.code as permission", "eff.scope"])
-                .whereRef("p.realm_id", "=", "eff.realm_id")
+                .innerJoin("access_control.realm as effective_realm", "effective_realm.id", "eff.realm_id")
+                .select(["eff.realm_id as realm", "p.realm_id as permissionRealm", "p.code as permission", "eff.scope"])
+                .where("p.is_revoked", "=", false)
+                .where("effective_realm.is_revoked", "=", false)
+                .where((eb) =>
+                    eb.or([
+                        eb("p.realm_id", "=", eb.ref("eff.realm_id")),
+                        eb.and([
+                            eb("p.realm_id", "=", SYSTEM_REALM_ID),
+                            eb.exists(
+                                eb
+                                    .selectFrom("access_control.realm")
+                                    .select("id")
+                                    .where("id", "=", SYSTEM_REALM_ID)
+                                    .where("is_revoked", "=", false),
+                            ),
+                        ]),
+                    ]),
+                )
+                .$if(props.permissionRealm !== undefined, (query) => query.where("p.realm_id", "=", props.permissionRealm!))
                 .distinct()
                 .compile();
 

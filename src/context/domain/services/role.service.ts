@@ -60,7 +60,7 @@ export class RoleService implements Services.Role.Contract {
                 transaction.persist(entity);
                 await transaction.flush();
 
-                await this.buildHierarchy({
+                const steps = await this.buildHierarchy({
                     transaction,
                     input: {
                         children: input.children,
@@ -70,7 +70,7 @@ export class RoleService implements Services.Role.Contract {
                     },
                 });
 
-                return { entity, parent };
+                return { entity, parent, steps };
             }
         }
     }
@@ -80,12 +80,14 @@ export class RoleService implements Services.Role.Contract {
             input: { children, parent, entity, realm },
             transaction,
         } = props;
-        await this.roleClosureRepository.insertNewHierarchy({
+        const paths = await this.roleClosureRepository.insertNewHierarchy({
             descendant: entity.id,
             ancestor: parent.id,
             realm: realm,
             transaction,
         });
+
+        const steps: Services.Role.HierarchySteps = [{ upsertedPaths: paths, removedPaths: [] }];
 
         if (children?.length) {
             const descendants = await this.roleRepository.getDescendants({
@@ -104,14 +106,18 @@ export class RoleService implements Services.Role.Contract {
                 }
             }
 
-            await this.roleClosureRepository.moveSubtrees({
+            const result = await this.roleClosureRepository.moveSubtrees({
                 newParent: entity.id,
                 oldParent: parent.id,
                 children: children,
                 realm: realm,
                 transaction,
             });
+
+            steps.push(result);
         }
+
+        return steps;
     }
 
     public async update(props: Services.Role.Update.Props): Services.Role.Update.Result {
@@ -272,7 +278,7 @@ export class RoleService implements Services.Role.Contract {
 
         entity.canPurge();
 
-        await this.roleClosureRepository.decreaseTransitiveDepth({
+        const paths = await this.roleClosureRepository.decreaseTransitiveDepth({
             role: entity.id,
             transaction,
             realm,
@@ -280,7 +286,7 @@ export class RoleService implements Services.Role.Contract {
 
         transaction.remove(entity);
 
-        return entity;
+        return { entity, paths };
     }
 
     public async purgeSubtree(props: Services.Role.PurgeSubtree.Props): Services.Role.PurgeSubtree.Result {

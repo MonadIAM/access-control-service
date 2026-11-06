@@ -16,7 +16,7 @@ declare namespace Repositories.RoleClosure {
             role: string;
         };
 
-        type Result = Promise<void>;
+        type Result = Promise<Entities.RoleClosure[]>;
 
         type Signature = (props: Props) => Result;
     }
@@ -42,7 +42,7 @@ declare namespace Repositories.RoleClosure {
             realm: string;
         };
 
-        type Result = Promise<void>;
+        type Result = Promise<Entities.RoleClosure[]>;
 
         type Signature = (props: Props) => Result;
     }

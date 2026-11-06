@@ -51,6 +51,26 @@ describe("[Repository] - Permission", () => {
     });
 
     describe("[Method] - findEffective", () => {
+        it.each(["none", "realm", "owner", "ancestor", "assigned role", "permission"])(
+            "[case] - respects revoked %s while preserving independent ALLOW permissions",
+            async (dependency) => {
+                // Arrange
+                const scenario = await suite.fixtures().dependencyScenario(dependency);
+
+                // Act
+                const [permissions, total] = await suite.repository().findEffective({
+                    where: { account: scenario.account, realm: scenario.realm.id },
+                    pagination: { currentPage: 1, elementsPerPage: 20 },
+                    sort: {},
+                    filters: {},
+                });
+
+                // Assert
+                expect(permissions.map(({ code }) => code).sort()).toEqual(scenario.expectedPermissionCodes);
+                expect(total).toBe(scenario.expectedPermissionCodes.length);
+            },
+        );
+
         it("[case] - resolves inherited role permissions with active account overrides", async () => {
             // Arrange
             const scenario = await suite.fixtures().inheritedScenario();
@@ -118,6 +138,21 @@ describe("[Repository] - Permission", () => {
     });
 
     describe("[Method] - collectEffective", () => {
+        it.each(["none", "realm", "owner", "ancestor", "assigned role", "permission"])(
+            "[case] - respects revoked %s while preserving independent ALLOW permissions",
+            async (dependency) => {
+                // Arrange
+                const scenario = await suite.fixtures().dependencyScenario(dependency);
+
+                // Act
+                const permissions = await suite.repository().collectEffective({ account: scenario.account });
+
+                // Assert
+                expect(permissions.map(({ permission }) => permission).sort()).toEqual(scenario.expectedPermissionCodes);
+                expect(permissions.every(({ realm }) => realm === scenario.realm.id)).toBe(true);
+            },
+        );
+
         it("[case] - collects active effective permission codes across realms", async () => {
             // Arrange
             const scenario = await suite.fixtures().inheritedScenario();

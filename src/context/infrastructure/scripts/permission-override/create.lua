@@ -1,51 +1,21 @@
 ---@diagnostic disable: undefined-global
 
-local payload = cjson.decode(ARGV[1])
+local state = require("context.infrastructure.scripts.shared.state")
 
-local function make_key(...)
-    return table.concat({"projection", ...}, ":")
-end
+local realm = tostring(payload.realm)
+local account = tostring(payload.account)
+local permission = tostring(payload.permission)
+local owner = tostring(payload.permissionRealm)
 
-local function is_active_entity(key)
-    return redis.call("HGET", key, "isRevoked") == "0"
-end
-
-local function activate_override(realm_id, account_id, permission_id, effect)
-    if effect == "ALLOW" then
-        redis.call("SADD", make_key("account-overrides-allow", realm_id, account_id), permission_id)
-        redis.call("SREM", make_key("account-overrides-deny", realm_id, account_id), permission_id)
-    elseif effect == "DENY" then
-        redis.call("SADD", make_key("account-overrides-deny", realm_id, account_id), permission_id)
-        redis.call("SREM", make_key("account-overrides-allow", realm_id, account_id), permission_id)
-    else
-        return
-    end
-
-    redis.call("SADD", make_key("permission-override-accounts", realm_id, permission_id), account_id)
-end
-
-local permission_realm_id = tostring(payload.permissionRealm)
-local permission_id = tostring(payload.permission)
-local override_id = tostring(payload.override)
-local account_id = tostring(payload.account)
-local realm_id = tostring(payload.realm)
-local effect = tostring(payload.effect)
-
-redis.call("HSET", make_key("permission-override", realm_id, account_id, permission_id),
-    "overrideId", override_id,
+redis.call("HSET", state.key("permission-override", realm, account, permission),
+    "overrideId", tostring(payload.override),
     "isRevoked", "0",
-    "effect", effect,
-    "permissionRealm", permission_realm_id
+    "effect", tostring(payload.effect),
+    "permissionRealm", owner,
+    "expiresAt", state.stored_expiry(payload.expiresAt)
 )
-
-redis.call("SADD", make_key("permission-overrides", "by-account", realm_id, account_id), permission_id)
-redis.call("SADD", make_key("permission-overrides", "by-permission", realm_id, permission_id), account_id)
-redis.call("SADD", make_key("permission-overrides", "by-realm", realm_id), account_id .. ":" .. permission_id)
-redis.call("SADD", make_key("permission-usages", "overrides", permission_realm_id, permission_id), realm_id .. ":" .. account_id)
-
-if is_active_entity(make_key("realm", realm_id))
-    and is_active_entity(make_key("permission", permission_realm_id, permission_id)) then
-    activate_override(realm_id, account_id, permission_id, effect)
-end
+redis.call("SADD", state.key("permission-overrides", "by-account", realm, account), permission)
+redis.call("SADD", state.key("permission-overrides", "by-realm", realm), account .. ":" .. permission)
+redis.call("SADD", state.key("permission-usages", "overrides", owner, permission), realm .. ":" .. account)
 
 return "OK"

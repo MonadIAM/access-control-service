@@ -36,12 +36,13 @@ export class RolePermissionAssignmentMapper implements Commands.Mappers.RolePerm
         return {
             realm: props.assignments[0].realm.id,
             isRevoked: props.assignments[0].isRevoked,
-            items: props.assignments.map(({ id, realm, role, permission }) => ({
+            items: props.assignments.map(({ id, realm, role, permission, scope }) => ({
                 permissionRealm: permission.realm.id,
                 permission: permission.id,
                 realm: realm.id,
                 assignment: id,
                 role: role.id,
+                scope,
             })),
         };
     }

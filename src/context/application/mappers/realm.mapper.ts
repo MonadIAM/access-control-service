@@ -15,7 +15,8 @@ export class RealmMapper implements Commands.Mappers.Realm.Contract {
                 role: role.id,
                 scope,
             })),
-            accountRoleAssignments: assignments.role.map(({ id, account, role }) => ({
+            accountRoleAssignments: assignments.role.map(({ id, account, role, expiresAt }) => ({
+                expiresAt: expiresAt?.getTime() ?? null,
                 assignment: id,
                 role: role.id,
                 account,
@@ -128,7 +129,11 @@ export class RealmMapper implements Commands.Mappers.Realm.Contract {
         return {
             realm: props.realm.id,
             account: props.request.input.owner,
-            assignments: props.assignments.map(({ id, role }) => ({ assignment: id, role: role.id })),
+            assignments: props.assignments.map(({ id, role, expiresAt }) => ({
+                expiresAt: expiresAt?.getTime() ?? null,
+                assignment: id,
+                role: role.id,
+            })),
         };
     }
 
@@ -165,22 +170,23 @@ export class RealmMapper implements Commands.Mappers.Realm.Contract {
     public accessAssignmentUpdate(
         props: Commands.Mappers.Realm.AccessAssignmentUpdate.Props,
     ): Commands.Mappers.Realm.AccessAssignmentUpdate.Result {
-        return props.assignments.map(({ id, account, role, realm, isRevoked }) => ({
+        return props.assignments.map(({ id, account, role, realm, isRevoked, expiresAt }) => ({
             realm: realm.id,
             isRevoked,
-            items: [{ assignment: id, realm: realm.id, role: role.id, account }],
+            items: [{ assignment: id, realm: realm.id, role: role.id, account, expiresAt: expiresAt?.getTime() ?? null }],
         }));
     }
 
     public accessOverrideUpdate(
         props: Commands.Mappers.Realm.AccessOverrideUpdate.Props,
     ): Commands.Mappers.Realm.AccessOverrideUpdate.Result {
-        return props.overrides.map(({ id, account, permission, realm, effect, isRevoked }) => ({
+        return props.overrides.map(({ id, account, permission, realm, effect, isRevoked, expiresAt }) => ({
             realm: realm.id,
             isRevoked,
             items: [
                 {
                     override: id,
+                    expiresAt: expiresAt?.getTime() ?? null,
                     permissionRealm: permission.realm.id,
                     permission: permission.id,
                     realm: realm.id,

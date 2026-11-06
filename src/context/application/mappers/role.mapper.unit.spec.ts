@@ -18,18 +18,30 @@ const mapper = new RoleMapper();
 
 describe("[DataMapper] - Role", () => {
     describe("[Method] - projectionCreatePayload", () => {
-        it("[case] - maps the role, parent and owning realm", () => {
+        it("[case] - maps the role and ordered hierarchy changes in its owning realm", () => {
             // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const parent = helpers.createRole({ id: PARENT_ID, realm });
             const entity = helpers.createRole({ id: ROLE_ID, realm });
 
+            const steps: Services.Role.HierarchySteps = [
+                {
+                    removedPaths: [],
+                    upsertedPaths: [{ ancestor: parent, descendant: entity, depth: 1 }],
+                },
+            ];
+
             // Act
-            const result = mapper.projectionCreatePayload({ entity, parent });
+            const result = mapper.projectionCreatePayload({ entity, parent, steps });
 
             // Assert
             expect(result).toEqual({
-                parent: PARENT_ID,
+                steps: [
+                    {
+                        removedPaths: [],
+                        upsertedPaths: [{ ancestor: { id: PARENT_ID }, descendant: { id: ROLE_ID }, depth: 1 }],
+                    },
+                ],
                 realm: REALM_ID,
                 role: ROLE_ID,
             });
@@ -68,20 +80,24 @@ describe("[DataMapper] - Role", () => {
             // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const role = helpers.createRole({ id: ROLE_ID, realm });
+            const ancestor = helpers.createRole({ id: PARENT_ID, realm });
+            const descendant = helpers.createRole({ id: SECOND_ROLE_ID, realm });
+            const paths = [helpers.createRoleClosure({ realm, ancestor, descendant, depth: 1 })];
 
             // Act
-            const result = mapper.projectionPurgePayload({ roles: [role] });
+            const result = mapper.projectionPurgePayload({ roles: [role], paths });
 
             // Assert
             expect(result).toEqual({
                 realm: REALM_ID,
-                role: ROLE_ID,
+                roles: [ROLE_ID],
+                paths: [{ ancestor: { id: PARENT_ID }, descendant: { id: SECOND_ROLE_ID }, depth: 1 }],
             });
         });
     });
 
     describe("[Method] - projectionSubtreePurgePayload", () => {
-        it("[case] - maps the subtree root", () => {
+        it("[case] - maps every removed role in the subtree", () => {
             // Arrange
             const realm = helpers.createRealm({ id: REALM_ID });
             const root = helpers.createRole({ id: ROLE_ID, realm });
@@ -99,7 +115,8 @@ describe("[DataMapper] - Role", () => {
             // Assert
             expect(result).toEqual({
                 realm: REALM_ID,
-                role: ROLE_ID,
+                roles: [ROLE_ID, SECOND_ROLE_ID],
+                paths: [],
             });
         });
     });
@@ -121,8 +138,15 @@ describe("[DataMapper] - Role", () => {
             const result = mapper.projectionMovePayload({ steps, target });
 
             // Assert
-            expect(result).toEqual({ realm: REALM_ID, steps });
-            expect(result.steps).toBe(steps);
+            expect(result).toEqual({
+                realm: REALM_ID,
+                steps: [
+                    {
+                        removedPaths: [{ ancestor: { id: PARENT_ID }, descendant: { id: ROLE_ID } }],
+                        upsertedPaths: [{ ancestor: { id: ROLE_ID }, descendant: { id: ROLE_ID }, depth: 0 }],
+                    },
+                ],
+            });
         });
     });
 

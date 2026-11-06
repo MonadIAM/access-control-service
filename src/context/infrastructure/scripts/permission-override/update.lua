@@ -1,75 +1,25 @@
 ---@diagnostic disable: undefined-global
 
-local payload = cjson.decode(ARGV[1])
+local state = require("context.infrastructure.scripts.shared.state")
 
-local function make_key(...)
-    return table.concat({"projection", ...}, ":")
-end
-
-local function redis_bool(value)
-    return value and "1" or "0"
-end
-
-local function is_active_entity(key)
-    return redis.call("HGET", key, "isRevoked") == "0"
-end
-
-local function remove_active_override(realm_id, account_id, permission_id)
-    redis.call("SREM", make_key("account-overrides-allow", realm_id, account_id), permission_id)
-    redis.call("SREM", make_key("account-overrides-deny", realm_id, account_id), permission_id)
-    redis.call("SREM", make_key("permission-override-accounts", realm_id, permission_id), account_id)
-end
-
-local function activate_override(realm_id, account_id, permission_id, effect)
-    if effect == "ALLOW" then
-        redis.call("SADD", make_key("account-overrides-allow", realm_id, account_id), permission_id)
-        redis.call("SREM", make_key("account-overrides-deny", realm_id, account_id), permission_id)
-    elseif effect == "DENY" then
-        redis.call("SADD", make_key("account-overrides-deny", realm_id, account_id), permission_id)
-        redis.call("SREM", make_key("account-overrides-allow", realm_id, account_id), permission_id)
-    else
-        remove_active_override(realm_id, account_id, permission_id)
-        return
-    end
-
-    redis.call("SADD", make_key("permission-override-accounts", realm_id, permission_id), account_id)
-end
-
-local is_revoked = payload.isRevoked == true
-local is_revoked_value = redis_bool(is_revoked)
+local is_revoked = payload.isRevoked == true and "1" or "0"
 
 for _, item in ipairs(payload.items or {}) do
-    local permission_id = tostring(item.permission)
-    local override_id = tostring(item.override)
-    local account_id = tostring(item.account)
-    local realm_id = tostring(item.realm)
-    local effect = tostring(item.effect)
+    local realm = tostring(item.realm)
+    local account = tostring(item.account)
+    local permission = tostring(item.permission)
+    local owner = tostring(item.permissionRealm)
 
-    local override_key = make_key("permission-override", realm_id, account_id, permission_id)
-    local permission_realm_id = tostring(item.permissionRealm)
-
-    redis.call("HSET", override_key,
-        "overrideId", override_id,
-        "isRevoked", is_revoked_value,
-        "effect", effect,
-        "permissionRealm", permission_realm_id
+    redis.call("HSET", state.key("permission-override", realm, account, permission),
+        "overrideId", tostring(item.override),
+        "isRevoked", is_revoked,
+        "effect", tostring(item.effect),
+        "permissionRealm", owner,
+        "expiresAt", state.stored_expiry(item.expiresAt)
     )
-
-    redis.call("SADD", make_key("permission-overrides", "by-account", realm_id, account_id), permission_id)
-    redis.call("SADD", make_key("permission-overrides", "by-permission", realm_id, permission_id), account_id)
-    redis.call("SADD", make_key("permission-overrides", "by-realm", realm_id), account_id .. ":" .. permission_id)
-    redis.call("SADD", make_key("permission-usages", "overrides", permission_realm_id, permission_id), realm_id .. ":" .. account_id)
-
-    if is_revoked then
-        remove_active_override(realm_id, account_id, permission_id)
-    else
-        if is_active_entity(make_key("realm", realm_id))
-            and is_active_entity(make_key("permission", permission_realm_id, permission_id)) then
-            activate_override(realm_id, account_id, permission_id, effect)
-        else
-            remove_active_override(realm_id, account_id, permission_id)
-        end
-    end
+    redis.call("SADD", state.key("permission-overrides", "by-account", realm, account), permission)
+    redis.call("SADD", state.key("permission-overrides", "by-realm", realm), account .. ":" .. permission)
+    redis.call("SADD", state.key("permission-usages", "overrides", owner, permission), realm .. ":" .. account)
 end
 
 return "OK"

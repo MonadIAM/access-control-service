@@ -202,9 +202,9 @@ export class RoleCommands implements Commands.Role.Contract {
             },
             changeLog: true,
             execute: async (transaction) => {
-                const entity = await this.roleService.purge({ transaction, realm, id });
+                const { entity, paths } = await this.roleService.purge({ transaction, realm, id });
 
-                return { roles: [entity] };
+                return { roles: [entity], paths };
             },
         });
 

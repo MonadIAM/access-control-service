@@ -6,6 +6,7 @@ import { join } from "node:path";
 import dotenv from "dotenv";
 import Redis from "ioredis";
 
+import { readProjectionSource } from "~context/infrastructure/scripts/source";
 import { validateEnv } from "~common/validator/env.validator";
 
 import { RedisConfig } from "./redis.config";
@@ -34,7 +35,14 @@ class System {
     }
 
     private static async loadScript(file: string): Promise<string> {
-        const content = await readFile(join(__dirname, "scripts", file), "utf8");
+        const content =
+            file === "seed.lua"
+                ? await readProjectionSource(
+                      join(__dirname, "scripts", file),
+                      "seed",
+                      join(__dirname, "../../context/infrastructure/scripts"),
+                  )
+                : await readFile(join(__dirname, "scripts", file), "utf8");
         const hash = await this.redis.script("LOAD", content);
 
         if (isString(hash)) {
@@ -45,15 +53,19 @@ class System {
     }
 
     private static getPayload(): string {
-        return JSON.stringify({
-            rolePermissionAssignments: dataset.RolePermissionAssignments.redis,
-            accountRoleAssignments: dataset.AccountRoleAssignments.redis,
-            permissionOverrides: dataset.PermissionOverrides.redis,
-            roleClosures: dataset.RoleClosures.redis,
-            permissions: dataset.Permissions.redis,
-            realms: dataset.Realms.redis,
-            roles: dataset.Roles.redis,
-        });
+        return JSON.stringify(
+            {
+                rolePermissionAssignments: dataset.RolePermissionAssignments.redis,
+                accountRoleAssignments: dataset.AccountRoleAssignments.redis,
+                permissionOverrides: dataset.PermissionOverrides.redis,
+                roleClosures: dataset.RoleClosures.redis,
+                permissions: dataset.Permissions.redis,
+                realms: dataset.Realms.redis,
+                roles: dataset.Roles.redis,
+            },
+            (key, value: unknown) =>
+                key === "expires_at" && value !== null && value !== undefined ? new Date(value as string).getTime() : value,
+        );
     }
 }
 

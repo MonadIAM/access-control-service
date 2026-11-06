@@ -93,6 +93,7 @@ describe("[DataMapper] - PermissionOverride", () => {
                 effect: PermissionOverrideEffect.DENY,
                 permission: PERMISSION_ID,
                 override: OVERRIDE_ID,
+                expiresAt: null,
                 account: ACCOUNT_ID,
                 realm: REALM_ID,
             });
@@ -129,6 +130,7 @@ describe("[DataMapper] - PermissionOverride", () => {
                             effect: PermissionOverrideEffect.ALLOW,
                             permission: PERMISSION_ID,
                             override: OVERRIDE_ID,
+                            expiresAt: null,
                             account: ACCOUNT_ID,
                             realm: REALM_ID,
                         },
@@ -143,6 +145,7 @@ describe("[DataMapper] - PermissionOverride", () => {
                             effect: PermissionOverrideEffect.DENY,
                             permission: SECOND_PERMISSION_ID,
                             override: SECOND_OVERRIDE_ID,
+                            expiresAt: null,
                             account: SECOND_ACCOUNT_ID,
                             realm: SECOND_REALM_ID,
                         },

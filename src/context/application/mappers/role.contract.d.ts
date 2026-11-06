@@ -36,6 +36,7 @@ declare namespace Commands.Mappers.Role {
 
     namespace ProjectionCreatePayload {
         type Props = {
+            steps: Services.Role.HierarchySteps;
             entity: Entities.Role;
             parent: Entities.Role;
         };
@@ -57,6 +58,7 @@ declare namespace Commands.Mappers.Role {
 
     namespace ProjectionPurgePayload {
         type Props = {
+            paths: Entities.RoleClosure[];
             roles: Entities.Role[];
         };
 
