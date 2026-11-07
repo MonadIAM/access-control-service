@@ -1,4 +1,5 @@
 {
+  "Lua.runtime.version": "Lua 5.1",
   "Lua.workspace.useGitIgnore": true,
   "Lua.workspace.ignoreDir": [
     ".git",

@@ -1,10 +1,6 @@
 ---@diagnostic disable: undefined-global
 
-local payload = cjson.decode(ARGV[1])
-
-local function make_key(...)
-    return table.concat({"projection", ...}, ":")
-end
+local state = require("context.infrastructure.scripts.shared.state")
 
 local realm_id = tostring(payload.realm)
 
@@ -14,9 +10,8 @@ for _, step in ipairs(payload.steps or {}) do
         local descendant_id = tostring(path.descendant.id)
 
         if ancestor_id ~= descendant_id then
-            redis.call("UNLINK", make_key("role-closure", realm_id, ancestor_id, descendant_id))
-            redis.call("ZREM", make_key("role-descendants", realm_id, ancestor_id), descendant_id)
-            redis.call("ZREM", make_key("role-ancestors", realm_id, descendant_id), ancestor_id)
+            redis.call("ZREM", state.key("role-descendants", realm_id, ancestor_id), descendant_id)
+            redis.call("ZREM", state.key("role-ancestors", realm_id, descendant_id), ancestor_id)
         end
     end
 
@@ -25,12 +20,8 @@ for _, step in ipairs(payload.steps or {}) do
         local ancestor_id = tostring(path.ancestor.id)
         local depth = tonumber(path.depth)
 
-        redis.call("HSET", make_key("role-closure", realm_id, ancestor_id, descendant_id),
-            "depth", tostring(depth)
-        )
-
-        redis.call("ZADD", make_key("role-descendants", realm_id, ancestor_id), depth, descendant_id)
-        redis.call("ZADD", make_key("role-ancestors", realm_id, descendant_id), depth, ancestor_id)
+        redis.call("ZADD", state.key("role-descendants", realm_id, ancestor_id), depth, descendant_id)
+        redis.call("ZADD", state.key("role-ancestors", realm_id, descendant_id), depth, ancestor_id)
     end
 end
 

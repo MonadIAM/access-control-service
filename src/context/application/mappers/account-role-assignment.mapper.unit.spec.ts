@@ -101,8 +101,8 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
             // Assert
             expect(result).toEqual({
                 assignments: [
-                    { assignment: FIRST_ASSIGNMENT_ID, role: FIRST_ROLE_ID },
-                    { assignment: SECOND_ASSIGNMENT_ID, role: SECOND_ROLE_ID },
+                    { assignment: FIRST_ASSIGNMENT_ID, role: FIRST_ROLE_ID, expiresAt: null },
+                    { assignment: SECOND_ASSIGNMENT_ID, role: SECOND_ROLE_ID, expiresAt: null },
                 ],
                 account: FIRST_ACCOUNT_ID,
                 realm: REALM_ID,
@@ -120,7 +120,7 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
 
             // Assert
             expect(result).toEqual({
-                assignments: [{ assignment: FIRST_ASSIGNMENT_ID, role: FIRST_ROLE_ID }],
+                assignments: [{ assignment: FIRST_ASSIGNMENT_ID, role: FIRST_ROLE_ID, expiresAt: null }],
                 account: FIRST_ACCOUNT_ID,
                 realm: REALM_ID,
             });
@@ -159,12 +159,14 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
                     items: [
                         {
                             assignment: FIRST_ASSIGNMENT_ID,
+                            expiresAt: null,
                             account: FIRST_ACCOUNT_ID,
                             role: FIRST_ROLE_ID,
                             realm: REALM_ID,
                         },
                         {
                             assignment: SECOND_ASSIGNMENT_ID,
+                            expiresAt: null,
                             account: FIRST_ACCOUNT_ID,
                             role: SECOND_ROLE_ID,
                             realm: REALM_ID,
@@ -177,6 +179,7 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
                     items: [
                         {
                             assignment: THIRD_ASSIGNMENT_ID,
+                            expiresAt: null,
                             account: SECOND_ACCOUNT_ID,
                             realm: SECOND_REALM_ID,
                             role: THIRD_ROLE_ID,
@@ -463,8 +466,8 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
                 // Assert
                 expect(result).toEqual({
                     assignments: [
-                        { assignment: FIRST_ASSIGNMENT_ID, role: ROLE_ID },
-                        { assignment: SECOND_ASSIGNMENT_ID, role: SECOND_ROLE_ID },
+                        { assignment: FIRST_ASSIGNMENT_ID, role: ROLE_ID, expiresAt: null },
+                        { assignment: SECOND_ASSIGNMENT_ID, role: SECOND_ROLE_ID, expiresAt: null },
                     ],
                     account: ACCOUNT_ID,
                     realm: REALM_ID,

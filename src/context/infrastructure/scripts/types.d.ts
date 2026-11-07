@@ -1,4 +1,4 @@
-import type { PermissionCode, PrivilegeScope } from "@monadiam/shared";
+import type { PrivilegeScope } from "@monadiam/shared";
 
 declare global {
     namespace Scripts {
@@ -40,6 +40,7 @@ declare global {
                         permissionRealm: string;
                         permission: string;
                         assignment: string;
+                        scope: string;
                         realm: string;
                         role: string;
                     }[];
@@ -53,6 +54,7 @@ declare global {
             namespace Create {
                 type Props = {
                     assignments: {
+                        expiresAt?: Nullable<number>;
                         assignment: string;
                         role: string;
                     }[];
@@ -81,6 +83,7 @@ declare global {
                     isRevoked: boolean;
                     realm: string;
                     items: {
+                        expiresAt?: Nullable<number>;
                         assignment: string;
                         account: string;
                         realm: string;
@@ -114,6 +117,7 @@ declare global {
         namespace PermissionOverride {
             namespace Create {
                 type Props = {
+                    expiresAt?: Nullable<number>;
                     permissionRealm: string;
                     permission: string;
                     override: string;
@@ -146,6 +150,7 @@ declare global {
                     items: {
                         permissionRealm: string;
                         permission: string;
+                        expiresAt?: Nullable<number>;
                         override: string;
                         account: string;
                         effect: string;
@@ -190,14 +195,14 @@ declare global {
             namespace Check {
                 type Props = {
                     permissionRealm: string;
-                    permissions: PermissionCode[];
+                    permissions: string[];
                     globalOnly?: boolean;
                     systemRealm: string;
                     account: string;
                     realm: string;
                 };
 
-                type Result = Partial<Record<PermissionCode, PrivilegeScope>>;
+                type Result = Partial<Record<string, PrivilegeScope>>;
             }
 
             namespace Collect {
@@ -225,6 +230,7 @@ declare global {
                         role: string;
                     }[];
                     accountRoleAssignments: {
+                        expiresAt?: Nullable<number>;
                         assignment: string;
                         account: string;
                         role: string;
@@ -280,7 +286,7 @@ declare global {
         namespace Role {
             namespace Create {
                 type Props = {
-                    parent: string;
+                    steps: RoleClosure.Update.Props["steps"];
                     realm: string;
                     role: string;
                 };
@@ -290,8 +296,9 @@ declare global {
 
             namespace Purge {
                 type Props = {
+                    paths: RoleClosure.Update.Props["steps"][number]["upsertedPaths"];
+                    roles: string[];
                     realm: string;
-                    role: string;
                 };
 
                 type Result = "OK";

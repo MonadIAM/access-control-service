@@ -23,9 +23,10 @@ export class PermissionOverrideMapper implements Commands.Mappers.PermissionOver
     public projectionCreatePayload(
         props: Commands.Mappers.PermissionOverride.ProjectionCreatePayload.Props,
     ): Commands.Mappers.PermissionOverride.ProjectionCreatePayload.Result {
-        const [{ permission, account, effect, realm, id }] = props.overrides;
+        const [{ permission, account, effect, realm, id, expiresAt }] = props.overrides;
 
         return {
+            expiresAt: expiresAt?.getTime() ?? null,
             permissionRealm: permission.realm.id,
             permission: permission.id,
             realm: realm.id,
@@ -79,7 +80,8 @@ export class PermissionOverrideMapper implements Commands.Mappers.PermissionOver
         }
 
         return Array.from(groups, ([realm, overrides]) => ({
-            items: overrides.map(({ id, account, permission, effect }) => ({
+            items: overrides.map(({ id, account, permission, effect, expiresAt }) => ({
+                expiresAt: expiresAt?.getTime() ?? null,
                 permissionRealm: permission.realm.id,
                 permission: permission.id,
                 override: id,

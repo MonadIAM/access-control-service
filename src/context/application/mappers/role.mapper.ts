@@ -6,7 +6,17 @@ export class RoleMapper implements Commands.Mappers.Role.Contract {
     ): Commands.Mappers.Role.ProjectionCreatePayload.Result {
         return {
             realm: props.entity.realm.id,
-            parent: props.parent.id,
+            steps: props.steps.map(({ removedPaths, upsertedPaths }) => ({
+                removedPaths: removedPaths.map(({ ancestor, descendant }) => ({
+                    descendant: { id: descendant.id },
+                    ancestor: { id: ancestor.id },
+                })),
+                upsertedPaths: upsertedPaths.map(({ ancestor, descendant, depth }) => ({
+                    descendant: { id: descendant.id },
+                    ancestor: { id: ancestor.id },
+                    depth,
+                })),
+            })),
             role: props.entity.id,
         };
     }
@@ -16,7 +26,12 @@ export class RoleMapper implements Commands.Mappers.Role.Contract {
     ): Commands.Mappers.Role.ProjectionPurgePayload.Result {
         return {
             realm: props.roles[0].realm.id,
-            role: props.roles[0].id,
+            roles: props.roles.map(({ id }) => id),
+            paths: props.paths.map(({ ancestor, descendant, depth }) => ({
+                descendant: { id: descendant.id },
+                ancestor: { id: ancestor.id },
+                depth,
+            })),
         };
     }
 
@@ -25,7 +40,8 @@ export class RoleMapper implements Commands.Mappers.Role.Contract {
     ): Commands.Mappers.Role.ProjectionSubtreePurgePayload.Result {
         return {
             realm: props.root.realm.id,
-            role: props.root.id,
+            roles: props.entities.map(({ id }) => id),
+            paths: [],
         };
     }
 
@@ -55,7 +71,17 @@ export class RoleMapper implements Commands.Mappers.Role.Contract {
     ): Commands.Mappers.Role.ProjectionMovePayload.Result {
         return {
             realm: props.target.realm.id,
-            steps: props.steps,
+            steps: props.steps.map(({ removedPaths, upsertedPaths }) => ({
+                removedPaths: removedPaths.map(({ ancestor, descendant }) => ({
+                    descendant: { id: descendant.id },
+                    ancestor: { id: ancestor.id },
+                })),
+                upsertedPaths: upsertedPaths.map(({ ancestor, descendant, depth }) => ({
+                    descendant: { id: descendant.id },
+                    ancestor: { id: ancestor.id },
+                    depth,
+                })),
+            })),
         };
     }
 

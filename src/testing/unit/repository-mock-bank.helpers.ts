@@ -87,8 +87,8 @@ export class RepositoryMockBank extends EntityFactoryRegistry implements Unit.Do
     private roleClosureRepository(): Unit.Domain.RepositoryMocks.RoleClosure {
         return {
             existsTransitivePath: jest.fn(() => Promise.resolve(false)),
-            decreaseTransitiveDepth: jest.fn(() => Promise.resolve()),
-            insertNewHierarchy: jest.fn(() => Promise.resolve()),
+            decreaseTransitiveDepth: jest.fn(() => Promise.resolve([])),
+            insertNewHierarchy: jest.fn(() => Promise.resolve([])),
             moveSubtrees: jest.fn(() =>
                 Promise.resolve({
                     upsertedPaths: [],

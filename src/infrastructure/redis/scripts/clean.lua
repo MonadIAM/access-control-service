@@ -1,4 +1,4 @@
----@diagnostic disable: undefined-global, deprecated
+---@diagnostic disable: undefined-global
 
 local cursor = "0"
 local batch_size = 1000

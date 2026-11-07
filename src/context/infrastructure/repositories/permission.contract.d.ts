@@ -57,11 +57,13 @@ declare global {
 
         namespace CollectEffective {
             type Props = {
+                permissionRealm?: string;
                 account: string;
             };
 
             type Result = Promise<
                 {
+                    permissionRealm: string;
                     scope: AssignmentScope;
                     permission: string;
                     realm: string;

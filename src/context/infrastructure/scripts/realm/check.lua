@@ -1,12 +1,11 @@
 ---@diagnostic disable: undefined-global
 
+local state = require("context.infrastructure.scripts.shared.state")
+
 local payload = cjson.decode(ARGV[1])
+local account = tostring(payload.account)
+local realm = tostring(payload.realm)
 
-local function make_key(...)
-    return table.concat({"projection", ...}, ":")
-end
+local deadline = state.score(state.key("effective-realms", account), realm)
 
-local account_id = tostring(payload.account)
-local realm_id = tostring(payload.realm)
-
-return cjson.encode(redis.call("SCARD", make_key("account-roles", realm_id, account_id)) > 0)
+return cjson.encode(deadline > state.now)

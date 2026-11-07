@@ -181,6 +181,7 @@ describe("[DomainService] - Role", () => {
 
             // Assert
             expect(result.parent).toBe(parent);
+            expect(result.steps).toEqual([{ upsertedPaths: [], removedPaths: [] }]);
             expect(result.entity).toEqual(
                 expect.objectContaining({
                     description: "Created for tests",
@@ -213,7 +214,7 @@ describe("[DomainService] - Role", () => {
             });
 
             // Act
-            await service.buildHierarchy({
+            const result = await service.buildHierarchy({
                 input: { entity: role, parent, realm: REALM_ID },
                 transaction: transaction.entityManager,
             });
@@ -225,6 +226,7 @@ describe("[DomainService] - Role", () => {
                 descendant: ROLE_ID,
                 realm: REALM_ID,
             });
+            expect(result).toEqual([{ upsertedPaths: [], removedPaths: [] }]);
             expect(repositories.roles.getDescendants).not.toHaveBeenCalled();
             expect(repositories.roleClosures.moveSubtrees).not.toHaveBeenCalled();
         });
@@ -239,14 +241,24 @@ describe("[DomainService] - Role", () => {
                 roles: [role],
             });
             repositories.roles.getDescendants.mockImplementation(() => Promise.resolve([child]));
+            const paths = [
+                helpers.createRoleClosure({ realm: parent.realm, ancestor: parent, descendant: role, depth: 1 }),
+            ];
+            const moved = {
+                removedPaths: [{ ancestor: parent, descendant: child }],
+                upsertedPaths: [{ ancestor: role, descendant: child, depth: 1 }],
+            };
+            repositories.roleClosures.insertNewHierarchy.mockImplementation(() => Promise.resolve(paths));
+            repositories.roleClosures.moveSubtrees.mockImplementation(() => Promise.resolve(moved));
 
             // Act
-            await service.buildHierarchy({
+            const result = await service.buildHierarchy({
                 transaction: transaction.entityManager,
                 input: { entity: role, parent, realm: REALM_ID, children: [CHILD_ROLE_ID] },
             });
 
             // Assert
+            expect(result).toEqual([{ upsertedPaths: paths, removedPaths: [] }, moved]);
             expect(repositories.roles.getDescendants).toHaveBeenCalledWith({
                 ancestor: PARENT_ROLE_ID,
                 transaction: transaction.entityManager,
@@ -679,7 +691,7 @@ describe("[DomainService] - Role", () => {
                 role: ROLE_ID,
             });
             expect(transaction.remove).toHaveBeenCalledWith(role);
-            expect(result).toBe(role);
+            expect(result).toEqual({ entity: role, paths: [] });
         });
 
         it("[case] - does not decrease closure depth or remove when purge eligibility fails", async () => {

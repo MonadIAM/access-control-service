@@ -7,6 +7,7 @@ import { REDIS_CACHE_CLIENT } from "~infrastructure/redis";
 import { Exception } from "~common/exceptions";
 
 import { PROJECTION_MUTATION_SCRIPTS, PROJECTION_SCRIPT_FILES, ProjectionScript } from "../scripts";
+import { readProjectionSource } from "../scripts/source";
 
 const CONSUME_SCRIPT_PLACEHOLDER = "-- PROJECTION_SCRIPT";
 
@@ -35,7 +36,11 @@ export class ScriptLoaderService implements OnModuleInit, InfrastructureServices
         props: InfrastructureServices.ScriptLoader.Reload.Props,
     ): InfrastructureServices.ScriptLoader.Reload.Result {
         const { script, mode } = props;
-        const content = await readFile(join(__dirname, "../scripts", PROJECTION_SCRIPT_FILES[script]), "utf8");
+        const content = await readProjectionSource(
+            join(__dirname, "../scripts", PROJECTION_SCRIPT_FILES[script]),
+            PROJECTION_MUTATION_SCRIPTS.includes(script) ? script : undefined,
+            join(__dirname, "../scripts"),
+        );
         const source =
             mode === "consume" ? (await this.consumeScript).replace(CONSUME_SCRIPT_PLACEHOLDER, content) : content;
         const hash = await this.redis.script("LOAD", source);

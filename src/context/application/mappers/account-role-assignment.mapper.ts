@@ -30,7 +30,8 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
         props: Commands.Mappers.AccountRoleAssignment.ProjectionCreatePayload.Props,
     ): Commands.Mappers.AccountRoleAssignment.ProjectionCreatePayload.Result {
         return {
-            assignments: props.assignments.map(({ id, role }) => ({
+            assignments: props.assignments.map(({ id, role, expiresAt }) => ({
+                expiresAt: expiresAt?.getTime() ?? null,
                 assignment: id,
                 role: role.id,
             })),
@@ -49,6 +50,7 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
             account: entity.account,
             assignments: [
                 {
+                    expiresAt: entity.expiresAt?.getTime() ?? null,
                     assignment: entity.id,
                     role: entity.role.id,
                 },
@@ -100,7 +102,8 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
 
         return Array.from(groups, ([realm, assignments]) => ({
             isRevoked: assignments[0].isRevoked,
-            items: assignments.map(({ id, account, role }) => ({
+            items: assignments.map(({ id, account, role, expiresAt }) => ({
+                expiresAt: expiresAt?.getTime() ?? null,
                 assignment: id,
                 role: role.id,
                 account,
@@ -186,7 +189,8 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
         props: Commands.Mappers.AccountRoleAssignment.JoinAssignmentProjectionPayload.Props,
     ): Commands.Mappers.AccountRoleAssignment.JoinAssignmentProjectionPayload.Result {
         return {
-            assignments: props.assignments.map(({ id, role }) => ({
+            assignments: props.assignments.map(({ id, role, expiresAt }) => ({
+                expiresAt: expiresAt?.getTime() ?? null,
                 assignment: id,
                 role: role.id,
             })),

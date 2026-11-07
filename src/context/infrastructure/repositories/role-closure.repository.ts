@@ -49,7 +49,7 @@ export class RoleClosureRepository
                 .returning(CLOSURE_COLUMNS)
                 .compile();
 
-            await super.write({ transaction, query, type: ChangeSetType.CREATE });
+            return await super.write({ transaction, query, type: ChangeSetType.CREATE });
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.resource);
         }
@@ -147,7 +147,7 @@ export class RoleClosureRepository
                 .returning([...CLOSURE_COLUMNS, sql`jsonb_build_object('depth', depth + 1)`.as("previous_state")])
                 .compile();
 
-            await super.write({ transaction, query, type: ChangeSetType.UPDATE });
+            return await super.write({ transaction, query, type: ChangeSetType.UPDATE });
         } catch (error) {
             throw ExceptionMapper.fromORM(error, this.resource);
         }

@@ -2,6 +2,11 @@ import { MoveMode, RoleActorType, RoleArchetype } from "~context/enums";
 
 declare global {
     namespace Services.Role {
+        type HierarchySteps = {
+            removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
+            upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
+        }[];
+
         interface Contract extends InternalContract, CommandContract {}
 
         interface InternalContract {
@@ -19,7 +24,7 @@ declare global {
                 };
             };
 
-            type Result = Promise<void>;
+            type Result = Promise<HierarchySteps>;
 
             type Signature = (props: Props) => Result;
         }
@@ -77,6 +82,7 @@ declare global {
             };
 
             type Result = Promise<{
+                steps: HierarchySteps;
                 parent: Entities.Role;
                 entity: Entities.Role;
             }>;
@@ -116,16 +122,16 @@ declare global {
                 id: string;
             };
 
-            type Result = Promise<Entities.Role>;
+            type Result = Promise<{
+                paths: Entities.RoleClosure[];
+                entity: Entities.Role;
+            }>;
 
             type Signature = (props: Props) => Result;
         }
 
         namespace Move {
-            type Steps = {
-                removedPaths: Omit<Entities.RoleClosure, "realm" | "depth">[];
-                upsertedPaths: Omit<Entities.RoleClosure, "realm">[];
-            }[];
+            type Steps = HierarchySteps;
 
             type Props = {
                 transaction: ORM.EntityManager;

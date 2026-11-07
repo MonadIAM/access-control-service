@@ -1,10 +1,40 @@
 import { randomUUID } from "node:crypto";
+import { SYSTEM_REALM_ID } from "@monadiam/shared";
 
 import { PermissionOverrideEffect } from "~context/enums";
 
 import { CoreFixture } from "./core.fixture";
 
 export class PermissionFixture extends CoreFixture implements Fixtures.Permission.Contract {
+    public async dependencyScenario(dependency: string): Fixtures.Permission.InheritedScenario.Result {
+        const account = randomUUID();
+        const realm = await this.createRealm({ isRevoked: dependency === "realm" });
+        const owner = await this.createRealm({ id: SYSTEM_REALM_ID, isRevoked: dependency === "owner" });
+        const parent = await this.createRole({ realm, isRevoked: dependency === "ancestor" });
+        const child = await this.createRole({ realm, isRevoked: dependency === "assigned role" });
+        await this.createRoleClosure({ realm, ancestor: parent, descendant: child, depth: 1 });
+        const inherited = await this.createPermission({
+            realm: owner,
+            code: "dependency.inherited",
+            isRevoked: dependency === "permission",
+        });
+        const allowed = await this.createPermission({ realm, code: "dependency.allowed" });
+        await this.createAccountRoleAssignment({ realm, role: child, account });
+        await this.createRolePermissionAssignment({ realm, role: parent, permission: inherited });
+        await this.createPermissionOverride({
+            realm,
+            account,
+            permission: allowed,
+            effect: PermissionOverrideEffect.ALLOW,
+        });
+        return {
+            realm,
+            account,
+            expectedPermissionCodes:
+                dependency === "realm" ? [] : dependency === "none" ? [allowed.code, inherited.code] : [allowed.code],
+        };
+    }
+
     /**
      * Builds a role hierarchy where inherited grants and account-level overrides form the effective permission set.
      */

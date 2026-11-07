@@ -30,7 +30,7 @@ describe("[Commands] - Role", () => {
                 parent: "parent-role",
                 children: ["child-role"],
             };
-            service.create.mockResolvedValue({ entity: helpers.createRole(), parent: helpers.createRole() });
+            service.create.mockResolvedValue({ entity: helpers.createRole(), parent: helpers.createRole(), steps: [] });
 
             // Act
             await commands.create({ input, actor: ACTOR, realm: REALM, context: CONTEXT });
@@ -180,7 +180,7 @@ describe("[Commands] - Role", () => {
             // Arrange
             const { commands, service, run, transaction } = helpers.commands();
             const role = helpers.createRole();
-            service.purge.mockResolvedValue(role);
+            service.purge.mockResolvedValue({ entity: role, paths: [] });
 
             // Act
             await commands.purge({
@@ -196,7 +196,7 @@ describe("[Commands] - Role", () => {
             expect(service.purge.mock.calls).toEqual([
                 [{ id: role.id, realm: REALM, transaction: transaction.entityManager }],
             ]);
-            expect(result).toEqual({ roles: [role] });
+            expect(result).toEqual({ roles: [role], paths: [] });
         });
     });
 
