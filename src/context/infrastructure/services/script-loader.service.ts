@@ -27,6 +27,7 @@ export class ScriptLoaderService implements OnModuleInit, InfrastructureServices
 
     public async onModuleInit(): Promise<void> {
         await Promise.all([
+            this.reload({ mode: "consume", script: ProjectionScript.CHECKPOINT }),
             ...Object.typedEntries(PROJECTION_SCRIPT_FILES).map(([script]) => this.reload({ mode: "execute", script })),
             ...PROJECTION_MUTATION_SCRIPTS.map((script) => this.reload({ mode: "consume", script })),
         ]);

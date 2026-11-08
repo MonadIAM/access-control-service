@@ -1,4 +1,5 @@
 export enum ProjectionScript {
+    CHECKPOINT = "projection/checkpoint",
     ROLE_PERMISSION_ASSIGNMENT_CREATE = "role-permission-assignment/create",
     ROLE_PERMISSION_ASSIGNMENT_UPDATE = "role-permission-assignment/update",
     ROLE_PERMISSION_ASSIGNMENT_PURGE = "role-permission-assignment/purge",
@@ -84,4 +85,6 @@ export const PROJECTION_SCRIPT_FILES: Record<ProjectionScript, string> = {
     [ProjectionScript.ROLE_CREATE]: "role/create.lua",
     [ProjectionScript.ROLE_UPDATE]: "role/update.lua",
     [ProjectionScript.ROLE_PURGE]: "role/purge.lua",
+
+    [ProjectionScript.CHECKPOINT]: "checkpoint.lua",
 };

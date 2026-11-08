@@ -103,7 +103,9 @@ declare global {
 
                 type Result = Promise<{
                     realms: Record<string, Record<string, PrivilegeScope.REALM>>;
+                    revisions: Record<string, Record<string, string>>;
                     global: Record<string, PrivilegeScope.GLOBAL>;
+                    globalRevision: Record<string, string>;
                 }>;
 
                 type Signature = (props: Props) => Result;

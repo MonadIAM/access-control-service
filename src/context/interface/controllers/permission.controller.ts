@@ -177,8 +177,8 @@ export class PermissionController {
         UNAUTHORIZED,
         FORBIDDEN,
     )
-    public async getPrivileges(@Extract.Session() { account, realms }: Extract.Session.Auth): Promise<PrivilegesDTO> {
-        return { data: await this.permissionQueries.getPrivileges({ account, realms }) };
+    public getPrivileges(@Extract.Session() { account, realms }: Extract.Session.Auth): Promise<PrivilegesDTO> {
+        return this.permissionQueries.getPrivilegeSnapshot({ account, realms });
     }
 
     @Post("create")

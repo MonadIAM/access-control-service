@@ -1,7 +1,7 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { ROLE_PERMISSION_ASSIGNMENT_SERVICE } from "~context/domain/services";
+import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 
@@ -37,8 +37,8 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {
@@ -72,8 +72,8 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {
@@ -115,8 +115,8 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {
@@ -158,8 +158,8 @@ export class RolePermissionAssignmentCommands implements Commands.RolePermission
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {

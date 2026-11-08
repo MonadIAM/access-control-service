@@ -48,12 +48,19 @@ export class RoleMapper implements Commands.Mappers.Role.Contract {
     public subtreeAccessCachePayload(
         props: Commands.Mappers.Role.SubtreeAccessCachePayload.Props,
     ): Commands.Mappers.Role.SubtreeAccessCachePayload.Result {
-        return {
-            items: props.entities.map(({ realm }) => ({
-                scope: InvalidationScope.REALM,
-                realm: realm.id,
-            })),
-        };
+        const checkpoints = new Map<string, Topics.ProjectionJournal.Checkpoint["payload"]>();
+
+        for (const entity of props.entities) {
+            const realm = entity.realm.id;
+            let checkpoint = checkpoints.get(realm);
+            if (!checkpoint) {
+                checkpoint = { realm, items: [] };
+                checkpoints.set(realm, checkpoint);
+                checkpoint.items.push({ scope: InvalidationScope.REALM, realm });
+            }
+        }
+
+        return Array.from(checkpoints.values());
     }
 
     public projectionUpdatePayload(
@@ -88,24 +95,36 @@ export class RoleMapper implements Commands.Mappers.Role.Contract {
     public moveAccessCachePayload(
         props: Commands.Mappers.Role.MoveAccessCachePayload.Props,
     ): Commands.Mappers.Role.MoveAccessCachePayload.Result {
-        return {
-            items: [
-                {
-                    scope: InvalidationScope.REALM,
-                    realm: props.target.realm.id,
-                },
-            ],
-        };
+        const checkpoints = new Map<string, Topics.ProjectionJournal.Checkpoint["payload"]>();
+
+        for (const entity of [props.target]) {
+            const realm = entity.realm.id;
+            let checkpoint = checkpoints.get(realm);
+            if (!checkpoint) {
+                checkpoint = { realm, items: [] };
+                checkpoints.set(realm, checkpoint);
+                checkpoint.items.push({ scope: InvalidationScope.REALM, realm });
+            }
+        }
+
+        return Array.from(checkpoints.values());
     }
 
     public accessCachePayload(
         props: Commands.Mappers.Role.AccessCachePayload.Props,
     ): Commands.Mappers.Role.AccessCachePayload.Result {
-        return {
-            items: props.roles.map(({ realm }) => ({
-                scope: InvalidationScope.REALM,
-                realm: realm.id,
-            })),
-        };
+        const checkpoints = new Map<string, Topics.ProjectionJournal.Checkpoint["payload"]>();
+
+        for (const entity of props.roles) {
+            const realm = entity.realm.id;
+            let checkpoint = checkpoints.get(realm);
+            if (!checkpoint) {
+                checkpoint = { realm, items: [] };
+                checkpoints.set(realm, checkpoint);
+                checkpoint.items.push({ scope: InvalidationScope.REALM, realm });
+            }
+        }
+
+        return Array.from(checkpoints.values());
     }
 }

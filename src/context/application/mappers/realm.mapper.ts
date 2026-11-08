@@ -47,12 +47,19 @@ export class RealmMapper implements Commands.Mappers.Realm.Contract {
     public accessCachePayload(
         props: Commands.Mappers.Realm.AccessCachePayload.Props,
     ): Commands.Mappers.Realm.AccessCachePayload.Result {
-        return {
-            items: props.realms.map(({ id }) => ({
-                scope: InvalidationScope.REALM,
-                realm: id,
-            })),
-        };
+        const checkpoints = new Map<string, Topics.ProjectionJournal.Checkpoint["payload"]>();
+
+        for (const entity of props.realms) {
+            const realm = entity.id;
+            let checkpoint = checkpoints.get(realm);
+            if (!checkpoint) {
+                checkpoint = { realm, items: [] };
+                checkpoints.set(realm, checkpoint);
+                checkpoint.items.push({ scope: InvalidationScope.REALM, realm });
+            }
+        }
+
+        return Array.from(checkpoints.values());
     }
 
     public realmLifecyclePayload(
@@ -140,13 +147,26 @@ export class RealmMapper implements Commands.Mappers.Realm.Contract {
     public transferAccessCache(
         props: Commands.Mappers.Realm.TransferAccessCache.Props,
     ): Commands.Mappers.Realm.TransferAccessCache.Result {
-        return {
-            items: [props.request.input.previousOwner, props.request.input.owner].map((account) => ({
-                scope: InvalidationScope.ACCOUNT_REALM,
-                account,
-                realm: props.realm.id,
-            })),
-        };
+        const checkpoints = new Map<string, Topics.ProjectionJournal.Checkpoint["payload"]>();
+        const seen = new Set<string>();
+
+        for (const entity of [props.request.input.previousOwner, props.request.input.owner]) {
+            const realm = props.realm.id;
+            const account = entity;
+            const key = `${realm}:${account}`;
+            if (seen.has(key)) {
+                continue;
+            }
+            seen.add(key);
+            let checkpoint = checkpoints.get(realm);
+            if (!checkpoint) {
+                checkpoint = { realm, items: [] };
+                checkpoints.set(realm, checkpoint);
+            }
+            checkpoint.items.push({ scope: InvalidationScope.ACCOUNT_REALM, realm, account });
+        }
+
+        return Array.from(checkpoints.values());
     }
 
     public accessAssignmentPurge(
@@ -198,6 +218,25 @@ export class RealmMapper implements Commands.Mappers.Realm.Contract {
     }
 
     public accessCache(props: Commands.Mappers.Realm.AccessCache.Props): Commands.Mappers.Realm.AccessCache.Result {
-        return { items: [{ scope: InvalidationScope.ACCOUNT_REALM, account: props.account, realm: props.realm }] };
+        const checkpoints = new Map<string, Topics.ProjectionJournal.Checkpoint["payload"]>();
+        const seen = new Set<string>();
+
+        for (const entity of [props]) {
+            const realm = entity.realm;
+            const account = entity.account;
+            const key = `${realm}:${account}`;
+            if (seen.has(key)) {
+                continue;
+            }
+            seen.add(key);
+            let checkpoint = checkpoints.get(realm);
+            if (!checkpoint) {
+                checkpoint = { realm, items: [] };
+                checkpoints.set(realm, checkpoint);
+            }
+            checkpoint.items.push({ scope: InvalidationScope.ACCOUNT_REALM, realm, account });
+        }
+
+        return Array.from(checkpoints.values());
     }
 }

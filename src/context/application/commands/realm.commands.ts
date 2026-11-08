@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { AccessCacheTopicAction, RealmTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
+import { RealmTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { SYSTEM_REALM_ID, CONSUMER_META } from "~context/constants";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
@@ -84,8 +84,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
                 {
                     payloadMapper: this.mapper.realmLifecyclePayload,
@@ -132,8 +132,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
                 {
                     payloadMapper: this.mapper.realmLifecyclePayload,
@@ -180,8 +180,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
                 {
                     payloadMapper: this.mapper.realmLifecyclePayload,
@@ -276,8 +276,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                     },
                     {
                         payloadMapper: this.mapper.bootstrapConfirmed,
-                        destinationTopic: KafkaTopic.REALM,
                         actionType: RealmTopicAction.BOOTSTRAP_CONFIRMED,
+                        destinationTopic: KafkaTopic.REALM,
                     },
                 ],
                 audit: {
@@ -325,8 +325,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                     },
                     {
                         payloadMapper: this.mapper.transferAccessCache,
-                        actionType: AccessCacheTopicAction.INVALIDATE,
-                        destinationTopic: KafkaTopic.ACCESS_CACHE,
+                        destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                        actionType: ProjectionScript.CHECKPOINT,
                     },
                     {
                         payloadMapper: this.mapper.transferConfirmed,
@@ -413,8 +413,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
                 {
                     payloadMapper: this.mapper.realmLifecyclePayload,
@@ -452,8 +452,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
                 {
                     payloadMapper: this.mapper.realmLifecyclePayload,
@@ -491,8 +491,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
                 {
                     payloadMapper: this.mapper.realmLifecyclePayload,
@@ -537,8 +537,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCache,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {
@@ -577,8 +577,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCache,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {
@@ -617,8 +617,8 @@ export class RealmCommands implements Commands.Realm.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCache,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {

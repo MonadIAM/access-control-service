@@ -216,6 +216,8 @@ declare global {
                 type Result = {
                     realms: Record<string, Record<string, PrivilegeScope.REALM>>;
                     global: Record<string, PrivilegeScope.GLOBAL>;
+                    revisions: Record<string, Record<string, string>>;
+                    globalRevision: Record<string, string>;
                 };
             }
         }

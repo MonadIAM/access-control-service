@@ -43,7 +43,7 @@ declare namespace Commands.Mappers.Permission {
             permissions: Entities.Permission[];
         };
 
-        type Result = Topics.AccessCache.Message["payload"];
+        type Result = Topics.ProjectionJournal.Checkpoint["payload"][];
 
         type Signature = (props: Props) => Result;
     }

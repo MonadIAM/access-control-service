@@ -1,4 +1,4 @@
-import { EventPattern, KafkaContext, Payload, ClientKafka, Ctx } from "@nestjs/microservices";
+import { EventPattern, KafkaContext, Payload, ClientKafka, Ctx, KafkaRetriableException } from "@nestjs/microservices";
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 
@@ -53,13 +53,16 @@ export class ProjectionConsumer implements Consumers.Projection.Contract, OnModu
 
     public async process(props: Consumers.Projection.Process.Props): Consumers.Projection.Process.Result {
         const { incoming } = props;
+        if (!incoming.source) {
+            throw new KafkaRetriableException("Kafka source metadata is missing");
+        }
         const message = await this.schemaRegistry.decode<Consumers.Projection.Message>({
             topic: KafkaTopic.PROJECTION_JOURNAL,
             value: props.message,
         });
         this.schemaRegistry.validate({ topic: KafkaTopic.PROJECTION_JOURNAL, value: message });
         await this.scriptExecutorService.consume<string>({
-            args: [JSON.stringify(message.payload)],
+            args: [JSON.stringify(message.payload), JSON.stringify(incoming.source)],
             script: message.actionType,
             event: incoming.event,
         });
@@ -81,5 +84,6 @@ export class ProjectionConsumer implements Consumers.Projection.Contract, OnModu
         );
 
         this.kafkaMetrics.recordDead({ topic: KafkaTopic.PROJECTION_JOURNAL, error });
+        throw error;
     }
 }

@@ -89,7 +89,7 @@ declare namespace Commands {
                     realms: Entities.Realm[];
                 };
 
-                type Result = Topics.AccessCache.Message["payload"];
+                type Result = Topics.ProjectionJournal.Checkpoint["payload"][];
 
                 type Signature = (props: Props) => Result;
             }
@@ -145,7 +145,7 @@ declare namespace Commands {
             namespace TransferAccessCache {
                 type Props = TransferResult;
 
-                type Result = Topics.AccessCache.Message["payload"];
+                type Result = Topics.ProjectionJournal.Checkpoint["payload"][];
 
                 type Signature = (props: Props) => Result;
             }
@@ -185,7 +185,7 @@ declare namespace Commands {
             namespace AccessCache {
                 type Props = AccessResult;
 
-                type Result = Topics.AccessCache.Message["payload"];
+                type Result = Topics.ProjectionJournal.Checkpoint["payload"][];
 
                 type Signature = (props: Props) => Result;
             }

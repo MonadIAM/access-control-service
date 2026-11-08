@@ -156,12 +156,7 @@ describe("[DataMapper] - RolePermissionAssignment", () => {
             const result = mapper.accessCachePayload({ assignments: createAssignments() });
 
             // Assert
-            expect(result).toEqual({
-                items: [
-                    { scope: InvalidationScope.REALM, realm: REALM_ID },
-                    { scope: InvalidationScope.REALM, realm: REALM_ID },
-                ],
-            });
+            expect(result).toEqual([{ realm: REALM_ID, items: [{ scope: InvalidationScope.REALM, realm: REALM_ID }] }]);
         });
     });
 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { AccessCacheTopicAction, RealmTopicAction, KafkaTopic, ActionType, EntityType } from "~context/enums";
 import { RealmCommandsUnitHelpers } from "~testing/unit/command-services/realm.helpers";
+import { RealmTopicAction, KafkaTopic, ActionType, EntityType } from "~context/enums";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
 
@@ -119,8 +119,8 @@ describe("[Commands] - Realm", () => {
                                 payloadMapper: expect.any(Function),
                             }),
                             expect.objectContaining({
-                                actionType: AccessCacheTopicAction.INVALIDATE,
-                                destinationTopic: KafkaTopic.ACCESS_CACHE,
+                                actionType: ProjectionScript.CHECKPOINT,
+                                destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                                 payloadMapper: expect.any(Function),
                             }),
                         ]),
@@ -446,8 +446,8 @@ describe("[Commands] - Realm", () => {
                                 destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                             }),
                             expect.objectContaining({
-                                actionType: AccessCacheTopicAction.INVALIDATE,
-                                destinationTopic: KafkaTopic.ACCESS_CACHE,
+                                actionType: ProjectionScript.CHECKPOINT,
+                                destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                             }),
                         ]),
                     }),
@@ -513,8 +513,8 @@ describe("[Commands] - Realm", () => {
                                 destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                             }),
                             expect.objectContaining({
-                                actionType: AccessCacheTopicAction.INVALIDATE,
-                                destinationTopic: KafkaTopic.ACCESS_CACHE,
+                                actionType: ProjectionScript.CHECKPOINT,
+                                destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                             }),
                         ]),
                     }),

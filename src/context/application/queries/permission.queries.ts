@@ -19,6 +19,13 @@ export class PermissionQueries implements Queries.Permission.Contract {
     ) {}
 
     public async getPrivileges(props: Queries.Permission.GetPrivileges.Props): Queries.Permission.GetPrivileges.Result {
+        const snapshot = await this.getPrivilegeSnapshot(props);
+        return snapshot.data;
+    }
+
+    public async getPrivilegeSnapshot(
+        props: Queries.Permission.GetPrivilegeSnapshot.Props,
+    ): Queries.Permission.GetPrivilegeSnapshot.Result {
         const realms = [...new Set(props.realms)];
         if (realms.length) {
             const permissions = await this.projectionCacheService.collectPermissions({
@@ -45,9 +52,9 @@ export class PermissionQueries implements Queries.Permission.Contract {
                 }
             }
 
-            return result;
+            return { data: result, revisions: permissions.revisions, globalRevision: permissions.globalRevision };
         } else {
-            return {};
+            return { data: {}, revisions: {}, globalRevision: {} };
         }
     }
 

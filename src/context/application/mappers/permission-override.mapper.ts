@@ -97,12 +97,25 @@ export class PermissionOverrideMapper implements Commands.Mappers.PermissionOver
     public accessCachePayload(
         props: Commands.Mappers.PermissionOverride.AccessCachePayload.Props,
     ): Commands.Mappers.PermissionOverride.AccessCachePayload.Result {
-        return {
-            items: props.overrides.map(({ account, realm }) => ({
-                scope: InvalidationScope.ACCOUNT_REALM,
-                realm: realm.id,
-                account,
-            })),
-        };
+        const checkpoints = new Map<string, Topics.ProjectionJournal.Checkpoint["payload"]>();
+        const seen = new Set<string>();
+
+        for (const entity of props.overrides) {
+            const realm = entity.realm.id;
+            const account = entity.account;
+            const key = `${realm}:${account}`;
+            if (seen.has(key)) {
+                continue;
+            }
+            seen.add(key);
+            let checkpoint = checkpoints.get(realm);
+            if (!checkpoint) {
+                checkpoint = { realm, items: [] };
+                checkpoints.set(realm, checkpoint);
+            }
+            checkpoint.items.push({ scope: InvalidationScope.ACCOUNT_REALM, realm, account });
+        }
+
+        return Array.from(checkpoints.values());
     }
 }

@@ -338,20 +338,18 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
             const result = mapper.accessCachePayload({ assignments: createAssignments() });
 
             // Assert
-            expect(result).toEqual({
-                items: [
-                    {
-                        scope: InvalidationScope.ACCOUNT_REALM,
-                        account: FIRST_ACCOUNT_ID,
-                        realm: REALM_ID,
-                    },
-                    {
-                        scope: InvalidationScope.ACCOUNT_REALM,
-                        account: FIRST_ACCOUNT_ID,
-                        realm: REALM_ID,
-                    },
-                ],
-            });
+            expect(result).toEqual([
+                {
+                    realm: REALM_ID,
+                    items: [
+                        {
+                            scope: InvalidationScope.ACCOUNT_REALM,
+                            account: FIRST_ACCOUNT_ID,
+                            realm: REALM_ID,
+                        },
+                    ],
+                },
+            ]);
         });
     });
 
@@ -385,20 +383,28 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
             });
 
             // Assert
-            expect(result).toEqual({
-                items: [
-                    {
-                        scope: InvalidationScope.ACCOUNT_REALM,
-                        account: FIRST_ACCOUNT_ID,
-                        realm: REALM_ID,
-                    },
-                    {
-                        scope: InvalidationScope.ACCOUNT_REALM,
-                        account: SECOND_ACCOUNT_ID,
-                        realm: SECOND_REALM_ID,
-                    },
-                ],
-            });
+            expect(result).toEqual([
+                {
+                    realm: REALM_ID,
+                    items: [
+                        {
+                            scope: InvalidationScope.ACCOUNT_REALM,
+                            account: FIRST_ACCOUNT_ID,
+                            realm: REALM_ID,
+                        },
+                    ],
+                },
+                {
+                    realm: SECOND_REALM_ID,
+                    items: [
+                        {
+                            scope: InvalidationScope.ACCOUNT_REALM,
+                            account: SECOND_ACCOUNT_ID,
+                            realm: SECOND_REALM_ID,
+                        },
+                    ],
+                },
+            ]);
         });
     });
 
@@ -488,15 +494,18 @@ describe("[DataMapper] - AccountRoleAssignment", () => {
                 });
 
                 // Assert
-                expect(result).toEqual({
-                    items: [
-                        {
-                            scope: InvalidationScope.ACCOUNT_REALM,
-                            account: ACCOUNT_ID,
-                            realm: REALM_ID,
-                        },
-                    ],
-                });
+                expect(result).toEqual([
+                    {
+                        realm: REALM_ID,
+                        items: [
+                            {
+                                scope: InvalidationScope.ACCOUNT_REALM,
+                                account: ACCOUNT_ID,
+                                realm: REALM_ID,
+                            },
+                        ],
+                    },
+                ]);
             });
         });
 

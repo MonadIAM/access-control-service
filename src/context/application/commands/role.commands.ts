@@ -1,6 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
-import { AccessCacheTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
+import { ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { ROLE_SERVICE } from "~context/domain/services";
@@ -78,8 +78,8 @@ export class RoleCommands implements Commands.Role.Contract {
                 },
                 {
                     payloadMapper: this.mapper.moveAccessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {
@@ -109,8 +109,8 @@ export class RoleCommands implements Commands.Role.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {
@@ -150,8 +150,8 @@ export class RoleCommands implements Commands.Role.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {
@@ -191,8 +191,8 @@ export class RoleCommands implements Commands.Role.Contract {
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {
@@ -224,8 +224,8 @@ export class RoleCommands implements Commands.Role.Contract {
                 },
                 {
                     payloadMapper: this.mapper.subtreeAccessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {

@@ -28,16 +28,28 @@ export class RoleProjectionHelpers implements Integration.Projection.Role.Contra
             { orderBy: { sequenceNumber: "ASC" } },
         );
         const pending = events.filter(({ id }) => !props.context.consumed.has(id));
-        expect(pending).toHaveLength(1);
+        const projections: Outbox[] = [];
         for await (const event of pending) {
-            const result = await props.executor.execute({
-                script: event.actionType as ProjectionScript,
-                args: [JSON.stringify(event.payload)],
-            });
-            expect(result).toBe("OK");
+            if (event.actionType === ProjectionScript.CHECKPOINT) {
+                expect(projections).toHaveLength(1);
+                expect(event.payload).toMatchObject({ realm: projections[0].payload.realm });
+                expect(event.sequenceNumber).toBeGreaterThan(projections[0].sequenceNumber);
+            } else {
+                const script = Object.values(ProjectionScript).find((value) => value === event.actionType);
+                if (!script) {
+                    throw new Error(`Unknown projection script: ${event.actionType}`);
+                }
+                const result = await props.executor.execute({
+                    args: [JSON.stringify(event.payload)],
+                    script,
+                });
+                expect(result).toBe("OK");
+                projections.push(event);
+            }
             props.context.consumed.add(event.id);
         }
-        return pending;
+        expect(projections).toHaveLength(1);
+        return projections;
     }
 
     public pathKey(ancestor: Entities.Role, descendant: Entities.Role, depth: number): string {

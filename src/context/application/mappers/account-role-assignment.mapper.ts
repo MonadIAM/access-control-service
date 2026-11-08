@@ -160,29 +160,51 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
     public accessCachePayload(
         props: Commands.Mappers.AccountRoleAssignment.AccessCachePayload.Props,
     ): Commands.Mappers.AccountRoleAssignment.AccessCachePayload.Result {
-        return {
-            items: props.assignments.map(({ account, realm }) => ({
-                scope: InvalidationScope.ACCOUNT_REALM,
-                realm: realm.id,
-                account,
-            })),
-        };
+        const checkpoints = new Map<string, Topics.ProjectionJournal.Checkpoint["payload"]>();
+        const seen = new Set<string>();
+
+        for (const entity of props.assignments) {
+            const realm = entity.realm.id;
+            const account = entity.account;
+            const key = `${realm}:${account}`;
+            if (seen.has(key)) {
+                continue;
+            }
+            seen.add(key);
+            let checkpoint = checkpoints.get(realm);
+            if (!checkpoint) {
+                checkpoint = { realm, items: [] };
+                checkpoints.set(realm, checkpoint);
+            }
+            checkpoint.items.push({ scope: InvalidationScope.ACCOUNT_REALM, realm, account });
+        }
+
+        return Array.from(checkpoints.values());
     }
 
     public cleanAccessCachePayload(
         props: Commands.Mappers.AccountRoleAssignment.CleanAccessCachePayload.Props,
     ): Commands.Mappers.AccountRoleAssignment.CleanAccessCachePayload.Result {
-        const invalidations = new Map<string, Topics.AccessCache.Message["payload"]["items"][number]>();
+        const checkpoints = new Map<string, Topics.ProjectionJournal.Checkpoint["payload"]>();
+        const seen = new Set<string>();
 
-        for (const { account, realm } of [...props.assignments, ...props.overrides]) {
-            invalidations.set(`${account}:${realm.id}`, {
-                scope: InvalidationScope.ACCOUNT_REALM,
-                realm: realm.id,
-                account,
-            });
+        for (const entity of [...props.assignments, ...props.overrides]) {
+            const realm = entity.realm.id;
+            const account = entity.account;
+            const key = `${realm}:${account}`;
+            if (seen.has(key)) {
+                continue;
+            }
+            seen.add(key);
+            let checkpoint = checkpoints.get(realm);
+            if (!checkpoint) {
+                checkpoint = { realm, items: [] };
+                checkpoints.set(realm, checkpoint);
+            }
+            checkpoint.items.push({ scope: InvalidationScope.ACCOUNT_REALM, realm, account });
         }
 
-        return { items: [...invalidations.values()] };
+        return Array.from(checkpoints.values());
     }
 
     public joinAssignmentProjectionPayload(
@@ -202,15 +224,18 @@ export class AccountRoleAssignmentMapper implements Commands.Mappers.AccountRole
     public joinAccessCachePayload(
         props: Commands.Mappers.AccountRoleAssignment.JoinAccessCachePayload.Props,
     ): Commands.Mappers.AccountRoleAssignment.JoinAccessCachePayload.Result {
-        return {
-            items: [
-                {
-                    scope: InvalidationScope.ACCOUNT_REALM,
-                    account: props.request.account,
-                    realm: props.realm,
-                },
-            ],
-        };
+        return [
+            {
+                realm: props.realm,
+                items: [
+                    {
+                        scope: InvalidationScope.ACCOUNT_REALM,
+                        account: props.request.account,
+                        realm: props.realm,
+                    },
+                ],
+            },
+        ];
     }
 
     public joinConfirmedPayload(

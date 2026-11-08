@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { AccessCacheTopicAction, KafkaTopic, ActionType, EntityType, PermissionOverrideEffect } from "~context/enums";
 import { PermissionOverrideCommandsUnitHelpers } from "~testing/unit/command-services/permission-override.helpers";
+import { KafkaTopic, ActionType, EntityType, PermissionOverrideEffect } from "~context/enums";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { SYSTEM_ACCOUNT_ID } from "~context/constants";
 
@@ -38,8 +38,8 @@ describe("[Commands] - PermissionOverride", () => {
                             destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                         }),
                         expect.objectContaining({
-                            actionType: AccessCacheTopicAction.INVALIDATE,
-                            destinationTopic: KafkaTopic.ACCESS_CACHE,
+                            actionType: ProjectionScript.CHECKPOINT,
+                            destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                         }),
                     ]),
                 }),
@@ -113,8 +113,8 @@ describe("[Commands] - PermissionOverride", () => {
                             payloadMapper: expect.any(Function),
                         }),
                         expect.objectContaining({
-                            actionType: AccessCacheTopicAction.INVALIDATE,
-                            destinationTopic: KafkaTopic.ACCESS_CACHE,
+                            actionType: ProjectionScript.CHECKPOINT,
+                            destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                             payloadMapper: expect.any(Function),
                         }),
                     ]),

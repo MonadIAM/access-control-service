@@ -1,16 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
 
+import { RoleActorType, RoleArchetype, KafkaTopic, ActionType, EntityType, MoveMode } from "~context/enums";
 import { RoleCommandsUnitHelpers } from "~testing/unit/command-services/role.helpers";
 import { ProjectionScript } from "~context/infrastructure/scripts";
-import {
-    AccessCacheTopicAction,
-    RoleActorType,
-    RoleArchetype,
-    KafkaTopic,
-    ActionType,
-    EntityType,
-    MoveMode,
-} from "~context/enums";
 
 const CONTEXT: Extract.Meta = { ip: "127.0.0.1", userAgent: "unit-test" };
 const helpers = new RoleCommandsUnitHelpers();
@@ -111,8 +103,8 @@ describe("[Commands] - Role", () => {
                             payloadMapper: expect.any(Function),
                         }),
                         expect.objectContaining({
-                            actionType: AccessCacheTopicAction.INVALIDATE,
-                            destinationTopic: KafkaTopic.ACCESS_CACHE,
+                            actionType: ProjectionScript.CHECKPOINT,
+                            destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                             payloadMapper: expect.any(Function),
                         }),
                     ]),
@@ -148,8 +140,8 @@ describe("[Commands] - Role", () => {
                             destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                         }),
                         expect.objectContaining({
-                            actionType: AccessCacheTopicAction.INVALIDATE,
-                            destinationTopic: KafkaTopic.ACCESS_CACHE,
+                            actionType: ProjectionScript.CHECKPOINT,
+                            destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                         }),
                     ]),
                 }),

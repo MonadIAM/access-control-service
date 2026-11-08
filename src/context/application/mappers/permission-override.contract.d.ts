@@ -57,7 +57,7 @@ declare namespace Commands.Mappers.PermissionOverride {
             overrides: Entities.PermissionOverride[];
         };
 
-        type Result = Topics.AccessCache.Message["payload"];
+        type Result = Topics.ProjectionJournal.Checkpoint["payload"][];
 
         type Signature = (props: Props) => Result;
     }

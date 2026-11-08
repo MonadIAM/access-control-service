@@ -6,7 +6,16 @@ local payload = cjson.decode(ARGV[1])
 local account = tostring(payload.account)
 local owner = tostring(payload.permissionRealm)
 local system = tostring(payload.systemRealm)
-local result = { realms = {}, global = {} }
+local result = { realms = {}, global = {}, revisions = {} }
+
+local function revision(realm)
+    local values = redis.call("HGETALL", "projection:revision:" .. realm)
+    local result = {}
+    for index = 1, #values, 2 do
+        result[values[index]] = values[index + 1]
+    end
+    return result
+end
 
 local function collect(realm, scope)
     local values = redis.call("HGETALL", state.key("effective", scope, realm, account, owner))
@@ -23,11 +32,13 @@ end
 
 if system == state.system_realm then
     result.global = collect(system, "GLOBAL")
+    result.globalRevision = revision(system)
 end
 
 for _, realm in ipairs(payload.realms or {}) do
     realm = tostring(realm)
     result.realms[realm] = collect(realm, "REALM")
+    result.revisions[realm] = revision(realm)
 end
 
 return cjson.encode(result)

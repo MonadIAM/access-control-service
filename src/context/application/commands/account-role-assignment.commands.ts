@@ -1,5 +1,6 @@
 import { Inject, Injectable, Scope } from "@nestjs/common";
 
+import { NotificationTopicAction, RealmTopicAction, ActionType, EntityType, KafkaTopic } from "~context/enums";
 import { CONSUMER_META, SYSTEM_ACCOUNT_ID, SYSTEM_USER_ROLE_ID, SYSTEM_REALM_ID } from "~context/constants";
 import { ACCOUNT_ROLE_ASSIGNMENT_SERVICE, PERMISSION_OVERRIDE_SERVICE } from "~context/domain/services";
 import { ACCOUNT_ROLE_ASSIGNMENT_REPOSITORY } from "~context/infrastructure/repositories";
@@ -7,14 +8,6 @@ import { PROJECTION_CACHE_SERVICE } from "~context/infrastructure/services";
 import { TRANSACTIONAL_SERVICE } from "~common/transaction-manager";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 import { Exception } from "~common/exceptions";
-import {
-    NotificationTopicAction,
-    AccessCacheTopicAction,
-    RealmTopicAction,
-    ActionType,
-    EntityType,
-    KafkaTopic,
-} from "~context/enums";
 
 import { AccountRoleAssignmentMapper, PermissionOverrideMapper } from "../mappers";
 
@@ -56,8 +49,8 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     },
                     {
                         payloadMapper: this.mapper.joinAccessCachePayload,
-                        actionType: AccessCacheTopicAction.INVALIDATE,
-                        destinationTopic: KafkaTopic.ACCESS_CACHE,
+                        destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                        actionType: ProjectionScript.CHECKPOINT,
                     },
                     {
                         payloadMapper: this.mapper.joinConfirmedPayload,
@@ -144,8 +137,8 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     },
                     {
                         payloadMapper: this.mapper.accessCachePayload,
-                        actionType: AccessCacheTopicAction.INVALIDATE,
-                        destinationTopic: KafkaTopic.ACCESS_CACHE,
+                        destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                        actionType: ProjectionScript.CHECKPOINT,
                     },
                 ],
                 audit: {
@@ -190,8 +183,8 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {
@@ -236,8 +229,8 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
                 {
                     payloadMapper: this.mapper.notificationRevokePayload,
@@ -284,8 +277,8 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 },
                 {
                     payloadMapper: this.mapper.accessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {
@@ -331,8 +324,8 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                     },
                     {
                         payloadMapper: this.mapper.accessCachePayload,
-                        actionType: AccessCacheTopicAction.INVALIDATE,
-                        destinationTopic: KafkaTopic.ACCESS_CACHE,
+                        destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                        actionType: ProjectionScript.CHECKPOINT,
                     },
                 ],
                 audit: {
@@ -396,8 +389,8 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                         },
                         {
                             payloadMapper: this.mapper.accessCachePayload,
-                            actionType: AccessCacheTopicAction.INVALIDATE,
-                            destinationTopic: KafkaTopic.ACCESS_CACHE,
+                            destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                            actionType: ProjectionScript.CHECKPOINT,
                         },
                     ],
                     audit: {
@@ -439,8 +432,8 @@ export class AccountRoleAssignmentCommands implements Commands.AccountRoleAssign
                 },
                 {
                     payloadMapper: this.mapper.cleanAccessCachePayload,
-                    actionType: AccessCacheTopicAction.INVALIDATE,
-                    destinationTopic: KafkaTopic.ACCESS_CACHE,
+                    destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
+                    actionType: ProjectionScript.CHECKPOINT,
                 },
             ],
             audit: {

@@ -139,12 +139,10 @@ describe("[DataMapper] - Realm", () => {
             const result = mapper.accessCachePayload({ realms: [first, second] });
 
             // Assert
-            expect(result).toEqual({
-                items: [
-                    { scope: InvalidationScope.REALM, realm: REALM_ID },
-                    { scope: InvalidationScope.REALM, realm: SECOND_REALM_ID },
-                ],
-            });
+            expect(result).toEqual([
+                { realm: REALM_ID, items: [{ scope: InvalidationScope.REALM, realm: REALM_ID }] },
+                { realm: SECOND_REALM_ID, items: [{ scope: InvalidationScope.REALM, realm: SECOND_REALM_ID }] },
+            ]);
         });
     });
 
