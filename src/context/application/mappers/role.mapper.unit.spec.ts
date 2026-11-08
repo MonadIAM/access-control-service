@@ -167,12 +167,7 @@ describe("[DataMapper] - Role", () => {
             });
 
             // Assert
-            expect(result).toEqual({
-                items: [
-                    { scope: InvalidationScope.REALM, realm: REALM_ID },
-                    { scope: InvalidationScope.REALM, realm: REALM_ID },
-                ],
-            });
+            expect(result).toEqual([{ realm: REALM_ID, items: [{ scope: InvalidationScope.REALM, realm: REALM_ID }] }]);
         });
     });
 
@@ -186,9 +181,7 @@ describe("[DataMapper] - Role", () => {
             const result = mapper.moveAccessCachePayload({ steps: [], target });
 
             // Assert
-            expect(result).toEqual({
-                items: [{ scope: InvalidationScope.REALM, realm: REALM_ID }],
-            });
+            expect(result).toEqual([{ realm: REALM_ID, items: [{ scope: InvalidationScope.REALM, realm: REALM_ID }] }]);
         });
     });
 
@@ -210,12 +203,10 @@ describe("[DataMapper] - Role", () => {
             const result = mapper.accessCachePayload({ roles: [first, second] });
 
             // Assert
-            expect(result).toEqual({
-                items: [
-                    { scope: InvalidationScope.REALM, realm: REALM_ID },
-                    { scope: InvalidationScope.REALM, realm: SECOND_REALM_ID },
-                ],
-            });
+            expect(result).toEqual([
+                { realm: REALM_ID, items: [{ scope: InvalidationScope.REALM, realm: REALM_ID }] },
+                { realm: SECOND_REALM_ID, items: [{ scope: InvalidationScope.REALM, realm: SECOND_REALM_ID }] },
+            ]);
         });
     });
 });

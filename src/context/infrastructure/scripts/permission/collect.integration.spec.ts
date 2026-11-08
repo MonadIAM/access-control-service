@@ -131,6 +131,8 @@ describe("[Projection] - permission/collect query symmetry", () => {
 
             // Assert
             expect(result).toEqual({
+                revisions: { [local.id]: {} },
+                globalRevision: {},
                 realms: { [local.id]: localDeny ? {} : { [permission.code]: "REALM" } },
                 global: globalDeny ? {} : { [permission.code]: "GLOBAL" },
             });
@@ -173,11 +175,102 @@ describe("[Projection] - permission/collect query symmetry", () => {
         const sql = await suite.repository().permissions.collectEffective({ account, permissionRealm: realm.id });
 
         // Assert
-        expect(before).toEqual({ realms: { [realm.id]: {} }, global: {} });
-        expect(after).toEqual({ realms: { [realm.id]: { [permission.code]: "REALM" } }, global: {} });
+        expect(before).toEqual({
+            realms: { [realm.id]: {} },
+            global: {},
+            revisions: { [realm.id]: {} },
+            globalRevision: {},
+        });
+        expect(after).toEqual({
+            realms: { [realm.id]: { [permission.code]: "REALM" } },
+            global: {},
+            revisions: { [realm.id]: {} },
+            globalRevision: {},
+        });
         expect(sql.map((item) => item.permission)).toEqual([permission.code]);
         expect(await redis.client().hgetall(`projection:effective:REALM:${realm.id}:${account}:${realm.id}`)).toEqual(
             stored,
         );
+    });
+});
+
+describe("[Projection] - permission/collect revisions", () => {
+    const redis = redisSuite(ProjectionScript.PERMISSION_COLLECT);
+
+    it("[case] - reads effective permissions and their local and global revisions in one query", async () => {
+        // Arrange
+        const realm = "checkpoint-realm";
+        const account = "checkpoint-account";
+        await redis.client().hset(`projection:revision:${realm}`, "0", "42");
+        await redis.client().hset(`projection:revision:${SYSTEM_REALM_ID}`, "1", "19");
+        await redis.client().hset(`projection:effective:REALM:${realm}:${account}:${SYSTEM_REALM_ID}`, "read", "0:0");
+
+        // Act
+        const result: Scripts.Permission.Collect.Result = JSON.parse(
+            await redis.executor().execute<string>({
+                script: ProjectionScript.PERMISSION_COLLECT,
+                args: [
+                    JSON.stringify({
+                        account,
+                        realms: [realm],
+                        systemRealm: SYSTEM_REALM_ID,
+                        permissionRealm: SYSTEM_REALM_ID,
+                    }),
+                ],
+            }),
+        );
+
+        // Assert
+        expect(result).toEqual({
+            realms: { [realm]: { read: "REALM" } },
+            global: {},
+            revisions: { [realm]: { "0": "42" } },
+            globalRevision: { "1": "19" },
+        });
+    });
+    it("[case] - returns empty revisions for realms without checkpoints", async () => {
+        // Act
+        const result: Scripts.Permission.Collect.Result = JSON.parse(
+            await redis.executor().execute<string>({
+                script: ProjectionScript.PERMISSION_COLLECT,
+                args: [
+                    JSON.stringify({
+                        account: "account",
+                        realms: ["realm"],
+                        systemRealm: SYSTEM_REALM_ID,
+                        permissionRealm: SYSTEM_REALM_ID,
+                    }),
+                ],
+            }),
+        );
+
+        // Assert
+        expect(result).toEqual({ global: {}, globalRevision: {}, realms: { realm: {} }, revisions: { realm: {} } });
+    });
+
+    it("[case] - keeps revisions isolated across requested realms and excludes unrelated realms", async () => {
+        // Arrange
+        await redis.client().hset("projection:revision:first", "0", "9007199254740993", "2", "7");
+        await redis.client().hset("projection:revision:second", "1", "25");
+        await redis.client().hset("projection:revision:other", "0", "99");
+
+        // Act
+        const result: Scripts.Permission.Collect.Result = JSON.parse(
+            await redis.executor().execute<string>({
+                script: ProjectionScript.PERMISSION_COLLECT,
+                args: [
+                    JSON.stringify({
+                        account: "account",
+                        realms: ["first", "second"],
+                        systemRealm: SYSTEM_REALM_ID,
+                        permissionRealm: SYSTEM_REALM_ID,
+                    }),
+                ],
+            }),
+        );
+
+        // Assert
+        expect(result.revisions).toEqual({ first: { "0": "9007199254740993", "2": "7" }, second: { "1": "25" } });
+        expect(result.globalRevision).toEqual({});
     });
 });

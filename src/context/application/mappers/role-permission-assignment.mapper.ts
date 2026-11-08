@@ -50,11 +50,18 @@ export class RolePermissionAssignmentMapper implements Commands.Mappers.RolePerm
     public accessCachePayload(
         props: Commands.Mappers.RolePermissionAssignment.AccessCachePayload.Props,
     ): Commands.Mappers.RolePermissionAssignment.AccessCachePayload.Result {
-        return {
-            items: props.assignments.map(({ realm }) => ({
-                scope: InvalidationScope.REALM,
-                realm: realm.id,
-            })),
-        };
+        const checkpoints = new Map<string, Topics.ProjectionJournal.Checkpoint["payload"]>();
+
+        for (const entity of props.assignments) {
+            const realm = entity.realm.id;
+            let checkpoint = checkpoints.get(realm);
+            if (!checkpoint) {
+                checkpoint = { realm, items: [] };
+                checkpoints.set(realm, checkpoint);
+                checkpoint.items.push({ scope: InvalidationScope.REALM, realm });
+            }
+        }
+
+        return Array.from(checkpoints.values());
     }
 }

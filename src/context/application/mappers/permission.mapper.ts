@@ -33,11 +33,18 @@ export class PermissionMapper implements Commands.Mappers.Permission.Contract {
     public accessCachePayload(
         props: Commands.Mappers.Permission.AccessCachePayload.Props,
     ): Commands.Mappers.Permission.AccessCachePayload.Result {
-        return {
-            items: props.permissions.map(({ realm }) => ({
-                scope: InvalidationScope.REALM,
-                realm: realm.id,
-            })),
-        };
+        const checkpoints = new Map<string, Topics.ProjectionJournal.Checkpoint["payload"]>();
+
+        for (const entity of props.permissions) {
+            const realm = entity.realm.id;
+            let checkpoint = checkpoints.get(realm);
+            if (!checkpoint) {
+                checkpoint = { realm, items: [] };
+                checkpoints.set(realm, checkpoint);
+                checkpoint.items.push({ scope: InvalidationScope.REALM, realm });
+            }
+        }
+
+        return Array.from(checkpoints.values());
     }
 }

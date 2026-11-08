@@ -29,7 +29,7 @@ declare namespace Commands.Mappers.Role {
             root: Entities.Role;
         };
 
-        type Result = Topics.AccessCache.Message["payload"];
+        type Result = Topics.ProjectionJournal.Checkpoint["payload"][];
 
         type Signature = (props: Props) => Result;
     }
@@ -73,7 +73,7 @@ declare namespace Commands.Mappers.Role {
             target: Entities.Role;
         };
 
-        type Result = Topics.AccessCache.Message["payload"];
+        type Result = Topics.ProjectionJournal.Checkpoint["payload"][];
 
         type Signature = (props: Props) => Result;
     }
@@ -94,7 +94,7 @@ declare namespace Commands.Mappers.Role {
             roles: Entities.Role[];
         };
 
-        type Result = Topics.AccessCache.Message["payload"];
+        type Result = Topics.ProjectionJournal.Checkpoint["payload"][];
 
         type Signature = (props: Props) => Result;
     }

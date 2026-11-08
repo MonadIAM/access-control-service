@@ -31,6 +31,18 @@ class RealmPrivilegeDTO {
 export class PrivilegesDTO {
     @Expose()
     @Validator.IsObject()
+    @Transform(({ obj }: { obj: PrivilegesDTO }) => obj.revisions)
+    @ApiProperty({ type: Object, additionalProperties: { type: "object", additionalProperties: { type: "string" } } })
+    declare public revisions: Record<string, Record<string, string>>;
+
+    @Expose()
+    @Validator.IsObject()
+    @Transform(({ obj }: { obj: PrivilegesDTO }) => obj.globalRevision)
+    @ApiProperty({ type: Object, additionalProperties: { type: "string" } })
+    declare public globalRevision: Record<string, string>;
+
+    @Expose()
+    @Validator.IsObject()
     @Transform(({ obj }: { obj: PrivilegesDTO }) => obj.data)
     @ApiProperty({
         required: true,

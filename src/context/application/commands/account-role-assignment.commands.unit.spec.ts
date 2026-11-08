@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, jest } from "@jest/globals";
 
 import { AccountRoleAssignmentCommandsUnitHelpers } from "~testing/unit/command-services/account-role-assignment.helpers";
 import { SYSTEM_ACCOUNT_ID, SYSTEM_REALM_ID, SYSTEM_USER_ROLE_ID } from "~context/constants";
-import { RealmTopicAction, KafkaTopic, AccessCacheTopicAction } from "~context/enums";
 import { ProjectionScript } from "~context/infrastructure/scripts";
+import { RealmTopicAction, KafkaTopic } from "~context/enums";
 import { Exception } from "~common/exceptions";
 
 const ACCOUNT = "00000000-0000-4000-8000-000000000001";
@@ -386,7 +386,7 @@ describe("[Commands] - AccountRoleAssignment", () => {
                     outbox: expect.arrayContaining([
                         expect.objectContaining({ actionType: ProjectionScript.ACCOUNT_ROLE_ASSIGNMENT_PURGE }),
                         expect.objectContaining({ actionType: ProjectionScript.PERMISSION_OVERRIDE_PURGE }),
-                        expect.objectContaining({ actionType: AccessCacheTopicAction.INVALIDATE }),
+                        expect.objectContaining({ actionType: ProjectionScript.CHECKPOINT }),
                     ]),
                 }),
             );
@@ -418,8 +418,8 @@ describe("[Commands] - AccountRoleAssignment", () => {
                                 destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                             }),
                             expect.objectContaining({
-                                actionType: AccessCacheTopicAction.INVALIDATE,
-                                destinationTopic: KafkaTopic.ACCESS_CACHE,
+                                actionType: ProjectionScript.CHECKPOINT,
+                                destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                             }),
                         ]),
                     }),

@@ -10,11 +10,37 @@ const ID = "requested-entity";
 const REALM = "realm-a";
 
 describe("[Queries] - Permission", () => {
+    describe("[Method] - getPrivilegeSnapshot", () => {
+        it("[case] - returns revisions from the same projection read as the privileges", async () => {
+            // Arrange
+            const { queries, cache } = helpers.queries();
+            cache.collectPermissions.mockResolvedValue({
+                realms: { [REALM]: { read: PrivilegeScope.REALM } },
+                global: {},
+                revisions: { [REALM]: { "0": "42" } },
+                globalRevision: { "1": "19" },
+            });
+
+            // Act
+            const result = await queries.getPrivilegeSnapshot({ account: ID, realms: [REALM] });
+
+            // Assert
+            expect(result).toEqual({
+                data: { read: [{ scope: PrivilegeScope.REALM, realms: [REALM] }] },
+                revisions: { [REALM]: { "0": "42" } },
+                globalRevision: { "1": "19" },
+            });
+            expect(cache.collectPermissions).toHaveBeenCalledTimes(1);
+        });
+    });
+
     describe("[Method] - getPrivileges", () => {
         it("[case] - groups privileges by code across distinct session realms", async () => {
             // Arrange
             const { queries, cache } = helpers.queries();
             cache.collectPermissions.mockResolvedValue({
+                revisions: {},
+                globalRevision: {},
                 realms: {
                     [REALM]: { read: PrivilegeScope.REALM, manage: PrivilegeScope.REALM },
                     "realm-b": { read: PrivilegeScope.REALM },
@@ -38,6 +64,8 @@ describe("[Queries] - Permission", () => {
             // Arrange
             const { queries, cache } = helpers.queries();
             cache.collectPermissions.mockResolvedValue({
+                revisions: {},
+                globalRevision: {},
                 realms: { [SYSTEM_REALM_ID]: { read: PrivilegeScope.REALM } },
                 global: { read: PrivilegeScope.GLOBAL, manage: PrivilegeScope.GLOBAL },
             });
@@ -60,6 +88,8 @@ describe("[Queries] - Permission", () => {
             // Arrange
             const { queries, cache } = helpers.queries();
             cache.collectPermissions.mockResolvedValue({
+                revisions: {},
+                globalRevision: {},
                 realms: Object.fromEntries(realms.map((realm) => [realm, {}])),
                 global: { read: PrivilegeScope.GLOBAL },
             });
@@ -77,6 +107,8 @@ describe("[Queries] - Permission", () => {
             // Arrange
             const { queries, cache } = helpers.queries();
             cache.collectPermissions.mockResolvedValue({
+                revisions: {},
+                globalRevision: {},
                 realms: { [REALM]: { [code]: PrivilegeScope.REALM } },
                 global: {},
             });
@@ -94,7 +126,12 @@ describe("[Queries] - Permission", () => {
         it("[case] - returns an empty object for a session without grants", async () => {
             // Arrange
             const { queries, cache } = helpers.queries();
-            cache.collectPermissions.mockResolvedValue({ realms: { [REALM]: {} }, global: {} });
+            cache.collectPermissions.mockResolvedValue({
+                revisions: {},
+                globalRevision: {},
+                realms: { [REALM]: {} },
+                global: {},
+            });
 
             // Act
             const result = await queries.getPrivileges({ account: ID, realms: [REALM] });

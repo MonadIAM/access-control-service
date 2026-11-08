@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 
 import { PermissionCommandsUnitHelpers } from "~testing/unit/command-services/permission.helpers";
-import { AccessCacheTopicAction, KafkaTopic, ActionType, EntityType } from "~context/enums";
+import { KafkaTopic, ActionType, EntityType } from "~context/enums";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 
 const CONTEXT: Extract.Meta = { ip: "127.0.0.1", userAgent: "unit-test" };
@@ -96,8 +96,8 @@ describe("[Commands] - Permission", () => {
                             payloadMapper: expect.any(Function),
                         }),
                         expect.objectContaining({
-                            actionType: AccessCacheTopicAction.INVALIDATE,
-                            destinationTopic: KafkaTopic.ACCESS_CACHE,
+                            actionType: ProjectionScript.CHECKPOINT,
+                            destinationTopic: KafkaTopic.PROJECTION_JOURNAL,
                             payloadMapper: expect.any(Function),
                         }),
                     ]),

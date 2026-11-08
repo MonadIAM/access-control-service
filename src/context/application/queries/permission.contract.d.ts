@@ -5,11 +5,24 @@ declare global {
         interface Contract extends ControllerContract {}
 
         interface ControllerContract {
+            getPrivilegeSnapshot: GetPrivilegeSnapshot.Signature;
             getPrivileges: GetPrivileges.Signature;
             findEffective: FindEffective.Signature;
             getLookupList: GetLookupList.Signature;
             findUnique: FindUnique.Signature;
             findMany: FindMany.Signature;
+        }
+
+        namespace GetPrivilegeSnapshot {
+            type Props = GetPrivileges.Props;
+
+            type Result = Promise<{
+                data: Awaited<GetPrivileges.Result>;
+                revisions: Record<string, Record<string, string>>;
+                globalRevision: Record<string, string>;
+            }>;
+
+            type Signature = (props: Props) => Result;
         }
 
         namespace GetPrivileges {

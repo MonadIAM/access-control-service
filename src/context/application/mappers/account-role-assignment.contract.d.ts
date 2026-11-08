@@ -41,7 +41,7 @@ declare namespace Commands.Mappers.AccountRoleAssignment {
     namespace JoinAccessCachePayload {
         type Props = Commands.AccountRoleAssignment.Join.ExecuteResult;
 
-        type Result = Topics.AccessCache.Message["payload"];
+        type Result = Topics.ProjectionJournal.Checkpoint["payload"][];
 
         type Signature = (props: Props) => Result;
     }
@@ -129,7 +129,7 @@ declare namespace Commands.Mappers.AccountRoleAssignment {
             assignments: Entities.AccountRoleAssignment[];
         };
 
-        type Result = Topics.AccessCache.Message["payload"];
+        type Result = Topics.ProjectionJournal.Checkpoint["payload"][];
 
         type Signature = (props: Props) => Result;
     }
@@ -137,7 +137,7 @@ declare namespace Commands.Mappers.AccountRoleAssignment {
     namespace CleanAccessCachePayload {
         type Props = Commands.AccountRoleAssignment.Clean.ExecuteResult;
 
-        type Result = Topics.AccessCache.Message["payload"];
+        type Result = Topics.ProjectionJournal.Checkpoint["payload"][];
 
         type Signature = (props: Props) => Result;
     }
