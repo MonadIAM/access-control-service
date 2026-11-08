@@ -1,4 +1,5 @@
-import { beforeAll, describe, expect, it } from "@jest/globals";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "@jest/globals";
+import { context as apiContext, SpanStatusCode, trace } from "@opentelemetry/api";
 import { HttpStatus } from "@nestjs/common";
 
 import { GuardUnitHelpers } from "~testing/unit/guards/guard.helpers";
@@ -333,6 +334,61 @@ describe("[Guard] - Reauthentication", () => {
             // Assert
             expect(result).toBe(true);
             expect(exists).toHaveBeenCalledWith({ session: SESSION_ID, methods: [] });
+        });
+    });
+
+    describe("[Behavior] - tracing", () => {
+        const { sdk, exporter } = helpers.tracing();
+
+        beforeAll(() => sdk.start());
+        afterEach(() => exporter.reset());
+        afterAll(async () => {
+            await sdk.shutdown();
+            trace.disable();
+            apiContext.disable();
+        });
+
+        it("[case] - finishes one span when the guard allows the request", async () => {
+            // Arrange
+            const { guard } = helpers.reauthentication();
+            const context = helpers.context({ request: helpers.request() });
+
+            // Act
+            const result = await guard.canActivate(context);
+
+            // Assert
+            expect(result).toBe(true);
+            expect(exporter.getFinishedSpans()).toHaveLength(1);
+            expect(exporter.getFinishedSpans()[0]).toMatchObject({
+                name: "guard.reauthentication",
+                status: { code: SpanStatusCode.UNSET },
+                attributes: {},
+                events: [],
+                ended: true,
+            });
+        });
+
+        it("[case] - preserves the failure and finishes the span without private data", async () => {
+            // Arrange
+            const error = new Error("private dependency failure");
+            const { guard, exists } = helpers.reauthentication();
+            const request = helpers.request({ session: { session: SESSION_ID } });
+            exists.mockRejectedValueOnce(error);
+            const context = helpers.context({ request, handlerMetadata: [[REAUTHENTICATION, {}]] });
+
+            // Act
+            const result = guard.canActivate(context);
+
+            // Assert
+            await expect(result).rejects.toBe(error);
+            expect(exporter.getFinishedSpans()).toHaveLength(1);
+            expect(exporter.getFinishedSpans()[0]).toMatchObject({
+                name: "guard.reauthentication",
+                status: { code: SpanStatusCode.ERROR },
+                attributes: {},
+                events: [],
+                ended: true,
+            });
         });
     });
 });

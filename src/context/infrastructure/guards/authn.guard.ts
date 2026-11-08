@@ -1,6 +1,7 @@
-import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
+import { CanActivate, type ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
+import { TraceStep } from "~observability/tracing/step";
 import { DEFAULT_OAUTH_SCOPE } from "~context/constants";
 import { Exception } from "~common/exceptions";
 import { JWT_SERVICE } from "~common/services";
@@ -20,6 +21,7 @@ export class AuthnGuard implements CanActivate {
         private readonly blacklistCacheService: InfrastructureServices.BlacklistCache.PublicContract,
     ) {}
 
+    @TraceStep("guard.authentication")
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [context.getHandler(), context.getClass()]);
 

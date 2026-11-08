@@ -1,4 +1,5 @@
-import { beforeAll, describe, expect, it } from "@jest/globals";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "@jest/globals";
+import { context as apiContext, SpanStatusCode, trace } from "@opentelemetry/api";
 import { HttpStatus } from "@nestjs/common";
 
 import { REQUIRE_GLOBAL_PERMISSION, REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators/tokens";
@@ -282,6 +283,64 @@ describe("[Guard] - Permission", () => {
                 permissions: [SECOND_PERMISSION],
                 account: ACCOUNT_ID,
                 realm: SYSTEM_REALM_ID,
+            });
+        });
+    });
+
+    describe("[Behavior] - tracing", () => {
+        const { sdk, exporter } = helpers.tracing();
+
+        beforeAll(() => sdk.start());
+        afterEach(() => exporter.reset());
+        afterAll(async () => {
+            await sdk.shutdown();
+            trace.disable();
+            apiContext.disable();
+        });
+
+        it("[case] - finishes one span when the guard allows the request", async () => {
+            // Arrange
+            const { guard } = helpers.permission();
+            const context = helpers.context({ request: helpers.request(), handlerMetadata: [[IS_PUBLIC, true]] });
+
+            // Act
+            const result = await guard.canActivate(context);
+
+            // Assert
+            expect(result).toBe(true);
+            expect(exporter.getFinishedSpans()).toHaveLength(1);
+            expect(exporter.getFinishedSpans()[0]).toMatchObject({
+                name: "guard.permission",
+                status: { code: SpanStatusCode.UNSET },
+                attributes: {},
+                events: [],
+                ended: true,
+            });
+        });
+
+        it("[case] - preserves the failure and finishes the span without private data", async () => {
+            // Arrange
+            const error = new Error("private dependency failure");
+            const { guard, checkPermissions } = helpers.permission();
+            const request = helpers.request({
+                session: { account: ACCOUNT_ID, realms: [REALM_ID] },
+                query: { realm: REALM_ID },
+            });
+            checkPermissions.mockRejectedValueOnce(error);
+            const context = helpers.context({ request, handlerMetadata: [[REQUIRE_PERMISSION, [PERMISSION]]] });
+
+            // Act
+            const result = guard.canActivate(context);
+
+            // Assert
+            await expect(result).rejects.toBe(error);
+            expect(exporter.getFinishedSpans()).toHaveLength(1);
+            expect(exporter.getFinishedSpans()[0]).toMatchObject({
+                name: "guard.permission",
+                status: { code: SpanStatusCode.ERROR },
+                attributes: {},
+                events: [],
+                ended: true,
             });
         });
     });

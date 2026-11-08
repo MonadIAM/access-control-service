@@ -1,5 +1,6 @@
 import type { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
 import type { PermissionCode, PrivilegeScope } from "@monadiam/shared";
+import type { NodeSDK, tracing } from "@opentelemetry/sdk-node";
 import type { Reflector } from "@nestjs/core";
 
 import type { ReauthenticationGuard } from "~context/infrastructure/guards/reauthentication.guard";
@@ -13,10 +14,20 @@ declare global {
         interface Contract {
             reauthentication: ReauthenticationFactory.Signature;
             permission: PermissionFactory.Signature;
+            tracing: TracingFactory.Signature;
             context: ContextFactory.Signature;
             request: RequestFactory.Signature;
             initialize: Initialize.Signature;
             authn: AuthnFactory.Signature;
+        }
+
+        namespace TracingFactory {
+            type Result = {
+                exporter: tracing.InMemorySpanExporter;
+                sdk: NodeSDK;
+            };
+
+            type Signature = () => Result;
         }
 
         namespace Initialize {

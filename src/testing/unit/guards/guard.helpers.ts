@@ -1,4 +1,5 @@
 import { ExecutionContextHost } from "@nestjs/core/helpers/execution-context-host";
+import { NodeSDK, tracing } from "@opentelemetry/sdk-node";
 import { Reflector } from "@nestjs/core";
 import { jest } from "@jest/globals";
 
@@ -36,6 +37,20 @@ export class GuardUnitHelpers extends DomainServiceCoreUnitHelpers implements Un
         this.ReauthenticationGuard = reauthentication.ReauthenticationGuard;
         this.PermissionGuard = permission.PermissionGuard;
         this.AuthnGuard = authn.AuthnGuard;
+    }
+
+    public tracing(): Unit.Guard.TracingFactory.Result {
+        const exporter = new tracing.InMemorySpanExporter();
+        const sdk = new NodeSDK({
+            spanProcessors: [new tracing.SimpleSpanProcessor(exporter)],
+            sampler: new tracing.AlwaysOnSampler(),
+            autoDetectResources: false,
+            logRecordProcessors: [],
+            instrumentations: [],
+            metricReaders: [],
+        });
+
+        return { sdk, exporter };
     }
 
     public request(props: Unit.Guard.RequestFactory.Props = {}): Unit.Guard.RequestFactory.Result {
