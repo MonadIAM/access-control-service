@@ -1,7 +1,8 @@
-import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
+import { CanActivate, type ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { isObject, isString } from "class-validator";
 import { Reflector } from "@nestjs/core";
 
+import { TraceStep } from "~observability/tracing/step";
 import { ErrorCode, Exception } from "~common/exceptions";
 import { ReauthenticationMethod } from "~context/enums";
 import { REAUTHENTICATION } from "~common/decorators";
@@ -18,6 +19,7 @@ export class ReauthenticationGuard implements CanActivate {
         private readonly reflector: Reflector,
     ) {}
 
+    @TraceStep("guard.reauthentication")
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const options = this.reflector.getAllAndOverride<Reauthentication.Options>(REAUTHENTICATION, [
             context.getHandler(),

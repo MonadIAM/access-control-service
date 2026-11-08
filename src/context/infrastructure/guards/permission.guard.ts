@@ -1,7 +1,8 @@
-import { CanActivate, ExecutionContext, Inject, Injectable } from "@nestjs/common";
+import { CanActivate, type ExecutionContext, Inject, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
 import { REQUIRE_GLOBAL_PERMISSION, REQUIRE_PERMISSION, IS_PUBLIC } from "~common/decorators";
+import { TraceStep } from "~observability/tracing/step";
 import { SYSTEM_REALM_ID } from "~context/constants";
 import { PermissionCode } from "~context/enums";
 import { Exception } from "~common/exceptions";
@@ -18,6 +19,7 @@ export class PermissionGuard implements CanActivate {
         private readonly reflector: Reflector,
     ) {}
 
+    @TraceStep("guard.permission")
     public async canActivate(context: ExecutionContext): Promise<boolean> {
         const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [context.getHandler(), context.getClass()]);
 
