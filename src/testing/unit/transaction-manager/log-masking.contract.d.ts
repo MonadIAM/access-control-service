@@ -18,12 +18,14 @@ declare namespace Unit.TransactionManager.LogMasking {
         type Props = {
             hmacBatch?: CommonServices.VaultTransit.HmacBatch.Signature;
             sign?: CommonServices.VaultTransit.Sign.Signature;
+            signBatch?: CommonServices.VaultTransit.SignBatch.Signature;
         };
 
         type Result = {
             service: CommonServices.VaultTransit.Contract;
             hmacBatch: Jest.Mock<CommonServices.VaultTransit.HmacBatch.Signature>;
             sign: Jest.Mock<CommonServices.VaultTransit.Sign.Signature>;
+            signBatch: Jest.Mock<CommonServices.VaultTransit.SignBatch.Signature>;
         };
 
         type Signature = (props?: Props) => Result;

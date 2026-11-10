@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, jest } from "@jest/globals";
 import { LogMaskingUnitHelpers } from "~testing/unit/transaction-manager/log-masking.helpers";
 import { ChangeLog, AuditLog } from "~common/transaction-manager/entities";
 import { DeltaChanges } from "~common/transaction-manager/value-objects";
+import { Exception } from "~common/exceptions";
 import { ActionType, EntityType } from "~context/enums";
 
 /* eslint-disable prettier/prettier */
@@ -403,7 +404,10 @@ describe("[CommonService] - LogMasking", () => {
             const result = service.maskAuditLog({ input: { password: "first-secret" } });
 
             // Assert
-            await expect(result).rejects.toThrow();
+            await expect(result).rejects.toMatchObject({
+                statusCode: 502,
+                messageKey: "services.vault.HMAC_COUNT_MISMATCH",
+            });
         });
     });
 
@@ -513,6 +517,69 @@ describe("[CommonService] - LogMasking", () => {
             // Assert
             expect(result).toBe(delta);
             expect(vault.hmacBatch).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("[Method] - signBatch", () => {
+        it("[case] - signs canonical change logs in one batch and preserves their order", async () => {
+            // Arrange
+            const { service, vault } = helpers.service();
+            const entities = [
+                createChangeLog({ delta: { name: { old: "before", new: "after" } } }),
+                createChangeLog({ delta: { status: { old: "A", new: "B" } } }),
+            ];
+            const expected = [await service.sign({ entity: entities[0] }), await service.sign({ entity: entities[1] })];
+
+            // Act
+            const result = await service.signBatch({ entities });
+
+            // Assert
+            expect(result).toEqual(expected);
+            expect(vault.signBatch).toHaveBeenCalledTimes(1);
+            expect(vault.signBatch).toHaveBeenCalledWith({
+                name: "audit-log-key",
+                version: 1,
+                inputs: [vault.sign.mock.calls[0][0].input, vault.sign.mock.calls[1][0].input],
+            });
+        });
+
+        it("[case] - skips Vault for an empty batch", async () => {
+            // Arrange
+            const { service, vault } = helpers.service();
+
+            // Act
+            const result = await service.signBatch({ entities: [] });
+
+            // Assert
+            expect(result).toEqual([]);
+            expect(vault.signBatch).not.toHaveBeenCalled();
+            expect(vault.service.getLatestVersion).not.toHaveBeenCalled();
+        });
+
+        it("[case] - rejects an incomplete signature batch", async () => {
+            // Arrange
+            const { service } = helpers.service({ vault: helpers.vault({ signBatch: () => Promise.resolve([]) }) });
+
+            // Act
+            const result = service.signBatch({ entities: [createChangeLog({})] });
+
+            // Assert
+            await expect(result).rejects.toMatchObject({
+                statusCode: 502,
+                messageKey: "services.vault.SIGNATURE_COUNT_MISMATCH",
+            });
+        });
+
+        it("[case] - propagates a Vault failure", async () => {
+            // Arrange
+            const error = Exception.externalServiceFailed({ messageKey: "services.vault.REQUEST_FAILED" });
+            const { service } = helpers.service({ vault: helpers.vault({ signBatch: () => Promise.reject(error) }) });
+
+            // Act
+            const result = service.signBatch({ entities: [createChangeLog({})] });
+
+            // Assert
+            await expect(result).rejects.toBe(error);
         });
     });
 

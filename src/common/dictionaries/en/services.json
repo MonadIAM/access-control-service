@@ -78,6 +78,8 @@
   },
   "vault": {
     "REQUEST_FAILED": "Vault Transit request failed.",
-    "INVALID_SIGNATURE": "Vault Transit returned an invalid signature."
+    "INVALID_SIGNATURE": "Vault Transit returned an invalid signature.",
+    "HMAC_COUNT_MISMATCH": "Vault Transit returned an unexpected number of HMAC values.",
+    "SIGNATURE_COUNT_MISMATCH": "Vault Transit returned an unexpected number of signatures."
   }
 }

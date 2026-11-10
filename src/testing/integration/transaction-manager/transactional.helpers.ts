@@ -13,6 +13,13 @@ export class TransactionalHelper implements Integration.TransactionalHelper.Cont
         overrides: Integration.TransactionalHelper.CreateLogMaskingService.Props = {},
     ): Integration.TransactionalHelper.CreateLogMaskingService.Result {
         return {
+            signBatch: ({ entities }: TransactionManager.LogMasking.SignBatch.Props) => {
+                const signatures: Awaited<TransactionManager.LogMasking.Sign.Result>[] = [];
+                for (const entity of entities) {
+                    signatures.push({ keyVersion: 7, signature: `signed:${entity.constructor.name}:${entity.id}` });
+                }
+                return Promise.resolve(signatures);
+            },
             sign: ({ entity }) =>
                 Promise.resolve({ keyVersion: 7, signature: `signed:${entity.constructor.name}:${entity.id}` }),
             maskAuditLog: ({ input }) =>

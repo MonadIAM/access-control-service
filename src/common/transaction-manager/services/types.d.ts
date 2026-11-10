@@ -96,6 +96,7 @@ declare global {
                 maskChangeLog: MaskChangeLog.Signature;
                 maskAuditLog: MaskAuditLog.Signature;
                 sign: Sign.Signature;
+                signBatch: SignBatch.Signature;
             }
 
             namespace MaskAuditLog {
@@ -114,6 +115,16 @@ declare global {
                 };
 
                 type Result = Promise<ValueObjects.DeltaChanges>;
+
+                type Signature = (props: Props) => Result;
+            }
+
+            namespace SignBatch {
+                type Props = {
+                    entities: SystemEntities.ChangeLog[];
+                };
+
+                type Result = Promise<Awaited<Sign.Result>[]>;
 
                 type Signature = (props: Props) => Result;
             }

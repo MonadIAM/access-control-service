@@ -5,6 +5,7 @@ import { ChangeLogSubscriberUnitHelpers } from "~testing/unit/transaction-manage
 import { ExternalChanges } from "~infrastructure/database/utils/external-changes";
 import { ChangeLog, Outbox } from "~common/transaction-manager/entities";
 import { DeltaChanges } from "~common/transaction-manager/value-objects";
+import { Exception } from "~common/exceptions";
 import { KafkaTopic } from "~context/enums";
 
 const helpers = new ChangeLogSubscriberUnitHelpers();
@@ -15,6 +16,61 @@ describe("[Subscriber] - ChangeLog", () => {
     });
 
     describe("[Method] - onFlush", () => {
+        it("[case] - signs all changes before persisting any change log or archive", async () => {
+            // Arrange
+            const operationContext = helpers.operationContext();
+            const transaction = helpers.transaction();
+            const logMasking = helpers.logMaskingContract({
+                signBatch: ({ entities }) => {
+                    expect(transaction.persist).not.toHaveBeenCalled();
+                    expect(entities).toHaveLength(2);
+                    return Promise.resolve([
+                        { keyVersion: 2, signature: "first" },
+                        { keyVersion: 2, signature: "second" },
+                    ]);
+                },
+            });
+            const { subscriber } = helpers.subscriber({ operationContext, logMasking });
+            const uow = helpers.uow({
+                changeSets: [helpers.changeSet({ primaryKey: "first" }), helpers.changeSet({ primaryKey: "second" })],
+            });
+
+            // Act
+            await operationContext.run({ changeLogEnabled: true, auditEntry: "audit-entry" }, () =>
+                subscriber.onFlush(helpers.flushEventArgs({ uow: uow.uow, em: transaction.entityManager })),
+            );
+
+            // Assert
+            expect(transaction.persist).toHaveBeenCalledTimes(4);
+            expect(transaction.persist.mock.calls[0][0]).toEqual(
+                expect.objectContaining({ signature: "first", keyVersion: 2 }),
+            );
+            expect(transaction.persist.mock.calls[2][0]).toEqual(
+                expect.objectContaining({ signature: "second", keyVersion: 2 }),
+            );
+            expect(logMasking.sign).not.toHaveBeenCalled();
+        });
+
+        it("[case] - persists no change logs or archives when batch signing fails", async () => {
+            // Arrange
+            const operationContext = helpers.operationContext();
+            const error = Exception.externalServiceFailed({ messageKey: "services.vault.REQUEST_FAILED" });
+            const logMasking = helpers.logMaskingContract({ signBatch: () => Promise.reject(error) });
+            const { subscriber } = helpers.subscriber({ operationContext, logMasking });
+            const transaction = helpers.transaction();
+            const uow = helpers.uow({ changeSets: [helpers.changeSet(), helpers.changeSet()] });
+
+            // Act
+            const result = operationContext.run({ changeLogEnabled: true, auditEntry: "audit-entry" }, () =>
+                subscriber.onFlush(helpers.flushEventArgs({ uow: uow.uow, em: transaction.entityManager })),
+            );
+
+            // Assert
+            await expect(result).rejects.toBe(error);
+            expect(transaction.persist).not.toHaveBeenCalled();
+            expect(uow.computeChangeSet).not.toHaveBeenCalled();
+        });
+
         it("[case] - does nothing when operation context is absent", async () => {
             // Arrange
             const { subscriber } = helpers.subscriber();
@@ -110,7 +166,7 @@ describe("[Subscriber] - ChangeLog", () => {
             expect(logMasking.maskChangeLog).toHaveBeenCalledWith({
                 delta: { name: { old: "Old Name", new: "New Name" } },
             });
-            expect(logMasking.sign).toHaveBeenCalledWith({ entity: changeLog });
+            expect(logMasking.signBatch).toHaveBeenCalledWith({ entities: [changeLog] });
             expect(changeLog).toEqual(
                 expect.objectContaining({
                     entity: "00000000-0000-4000-8000-000000000001",
@@ -227,9 +283,9 @@ describe("[Subscriber] - ChangeLog", () => {
                     callOrder.push("maskChangeLog");
                     return Promise.resolve(delta);
                 },
-                sign: () => {
-                    callOrder.push("sign");
-                    return Promise.resolve({ keyVersion: 1, signature: "signature" });
+                signBatch: () => {
+                    callOrder.push("signBatch");
+                    return Promise.resolve([{ keyVersion: 1, signature: "signature" }]);
                 },
             });
             const outbox = helpers.outboxContract({
@@ -277,7 +333,7 @@ describe("[Subscriber] - ChangeLog", () => {
             // Assert
             expect(callOrder).toEqual([
                 "maskChangeLog",
-                "sign",
+                "signBatch",
                 "persistChangeLog",
                 "computeChangeLog",
                 "buildArchive",

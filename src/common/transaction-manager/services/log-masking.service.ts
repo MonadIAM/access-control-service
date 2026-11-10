@@ -4,11 +4,14 @@ import { Injectable, Inject } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { VAULT_TRANSIT_SERVICE } from "~common/services/tokens";
+import { Exception } from "~common/exceptions";
 
 import { DeltaChanges, MaskedValue } from "../value-objects";
 
 @Injectable()
 export class LogMaskingService implements TransactionManager.LogMasking.Contract {
+    private readonly dictionaryPath = "services.vault";
+
     private readonly maskKey: string;
     private readonly logKey: string;
 
@@ -73,7 +76,7 @@ export class LogMaskingService implements TransactionManager.LogMasking.Contract
 
                 return result;
             } else {
-                throw new Error("Vault HMAC response does not match sensitive target count");
+                throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.HMAC_COUNT_MISMATCH` });
             }
         } else {
             return props.input;
@@ -113,7 +116,7 @@ export class LogMaskingService implements TransactionManager.LogMasking.Contract
 
                 return new DeltaChanges(record);
             } else {
-                throw new Error("Vault HMAC response does not match sensitive target count");
+                throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.HMAC_COUNT_MISMATCH` });
             }
         } else {
             return props.delta;
@@ -127,6 +130,27 @@ export class LogMaskingService implements TransactionManager.LogMasking.Contract
         });
 
         return { signature, keyVersion: version };
+    }
+
+    public async signBatch(
+        props: TransactionManager.LogMasking.SignBatch.Props,
+    ): TransactionManager.LogMasking.SignBatch.Result {
+        const signatures: Awaited<TransactionManager.LogMasking.Sign.Result>[] = [];
+        if (props.entities.length) {
+            const inputs: string[] = [];
+            for (const entity of props.entities) {
+                inputs.push(JSON.stringify(this.serializeForSigning(entity)));
+            }
+            const version = await this.vaultTransitService.getLatestVersion({ name: this.logKey });
+            const results = await this.vaultTransitService.signBatch({ name: this.logKey, inputs, version });
+            if (results.length !== props.entities.length) {
+                throw Exception.externalServiceFailed({ messageKey: `${this.dictionaryPath}.SIGNATURE_COUNT_MISMATCH` });
+            }
+            for (const result of results) {
+                signatures.push({ keyVersion: result.version, signature: result.signature });
+            }
+        }
+        return signatures;
     }
 
     public normalize(props: TransactionManager.LogMasking.Normalize.Props): TransactionManager.LogMasking.Normalize.Result {

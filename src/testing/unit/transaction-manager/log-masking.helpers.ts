@@ -16,10 +16,21 @@ export class LogMaskingUnitHelpers
         );
         const sign = jest.fn(props.sign ?? (({ input }) => Promise.resolve({ signature: `sig:${input}`, version: 1 })));
 
+        const signBatch = jest.fn(
+            props.signBatch ??
+                (({ inputs, version }) => {
+                    const signatures: Awaited<CommonServices.VaultTransit.SignBatch.Result> = [];
+                    for (const input of inputs) {
+                        signatures.push({ signature: `sig:${input}`, version });
+                    }
+                    return Promise.resolve(signatures);
+                }),
+        );
+
         return {
             service: this.contract<CommonServices.VaultTransit.Contract>({
-                getLatestVersion: jest.fn(),
-                signBatch: jest.fn(),
+                getLatestVersion: jest.fn(() => Promise.resolve(1)),
+                signBatch,
                 decrypt: jest.fn(),
                 encrypt: jest.fn(),
                 getKey: jest.fn(),
@@ -29,6 +40,7 @@ export class LogMaskingUnitHelpers
                 sign,
             }),
             hmacBatch,
+            signBatch,
             sign,
         };
     }
