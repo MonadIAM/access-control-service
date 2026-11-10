@@ -24,6 +24,13 @@ export class ChangeLogSubscriberUnitHelpers
                 Promise.resolve(delta),
             ),
             maskAuditLog: jest.fn(({ input }: TransactionManager.LogMasking.MaskAuditLog.Props) => Promise.resolve(input)),
+            signBatch: jest.fn(({ entities }: TransactionManager.LogMasking.SignBatch.Props) => {
+                const signatures: Awaited<TransactionManager.LogMasking.Sign.Result>[] = [];
+                for (let index = 0; index < entities.length; index += 1) {
+                    signatures.push({ keyVersion: 1, signature: "signature" });
+                }
+                return Promise.resolve(signatures);
+            }),
             sign: jest.fn(() => Promise.resolve({ keyVersion: 1, signature: "signature" })),
             normalize: jest.fn(),
             unflatten: jest.fn(),

@@ -78,6 +78,8 @@
   },
   "vault": {
     "REQUEST_FAILED": "Запрос к Vault Transit завершился ошибкой.",
-    "INVALID_SIGNATURE": "Vault Transit вернул недействительную подпись."
+    "INVALID_SIGNATURE": "Vault Transit вернул недействительную подпись.",
+    "HMAC_COUNT_MISMATCH": "Vault Transit вернул неожиданное количество значений HMAC.",
+    "SIGNATURE_COUNT_MISMATCH": "Vault Transit вернул неожиданное количество подписей."
   }
 }
