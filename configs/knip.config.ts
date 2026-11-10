@@ -11,6 +11,7 @@ const config: KnipConfig = {
     entry: [
         "mikro-orm.config.ts",
         "src/main.ts",
+        "src/observability/tracing/worker.ts",
         // Standalone scripts - run directly, not via import
         "src/infrastructure/database/migrations/*.ts",
         "src/infrastructure/database/*.seeder.ts",
