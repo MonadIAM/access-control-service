@@ -7,6 +7,7 @@ import ms from "ms";
 
 dotenv.config();
 
+const logging: boolean = process.env.POSTGRES_LOGGING === "true";
 const sslEnabled: boolean = process.env.POSTGRES_SSL_ENABLED === "true";
 const rejectUnauthorized: boolean = process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED === "true";
 const poolIdleTimeoutMillis: Optional<number> = ms(process.env.POSTGRES_WRITE_POOL_IDLE_MS);
@@ -23,7 +24,8 @@ const config: Options = {
     host,
     port,
 
-    debug: process.env.POSTGRES_LOGGING === "true" || process.env.NODE_ENV === "local",
+    debug: logging,
+    ignoreDeprecations: !logging,
 
     entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
     entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],

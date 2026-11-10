@@ -47,6 +47,18 @@ describe("[Config] - MikroOrm", () => {
     });
 
     describe("[Method] - buildOptions", () => {
+        it.each([true, false])("[case] - controls ORM logging with POSTGRES_LOGGING=%s", (logging) => {
+            // Arrange
+            const config = new ConfigService({ ...values, POSTGRES_LOGGING: logging });
+
+            // Act
+            const result = builder.buildOptions({ config });
+
+            // Assert
+            expect(result.debug).toBe(logging);
+            expect(result.ignoreDeprecations).toBe(!logging);
+        });
+
         it.each([
             { kind: "read" as const, host: "replica", port: 5433, max: 5, idleTimeoutMillis: 2000 },
             { kind: "write" as const, host: "primary", port: 5432, max: 10, idleTimeoutMillis: 60000 },
