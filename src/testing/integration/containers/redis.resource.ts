@@ -12,7 +12,7 @@ export class RedisResource {
         container = await new GenericContainer("redis:7.4.2-alpine3.21")
             .withExposedPorts(6379)
             .withCommand(["redis-server", "--requirepass", password, "--save", "", "--appendonly", "no"])
-            .withWaitStrategy(Wait.forLogMessage("Ready to accept connections"))
+            .withWaitStrategy(Wait.forAll([Wait.forLogMessage("Ready to accept connections"), Wait.forListeningPorts()]))
             .start();
         process.env.MONADIAM_TEST_REDIS_HOST = container.getHost();
         process.env.MONADIAM_TEST_REDIS_PORT = String(container.getMappedPort(6379));

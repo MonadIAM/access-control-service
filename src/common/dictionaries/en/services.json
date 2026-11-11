@@ -81,5 +81,9 @@
     "INVALID_SIGNATURE": "Vault Transit returned an invalid signature.",
     "HMAC_COUNT_MISMATCH": "Vault Transit returned an unexpected number of HMAC values.",
     "SIGNATURE_COUNT_MISMATCH": "Vault Transit returned an unexpected number of signatures."
+  },
+  "kafka-transport": {
+    "UNSUPPORTED_OPERATION": "The Kafka transport does not support this operation",
+    "HANDLER_MISSING": "No handler is registered for the Kafka topic"
   }
 }

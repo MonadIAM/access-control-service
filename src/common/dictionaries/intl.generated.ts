@@ -292,6 +292,10 @@ export type I18nTranslations = {
             "HMAC_COUNT_MISMATCH": string;
             "SIGNATURE_COUNT_MISMATCH": string;
         };
+        "kafka-transport": {
+            "UNSUPPORTED_OPERATION": string;
+            "HANDLER_MISSING": string;
+        };
     };
     "validator": {
         "REQUIRED": string;

@@ -1,9 +1,11 @@
-import { SchemaRegistry as ConfluentSchemaRegistry } from "@kafkajs/confluent-schema-registry";
-import { KafkaRequest } from "@nestjs/microservices/serializers";
-import { KafkaContext } from "@nestjs/microservices";
+import { JsonSerializer } from "@confluentinc/schemaregistry";
+import { KafkaJS } from "@confluentinc/kafka-javascript";
+
+import { KafkaContext } from "./context";
 
 declare global {
     namespace Kafka {
+        type Config = KafkaJS.CommonConstructorConfig & { kafkaJS: KafkaJS.KafkaConfig };
         namespace Retry {
             interface Contract {
                 execute: Execute.Signature;
@@ -54,9 +56,9 @@ declare global {
             }
         }
 
-        type Message = Pick<Request, "value"> & Partial<Omit<Request, "value">>;
+        type Message = Omit<KafkaJS.Message, "value"> & { value: unknown };
 
-        type Request = KafkaRequest;
+        type Request = KafkaJS.Message;
 
         namespace IncomingMapper {
             type Context = Pick<KafkaContext, "getMessage" | "getPartition" | "getTopic">;
@@ -90,12 +92,7 @@ declare global {
         }
 
         namespace SchemaRegistry {
-            type Config = {
-                registryUrl: string;
-                enabled: boolean;
-            };
-
-            type Schema = Awaited<ReturnType<ConfluentSchemaRegistry["getSchema"]>>;
+            type Validator = NonNullable<Awaited<ReturnType<JsonSerializer["toValidateFunction"]>>>;
 
             interface Contract extends PublicContract {}
 

@@ -1,6 +1,7 @@
 import { GenericContainer, StartedTestContainer, Wait } from "testcontainers";
+import { defer, lastValueFrom, retry } from "rxjs";
 import { ConfigService } from "@nestjs/config";
-import { Kafka, logLevel } from "kafkajs";
+import { KafkaJS } from "@confluentinc/kafka-javascript";
 
 import { requiredEnvironment } from "./environment";
 
@@ -44,15 +45,17 @@ export class KafkaResource {
             },
         ]);
         await container.exec(["touch", "/tmp/test-config-ready"]);
-        const admin = new Kafka({
-            brokers: [broker],
-            logLevel: logLevel.NOTHING,
-            connectionTimeout: 1000,
-            retry: { retries: 12, initialRetryTime: 250, maxRetryTime: 2000 },
+        const admin = new KafkaJS.Kafka({
+            kafkaJS: {
+                brokers: [broker],
+                logLevel: KafkaJS.logLevel.NOTHING,
+                connectionTimeout: 1000,
+                retry: { retries: 12, initialRetryTime: 250, maxRetryTime: 2000 },
+            },
         }).admin();
         try {
             await admin.connect();
-            await admin.listTopics();
+            await lastValueFrom(defer(() => admin.listTopics({ timeout: 5000 })).pipe(retry({ count: 12, delay: 1000 })));
             process.env.MONADIAM_TEST_KAFKA_BROKER = broker;
         } finally {
             await admin.disconnect();

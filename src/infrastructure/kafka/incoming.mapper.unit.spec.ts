@@ -4,7 +4,16 @@ import { KafkaIncomingMapper } from "./incoming.mapper";
 
 function context(key: Nullable<Buffer>): Kafka.IncomingMapper.Context {
     return {
-        getMessage: () => ({ key, value: null, offset: "42", timestamp: "0", attributes: 0, headers: {} }),
+        getMessage: () => ({
+            key,
+            value: null,
+            deserializedKey: { key, error: null },
+            deserializedValue: { value: null, error: null },
+            offset: "42",
+            timestamp: "0",
+            attributes: 0,
+            headers: {},
+        }),
         getTopic: () => "events",
         getPartition: () => 3,
     };

@@ -1,5 +1,4 @@
-import { KafkaContext } from "@nestjs/microservices";
-
+import { KafkaContext } from "~infrastructure/kafka";
 import { ProjectionScript } from "~context/infrastructure/scripts";
 
 declare global {
