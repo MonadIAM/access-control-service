@@ -3,7 +3,7 @@
   "description": "IAM | Access Control & AuthZ: hierarchical RBAC, DAC permission overrides, separation of duties (SoD), role delegation policies and realm-scoped access control.",
   "author": "Daniil Egorov (https://github.com/Lambdius)",
   "license": "SEE LICENSE IN LICENSE",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "main": "dist/index.js",
   "engines": {
     "node": "24.18.0"
@@ -56,12 +56,13 @@
     ]
   },
   "dependencies": {
+    "@confluentinc/kafka-javascript": "1.11.0",
+    "@confluentinc/schemaregistry": "1.10.1",
     "@fastify/cookie": "11.1.2",
     "@fastify/cors": "11.3.0",
     "@fastify/helmet": "13.1.1",
     "@fastify/otel": "0.20.1",
     "@grpc/grpc-js": "1.14.5",
-    "@kafkajs/confluent-schema-registry": "4.1.0",
     "@libpg-query/parser": "17.6.10",
     "@mikro-orm/cli": "7.1.13",
     "@mikro-orm/core": "7.1.13",
@@ -93,6 +94,7 @@
     "@opentelemetry/semantic-conventions": "1.43.0",
     "@scalar/fastify-api-reference": "1.67.0",
     "@willsoto/nestjs-prometheus": "6.1.0",
+    "ajv-formats": "3.0.1",
     "bullmq": "6.2.0",
     "bullmq-otel": "2.0.1",
     "class-transformer": "0.5.1",
@@ -101,7 +103,6 @@
     "fastify": "5.12.7",
     "ioredis": "6.0.0",
     "jose": "6.2.10",
-    "kafkajs": "2.2.4",
     "kysely": "0.29.5",
     "libphonenumber-js": "1.13.11",
     "ms": "2.1.3",

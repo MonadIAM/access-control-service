@@ -3,3 +3,5 @@ export { KafkaRetryService } from "./retry.service";
 export { KafkaModule } from "./kafka.module";
 export { KafkaUtils } from "./utils";
 export * from "./tokens";
+export { KafkaClient } from "./client";
+export { KafkaContext } from "./context";

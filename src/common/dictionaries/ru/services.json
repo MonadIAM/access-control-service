@@ -81,5 +81,9 @@
     "INVALID_SIGNATURE": "Vault Transit вернул недействительную подпись.",
     "HMAC_COUNT_MISMATCH": "Vault Transit вернул неожиданное количество значений HMAC.",
     "SIGNATURE_COUNT_MISMATCH": "Vault Transit вернул неожиданное количество подписей."
+  },
+  "kafka-transport": {
+    "UNSUPPORTED_OPERATION": "Транспорт Kafka не поддерживает эту операцию",
+    "HANDLER_MISSING": "Для топика Kafka не зарегистрирован обработчик"
   }
 }

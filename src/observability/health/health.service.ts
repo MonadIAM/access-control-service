@@ -1,25 +1,17 @@
 import { Injectable, Scope } from "@nestjs/common";
-import { Transport } from "@nestjs/microservices";
-import { ConfigService } from "@nestjs/config";
-import {
-    MicroserviceHealthIndicator,
-    HealthIndicatorStatus,
-    HealthIndicatorResult,
-    HealthCheckService,
-} from "@nestjs/terminus";
+import { HealthIndicatorStatus, HealthCheckService } from "@nestjs/terminus";
 
 import { DatabaseHealthIndicator } from "~infrastructure/database/database.health";
 import { RedisHealthIndicator } from "~infrastructure/redis/redis.health";
-import { KafkaUtils } from "~infrastructure/kafka/utils";
+import { KafkaHealthIndicator } from "~infrastructure/kafka/kafka.health";
 
 @Injectable({ scope: Scope.DEFAULT })
 export class HealthService {
     public constructor(
-        private microservice: MicroserviceHealthIndicator,
+        private kafka: KafkaHealthIndicator,
         private database: DatabaseHealthIndicator,
         private redis: RedisHealthIndicator,
         private health: HealthCheckService,
-        private config: ConfigService,
     ) {}
 
     public liveness(): Health.Liveness {
@@ -30,7 +22,7 @@ export class HealthService {
         const result = await this.health.check([
             () => this.database.isHealthy<"database">("database"),
             () => this.redis.isHealthy<"redis">("redis"),
-            () => this.checkKafka(),
+            () => this.kafka.isHealthy<"kafka">("kafka"),
         ]);
 
         const components: Record<string, HealthIndicatorStatus> = {};
@@ -45,12 +37,5 @@ export class HealthService {
             status: result.status,
             components,
         };
-    }
-
-    private checkKafka(): Promise<HealthIndicatorResult<"kafka">> {
-        return this.microservice.pingCheck("kafka", {
-            options: { client: KafkaUtils.buildClientConfig(this.config) },
-            transport: Transport.KAFKA,
-        });
     }
 }

@@ -37,7 +37,7 @@ describe("[Utility] - KafkaUtils", () => {
             const result = KafkaUtils.buildClientConfig(new ConfigService(base), { withClientId });
 
             // Assert
-            expect(result).toEqual({
+            expect(result.kafkaJS).toMatchObject({
                 brokers: ["broker:9093"],
                 ...(withClientId ? { clientId: "access-control" } : {}),
             });
@@ -51,7 +51,11 @@ describe("[Utility] - KafkaUtils", () => {
             const result = KafkaUtils.buildClientConfig(new ConfigService(base));
 
             // Assert
-            expect(result).toEqual({ brokers: ["broker:9093"] });
+            expect(result.kafkaJS).toEqual({
+                brokers: ["broker:9093"],
+                ssl: false,
+                retry: { initialRetryTime: 300, retries: 5 },
+            });
         });
 
         it.each([false, true])("[case] - builds TLS options and preserves rejectUnauthorized=%s", (rejectUnauthorized) => {
@@ -62,12 +66,11 @@ describe("[Utility] - KafkaUtils", () => {
             const result = KafkaUtils.buildClientConfig(config);
 
             // Assert
-            expect(result).toEqual({
-                brokers: ["broker:9093"],
-                ssl: {
-                    ca: ["contents:/ca"],
-                    rejectUnauthorized,
-                },
+            expect(result).toMatchObject({
+                kafkaJS: { brokers: ["broker:9093"], ssl: true },
+                "ssl.ca.pem": "contents:/ca",
+                "enable.ssl.certificate.verification": rejectUnauthorized,
+                "ssl.endpoint.identification.algorithm": rejectUnauthorized ? "https" : "none",
             });
             expect(readFileSync.mock.calls).toEqual([["/ca", "utf8"]]);
         });
@@ -80,12 +83,12 @@ describe("[Utility] - KafkaUtils", () => {
             const result = KafkaUtils.buildClientConfig(new ConfigService({ ...base, ...ssl, ...sasl }));
 
             // Assert
-            expect(result.ssl).not.toHaveProperty("servername");
-            expect(result.sasl).toEqual({ mechanism: "scram-sha-512", username: "service", password: "secret" });
+            expect(result.kafkaJS.ssl).toBe(true);
+            expect(result.kafkaJS.sasl).toEqual({ mechanism: "scram-sha-512", username: "service", password: "secret" });
             expect(readFileSync).toHaveBeenCalledWith("/password", "utf8");
         });
 
-        it("[case] - authenticates with SCRAM over CA-only TLS and lets KafkaJS select each broker hostname", () => {
+        it("[case] - authenticates with SCRAM over CA-only TLS and verifies each broker hostname with librdkafka", () => {
             // Arrange
             const config = new ConfigService({
                 ...base,
@@ -97,11 +100,15 @@ describe("[Utility] - KafkaUtils", () => {
             const result = KafkaUtils.buildClientConfig(config);
 
             // Assert
-            expect(result.ssl).toEqual({ ca: ["contents:/ca"], rejectUnauthorized: true });
-            expect(result.sasl).toMatchObject({ mechanism: "scram-sha-512", username: "service" });
+            expect(result).toMatchObject({
+                "ssl.ca.pem": "contents:/ca",
+                "enable.ssl.certificate.verification": true,
+                "ssl.endpoint.identification.algorithm": "https",
+            });
+            expect(result.kafkaJS.sasl).toMatchObject({ mechanism: "scram-sha-512", username: "service" });
             expect(readFileSync.mock.calls).toEqual([
-                ["/ca", "utf8"],
                 ["/password", "utf8"],
+                ["/ca", "utf8"],
             ]);
         });
 
@@ -112,7 +119,7 @@ describe("[Utility] - KafkaUtils", () => {
             const result = KafkaUtils.buildClientConfig(new ConfigService({ ...base, ...sasl }));
 
             // Assert
-            expect(result).toEqual({
+            expect(result.kafkaJS).toMatchObject({
                 brokers: ["broker:9093"],
                 sasl: { mechanism: "scram-sha-512", username: "service", password: "contents:/password" },
             });

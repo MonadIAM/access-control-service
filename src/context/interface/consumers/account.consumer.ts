@@ -1,9 +1,16 @@
-import { EventPattern, KafkaContext, Payload, ClientKafka, Ctx } from "@nestjs/microservices";
+import { EventPattern, Payload, Ctx } from "@nestjs/microservices";
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { AccountTopicAction } from "@monadiam/shared";
 import { lastValueFrom } from "rxjs";
 
-import { KAFKA_RETRY_SERVICE, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE, KafkaIncomingMapper } from "~infrastructure/kafka";
+import {
+    KAFKA_RETRY_SERVICE,
+    KAFKA_SCHEMA_REGISTRY,
+    KAFKA_SERVICE,
+    KafkaIncomingMapper,
+    KafkaClient,
+    KafkaContext,
+} from "~infrastructure/kafka";
 import { ACCOUNT_ROLE_ASSIGNMENT_COMMANDS } from "~context/application/commands";
 import { KAFKA_METRICS_RECORDER } from "~observability/metrics/tokens";
 import { KafkaTopic } from "~context/enums";
@@ -24,7 +31,7 @@ export class AccountConsumer implements OnModuleInit, Consumers.Account.Contract
         @Inject(KAFKA_RETRY_SERVICE)
         private readonly kafkaRetry: Kafka.Retry.Contract,
         @Inject(KAFKA_SERVICE)
-        private readonly kafkaClient: ClientKafka,
+        private readonly kafkaClient: KafkaClient,
     ) {}
 
     public async onModuleInit(): Promise<void> {

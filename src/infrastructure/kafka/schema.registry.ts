@@ -1,28 +1,47 @@
-import { SchemaRegistry as ConfluentSchemaRegistry } from "@kafkajs/confluent-schema-registry";
-import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
+import {
+    JsonDeserializer,
+    JsonSerializer,
+    SchemaRegistryClient,
+    SerdeType,
+    Client,
+    SubjectNameStrategyType,
+} from "@confluentinc/schemaregistry";
+import { Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { KafkaTopic } from "@monadiam/shared";
+import formats from "ajv-formats";
 
 import { Exception } from "~common/exceptions";
 
 @Injectable()
-export class KafkaSchemaRegistry implements Kafka.SchemaRegistry.Contract, OnApplicationBootstrap {
+export class KafkaSchemaRegistry implements Kafka.SchemaRegistry.Contract, OnApplicationBootstrap, OnApplicationShutdown {
     private readonly dictionaryPath = "services.schema-registry";
     private static readonly MAGIC_BYTE = 0;
 
-    private readonly schemas = new Map<string, Kafka.SchemaRegistry.Schema>();
+    private readonly validators = new Map<string, Kafka.SchemaRegistry.Validator>();
     private readonly logger = new Logger(KafkaSchemaRegistry.name);
-    private readonly registry: Nullable<ConfluentSchemaRegistry>;
-    private readonly config: Kafka.SchemaRegistry.Config;
-    private readonly ids = new Map<string, number>();
+    private readonly registry: Nullable<Client>;
+    private readonly serializer: Nullable<JsonSerializer>;
+    private readonly deserializer: Nullable<JsonDeserializer>;
 
-    public constructor(private readonly configService: ConfigService) {
-        this.config = {
-            registryUrl: this.configService.getOrThrow<string>("SCHEMA_REGISTRY_URL"),
-            enabled: this.configService.get<boolean>("SCHEMA_REGISTRY_ENABLED") ?? false,
+    public constructor(configService: ConfigService) {
+        const enabled = configService.get<boolean>("SCHEMA_REGISTRY_ENABLED") ?? false;
+        const registryUrl = configService.getOrThrow<string>("SCHEMA_REGISTRY_URL");
+        this.registry = enabled ? SchemaRegistryClient.newClient({ baseURLs: [registryUrl] }) : null;
+        const options = {
+            validate: true,
+            strict: false,
+            formats: { uuid: formats.get("uuid") },
+            subjectNameStrategyType: SubjectNameStrategyType.TOPIC,
         };
-
-        this.registry = this.config.enabled ? new ConfluentSchemaRegistry({ host: this.config.registryUrl }) : null;
+        this.serializer = this.registry
+            ? new JsonSerializer(this.registry, SerdeType.VALUE, {
+                  ...options,
+                  autoRegisterSchemas: false,
+                  useLatestVersion: true,
+              })
+            : null;
+        this.deserializer = this.registry ? new JsonDeserializer(this.registry, SerdeType.VALUE, options) : null;
 
         if (!this.registry) {
             this.logger.warn("Schema Registry disabled: messages are produced and consumed as plain JSON");
@@ -30,59 +49,43 @@ export class KafkaSchemaRegistry implements Kafka.SchemaRegistry.Contract, OnApp
     }
 
     public async onApplicationBootstrap(): Promise<void> {
-        const { registry } = this;
-
-        if (registry) {
-            await Promise.all(
-                Object.values(KafkaTopic).map(async (topic) => {
-                    try {
-                        const id = await registry.getLatestSchemaId(`${topic}-value`);
-                        this.schemas.set(`${topic}-value`, await registry.getSchema(id));
-                        this.ids.set(`${topic}-value`, id);
-                    } catch {
-                        this.logger.debug(`No registered subject ${topic}-value: messages for this topic stay unvalidated`);
-                    }
-                }),
-            );
-            this.logger.log(`Schema Registry warmed up: ${this.schemas.size} subjects`);
+        if (this.registry) {
+            const pending: Promise<void>[] = [];
+            for (const topic of Object.values(KafkaTopic)) {
+                pending.push(this.warm(topic));
+            }
+            await Promise.all(pending);
+            this.logger.log(`Schema Registry warmed up: ${this.validators.size} subjects`);
         }
+    }
+
+    public async onApplicationShutdown(): Promise<void> {
+        await this.registry?.close();
     }
 
     public async encode({ topic, value }: Kafka.SchemaRegistry.Encode.Props): Kafka.SchemaRegistry.Encode.Result {
         const subject = `${topic}-value`;
-        const id = this.ids.get(subject);
-
-        if (this.registry && id !== undefined) {
+        if (this.serializer && this.validators.has(subject)) {
             try {
-                return await this.registry.encode(id, value);
+                return await this.serializer.serialize(topic, value);
             } catch (error) {
                 throw Exception.externalServiceFailed({
                     messageKey: `${this.dictionaryPath}.ENCODE_FAILED`,
-                    params: {
-                        reason: error instanceof Error ? error.message : "encode failed",
-                        subject,
-                    },
+                    params: { reason: String(error), subject },
                 });
             }
         }
-
         return value;
     }
 
-    public async decode<T>(props: Kafka.SchemaRegistry.Decode.Props): Kafka.SchemaRegistry.Decode.Result<T> {
-        const { topic, value } = props;
-        const { registry } = this;
-
-        if (registry && KafkaSchemaRegistry.isFramed(value)) {
+    public async decode<T>({ topic, value }: Kafka.SchemaRegistry.Decode.Props): Kafka.SchemaRegistry.Decode.Result<T> {
+        if (this.deserializer && KafkaSchemaRegistry.isFramed(value)) {
             try {
-                return await registry.decode(value);
+                return await this.deserializer.deserialize(topic, value);
             } catch (error) {
                 throw Exception.externalServiceFailed({
                     messageKey: `${this.dictionaryPath}.DECODE_FAILED`,
-                    params: {
-                        reason: error instanceof Error ? error.message : "decode failed",
-                        subject: `${topic}-value`,
-                    },
+                    params: { reason: String(error), subject: `${topic}-value` },
                 });
             }
         } else {
@@ -92,16 +95,30 @@ export class KafkaSchemaRegistry implements Kafka.SchemaRegistry.Contract, OnApp
 
     public validate({ topic, value }: Kafka.SchemaRegistry.Validate.Props): Kafka.SchemaRegistry.Validate.Result {
         const subject = `${topic}-value`;
-        const schema = this.schemas.get(subject);
-
-        if (schema) {
+        const validate = this.validators.get(subject);
+        if (validate && !validate(value)) {
             const paths: string[] = [];
+            for (const error of validate.errors ?? []) {
+                paths.push(error.instancePath);
+            }
+            throw Exception.unprocessable({
+                messageKey: `${this.dictionaryPath}.MESSAGE_INVALID`,
+                params: { fields: paths.join(", "), subject },
+            });
+        }
+    }
 
-            if (!schema.isValid(value, { errorHook: (path) => paths.push(path.join(".")) })) {
-                throw Exception.unprocessable({
-                    messageKey: `${this.dictionaryPath}.MESSAGE_INVALID`,
-                    params: { fields: paths.join(", "), subject },
-                });
+    private async warm(topic: string): Promise<void> {
+        const subject = `${topic}-value`;
+        if (this.registry && this.serializer) {
+            try {
+                const metadata = await this.registry.getLatestSchemaMetadata(subject);
+                const validate = await this.serializer.toValidateFunction(metadata);
+                if (validate) {
+                    this.validators.set(subject, validate);
+                }
+            } catch {
+                this.logger.debug(`No registered subject ${subject}: messages for this topic stay unvalidated`);
             }
         }
     }

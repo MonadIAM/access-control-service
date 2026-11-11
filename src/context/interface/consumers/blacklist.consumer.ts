@@ -1,8 +1,15 @@
-import { EventPattern, KafkaContext, Payload, ClientKafka, Ctx } from "@nestjs/microservices";
+import { EventPattern, Payload, Ctx } from "@nestjs/microservices";
 import { Controller, Inject, Logger, OnModuleInit } from "@nestjs/common";
 import { lastValueFrom } from "rxjs";
 
-import { KAFKA_RETRY_SERVICE, KAFKA_SCHEMA_REGISTRY, KAFKA_SERVICE, KafkaIncomingMapper } from "~infrastructure/kafka";
+import {
+    KAFKA_RETRY_SERVICE,
+    KAFKA_SCHEMA_REGISTRY,
+    KAFKA_SERVICE,
+    KafkaIncomingMapper,
+    KafkaClient,
+    KafkaContext,
+} from "~infrastructure/kafka";
 import { BLACKLIST_CACHE_SERVICE } from "~context/infrastructure/services/tokens";
 import { KAFKA_METRICS_RECORDER } from "~observability/metrics/tokens";
 import { KafkaTopic } from "~context/enums";
@@ -23,7 +30,7 @@ export class BlacklistConsumer implements Consumers.Blacklist.Contract, OnModule
         @Inject(KAFKA_RETRY_SERVICE)
         private readonly kafkaRetry: Kafka.Retry.Contract,
         @Inject(KAFKA_SERVICE)
-        private readonly kafkaClient: ClientKafka,
+        private readonly kafkaClient: KafkaClient,
     ) {}
 
     public async onModuleInit(): Promise<void> {
