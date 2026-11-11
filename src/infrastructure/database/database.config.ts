@@ -15,16 +15,18 @@ export class MikroOrmConfig implements ORM.Config.Contract {
 
         const host = this.resolveHost({ config, kind });
         const port = this.resolvePort({ config, kind });
+        const logging = config.get<boolean>("POSTGRES_LOGGING", false);
 
         const options: ORM.Options = {
             driver: PostgreSqlDriver,
 
             host: host,
             port: port,
+            debug: logging,
             user: config.getOrThrow<string>("POSTGRES_USER"),
             dbName: config.getOrThrow<string>("POSTGRES_DB"),
             password: config.getOrThrow<string>("POSTGRES_PASSWORD"),
-            debug: ["query", "query-params"],
+            ignoreDeprecations: !logging,
 
             entities: [path.join(process.cwd(), "dist/**/*.schema.js")],
             entitiesTs: [path.join(process.cwd(), "src/**/*.schema.ts")],
