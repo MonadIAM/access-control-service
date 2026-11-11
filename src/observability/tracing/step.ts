@@ -9,6 +9,11 @@ export function TraceStep(name: string) {
         const original = descriptor.value;
         if (original) {
             descriptor.value = function (this: Receiver, ...args: Args): Promise<Result> {
+                const parent = trace.getActiveSpan();
+                if (parent && !parent.isRecording()) {
+                    return original.apply(this, args);
+                }
+
                 return trace.getTracer("monadiam.steps").startActiveSpan(name, async (span) => {
                     try {
                         return await original.apply(this, args);

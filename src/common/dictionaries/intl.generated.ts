@@ -285,6 +285,7 @@ export type I18nTranslations = {
         };
         "jwt": {
             "INVALID_ACCESS_TOKEN": string;
+            "JWKS_UNAVAILABLE": string;
         };
         "vault": {
             "REQUEST_FAILED": string;

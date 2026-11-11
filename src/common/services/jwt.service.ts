@@ -1,4 +1,4 @@
-import { createRemoteJWKSet, jwtVerify, JWTVerifyGetKey } from "jose";
+import { createRemoteJWKSet, jwtVerify, JWTVerifyGetKey, errors } from "jose";
 import { Injectable, OnModuleInit, Scope } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import ms, { StringValue } from "ms";
@@ -23,12 +23,28 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
         this.audience = `${this.issuer}:api`;
     }
 
-    public onModuleInit(): void {
-        this.jwks = createRemoteJWKSet(this.jwksUrl, {
+    public async onModuleInit(): Promise<void> {
+        const jwks = createRemoteJWKSet(this.jwksUrl, {
             cooldownDuration: ms(this.config.getOrThrow<StringValue>("JWT_JWKS_COOLDOWN_DURATION")),
             timeoutDuration: ms(this.config.getOrThrow<StringValue>("JWT_JWKS_TIMEOUT_DURATION")),
             cacheMaxAge: ms(this.config.getOrThrow<StringValue>("JWT_JWKS_CACHE_MAX_AGE")),
         });
+
+        await jwks.reload();
+
+        this.jwks = async (header, token) => {
+            try {
+                return await jwks(header, token);
+            } catch (error) {
+                if (error instanceof errors.JWKSNoMatchingKey || error instanceof errors.JWKSMultipleMatchingKeys) {
+                    throw error;
+                } else {
+                    throw Exception.externalServiceFailed({
+                        messageKey: `${this.dictionaryPath}.JWKS_UNAVAILABLE`,
+                    });
+                }
+            }
+        };
     }
 
     public async verifyAccess(props: CommonServices.JWT.VerifyAccess.Props): CommonServices.JWT.VerifyAccess.Result {
@@ -42,7 +58,10 @@ export class JWTService implements CommonServices.JWT.Contract, OnModuleInit {
             });
 
             return payload;
-        } catch {
+        } catch (error) {
+            if (error instanceof Exception) {
+                throw error;
+            }
             throw Exception.unauthorized({
                 messageKey: `${this.dictionaryPath}.INVALID_ACCESS_TOKEN`,
                 headers: {

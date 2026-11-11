@@ -74,7 +74,8 @@
     "SCRIPT_NOT_LOADED": "Lua-скрипт не загружен: {script}."
   },
   "jwt": {
-    "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен."
+    "INVALID_ACCESS_TOKEN": "Access-токен недействителен или просрочен.",
+    "JWKS_UNAVAILABLE": "Ключи проверки токена временно недоступны."
   },
   "vault": {
     "REQUEST_FAILED": "Запрос к Vault Transit завершился ошибкой.",
