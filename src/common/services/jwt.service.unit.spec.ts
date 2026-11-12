@@ -2,7 +2,8 @@ import { beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals
 import { ConfigService } from "@nestjs/config";
 import * as jose from "jose";
 
-const remoteKeys = jest.fn<(...args: Parameters<typeof jose.createRemoteJWKSet>) => jose.JWTVerifyGetKey>();
+const remoteKeys = jest.fn<typeof jose.createRemoteJWKSet>();
+const fetchKeys = jest.fn<typeof fetch>();
 jest.unstable_mockModule("jose", () => ({ ...jose, createRemoteJWKSet: remoteKeys }));
 let JWTService: typeof import("./jwt.service").JWTService;
 
@@ -21,16 +22,21 @@ const claims: jose.JWTPayload = {
 describe("[CommonService] - JWT", () => {
     let service: InstanceType<typeof JWTService>;
     let keys: Awaited<ReturnType<typeof jose.generateKeyPair>>;
+    let publicKeys: jose.JSONWebKeySet;
 
     beforeAll(async () => {
         const modulePath = "./jwt.service";
         ({ JWTService } = await import(modulePath));
         keys = await jose.generateKeyPair("ES256");
         const jwk = await jose.exportJWK(keys.publicKey);
-        remoteKeys.mockReturnValue(jose.createLocalJWKSet({ keys: [{ ...jwk, kid: "test-key" }] }));
+        publicKeys = { keys: [{ ...jwk, kid: "test-key" }] };
+        remoteKeys.mockImplementation((url, options) =>
+            jose.createRemoteJWKSet(url, { ...options, [jose.customFetch]: fetchKeys }),
+        );
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        fetchKeys.mockImplementation(() => Promise.resolve(Response.json(publicKeys)));
         service = new JWTService(
             new ConfigService({
                 JWT_JWKS_URL: `${issuer}/jwks`,
@@ -40,7 +46,7 @@ describe("[CommonService] - JWT", () => {
                 JWT_ISSUER: issuer,
             }),
         );
-        service.onModuleInit();
+        await service.onModuleInit();
     });
 
     function sign(payload: jose.JWTPayload, typ = "at+jwt"): Promise<string> {
@@ -170,21 +176,47 @@ describe("[CommonService] - JWT", () => {
     });
 
     describe("[Method] - onModuleInit", () => {
-        it("[case] - normalizes key resolution failures", async () => {
+        it("[case] - loads verification keys before the first token", async () => {
             // Arrange
-            remoteKeys.mockReturnValueOnce(() => Promise.reject(new Error("private network failure")));
+            const token = await sign(claims);
+            fetchKeys.mockClear();
 
             // Act
-            service.onModuleInit();
-            const invalidToken = await sign(claims);
+            const result = await service.verifyAccess({ token });
 
-            const result = service.verifyAccess({ token: invalidToken });
+            // Assert
+            expect(result).toEqual(claims);
+            expect(fetchKeys).not.toHaveBeenCalled();
+        });
+
+        it("[case] - fails initialization when verification keys cannot be loaded", async () => {
+            // Arrange
+            const error = new Error("private network failure");
+            fetchKeys.mockRejectedValueOnce(error);
+
+            // Act
+            const result = service.onModuleInit();
+
+            // Assert
+            await expect(result).rejects.toBe(error);
+        });
+
+        it("[case] - reports a key refresh timeout as an upstream failure", async () => {
+            // Arrange
+            remoteKeys.mockImplementationOnce((url, options) =>
+                jose.createRemoteJWKSet(url, { ...options, cacheMaxAge: 0, [jose.customFetch]: fetchKeys }),
+            );
+            await service.onModuleInit();
+            const token = await sign(claims);
+            fetchKeys.mockRejectedValueOnce(new jose.errors.JWKSTimeout());
+
+            // Act
+            const result = service.verifyAccess({ token });
 
             // Assert
             await expect(result).rejects.toMatchObject({
-                statusCode: 401,
-                messageKey: "services.jwt.INVALID_ACCESS_TOKEN",
-                headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+                statusCode: 502,
+                messageKey: "services.jwt.JWKS_UNAVAILABLE",
             });
         });
     });
