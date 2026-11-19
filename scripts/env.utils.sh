@@ -65,9 +65,15 @@ dump_dto_fields() {
 }
 
 dump_injected_keys() {
-    grep -hoE '^export [A-Z0-9_]+="\$\(cat '"$SECRET_DIR"'/' "${ENTRYPOINTS[@]}" \
-        | sed -E 's/^export ([A-Z0-9_]+)=.*$/\1/' \
-        | sort -u >"$WORK_DIR/injected.keys" || true
+    local entrypoint
+
+    {
+        for entrypoint in "${ENTRYPOINTS[@]}"; do
+            comm -12 \
+                <(grep -oE '^export [A-Z0-9_]+$' "$entrypoint" | sed -E 's/^export ([A-Z0-9_]+)$/\1/' | sort -u) \
+                <(grep -oE '^[A-Z0-9_]+="\$\(cat '"$SECRET_DIR"'/' "$entrypoint" | sed -E 's/^([A-Z0-9_]+)=.*$/\1/' | sort -u)
+        done
+    } | sort -u >"$WORK_DIR/injected.keys"
 
     comm -12 "$WORK_DIR/injected.keys" "$WORK_DIR/dto.keys" >"$WORK_DIR/injected.validated"
     comm -23 "$WORK_DIR/dto.keys" "$WORK_DIR/injected.validated" >"$WORK_DIR/expected.keys"

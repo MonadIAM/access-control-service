@@ -23,14 +23,11 @@ fi
 now_ms() {
     case "$LOG_CLOCK" in
         bash)
-            echo $((${EPOCHREALTIME/[.,]/} / 1000))
-            ;;
+            echo $((${EPOCHREALTIME/[.,]/} / 1000)) ;;
         perl)
-            perl -MTime::HiRes -e 'printf("%d\n", Time::HiRes::time() * 1000)'
-            ;;
+            perl -MTime::HiRes -e 'printf("%d\n", Time::HiRes::time() * 1000)' ;;
         *)
-            echo $(($(date +%s) * 1000))
-            ;;
+            echo $(($(date +%s) * 1000)) ;;
     esac
 }
 

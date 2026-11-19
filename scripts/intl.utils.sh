@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export GENERATED_FILE
+
 source "$(dirname -- "${BASH_SOURCE[0]}")/logger.sh"
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
