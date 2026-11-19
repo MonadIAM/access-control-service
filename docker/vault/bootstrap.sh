@@ -20,8 +20,7 @@ while :; do
     case "$error_output" in
         *"Code: 403"*|*"Code: 401"*)
             echo "Vault rejected VAULT_TOKEN while reading AppRole '$VAULT_APPROLE_NAME': $error_output" >&2
-            exit 1
-            ;;
+            exit 1 ;;
     esac
 
     i=$((i + 1))
